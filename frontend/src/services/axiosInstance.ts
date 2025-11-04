@@ -19,7 +19,7 @@ axiosInstance.interceptors.response.use(
                 await TokenServise.refreshAccessToken();
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                console.error("Refresh failed. Logging out user...")
+                console.error("Refresh failed. Logging out user...:",refreshError)
 
             }
         }

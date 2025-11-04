@@ -1,3 +1,4 @@
+
 import { Request, Response } from "express";
 import { AuthService } from "../../services/auth.servise.ts";
 import { IAuthController } from "../interface/IauthController.ts";
@@ -32,7 +33,7 @@ export class AuthController implements IAuthController {
         success: true,
         message: "Login successful",
         user: {
-          _id: user._id,
+          id: user._id,
           name: user.name,
           email: user.email,
         },
@@ -93,4 +94,5 @@ export class AuthController implements IAuthController {
     });
   }
 }
+
 

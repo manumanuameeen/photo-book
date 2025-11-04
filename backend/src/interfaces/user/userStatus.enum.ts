@@ -1,5 +1,5 @@
-export enum UserStatus{
-    ACTIVE ="active",
-    INACTIVE = "inactive",
-    BANNED = "Banned"
+export enum UserStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  BANNED = "Banned",
 }

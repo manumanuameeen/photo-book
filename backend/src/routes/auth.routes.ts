@@ -6,19 +6,16 @@ import { AuthRateLimiter } from "../middleware/rateLimiter.middleware.ts";
 
 const router = Router();
 //injection
-const userRepositery = new UserRepositery()
-const authService = new AuthService(userRepositery)
-const authController = new AuthController(authService)
-
-
+const userRepositery = new UserRepositery();
+const authService = new AuthService(userRepositery);
+const authController = new AuthController(authService);
 
 //routes
-router.post("/signup",AuthRateLimiter,authController.signup.bind(authController));
-router.post("/verify-otp",AuthRateLimiter,authController.verifyOtp.bind(authController));
-router.post("/login",AuthRateLimiter,authController.login.bind(authController));
-router.post("verify-otp",AuthRateLimiter,authController.verifyOtp.bind(authController))
-router.post("/refresh-token",AuthRateLimiter,authController.refresh.bind(authController));
-router.post("/logout",AuthRateLimiter,authController.logout.bind(authController));
+router.post("/signup", AuthRateLimiter, authController.signup.bind(authController));
+router.post("/verify-otp", AuthRateLimiter, authController.verifyOtp.bind(authController));
+router.post("/login", AuthRateLimiter, authController.login.bind(authController));
+router.post("verify-otp", AuthRateLimiter, authController.verifyOtp.bind(authController));
+router.post("/refresh-token", AuthRateLimiter, authController.refresh.bind(authController));
+router.post("/logout", AuthRateLimiter, authController.logout.bind(authController));
 
-export default  router;
-
+export default router;

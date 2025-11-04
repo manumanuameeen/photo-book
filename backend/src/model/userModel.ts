@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 import bcrypt from "bcrypt";
-import { UserRole } from "../interfaces/user/userRole.enum";
-import { UserStatus } from "../interfaces/user/userStatus.enum";
+import { UserRole } from "../interfaces/user/userRole.enum.ts";
+import { UserStatus } from "../interfaces/user/userStatus.enum.ts";
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -12,18 +12,18 @@ export interface IUser extends Document {
   role: UserRole;
   status: UserStatus;
   walletBalance: number;
-  otp: string;
+  otp?: string;
   otpExpires?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-  comparePassword(enterPassword: string): Promise<boolean>;
+  comparePassword(enteredPassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true, minLength: 8 },
+    password: { type: String, required: true, minlength: 8 },
     phone: { type: String, required: true },
     role: {
       type: String,
@@ -37,10 +37,11 @@ const userSchema = new Schema<IUser>(
     },
     walletBalance: { type: Number, default: 0 },
     otp: { type: String, default: null },
-    otpExpires: { type: Date, default: null },
+    otpExpires: { type: Date },
   },
   { timestamps: true }
 );
+
 
 userSchema.pre("save", async function (next) {
   const user = this as IUser;
