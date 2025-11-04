@@ -1,14 +1,15 @@
-import { UserRepositery } from "../repositories/implementaion/user.repositery.ts";
-import { IUser } from "../model/userModel.ts";
-import { IUserRepository } from "../repositories/interface/IuserRepository.ts";
+import { UserRepositery } from "../repositories/implementaion/user.repositery";
+import { IUser } from "../model/userModel";
+import { IUserRepository } from "../repositories/interface/IuserRepository";
 import { randomInt } from "crypto";
-import redisClient from "../config/redis.ts";
-import { createAccessToken, createRefreshToken } from "../utils/token.ts";
+import redisClient from "../config/redis";
+import { createAccessToken, createRefreshToken } from "../utils/token";
 
 export class AuthService {
-  private userRepositery: UserRepositery;
+  private userRepository: UserRepositery;
+
   constructor(userRepo: IUserRepository = new UserRepositery()) {
-    this.userRepositery = userRepo;
+    this.userRepository = userRepo as UserRepositery;
   }
 
   private generateOtp(): string {
@@ -16,7 +17,7 @@ export class AuthService {
   }
 
   private async sendOtp(email: string, otp: string): Promise<void> {
-    console.log(`OTP for ${email}:${otp}`);
+    console.log(`OTP for ${email}: ${otp}`);
   }
 
   async signup(data: Partial<IUser>) {
@@ -26,16 +27,15 @@ export class AuthService {
       throw new Error("All fields are required");
     }
 
-    const existingUser = await this.userRepositery.findByEmail(email!);
+    const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new Error("user already exists");
+      throw new Error("User already exists");
     }
 
     const otp = this.generateOtp();
-
     const otpExpires = new Date(Date.now() + 2 * 60 * 1000);
 
-    const newUser = await this.userRepositery.createUser({
+    const newUser = await this.userRepository.createUser({
       name,
       email,
       password,
@@ -47,9 +47,9 @@ export class AuthService {
     await this.sendOtp(email, otp);
 
     return {
-      message: "otp sent to email",
+      message: "OTP sent to email",
       user: {
-        _id: newUser._id,
+        _id: newUser._id?.toString(),
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
@@ -58,40 +58,41 @@ export class AuthService {
   }
 
   async verifyOtp(email: string, otp: string) {
-    const user = await this.userRepositery.findByEmail(email);
-    if (!user) throw new Error("User notfound");
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw new Error("User not found");
 
     if (user.otp !== otp || !user.otpExpires || user.otpExpires < new Date()) {
       throw new Error("Invalid or expired OTP");
     }
 
-    await this.userRepositery.updateUser(user._id.toString(), {
+    await this.userRepository.updateUser(user._id!.toString(), {
       otp: undefined,
       otpExpires: undefined,
     });
+
     return this.issueTokens(user);
   }
 
   async login(email: string, password: string) {
-    const user = await this.userRepositery.findByEmail(email);
-    if (!user) throw new Error("Invalid Credention");
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw new Error("Invalid credentials");
 
     const match = await user.comparePassword(password);
-    if (!match) throw new Error("Invalid creadentials");
+    if (!match) throw new Error("Invalid credentials");
 
     return this.issueTokens(user);
   }
 
   async refresh(oldRefreshToken: string) {
     const storedId = await redisClient.get(`rt:${oldRefreshToken}`);
-    if (!storedId) throw new Error("invalid refresh Token");
+    if (!storedId) throw new Error("Invalid refresh token");
 
-    const user = await this.userRepositery.findById(storedId);
+    const user = await this.userRepository.findById(storedId);
     if (!user) throw new Error("User not found");
 
-    const { accessToken, refreshToken } = this.issueTokens(user);
     await redisClient.del(`rt:${oldRefreshToken}`);
-    redisClient.setEx(`rt:${refreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
+    const { accessToken, refreshToken } = this.issueTokens(user);
+    await redisClient.setEx(`rt:${refreshToken}`, 7 * 24 * 60 * 60, user._id!.toString());
 
     return { accessToken, refreshToken };
   }
@@ -101,9 +102,9 @@ export class AuthService {
   }
 
   private issueTokens(user: IUser) {
-    const accessToken = createAccessToken(user._id.toString());
-    const refreshToken = createRefreshToken(user._id.toString());
-    redisClient.setEx(`rt:${refreshToken}`, 7 * 24 * 60 * 60, user._id.toString());
+    const accessToken = createAccessToken(user._id!.toString());
+    const refreshToken = createRefreshToken(user._id!.toString());
+    redisClient.setEx(`rt:${refreshToken}`, 7 * 24 * 60 * 60, user._id!.toString());
     return { accessToken, refreshToken, user };
   }
 }

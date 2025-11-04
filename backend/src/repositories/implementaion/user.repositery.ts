@@ -1,5 +1,5 @@
-import { User, IUser } from "../../model/userModel.ts";
-import { IUserRepository } from "../interface/IuserRepository.ts";
+import { User, IUser } from "../../model/userModel";
+import { IUserRepository } from "../interface/IuserRepository";
 export class UserRepositery implements IUserRepository {
 
     async createUser(data: Partial<IUser>): Promise<IUser> {

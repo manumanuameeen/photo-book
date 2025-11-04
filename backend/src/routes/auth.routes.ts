@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { AuthController } from "../controller/implementation/auth.controller.ts";
-import { UserRepositery } from "../repositories/implementaion/user.repositery.ts";
-import { AuthService } from "../services/auth.servise.ts";
-import { AuthRateLimiter } from "../middleware/rateLimiter.middleware.ts";
+import { AuthController } from "../controller/implementation/auth.controller";
+import { UserRepositery } from "../repositories/implementaion/user.repositery";
+import { AuthService } from "../services/auth.servise";
+import { AuthRateLimiter } from "../middleware/rateLimiter.middleware";
 
 const router = Router();
 //injection

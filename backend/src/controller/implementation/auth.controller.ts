@@ -1,7 +1,7 @@
 
 import { Request, Response } from "express";
-import { AuthService } from "../../services/auth.servise.ts";
-import { IAuthController } from "../interface/IauthController.ts";
+import { AuthService } from "../../services/auth.servise";
+import { IAuthController } from "../interface/IauthController";
 
 export class AuthController implements IAuthController {
   private authService: AuthService;

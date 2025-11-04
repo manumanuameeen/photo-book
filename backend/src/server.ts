@@ -3,10 +3,10 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
-import connectDB from "./config/db.ts";
+import connectDB from "./config/db";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import authRoutes from "./routes/auth.routes.ts";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 const PORT = 5000;
