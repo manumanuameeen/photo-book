@@ -68,7 +68,7 @@ export class AuthService {
             throw new Error("Invalid or expired OTP");
         }
 
-        await this.userRepositery.updateUser(user.id.toString(), {
+        await this.userRepositery.updateUser(user._id.toString(), {
             otp: undefined,
             otpExpires: undefined,
         })
