@@ -1,9 +1,8 @@
-import { Request, Response } from "express";
-
+import express from "express";
 export interface IAuthController {
-  signup(req: Request, res: Response): Promise<void>;
-  verifyOtp(req: Request, res: Response): Promise<void>;
-  login(req: Request, res: Response): Promise<void>;
-  refresh(req: Request, res: Response): Promise<void>;
-  logout(req: Request, res: Response): Promise<void>;
+  signup(req: express.Request, res: express.Response): Promise<void>;
+  verifyOtp(req: express.Request, res: express.Response): Promise<void>;
+  login(req: express.Request, res: express.Response): Promise<void>;
+  refresh(req: express.Request, res: express.Response): Promise<void>;
 }
+

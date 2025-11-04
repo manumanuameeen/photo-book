@@ -1,7 +1,8 @@
 
-import { Request, Response } from "express";
-import { AuthService } from "../../services/auth.servise";
-import { IAuthController } from "../interface/IauthController";
+import express from "express"
+
+import { AuthService } from "../../services/auth.servise.ts";
+import type{ IAuthController } from "../interface/IauthController.ts";
 
 export class AuthController implements IAuthController {
   private authService: AuthService;
@@ -10,7 +11,7 @@ export class AuthController implements IAuthController {
     this.authService = authService;
   }
 
-  async signup(req: Request, res: Response): Promise<void> {
+  async signup(req: express.Request, res: express.Response): Promise<void> {
     try {
       const { name, email, password, phone } = req.body;
       const result = await this.authService.signup({ name, email, password, phone });
@@ -24,7 +25,7 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async verifyOtp(req: Request, res: Response): Promise<void> {
+  async verifyOtp(req: express.Request, res: express.Response): Promise<void> {
     try {
       const { email, otp } = req.body;
       const { accessToken, refreshToken, user } = await this.authService.verifyOtp(email, otp);
@@ -43,7 +44,7 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async login(req: Request, res: Response): Promise<void> {
+  async login(req: express.Request, res: express.Response): Promise<void> {
     try {
       const { email, password } = req.body;
       const { accessToken, refreshToken, user } = await this.authService.login(email, password);
@@ -58,7 +59,7 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async refresh(req: Request, res: Response): Promise<void> {
+  async refresh(req: express.Request, res: express.Response): Promise<void> {
     try {
       const old = req.cookies.refreshToken;
       if (!old) throw new Error("Missing refresh token");
@@ -70,7 +71,7 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async logout(req: Request, res: Response): Promise<void> {
+  async logout(req: express.Request, res: express.Response): Promise<void> {
     const token = req.cookies.refreshToken;
     if (token) await this.authService.logout(token);
     res.clearCookie("accessToken");
@@ -78,7 +79,7 @@ export class AuthController implements IAuthController {
     res.json({ success: true, message: "Logged out" });
   }
 
-  private setCookies(res: Response, access: string, refresh: string) {
+  private setCookies(res: express.Response, access: string, refresh: string) {
     const isProd = process.env.NODE_ENV === "production";
     res.cookie("accessToken", access, {
       httpOnly: true,
