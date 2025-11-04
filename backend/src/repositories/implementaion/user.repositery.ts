@@ -11,12 +11,12 @@ export class UserRepositery implements IUserRepository {
          return await User.findOne({email:email})
     }
 
-    async findById(id: string): Promise<IUser | null> {
-        return await User.findById(id).exec()
+    async findById(_id: string): Promise<IUser | null> {
+        return await User.findById(_id).exec()
     }
 
-    async updateUser(id: string,data:Partial<IUser>): Promise<IUser | null> {
-        return await User.findByIdAndUpdate(id,data,{new :true}).exec();
+    async updateUser(_id: string,data:Partial<IUser>): Promise<IUser | null> {
+        return await User.findByIdAndUpdate(_id,data,{new :true}).exec();
     }
 }
 

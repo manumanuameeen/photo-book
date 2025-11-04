@@ -32,7 +32,7 @@ export class AuthController implements IAuthController {
         success: true,
         message: "Login successful",
         user: {
-          id: user._id,
+          _id: user._id,
           name: user.name,
           email: user.email,
         },

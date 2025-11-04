@@ -52,7 +52,7 @@ export class AuthService {
         return {
             message: "otp sent to email",
             user: {
-                id: newUser.id,
+                _id: newUser._id,
                 name: newUser.name,
                 email: newUser.email,
                 role: newUser.role,
