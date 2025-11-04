@@ -1,14 +1,12 @@
+
 {
   "name": "backend",
   "version": "1.0.0",
   "type": "module",
 "scripts": {
-  "dev": "ts-node src/server.ts",
+    "dev": "ts-node --transpile-only src/server.ts",
   "build": "tsc",
-  "start": "node dist/server.js",
-  "lint": "eslint . --ext .ts",
-  "format": "prettier --write .",
-  "lint:fix": "eslint . --ext .ts --fix"
+  "start": "node dist/server.js"
 },
   "dependencies": {
     "bcrypt": "^6.0.0",
