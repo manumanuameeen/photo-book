@@ -1,12 +1,11 @@
-import type { IUser } from "../interfaces/user/Iuser";
+import type{ IAuthResponse } from "../modules/auth/types/auth.types";
+import type{ ILoginPayload } from "../modules/auth/types/auth.types";
+import type{ ISignupPayload } from "../modules/auth/types/auth.types";
+import type{ IVerifyOtpPayload } from "../modules/auth/types/auth.types";
 
-
-export  interface AuthState{
-    user:IUser,
-    isAuthenticated:boolean;
-    loading:boolean;
-    login:(payload:{email:string;password:string})=>Promise<void>;
-    logout:()=>Promise<void>;
-    fetchUser :()=>Promise<void>
+export  interface IAuthServise{
+   signup(data:ISignupPayload):Promise<IAuthResponse>;
+   verifyOtp(data:IVerifyOtpPayload):Promise<IAuthResponse>;
+   login(data:ILoginPayload):Promise<IAuthResponse>;
 }
 

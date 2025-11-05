@@ -1,9 +1,9 @@
-import { UserRepositery } from "../repositories/implementaion/user.repositery.ts";
-import type { IUser } from "../model/userModel.ts";
-import type { IUserRepository } from "../repositories/interface/IuserRepository.ts";
+import { UserRepositery } from "../../repositories/implementaion/user.repositery.ts";
+import type { IUser } from "../../model/userModel.ts";
+import type { IUserRepository } from "../../repositories/interface/IuserRepository.ts";
 import { randomInt } from "crypto";
-import redisClient from "../config/redis.ts";
-import { createAccessToken, createRefreshToken } from "../utils/token.ts";
+import redisClient from "../../config/redis.ts";
+import { createAccessToken, createRefreshToken } from "../../utils/token.ts";
 
 export class AuthService {
   private userRepository: UserRepositery;

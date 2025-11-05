@@ -1,8 +1,8 @@
 
 import express from "express"
 
-import { AuthService } from "../../services/auth.servise.ts";
-import type{ IAuthController } from "../interface/IauthController.ts";
+import { AuthService } from "../services/auth/auth.servise.ts";
+import type{ IAuthController } from "../interfaces/IauthController.ts";
 
 export class AuthController implements IAuthController {
   private authService: AuthService;

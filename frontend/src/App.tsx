@@ -1,9 +1,19 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Signup from "./modules/auth/pages/Signup";
+import LoginPage from "./modules/auth/pages/LoginPage";
+import OtpVerificationPage from "./modules/auth/pages/OtpVerificationPage";
+
 function App() {
   return (
-    <h1 style={{ textAlign: "center", marginTop: "2rem" }}>
-      📸 PhotoBook Frontend is Working!
-    </h1>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-otp" element={<OtpVerificationPage />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
+
