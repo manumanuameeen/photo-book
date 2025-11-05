@@ -1,4 +1,3 @@
-// eslint.config.js
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import prettierConfig from "eslint-config-prettier";
@@ -11,7 +10,7 @@ export default defineConfig([
   prettierConfig,
   {
     files: ["**/*.ts"],
-    ignores: ["dist/**", "node_modules/**"],
+    ignores: ["dist/**", "node_modules/**", "build/**", ".env"],
     plugins: {
       prettier: prettierPlugin,
     },
@@ -21,8 +20,6 @@ export default defineConfig([
       globals: {
         console: true,
         process: true,
-        module: true,
-        require: true,
         __dirname: true,
       },
     },
@@ -32,6 +29,7 @@ export default defineConfig([
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "prettier/prettier": "warn",
+      "no-console": "off",
     },
   },
 ]);

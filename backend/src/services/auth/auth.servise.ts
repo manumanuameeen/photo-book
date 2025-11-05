@@ -1,24 +1,30 @@
 import { UserRepositery } from "../../repositories/implementaion/user.repositery.ts";
 import type { IUser } from "../../model/userModel.ts";
 import type { IUserRepository } from "../../repositories/interface/IuserRepository.ts";
-import { randomInt } from "crypto";
 import redisClient from "../../config/redis.ts";
 import { createAccessToken, createRefreshToken } from "../../utils/token.ts";
+import { Otpservice } from "../opt/otp.service.ts"
+import type { IEmailservice } from "../email/IEmail.servise.ts";
+
 
 export class AuthService {
   private userRepository: UserRepositery;
+  private emailService: IEmailservice;
+  private otpService: Otpservice;
 
-  constructor(userRepo: IUserRepository = new UserRepositery()) {
+  constructor(
+    userRepo: IUserRepository = new UserRepositery(),
+    emailService: IEmailservice,
+    otpService: Otpservice = new Otpservice(),
+  ) {
     this.userRepository = userRepo as UserRepositery;
+    this.emailService = emailService;
+    this.otpService = otpService;
   }
 
-  private generateOtp(): string {
-    return randomInt(100000, 999999).toString();
-  }
-
-  private async sendOtp(email: string, otp: string): Promise<void> {
-    console.log(`OTP for ${email}: ${otp}`);
-  }
+  // private async sendOtp(email: string, otp: string): Promise<void> {
+  //   console.log(`OTP for ${email}: ${otp}`);
+  // }
 
   async signup(data: Partial<IUser>) {
     const { name, email, password, phone } = data;
@@ -32,8 +38,8 @@ export class AuthService {
       throw new Error("User already exists");
     }
 
-    const otp = this.generateOtp();
-    const otpExpires = new Date(Date.now() + 2 * 60 * 1000);
+    const otp = this.otpService.generateOtp();
+    const otpExpires = this.otpService.getOtpExpire();
 
     const newUser = await this.userRepository.createUser({
       name,
@@ -44,7 +50,7 @@ export class AuthService {
       otpExpires,
     });
 
-    await this.sendOtp(email, otp);
+    await this.emailService.sendOtp(email, otp, name);
 
     return {
       message: "OTP sent to email",
@@ -61,8 +67,9 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new Error("User not found");
 
-    if (user.otp !== otp || !user.otpExpires || user.otpExpires < new Date()) {
-      throw new Error("Invalid or expired OTP");
+    const isValid = this.otpService.isOtpValidate(user.otp!, otp, user.otpExpires);
+    if (!isValid) {
+      throw new Error("Invalid or Exipired OTP .Please request a new one");
     }
 
     await this.userRepository.updateUser(user._id!.toString(), {
@@ -70,7 +77,24 @@ export class AuthService {
       otpExpires: undefined,
     });
 
+    await this.emailService.sendWelcomeEmail(user.email, user.name);
+
     return this.issueTokens(user);
+  }
+
+  async resendOtp(email: string) {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) throw new Error("User not found");
+
+    const otp = this.otpService.generateOtp();
+    const otpExpires = this.otpService.getOtpExpire();
+
+    await this.userRepository.updateUser(user._id!.toString(), {
+      otp,
+      otpExpires,
+    });
+    await this.emailService.sendOtp(email, otp, user.name);
+    return { message: "New OTP sent to your email" };
   }
 
   async login(email: string, password: string) {

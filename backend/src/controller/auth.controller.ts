@@ -1,8 +1,7 @@
-
-import express from "express"
+import express from "express";
 
 import { AuthService } from "../services/auth/auth.servise.ts";
-import type{ IAuthController } from "../interfaces/IauthController.ts";
+import type { IAuthController } from "../interfaces/IauthController.ts";
 
 export class AuthController implements IAuthController {
   private authService: AuthService;
@@ -17,8 +16,8 @@ export class AuthController implements IAuthController {
       const result = await this.authService.signup({ name, email, password, phone });
       res.status(201).json({
         success: true,
-        message: "User registered successfully. OTP sent to email.",
-        data: result,
+        message: result.message,
+        data: result.user,
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -39,6 +38,16 @@ export class AuthController implements IAuthController {
           email: user.email,
         },
       });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  async resendOtp(req: express.Request, res: express.Response): Promise<void> {
+    try {
+      const { email } = req.body;
+      const result = await this.authService.resendOtp(email);
+      res.json({ success: true, message: result.message });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }
@@ -95,5 +104,3 @@ export class AuthController implements IAuthController {
     });
   }
 }
-
-

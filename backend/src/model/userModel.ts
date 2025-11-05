@@ -1,11 +1,7 @@
-
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import type { UserRole } from "../interfaces/user/userRole.enum";
 import type { UserStatus } from "../interfaces/user/userStatus.enum";
-
-
-
 
 export interface IUser extends Document {
   name: string;
@@ -32,7 +28,7 @@ const userSchema = new Schema<IUser>(
     otp: String,
     otpExpires: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 userSchema.pre("save", async function (next) {

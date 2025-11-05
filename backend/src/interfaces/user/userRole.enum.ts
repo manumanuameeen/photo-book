@@ -1,7 +1,7 @@
 const UserRole = {
   USER: "user",
   ADMIN: "admin",
-  PHOTOGRAPHER: "photographer"
+  PHOTOGRAPHER: "photographer",
 } as const;
-export type UserRole = typeof UserRole[keyof typeof UserRole];
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 export default UserRole;
