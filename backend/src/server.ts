@@ -26,9 +26,9 @@ connectDB();
 app.use("/api/user", authRoutes);
 
 app.get("/", (req, res) => {
-  res.send("✅ Backend server is running successfully!");
+  res.send(" Backend server is running successfully!");
 });
 
 app.listen(PORT, async () => {
-  console.log(` Server is running at http://localhost:${PORT}`);
+  console.log(` ✅Server is running at http://localhost:${PORT}`);
 });

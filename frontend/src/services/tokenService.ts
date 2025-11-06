@@ -1,15 +1,18 @@
-import axiosInstance from "./axiosInstance";
+import apiClient from "./apiClient";
 
-
- export const TokenServise={
+export class TokenServise{
+    
     async refreshAccessToken(){
-        try {
-            const {data} = await axiosInstance.get("/auth/refresh-token")
-            console.log(data);
-            return data;
-        } catch (error) {
-            console.error("ERROR refreshing access Token",error)
-            throw error;
-        }
+        const res = await apiClient.post("/user/refresh")
+        return res.data
     }
- }
+
+    async logout(){
+        await apiClient.post("/user/logout");
+        const {useAuthStore} = await import("../modules/auth/store/useAuthStore")
+        useAuthStore.getState().clearUser();
+    }
+
+}
+
+export const tokenService = new TokenServise()

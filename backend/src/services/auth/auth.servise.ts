@@ -22,9 +22,6 @@ export class AuthService {
     this.otpService = otpService;
   }
 
-  // private async sendOtp(email: string, otp: string): Promise<void> {
-  //   console.log(`OTP for ${email}: ${otp}`);
-  // }
 
   async signup(data: Partial<IUser>) {
     const { name, email, password, phone } = data;

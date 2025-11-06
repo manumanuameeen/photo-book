@@ -1,37 +1,38 @@
-import React, { useState } from 'react'
-import { useNavigate } from "react-router-dom"
-import { authService } from "../services/authService"
-import type { ISignupPayload } from '../types/auth.types'
+import React, { useState } from "react";
+import { useSignup } from "../hooks/useAuth";
+import type { ApiError } from "../../../types/apiError";
 
-const Signup = () => {
+export default function SignupPage() {
+  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
+  const mutation = useSignup();
 
-    const navigate = useNavigate()
-    const [form, setForm] = useState<ISignupPayload>({
-        name: "",
-        email: "",
-        phone: "",
-        password: "",
-    })
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate(form);
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const res = await authService.signup(form)
-        if (res.user) {
-            navigate("/verify-otp", { state: { email: form.email } });
-        }
-    }
+  const error = mutation.error as ApiError | null;
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <input name="name" onChange={handleChange} placeholder="Name" />
-            <input name="email" onChange={handleChange} placeholder="Email" />
-            <input name="phone" onChange={handleChange} placeholder="Phone" />
-            <input name="password" onChange={handleChange} type="password" placeholder="Password" />
-            <button type="submit">Sign Up</button>
-        </form>
-    )
+  return (
+    <div style={{ maxWidth: 420, margin: "40px auto" }}>
+      <h2>Signup</h2>
+      <form onSubmit={onSubmit}>
+        <input name="name" placeholder="Name" value={form.name} onChange={onChange} required />
+        <input name="email" placeholder="Email" value={form.email} onChange={onChange} required />
+        <input name="phone" placeholder="Phone" value={form.phone} onChange={onChange} />
+        <input name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
+        <button type="submit" disabled={mutation.isLoading}>Sign up</button>
+      </form>
+
+      {mutation.isError && (
+        <div style={{ color: "red" }}>
+          {error?.response?.data?.message || error?.message || "Signup failed"}
+        </div>
+      )}
+      {mutation.isSuccess && <div style={{ color: "green" }}>OTP sent successfully</div>}
+    </div>
+  );
 }
-
-export default Signup

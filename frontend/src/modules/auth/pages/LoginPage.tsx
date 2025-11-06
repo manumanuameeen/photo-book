@@ -1,23 +1,27 @@
-import { useState } from "react";
-import { authService } from "../services/authService";
-import { useAuthStore } from "../../../store/useAuthStore";
+import React, { useState } from "react";
+import { useLogin } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const { setUser } = useAuthStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const login = useLogin();
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await authService.login(form);
-    setUser(res.user);
-    console.log("Login success:", res);
+    login.mutate({ email, password }, { onSuccess: () => navigate("/") });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input placeholder="Email" onChange={(e) => setForm({ ...form, email: e.target.value })} />
-      <input placeholder="Password" type="password" onChange={(e) => setForm({ ...form, password: e.target.value })} />
-      <button type="submit">Login</button>
-    </form>
+    <div style={{ maxWidth: 420, margin: "40px auto" }}>
+      <h2>Login</h2>
+      <form onSubmit={submit}>
+        <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <button type="submit" disabled={login.isLoading}>Login</button>
+      </form>
+      {login.isError && <div style={{color:'red'}}>{(login.error as any)?.response?.data?.message || 'Login failed'}</div>}
+    </div>
   );
 }

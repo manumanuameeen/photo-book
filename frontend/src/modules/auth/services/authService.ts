@@ -1,25 +1,19 @@
-import axiosInstance from "../../../services/axiosInstance";
-import type{ IAuthServise } from "../../../store/IAuthServise";
-import type{ ISignupPayload } from "../types/auth.types";
-import type{ IAuthResponse } from "../types/auth.types";
-import type{ ILoginPayload } from "../types/auth.types";
-import type{ IVerifyOtpPayload } from "../types/auth.types";
+import { authRepository } from "../repositories/implementation/authRepository";
+import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest } from "../types/auth.types";
+import type { IAuthService } from "./IAuthsevice";
 
-class AuthService implements IAuthServise{
-    async signup(data: ISignupPayload): Promise<IAuthResponse> {
-        const res = await axiosInstance.post("/auth/signup",data);
-        return res.data
-    }
+class AuthService implements IAuthService {
+  async signup(data: ISignupRequest): Promise<IAuthResponse> {
+  return authRepository.signup(data)
+  }
 
-    async verifyOtp(data:IVerifyOtpPayload):Promise<IAuthResponse>{
-        let res = await axiosInstance.post("/auth/verify-otp",data)
-        return res.data
-    }
+  async verifyOtp(data: IVerifyOtpRequest): Promise<IAuthResponse> {
+  return authRepository.verifyOtp(data)
+  }
 
-    async login(data:ILoginPayload):Promise<IAuthResponse>{
-        let res = await axiosInstance.post("/auth/login",data);
-        return res.data
-    }   
+  async login(data: ILoginRequest): Promise<IAuthResponse> {
+   return authRepository.login(data)
+  }
 }
 
-export const authService = new AuthService()
+export const authService = new AuthService();

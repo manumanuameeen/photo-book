@@ -1,19 +1,19 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Signup from "./modules/auth/pages/Signup";
+
+import { Routes, Route, Navigate } from "react-router-dom";
+import SignupPage from "./modules/auth/pages/Signup";
 import LoginPage from "./modules/auth/pages/LoginPage";
 import OtpVerificationPage from "./modules/auth/pages/OtpVerificationPage";
+import { ProtectedRoute } from "./routes/ProtectedRoutes";
 
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/verify-otp" element={<OtpVerificationPage />} />
-        <Route path="/login" element={<LoginPage />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<ProtectedRoute><div>Protected home (user logged in)</div></ProtectedRoute>} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/verify-otp" element={<OtpVerificationPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 }
-
-export default App;
 
