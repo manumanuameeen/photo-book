@@ -1,36 +1,57 @@
+import React from "react";
 
 const Colors = {
-  darkGreen: "#2e4a2d",
-  gold: "#f7b731",
+    darkGreen: "#006039",
 };
 
-const Header = () => {
-  return (
-    <header className="bg-white shadow-sm py-4 px-6 md:px-12 border-b border-gray-100">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
-        <div className="text-xl font-bold" style={{ color: Colors.darkGreen }}>
-          PhotoBook
-        </div>
-
-        <nav className="hidden md:flex space-x-8 text-sm font-medium">
-          <a href="#" className="text-gray-700 font-semibold" style={{ color: Colors.darkGreen }}>Home</a>
-          <a href="#" className="text-gray-600 hover:text-gray-900">Photographers</a>
-          <a href="#" className="text-gray-600 hover:text-gray-900">Book Session</a>
-          <a href="#" className="text-gray-600 hover:text-gray-900">Equipment</a>
-        </nav>
-
-        <div className="flex items-center space-x-4">
-          <a href="#" className="text-gray-700 hover:text-gray-900 text-sm">Login</a>
-          <button
-            className="px-4 py-2 text-sm font-semibold rounded transition duration-200"
-            style={{ backgroundColor: Colors.gold, color: Colors.darkGreen }}
-          >
-            Sign Up
-          </button>
-        </div>
-      </div>
-    </header>
-  );
+const Footer: React.FC = () => {
+    return (
+        <footer 
+            className="text-white py-6 px-6 md:px-12"
+            style={{ backgroundColor: Colors.darkGreen }}
+        >
+            <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div className="text-center md:text-left">
+                        <p className="text-sm">
+                            © 2024 PhotoBook, Inc. All rights reserved.
+                        </p>
+                    </div>
+                    
+                    <div className="flex space-x-6 text-sm">
+                        <a href="#home" className="hover:text-gray-300 transition">
+                            Home
+                        </a>
+                        <a href="#photographers" className="hover:text-gray-300 transition">
+                            Photographers
+                        </a>
+                        <a href="#categories" className="hover:text-gray-300 transition">
+                            Categories
+                        </a>
+                        <a href="#about" className="hover:text-gray-300 transition">
+                            About
+                        </a>
+                    </div>
+                    
+                    <div className="text-center md:text-right">
+                        <form className="flex items-center space-x-2">
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                className="px-3 py-1 text-sm rounded text-gray-900"
+                            />
+                            <button
+                                type="submit"
+                                className="px-4 py-1 text-sm font-semibold rounded bg-yellow-500 text-green-900 hover:bg-yellow-600 transition"
+                            >
+                                Subscribe
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
 };
 
-export default Header;
+export default Footer;

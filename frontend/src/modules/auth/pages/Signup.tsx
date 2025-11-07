@@ -3,7 +3,8 @@ import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Phone, Lock, User } from "lucide-react";
 import type { ISignupRequest } from "../types/auth.types";
 import photobookLogo from "../../../assets/photoBook-icon.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from '@tanstack/react-router'
+
 import { useSignup } from "../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../store/useAuthStore";
@@ -131,7 +132,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
     <div className="flex border-b mb-6 sm:mb-6 text-sm">
       <div
         className="px-3 py-2 text-gray-500 font-medium cursor-pointer"
-        onClick={() => navigate("/login")}
+        onClick={() => navigate({to:"/auth/login"})}
       >
         Login
       </div>
@@ -263,26 +264,54 @@ const Signup: React.FC = () => {
       password: formData.password,
     };
 
-    signupMutation.mutate(signupData, {
-      onSuccess: (response) => {
-        setUser(response.user);
-        toast.success("Account created! Please verify your email.");
-        console.log("Signup response:", response);
-        navigate("/verify-otp", { state: { email: formData.email } });
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          password: "",
-          confirmPassword: "",
-        });
-      },
-      onError: (error: any) => {
-        const errorMessage =
-          error.response?.data?.message || "Signup failed. Try again.";
-        toast.error(errorMessage);
-      },
+    // signupMutation.mutate(signupData, {
+    //   onSuccess: (response) => {
+    //     setUser(response.user);
+    //     toast.success("Account created! Please verify your email.");
+    //     console.log("Signup response:", response);
+    //     navigate({to:"/auth/verify-otp",
+    //       search:{email:signupData.email}
+    //      });
+    //     setFormData({
+    //       name: "",
+    //       email: "",
+    //       phone: "",
+    //       password: "",
+    //       confirmPassword: "",
+    //     });
+    //   },
+    //   onError: (error: any) => {
+    //     const errorMessage =
+    //       error.response?.data?.message || "Signup failed. Try again.";
+    //     toast.error(errorMessage);
+    //   },
+    // });
+      signupMutation.mutate(signupData, {
+  onSuccess: (response) => {
+    setUser(response.user);
+    toast.success("Account created! Please verify your email.");
+    console.log("Signup response:", response);
+    
+    // ✅ Store email in sessionStorage before navigation
+    sessionStorage.setItem('pendingVerificationEmail', signupData.email);
+    
+   
+    navigate({ to: "/auth/verify-otp" });
+    
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
     });
+  },
+  onError: (error: any) => {
+    const errorMessage =
+      error.response?.data?.message || "Signup failed. Try again.";
+    toast.error(errorMessage);
+  },
+});
   };
 
   return (

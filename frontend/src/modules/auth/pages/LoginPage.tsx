@@ -2,7 +2,8 @@ import React, { useState, memo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import photobookLogo from "../../../assets/photoBook-icon.png";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useLogin } from "../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../store/useAuthStore";
@@ -133,7 +134,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
       </div>
       <div
         className="px-3 py-2 text-gray-500 font-medium cursor-pointer"
-        onClick={() => navigate("/signup")}
+        onClick={() => navigate({to:"/auth/signup"})}
       >
         Sign Up
       </div>
@@ -181,7 +182,8 @@ const FormPanel: React.FC<FormPanelProps> = ({
       <div className="text-center pt-2">
         <button
           type="button"
-          onClick={() => navigate("/forgot-password")}
+          // onClick={() => navigate("/forgot-password")}
+        
           className="text-xs text-green-700 hover:underline font-medium"
         >
           Forgot your password?
@@ -191,7 +193,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
   </div>
 );
 
-const Login: React.FC = () => {
+const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
   const loginMutation = useLogin();
@@ -240,8 +242,8 @@ const Login: React.FC = () => {
         toast.success("Login successful! Welcome back.");
         console.log("Login response:", response);
         
-      
-        navigate("/dashboard");
+        // Navigate based on user role
+        // navigate({to:"/"});
         
         setFormData({ email: "", password: "" });
       },
@@ -273,4 +275,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default LoginPage;
