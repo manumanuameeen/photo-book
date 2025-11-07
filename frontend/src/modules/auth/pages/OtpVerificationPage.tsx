@@ -39,30 +39,30 @@ const VerifyOtp: React.FC = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
-  // Handle OTP input change
-  const handleOtpChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 1);
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+  
+  // const handleOtpChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>,
+  //   index: number
+  // ) => {
+  //   const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 1);
+  //   const newOtp = [...otp];
+  //   newOtp[index] = value;
+  //   setOtp(newOtp);
     
-    if (value && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
+  //   if (value && index < OTP_LENGTH - 1) {
+  //     inputRefs.current[index + 1]?.focus();
+  //   }
+  // };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-      e.preventDefault();
-    }
-  };
+  // const handleKeyDown = (
+  //   e: React.KeyboardEvent<HTMLInputElement>,
+  //   index: number
+  // ) => {
+  //   if (e.key === "Backspace" && !otp[index] && index > 0) {
+  //     inputRefs.current[index - 1]?.focus();
+  //     e.preventDefault();
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
