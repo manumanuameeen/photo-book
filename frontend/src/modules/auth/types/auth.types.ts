@@ -1,9 +1,10 @@
-
 import type { IUser } from "./user.types";
+
 export interface IAuthResponse {
   user: IUser;
   accessToken?: string; 
   refreshToken?: string;
+  message?: string;
 }
 
 export interface ISignupRequest {

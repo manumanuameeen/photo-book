@@ -1,7 +1,6 @@
 
 import apiClient from "../../../../services/apiClient";
-import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest } from "../../types/user.types";
-
+import type{ ISignupRequest,IAuthResponse,ILoginRequest,IVerifyOtpRequest } from "../../types/auth.types";
 
 
 export class AuthRepository {

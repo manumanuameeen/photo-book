@@ -4,8 +4,8 @@ import type {
   ILoginRequest,
   ISignupRequest,
   IVerifyOtpRequest,
+  IAuthResponse,
 } from "../types/auth.types";
-import type { IAuthResponse } from "../types/user.types";
 
 export function useSignup() {
   return useMutation<IAuthResponse, Error, ISignupRequest>({

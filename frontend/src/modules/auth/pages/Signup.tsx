@@ -1,10 +1,12 @@
 import React, { useState, memo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Phone, Lock, User } from "lucide-react";
-import { authService } from "../services/authService";
-import type { ISignupRequest, IAuthResponse } from "../types/auth.types";
-import photobookLogo from "../../../assets/photoBook-icon.png"
-import {  useNavigate } from "react-router-dom";
+import type { ISignupRequest } from "../types/auth.types";
+import photobookLogo from "../../../assets/photoBook-icon.png";
+import { useNavigate } from "react-router-dom";
+import { useSignup } from "../hooks/useAuth";
+import toast, { Toaster } from "react-hot-toast";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface SignupFormData {
   name: string;
@@ -13,6 +15,7 @@ interface SignupFormData {
   password: string;
   confirmPassword: string;
 }
+
 type ValidationErrors = Partial<Record<keyof SignupFormData, string>>;
 
 const GreenPanel: React.FC = () => (
@@ -21,7 +24,6 @@ const GreenPanel: React.FC = () => (
     style={{ backgroundColor: "#006039" }}
   >
     <div>
-      
       <h2 className="text-3xl leading-snug mt-8 mb-2">
         Welcome to Your
         <br />
@@ -34,7 +36,6 @@ const GreenPanel: React.FC = () => (
       </p>
     </div>
     <div className="mt-8 hidden lg:block">
-      
       <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-2">
         Latest Logins
       </h3>
@@ -56,6 +57,48 @@ const GreenPanel: React.FC = () => (
   </div>
 );
 
+interface InputFieldProps {
+  Icon: React.ElementType;
+  placeholder: string;
+  name: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  type: string;
+  error?: string;
+}
+
+const InputField: React.FC<InputFieldProps> = memo(
+  ({ Icon, placeholder, name, value, onChange, type, error }) => {
+    const borderClass = error
+      ? "border-red-500"
+      : "border-gray-300 focus-within:border-green-500";
+    return (
+      <div className="w-full">
+        <div
+          className={`w-full flex items-center border ${borderClass} rounded-md bg-white transition`}
+        >
+          {Icon && (
+            <div className="p-2 text-gray-400">
+              <Icon size={16} />
+            </div>
+          )}
+          <input
+            type={type}
+            name={name}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            className="w-full p-2 text-sm placeholder-gray-500 focus:outline-none bg-transparent"
+          />
+        </div>
+        {error && (
+          <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{error}</p>
+        )}
+      </div>
+    );
+  }
+);
+
 interface FormPanelProps {
   formData: SignupFormData;
   errors: ValidationErrors;
@@ -64,7 +107,7 @@ interface FormPanelProps {
   passwordVisible: boolean;
   setPasswordVisible: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
-  message: string;
+  navigate: ReturnType<typeof useNavigate>;
 }
 
 const FormPanel: React.FC<FormPanelProps> = ({
@@ -75,33 +118,27 @@ const FormPanel: React.FC<FormPanelProps> = ({
   passwordVisible,
   setPasswordVisible,
   loading,
-  message,
+  navigate,
 }) => (
   <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
     <div className="flex items-center mb-4">
-        <img
-          src={photobookLogo}
-          alt="PhotoBook Logo"
-          style={{ width: 180, height: 120, marginRight: 20}}
-        />
-      </div>
+      <img
+        src={photobookLogo}
+        alt="PhotoBook Logo"
+        style={{ width: 180, height: 120, marginRight: 20 }}
+      />
+    </div>
     <div className="flex border-b mb-6 sm:mb-6 text-sm">
-      <div className="px-3 py-2 text-gray-500 font-medium cursor-pointer">
+      <div
+        className="px-3 py-2 text-gray-500 font-medium cursor-pointer"
+        onClick={() => navigate("/login")}
+      >
         Login
       </div>
       <div className="px-3 py-2 text-green-700 font-semibold border-b-2 border-green-700">
         Sign Up
       </div>
     </div>
-    {message && (
-      <p
-        className={`text-center font-medium mb-3 text-sm ${
-          message.includes("success") ? "text-green-600" : "text-red-500"
-        }`}
-      >
-        {message}
-      </p>
-    )}
     <form onSubmit={handleSubmit} className="space-y-3">
       <InputField
         Icon={User}
@@ -142,7 +179,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
         />
         <button
           type="button"
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 p-1"
+          className="absolute right-3 top-3 text-gray-400 p-1"
           onClick={() => setPasswordVisible(!passwordVisible)}
         >
           {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -169,8 +206,10 @@ const FormPanel: React.FC<FormPanelProps> = ({
 );
 
 const Signup: React.FC = () => {
+  const navigate = useNavigate();
+  const { setUser } = useAuthStore();
+  const signupMutation = useSignup();
 
-  const navigate = useNavigate()
   const [formData, setFormData] = useState<SignupFormData>({
     name: "",
     email: "",
@@ -180,11 +219,10 @@ const Signup: React.FC = () => {
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
@@ -193,14 +231,19 @@ const Signup: React.FC = () => {
     const validationErrors: ValidationErrors = {};
     const emailRegex = /\S+@\S+\.\S+/;
     const phoneRegex = /^\d*$/;
+    if(data.name.trim() === "")validationErrors.name = "Give name"
+    if(data.name.length<2)validationErrors.name = "Give propper name"
     if (!data.name) validationErrors.name = "Full name is required.";
     if (!data.email) validationErrors.email = "Email is required.";
-    else if (!emailRegex.test(data.email)) validationErrors.email = "Invalid email format.";
-    if (data.phone && !phoneRegex.test(data.phone)) validationErrors.phone = "Phone must be digits only.";
+    else if (!emailRegex.test(data.email))
+      validationErrors.email = "Invalid email format.";
+    if (data.phone && !phoneRegex.test(data.phone))
+      validationErrors.phone = "Phone must be digits only.";
     if (!data.password) validationErrors.password = "Password is required.";
     else if (data.password.length < 8)
       validationErrors.password = "Password must be at least 8 characters.";
-    if (!data.confirmPassword) validationErrors.confirmPassword = "Confirm your password.";
+    if (!data.confirmPassword)
+      validationErrors.confirmPassword = "Confirm your password.";
     else if (data.password !== data.confirmPassword)
       validationErrors.confirmPassword = "Passwords do not match.";
     return validationErrors;
@@ -208,40 +251,43 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setMessage("");
+    
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
-    try {
-      setLoading(true);
-      const signupData: ISignupRequest = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password,
-      };
-      const response: IAuthResponse = await authService.signup(signupData);
-      setMessage("Account created successfully! Please verify your email/OTP.");
 
-  navigate("/verify-otp")      
+    const signupData: ISignupRequest = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+    };
 
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        password: "",
-        confirmPassword: "",
-      });
-      console.log(response)
-    } catch (error: any) {
-      setMessage(error.response?.data?.message || "Signup failed. Try again.");
-    } finally {
-      setLoading(false);
-    }
+    signupMutation.mutate(signupData, {
+      onSuccess: (response) => {
+        setUser(response.user);
+        toast.success("Account created! Please verify your email.");
+        console.log("Signup response:", response);
+        navigate("/verify-otp", { state: { email: formData.email } });
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: "",
+        });
+      },
+      onError: (error: any) => {
+        const errorMessage =
+          error.response?.data?.message || "Signup failed. Try again.";
+        toast.error(errorMessage);
+      },
+    });
   };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3">
+      <Toaster position="top-center" reverseOrder={false} />
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
         <GreenPanel />
         <FormPanel
@@ -251,46 +297,12 @@ const Signup: React.FC = () => {
           handleSubmit={handleSubmit}
           passwordVisible={passwordVisible}
           setPasswordVisible={setPasswordVisible}
-          loading={loading}
-          message={message}
+          loading={signupMutation.isPending}
+          navigate={navigate}
         />
       </div>
     </div>
   );
 };
-
-interface InputFieldProps {
-  Icon: React.ElementType;
-  placeholder: string;
-  name: string;
-  value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  type: string;
-  error?: string;
-}
-
-const InputField: React.FC<InputFieldProps> = memo(({ Icon, placeholder, name, value, onChange, type, error }) => {
-  const borderClass = error ? "border-red-500" : "border-gray-300 focus-within:border-green-500";
-  return (
-    <div className="w-full">
-      <div className={`w-full flex items-center border ${borderClass} rounded-md bg-white transition`}>
-        {Icon && (
-          <div className="p-2 text-gray-400">
-            <Icon size={16} />
-          </div>
-        )}
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          className="w-full p-2 text-sm placeholder-gray-500 focus:outline-none bg-transparent"
-        />
-      </div>
-      {error && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{error}</p>}
-    </div>
-  );
-});
 
 export default Signup;
