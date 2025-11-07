@@ -1,46 +1,43 @@
 import type { IEmailservice } from "./IEmail.servise.ts";
 import { mailTransport } from "../../config/email.ts";
 
-
-
 export class NodeMailerService implements IEmailservice {
-    async sendOtp(email: string, otp: string, name: string): Promise<void> {
-        try {
-            const mailOptions = {
-                from: `"photobook app" <${process.env.SMTP_USER}>`,
-                to: email,
-                subject: "your PHTOT-BOOK verification code",
-                html: this.getotpEmailTemplate(name, otp),
-            };
+  async sendOtp(email: string, otp: string, name: string): Promise<void> {
+    try {
+      const mailOptions = {
+        from: `"photobook app" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: "your PHTOT-BOOK verification code",
+        html: this.getotpEmailTemplate(name, otp),
+      };
 
-            await mailTransport.sendMail(mailOptions);
-            console.log(`otp eamil sent successfulyy to ${email}`);
-            console.log(`otp :${otp}`);
-
-        } catch (error: any) {
-            throw new Error("Failed to send verification eamil. Please try again.", error);
-        }
+      await mailTransport.sendMail(mailOptions);
+      console.log(`otp eamil sent successfulyy to ${email}`);
+      console.log(`otp :${otp}`);
+    } catch (error: any) {
+      throw new Error("Failed to send verification eamil. Please try again.", error);
     }
+  }
 
-    async sendWelcomeEmail(email: string, name: string): Promise<void> {
-        try {
-            const mailOptions = {
-                from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
-                to: email,
-                subject: "Welcome to Photo-Book",
-                html: this.getWelcomeEmailTemplate(name),
-            };
-            await mailTransport.sendMail(mailOptions);
-            console.log(` Welcome email sent to ${email}`);
-        } catch (error: any) {
-            console.error(" Failed to send welcome email:", error.message);
-        }
+  async sendWelcomeEmail(email: string, name: string): Promise<void> {
+    try {
+      const mailOptions = {
+        from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: "Welcome to Photo-Book",
+        html: this.getWelcomeEmailTemplate(name),
+      };
+      await mailTransport.sendMail(mailOptions);
+      console.log(` Welcome email sent to ${email}`);
+    } catch (error: any) {
+      console.error(" Failed to send welcome email:", error.message);
     }
+  }
 
-    //templata
+  //templata
 
-    private getotpEmailTemplate(name: string, otp: string): string {
-        return `
+  private getotpEmailTemplate(name: string, otp: string): string {
+    return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -129,10 +126,10 @@ export class NodeMailerService implements IEmailservice {
       </body>
       </html>
     `;
-    }
+  }
 
-    private getWelcomeEmailTemplate(name: string): string {
-        return `
+  private getWelcomeEmailTemplate(name: string): string {
+    return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -175,7 +172,7 @@ export class NodeMailerService implements IEmailservice {
 ends and family</li>
           </ul>
           <p style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" 
+            <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}" 
                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                       color: white; 
                       padding: 12px 30px; 
@@ -189,5 +186,5 @@ ends and family</li>
       </body>
       </html>
     `;
-    }
+  }
 }

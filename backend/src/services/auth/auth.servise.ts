@@ -3,9 +3,8 @@ import type { IUser } from "../../model/userModel.ts";
 import type { IUserRepository } from "../../repositories/interface/IuserRepository.ts";
 import redisClient from "../../config/redis.ts";
 import { createAccessToken, createRefreshToken } from "../../utils/token.ts";
-import { Otpservice } from "../opt/otp.service.ts"
+import { Otpservice } from "../opt/otp.service.ts";
 import type { IEmailservice } from "../email/IEmail.servise.ts";
-
 
 export class AuthService {
   private userRepository: UserRepositery;
@@ -22,7 +21,6 @@ export class AuthService {
     this.otpService = otpService;
   }
 
-
   async signup(data: Partial<IUser>) {
     const { name, email, password, phone } = data;
 
@@ -36,11 +34,11 @@ export class AuthService {
     }
 
     const otp = this.otpService.generateOtp();
-    const otpExpiry = this.otpService.getOtpExpire()
+    const otpExpiry = this.otpService.getOtpExpire();
     await redisClient.setEx(
       `otp:${email}`,
       300,
-      JSON.stringify({ name, email, password, phone, otp, otpExpiry })
+      JSON.stringify({ name, email, password, phone, otp, otpExpiry }),
     );
 
     await this.emailService.sendOtp(email, otp, name);
@@ -52,7 +50,7 @@ export class AuthService {
 
   async verifyOtp(email: string, otp: string) {
     const cachedData = await redisClient.get(`otp:${email}`);
-    
+
     if (!cachedData) throw new Error("Otp expired or not found");
 
     const userData = JSON.parse(cachedData);
@@ -73,25 +71,18 @@ export class AuthService {
     return this.issueTokens(newUser);
   }
 
-
   async resendOtp(email: string) {
-
     const cachedData = await redisClient.get(`otp:${email}`);
     if (!cachedData) throw new Error("No signup data found. Please signup again.");
 
     const userData = JSON.parse(cachedData);
     const newOtp = this.otpService.generateOtp();
 
-    await redisClient.setEx(
-      `otp:${email}`,
-      300,
-      JSON.stringify({ ...userData, otp: newOtp })
-    );
+    await redisClient.setEx(`otp:${email}`, 300, JSON.stringify({ ...userData, otp: newOtp }));
 
     await this.emailService.sendOtp(email, newOtp, userData.name);
     return { message: "New OTP sent to your email" };
   }
-
 
   async login(email: string, password: string) {
     const user = await this.userRepository.findByEmail(email);

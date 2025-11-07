@@ -10,7 +10,6 @@ export class AuthController implements IAuthController {
     this.authService = authService;
   }
 
-
   async signup(req: express.Request, res: express.Response): Promise<void> {
     try {
       const { name, email, password, phone } = req.body;

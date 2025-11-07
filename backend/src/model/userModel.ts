@@ -23,7 +23,6 @@ const userSchema = new Schema<IUser>(
     role: { type: String, enum: Object.values({} as any), default: "user" },
     status: { type: String, enum: Object.values({} as any), default: "active" },
     walletBalance: { type: Number, default: 0 },
-  
   },
   { timestamps: true },
 );
