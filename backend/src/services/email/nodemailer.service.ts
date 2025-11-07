@@ -15,6 +15,8 @@ export class NodeMailerService implements IEmailservice {
 
             await mailTransport.sendMail(mailOptions);
             console.log(`otp eamil sent successfulyy to ${email}`);
+            console.log(`otp :${otp}`);
+
         } catch (error: any) {
             throw new Error("Failed to send verification eamil. Please try again.", error);
         }

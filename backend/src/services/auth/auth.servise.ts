@@ -36,63 +36,62 @@ export class AuthService {
     }
 
     const otp = this.otpService.generateOtp();
-    const otpExpires = this.otpService.getOtpExpire();
-
-    const newUser = await this.userRepository.createUser({
-      name,
-      email,
-      password,
-      phone,
-      otp,
-      otpExpires,
-    });
+    const otpExpiry = this.otpService.getOtpExpire()
+    await redisClient.setEx(
+      `otp:${email}`,
+      300,
+      JSON.stringify({ name, email, password, phone, otp, otpExpiry })
+    );
 
     await this.emailService.sendOtp(email, otp, name);
 
     return {
       message: "OTP sent to email",
-      user: {
-        _id: newUser._id?.toString(),
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-      },
     };
   }
 
   async verifyOtp(email: string, otp: string) {
-    const user = await this.userRepository.findByEmail(email);
-    if (!user) throw new Error("User not found");
+    const cachedData = await redisClient.get(`otp:${email}`);
+    
+    if (!cachedData) throw new Error("Otp expired or not found");
 
-    const isValid = this.otpService.isOtpValidate(user.otp!, otp, user.otpExpires);
-    if (!isValid) {
-      throw new Error("Invalid or Exipired OTP .Please request a new one");
-    }
+    const userData = JSON.parse(cachedData);
+    const expiry = new Date(userData.otpExpiry);
+    const isValid = this.otpService.isOtpValidate(userData.otp, otp, expiry);
+    if (!isValid) throw new Error("Invalid OTP");
 
-    await this.userRepository.updateUser(user._id!.toString(), {
-      otp: undefined,
-      otpExpires: undefined,
+    const newUser = await this.userRepository.createUser({
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      phone: userData.phone,
     });
 
-    await this.emailService.sendWelcomeEmail(user.email, user.name);
+    await redisClient.del(`otp:${email}`);
+    await this.emailService.sendWelcomeEmail(newUser.email, newUser.name);
 
-    return this.issueTokens(user);
+    return this.issueTokens(newUser);
   }
+
 
   async resendOtp(email: string) {
-    const user = await this.userRepository.findByEmail(email);
-    if (!user) throw new Error("User not found");
 
-    const otp = this.otpService.generateOtp();
-    const otpExpires = this.otpService.getOtpExpire();
+    const cachedData = await redisClient.get(`otp:${email}`);
+    if (!cachedData) throw new Error("No signup data found. Please signup again.");
 
-    await this.userRepository.updateUser(user._id!.toString(), {
-      otp,
-      otpExpires,
-    });
-    await this.emailService.sendOtp(email, otp, user.name);
+    const userData = JSON.parse(cachedData);
+    const newOtp = this.otpService.generateOtp();
+
+    await redisClient.setEx(
+      `otp:${email}`,
+      300,
+      JSON.stringify({ ...userData, otp: newOtp })
+    );
+
+    await this.emailService.sendOtp(email, newOtp, userData.name);
     return { message: "New OTP sent to your email" };
   }
+
 
   async login(email: string, password: string) {
     const user = await this.userRepository.findByEmail(email);

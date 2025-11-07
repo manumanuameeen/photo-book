@@ -11,8 +11,6 @@ export interface IUser extends Document {
   role: UserRole;
   status: UserStatus;
   walletBalance: number;
-  otp?: string;
-  otpExpires?: Date;
   comparePassword(candidate: string): Promise<boolean>;
 }
 
@@ -25,8 +23,7 @@ const userSchema = new Schema<IUser>(
     role: { type: String, enum: Object.values({} as any), default: "user" },
     status: { type: String, enum: Object.values({} as any), default: "active" },
     walletBalance: { type: Number, default: 0 },
-    otp: String,
-    otpExpires: Date,
+  
   },
   { timestamps: true },
 );

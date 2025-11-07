@@ -2,7 +2,7 @@ import { randomInt } from "crypto";
 import type { IOtpservice } from "./IOtpservice";
 
 export class Otpservice implements IOtpservice {
-  private readonly OPT_LENGTH = 6;
+  private readonly OTP_LENGTH = 6;
   private readonly OTP_EXPIRY_TIME = 2;
 
   generateOtp(): string {
@@ -11,19 +11,12 @@ export class Otpservice implements IOtpservice {
   getOtpExpire(): Date {
     return new Date(Date.now() + this.OTP_EXPIRY_TIME * 60 * 1000);
   }
-  isOtpValidate(sotredOtp: string, providedOtp: string, expiryDate: Date | undefined): boolean {
-    if (sotredOtp !== providedOtp) {
-      return false;
-    }
-    if (!expiryDate) {
-      return false;
-    }
-    if (expiryDate < new Date()) {
-      return false;
-    }
-    if (providedOtp.length !== this.OPT_LENGTH) {
-      return false;
-    }
+
+  isOtpValidate(storedOtp: string, providedOtp: string, expiry?: Date): boolean {
+    if (!storedOtp || !providedOtp) return false;
+    if (providedOtp.length !== this.OTP_LENGTH) return false;
+    if (storedOtp !== providedOtp) return false;
+    if (expiry && expiry < new Date()) return false;
     return true;
   }
 }
