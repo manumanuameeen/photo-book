@@ -264,35 +264,14 @@ const Signup: React.FC = () => {
       password: formData.password,
     };
 
-    // signupMutation.mutate(signupData, {
-    //   onSuccess: (response) => {
-    //     setUser(response.user);
-    //     toast.success("Account created! Please verify your email.");
-    //     console.log("Signup response:", response);
-    //     navigate({to:"/auth/verify-otp",
-    //       search:{email:signupData.email}
-    //      });
-    //     setFormData({
-    //       name: "",
-    //       email: "",
-    //       phone: "",
-    //       password: "",
-    //       confirmPassword: "",
-    //     });
-    //   },
-    //   onError: (error: any) => {
-    //     const errorMessage =
-    //       error.response?.data?.message || "Signup failed. Try again.";
-    //     toast.error(errorMessage);
-    //   },
-    // });
-      signupMutation.mutate(signupData, {
+
+    signupMutation.mutate(signupData, {
   onSuccess: (response) => {
     setUser(response.user);
     toast.success("Account created! Please verify your email.");
     console.log("Signup response:", response);
     
-    // ✅ Store email in sessionStorage before navigation
+   
     sessionStorage.setItem('pendingVerificationEmail', signupData.email);
     
    

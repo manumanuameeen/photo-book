@@ -225,16 +225,16 @@ const VerifyOtp: React.FC = () => {
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
 
-  // ✅ Get email from multiple sources with priority
+  
   const getEmail = (): string => {
-    // 1. Try sessionStorage first (most reliable for this flow)
+   
     const sessionEmail = sessionStorage.getItem('pendingVerificationEmail');
     if (sessionEmail) return sessionEmail;
     
-    // 2. Try user store
+    
     if (user?.email) return user.email;
     
-    // 3. No email found
+    
     return "";
   };
 
@@ -247,18 +247,18 @@ const VerifyOtp: React.FC = () => {
   const fullOtp = otp.join("");
   const fullOtpEntered = fullOtp.length === OTP_LENGTH;
 
-  // ✅ Check email on component mount with a small delay
+ 
   useEffect(() => {
     const checkEmail = () => {
       if (!email) {
         toast.error("No email found. Please sign up first.");
         setTimeout(() => {
           navigate({ to: "/auth/signup" });
-        }, 1500); // Wait 1.5s before redirecting
+        }, 1500); 
       }
     };
 
-    // Small delay to ensure everything is loaded
+   
     const timeoutId = setTimeout(checkEmail, 100);
     return () => clearTimeout(timeoutId);
   }, [email, navigate]);
@@ -290,7 +290,7 @@ const VerifyOtp: React.FC = () => {
           toast.success("OTP verified successfully!");
           console.log("Verify OTP response:", response);
           
-          // ✅ Clear the stored email after successful verification
+        
           sessionStorage.removeItem('pendingVerificationEmail');
           clearUser();
           

@@ -2,7 +2,7 @@ import React, { useState, memo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import photobookLogo from "../../../assets/photoBook-icon.png";
-// import { useNavigate } from "react-router-dom";
+
 import { useNavigate } from "@tanstack/react-router";
 import { useLogin } from "../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
@@ -127,7 +127,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
       />
     </div>
 
-    {/* Tab navigation */}
+
     <div className="flex border-b mb-6 sm:mb-6 text-sm">
       <div className="px-3 py-2 text-green-700 font-semibold border-b-2 border-green-700">
         Login
@@ -178,7 +178,6 @@ const FormPanel: React.FC<FormPanelProps> = ({
         {loading ? "Signing In..." : "Sign In"}
       </button>
 
-      {/* Forgot password link */}
       <div className="text-center pt-2">
         <button
           type="button"
@@ -242,8 +241,7 @@ const LoginPage: React.FC = () => {
         toast.success("Login successful! Welcome back.");
         console.log("Login response:", response);
         
-        // Navigate based on user role
-        // navigate({to:"/"});
+   
         
         setFormData({ email: "", password: "" });
       },
