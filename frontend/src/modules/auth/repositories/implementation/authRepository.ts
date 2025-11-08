@@ -20,6 +20,11 @@ export class AuthRepository {
     const res = await apiClient.post<{ message: string }>("/auth/resend-otp", { email });
     return res.data;
   }
+
+  async logout(): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>("/user/logout");
+    return res.data;
+  }
 }
 
 export const authRepository = new AuthRepository();

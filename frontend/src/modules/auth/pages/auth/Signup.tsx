@@ -1,13 +1,13 @@
 import React, { useState, memo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Phone, Lock, User } from "lucide-react";
-import type { ISignupRequest } from "../types/auth.types";
-import photobookLogo from "../../../assets/photoBook-icon.png";
+import type { ISignupRequest } from "../../types/auth.types";
+import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { useNavigate } from '@tanstack/react-router'
 
-import { useSignup } from "../hooks/useAuth";
+import { useSignup } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../../store/useAuthStore";
 
 interface SignupFormData {
   name: string;
@@ -132,7 +132,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
     <div className="flex border-b mb-6 sm:mb-6 text-sm">
       <div
         className="px-3 py-2 text-gray-500 font-medium cursor-pointer"
-        onClick={() => navigate({to:"/auth/login"})}
+        onClick={() => navigate({ to: "/auth/login" })}
       >
         Login
       </div>
@@ -232,8 +232,8 @@ const Signup: React.FC = () => {
     const validationErrors: ValidationErrors = {};
     const emailRegex = /\S+@\S+\.\S+/;
     const phoneRegex = /^\d*$/;
-    if(data.name.trim() === "")validationErrors.name = "Give name"
-    if(data.name.length<2)validationErrors.name = "Give propper name"
+    if (data.name.trim() === "") validationErrors.name = "Give name"
+    if (data.name.length < 2) validationErrors.name = "Give propper name"
     if (!data.name) validationErrors.name = "Full name is required.";
     if (!data.email) validationErrors.email = "Email is required.";
     else if (!emailRegex.test(data.email))
@@ -252,7 +252,7 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
@@ -266,31 +266,31 @@ const Signup: React.FC = () => {
 
 
     signupMutation.mutate(signupData, {
-  onSuccess: (response) => {
-    setUser(response.user);
-    toast.success("Account created! Please verify your email.");
-    console.log("Signup response:", response);
-    
-   
-    sessionStorage.setItem('pendingVerificationEmail', signupData.email);
-    
-   
-    navigate({ to: "/auth/verify-otp" });
-    
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      password: "",
-      confirmPassword: "",
+      onSuccess: (response) => {
+        setUser(response.user);
+        toast.success("Account created! Please verify your email.");
+        console.log("Signup response:", response);
+
+
+        sessionStorage.setItem('pendingVerificationEmail', signupData.email);
+
+
+        navigate({ to: "/auth/verify-otp" });
+
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: "",
+        });
+      },
+      onError: (error: any) => {
+        const errorMessage =
+          error.response?.data?.message || "Signup failed. Try again.";
+        toast.error(errorMessage);
+      },
     });
-  },
-  onError: (error: any) => {
-    const errorMessage =
-      error.response?.data?.message || "Signup failed. Try again.";
-    toast.error(errorMessage);
-  },
-});
   };
 
   return (

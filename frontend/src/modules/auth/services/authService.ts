@@ -14,5 +14,8 @@ class AuthService {
   async resendOtp(email: string): Promise<{ message: string }> {
     return authRepository.resendOtp(email);
   }
+   async logout():Promise<{message:string}>{
+    return authRepository.logout();
+   }
 }
 export const authService = new AuthService();

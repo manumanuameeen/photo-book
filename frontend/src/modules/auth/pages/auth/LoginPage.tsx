@@ -1,12 +1,12 @@
 import React, { useState, memo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import photobookLogo from "../../../assets/photoBook-icon.png";
+import photobookLogo from "../../../../assets/photoBook-icon.png";
 
 import { useNavigate } from "@tanstack/react-router";
-import { useLogin } from "../hooks/useAuth";
+import { useLogin } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../../store/useAuthStore";
 
 interface LoginFormData {
   email: string;
@@ -33,7 +33,6 @@ const GreenPanel: React.FC = () => (
       </p>
     </div>
 
-    {/* Demo credentials display */}
     <div className="mt-8 hidden lg:block">
       <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-2">
         Demo Accounts
@@ -71,7 +70,7 @@ const InputField: React.FC<InputFieldProps> = memo(
     const borderClass = error
       ? "border-red-500"
       : "border-gray-300 focus-within:border-green-500";
-    
+
     return (
       <div className="w-full">
         <div className={`w-full flex items-center border ${borderClass} rounded-md bg-white transition`}>
@@ -134,7 +133,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
       </div>
       <div
         className="px-3 py-2 text-gray-500 font-medium cursor-pointer"
-        onClick={() => navigate({to:"/auth/signup"})}
+        onClick={() => navigate({ to: "/auth/signup" })}
       >
         Sign Up
       </div>
@@ -178,11 +177,11 @@ const FormPanel: React.FC<FormPanelProps> = ({
         {loading ? "Signing In..." : "Sign In"}
       </button>
 
+
       <div className="text-center pt-2">
         <button
           type="button"
-          // onClick={() => navigate("/forgot-password")}
-        
+
           className="text-xs text-green-700 hover:underline font-medium"
         >
           Forgot your password?
@@ -240,9 +239,9 @@ const LoginPage: React.FC = () => {
         setUser(response.user);
         toast.success("Login successful! Welcome back.");
         console.log("Login response:", response);
-        
-   
-        
+        setTimeout(()=>{
+          navigate({to:"/main/home"})
+        },1000)
         setFormData({ email: "", password: "" });
       },
       onError: (error: any) => {
