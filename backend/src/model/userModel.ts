@@ -10,6 +10,7 @@ export interface IUser extends Document {
   phone: string;
   role: UserRole;
   status: UserStatus;
+  isBlocked: Boolean;
   walletBalance: number;
   comparePassword(candidate: string): Promise<boolean>;
 }
@@ -22,6 +23,7 @@ const userSchema = new Schema<IUser>(
     phone: { type: String, required: true },
     role: { type: String, enum: Object.values({} as any), default: "user" },
     status: { type: String, enum: Object.values({} as any), default: "active" },
+    isBlocked: {type:Boolean,default:false},
     walletBalance: { type: Number, default: 0 },
   },
   { timestamps: true },

@@ -1,5 +1,6 @@
 import type { IEmailservice } from "./IEmail.servise.ts";
-import { mailTransport } from "../../config/email.ts";
+
+import { mailTransport } from "../../../config/email.ts";
 
 export class NodeMailerService implements IEmailservice {
   async sendOtp(email: string, otp: string, name: string): Promise<void> {

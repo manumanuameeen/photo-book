@@ -29,6 +29,7 @@
     "express-rate-limit": "^8.2.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.552.0",
-    "redis": "^5.9.0"
+    "redis": "^5.9.0",
+    "toast": "^0.5.4"
   }
 }

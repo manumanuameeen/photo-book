@@ -1,7 +1,7 @@
 import express from "express";
 
-import { AuthService } from "../services/auth/auth.servise.ts";
-import type { IAuthController } from "../interfaces/IauthController.ts";
+import { AuthService } from "../services/user/auth/auth.servise.ts";
+import type { IAuthController } from "../interfaces/user/IauthController.ts";
 
 export class AuthController implements IAuthController {
   private authService: AuthService;
@@ -61,7 +61,7 @@ export class AuthController implements IAuthController {
       res.json({
         success: true,
         message: "Login successful",
-        user: { _id: user._id, name: user.name, email: user.email },
+        user: { _id: user._id, name: user.name, email: user.email,role:user.role },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });

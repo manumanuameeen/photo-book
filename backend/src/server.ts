@@ -24,6 +24,7 @@ app.use(express.json());
 connectDB();
 
 app.use("/api/user", authRoutes);
+// app.use("/api/admin",)
 
 app.get("/", (req, res) => {
   res.send(" Backend server is running successfully!");

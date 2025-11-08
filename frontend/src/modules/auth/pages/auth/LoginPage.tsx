@@ -237,12 +237,21 @@ const LoginPage: React.FC = () => {
     loginMutation.mutate(formData, {
       onSuccess: (response) => {
         setUser(response.user);
+
         toast.success("Login successful! Welcome back.");
         console.log("Login response:", response);
-        setTimeout(()=>{
-          navigate({to:"/main/home"})
-        },1000)
-        setFormData({ email: "", password: "" });
+
+        if (response.user.role === "admin") {
+          setTimeout(() => {
+            navigate({ to: "/admin/dashboard" })
+          }, 1000)
+          setFormData({ email: "", password: "" });
+        } else {
+          setTimeout(() => {
+            navigate({ to: "/main/home" })
+          }, 1000)
+          setFormData({ email: "", password: "" });
+        }
       },
       onError: (error: any) => {
         const errorMessage =

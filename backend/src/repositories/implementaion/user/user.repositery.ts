@@ -1,7 +1,7 @@
-import { User } from "../../model/userModel.ts";
-import type { IUser } from "../../model/userModel.ts";
+import { User } from "../../../model/userModel.ts";
+import type { IUser } from "../../../model/userModel.ts";
 
-import type { IUserRepository } from "../interface/IuserRepository.ts";
+import type { IUserRepository } from "../../interface/IuserRepository.ts";
 export class UserRepositery implements IUserRepository {
   async createUser(data: Partial<IUser>): Promise<IUser> {
     const user = new User(data);

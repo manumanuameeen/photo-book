@@ -1,19 +1,20 @@
-import { UserRepositery } from "../../repositories/implementaion/user.repositery.ts";
-import type { IUser } from "../../model/userModel.ts";
-import type { IUserRepository } from "../../repositories/interface/IuserRepository.ts";
-import redisClient from "../../config/redis.ts";
-import { createAccessToken, createRefreshToken } from "../../utils/token.ts";
-import { Otpservice } from "../opt/otp.service.ts";
-import type { IEmailservice } from "../email/IEmail.servise.ts";
+import { UserRepositery } from "../../../repositories/implementaion/user/user.repositery.ts";
+
+import type { IUser } from "model/userModel.ts";
+import type { IUserRepository } from "../../../repositories/interface/IuserRepository.ts";
+import redisClient from "../../../config/redis.ts";
+import { createAccessToken,createRefreshToken } from "../../../utils/token.ts";
+import { Otpservice } from "../otp/otp.service.ts";
+import  { NodeMailerService } from "../email/nodemailer.service.ts";
 
 export class AuthService {
   private userRepository: UserRepositery;
-  private emailService: IEmailservice;
+  private emailService: NodeMailerService;
   private otpService: Otpservice;
 
   constructor(
     userRepo: IUserRepository = new UserRepositery(),
-    emailService: IEmailservice,
+    emailService: NodeMailerService,
     otpService: Otpservice = new Otpservice(),
   ) {
     this.userRepository = userRepo as UserRepositery;
