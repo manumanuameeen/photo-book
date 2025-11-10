@@ -3,7 +3,7 @@ import apiClient from "./apiClient";
 export class TokenServise{
     
     async refreshAccessToken(){
-        const res = await apiClient.post("/user/refresh")
+        const res = await apiClient.post("/user/refresh-token")
         return res.data
     }
 

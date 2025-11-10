@@ -3,17 +3,17 @@ import type { IAdminService } from "../services/admin/interface/IAdminService";
 import type { IAdminController } from "../interfaces/admin/IAdminController";
 
 export class AdminController implements IAdminController {
+  private adminService: IAdminService;
 
-private adminService :IAdminService
-
-  constructor( adminService: IAdminService) {
-    this.adminService = adminService
+  constructor(adminService: IAdminService) {
+    this.adminService = adminService;
   }
 
   getAllUser = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log("from controller",req.params)
-      const { page = "1", limit = "10", sort = "createdAt", search = "" } = req.params;
+      
+      const { page = "1", limit = "10", sort = "createdAt", search = "" } = req.query;
+
 
       const users = await this.adminService.getAllUser({
         page: Number(page),
@@ -22,15 +22,14 @@ private adminService :IAdminService
         search: String(search),
       });
 
+
       res.status(200).json({
         success: true,
         message: "Users fetched successfully",
         users: users,
       });
-
     } catch (error: any) {
-
-      console.error("Error fetching users:", error);
+      console.error(" CONTROLLER ERROR:", error);
       res.status(500).json({
         success: false,
         message: error.message || "Internal server error",

@@ -9,8 +9,9 @@ export const verifyAdmin = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(req.role)
   if (req.role !== "admin") {
-    return res.status(403).json({ message: "Access denied. Admins only." });
+    return res.status(403).json({ message: "Access denied. Admins only." ,redirectTo:"/auth/login"});
   }
   next();
 };

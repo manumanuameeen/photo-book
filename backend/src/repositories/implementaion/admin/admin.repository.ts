@@ -13,7 +13,7 @@ export class AdminRepository implements IAdminRepository {
             .skip(skip)
             .limit(limit)
             .lean();
-console.log("user from adminusrrepo",users)
+        console.log("user from adminusrrepo", users)
         const formatedUser: IUserResponse[] = users.map((user) => ({
             _id: user._id.toString(),
             name: user.name,
@@ -25,7 +25,7 @@ console.log("user from adminusrrepo",users)
         const total = await User.countDocuments(searchQuery);
 
         return {
-            users:formatedUser,
+            users: formatedUser,
             total,
             currentPage: page,
             totalPages: Math.ceil(total / limit),

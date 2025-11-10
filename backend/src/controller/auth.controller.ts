@@ -74,9 +74,9 @@ export class AuthController implements IAuthController {
     try {
       const old = req.cookies.refreshToken;
       if (!old) throw new Error("Missing refresh token");
-      const { accessToken, refreshToken } = await this.authService.refresh(old);
+      const { accessToken, refreshToken ,user} = await this.authService.refresh(old);
       this.setCookies(res, accessToken, refreshToken);
-      res.json({ success: true, accessToken, refreshToken });
+      res.json({ success: true, accessToken, refreshToken,user });
     } catch (error: any) {
       res.status(402).json({ success: false, message: error.message });
     }

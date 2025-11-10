@@ -13,34 +13,35 @@ export const useAdminUser = (page = 1, limit = 10, search = "") => {
     }
 
     return useQuery({
-        queryKey: ['admin-user', page, search],
+        queryKey: ['admin-user', params],
         queryFn: () => AdminUserService.getalluser(params)
     });
 };
 
-export const useAdminById=(id:string)=>{
+export const useAdminById = (id: string) => {
     return useQuery({
-        queryKey:["admin-user",id],
-        queryFn:()=>AdminUserService.getuserbyId(id),
-        enabled:!!id,
+        queryKey: ["admin-user", id],
+        queryFn: () => AdminUserService.getuserbyId(id),
+        enabled: !!id,
     })
 }
 
 
-export const useBlockUser = ()=>{
+export const useBlockUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn:(id:string)=>AdminUserService.blockuser(id),
-        onSuccess:()=>queryClient.invalidateQueries({queryKey:["admin-user"]})
+        mutationFn: (id: string) => AdminUserService.blockuser(id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-user"], exact: false }),
+
     });
 }
 
-export const useUnblockUser=()=>{
+export const useUnblockUser = () => {
 
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn:(id:string)=>AdminUserService.unblockUser(id),
-        onSuccess:()=>queryClient.invalidateQueries({queryKey:["admin-user"]})
+        mutationFn: (id: string) => AdminUserService.unblockUser(id),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-user"],exact:false })
     })
 
 }

@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@keyframes ping {
+  75%, 100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 0; }
+  30% { opacity: 0.15; }
+}
+
+.animate-ping {
+  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-flash {
+  animation: flash 1.8s ease-out infinite;
+}

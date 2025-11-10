@@ -10,13 +10,13 @@ interface AuthState {
   setUser: (user: IUser) => void;
   clearUser: () => void;
   logout: () => Promise<void>;
+  rehydrateUser:()=>Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   role: null,
-
   setUser: (user) =>
     set({
       user,
@@ -46,4 +46,17 @@ export const useAuthStore = create<AuthState>((set) => ({
       toast.error("Failed to logout");
     }
   },
+  rehydrateUser:async () => {
+    try {
+      const data = await authService.getCurrentUser()
+      if(data?.user){
+        set({user:data.user})
+      }else{
+        set({user:null});
+      }
+    } catch (error) {
+      console.log("Rehdrate Failed",error);
+      set({user:null});
+    }
+  }
 }));

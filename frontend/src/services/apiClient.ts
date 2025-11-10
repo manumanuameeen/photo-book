@@ -1,5 +1,8 @@
+
 import { tokenService } from "./tokenService";
 import axios from "axios";
+import { router } from "../main";
+
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
@@ -23,10 +26,15 @@ apiClient.interceptors.response.use(
                 return apiClient(original);
             } catch (err) {
                 await tokenService.logout();
+                router.navigate({ to: "/auth/login" })
                 return Promise.reject(err);
             }
         }
-
+        // if (error.response?.status === 403) {
+        //     const redirectTo = error.response?.data?.redirectTo || "/auth/login";
+        //     router.navigate({ to: redirectTo });
+        //     return Promise.reject(error)
+        // }
         return Promise.reject(error);
     }
 );

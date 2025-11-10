@@ -15,6 +15,7 @@ class AdminUserRepositoryClass implements IAdminUserRepo {
         const res = await apiClient.get<IUserListResponce>(
             `/admin/users?page=${params.page}&limit=${params.limit}&search=${params.search}`
         );
+        console.log("data from repo get al  user",res.data)
         return res.data;
     }
 

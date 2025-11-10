@@ -7,5 +7,5 @@ export interface IAdminUserRepo{
     getUserById(id:string):Promise<IUserResponse>;
     blockUser(id:string):Promise<IUserResponse>;
     unblockUser(id:string):Promise<IUserResponse>;
-
+ 
 }
