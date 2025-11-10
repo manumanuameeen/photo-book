@@ -7,6 +7,7 @@ import { createAccessToken,createRefreshToken } from "../../../utils/token.ts";
 import { Otpservice } from "../otp/otp.service.ts";
 import  { NodeMailerService } from "../email/nodemailer.service.ts";
 
+
 export class AuthService {
   private userRepository: UserRepositery;
   private emailService: NodeMailerService;
@@ -74,11 +75,12 @@ export class AuthService {
 
   async resendOtp(email: string) {
     const cachedData = await redisClient.get(`otp:${email}`);
+    console.log("from backend service",cachedData)
     if (!cachedData) throw new Error("No signup data found. Please signup again.");
 
     const userData = JSON.parse(cachedData);
     const newOtp = this.otpService.generateOtp();
-
+console.log("newemail:",newOtp)
     await redisClient.setEx(`otp:${email}`, 300, JSON.stringify({ ...userData, otp: newOtp }));
 
     await this.emailService.sendOtp(email, newOtp, userData.name);

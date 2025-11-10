@@ -12,13 +12,13 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as MainIndexRouteImport } from './routes/main/index'
 import { Route as MainHomeRouteImport } from './routes/main/home'
 import { Route as Main_layoutRouteImport } from './routes/main/__layout'
 import { Route as AuthVerifyOtpRouteImport } from './routes/auth/verify-otp'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as Auth_layoutRouteImport } from './routes/auth/__layout'
+import { Route as AdminUsermanagementRouteImport } from './routes/admin/usermanagement'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as Admin_layoutRouteImport } from './routes/admin/__layout'
 
@@ -45,11 +45,6 @@ const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
-} as any)
-const MainIndexRoute = MainIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => MainRoute,
 } as any)
 const MainHomeRoute = MainHomeRouteImport.update({
   id: '/home',
@@ -79,6 +74,11 @@ const Auth_layoutRoute = Auth_layoutRouteImport.update({
   id: '/__layout',
   getParentRoute: () => AuthRoute,
 } as any)
+const AdminUsermanagementRoute = AdminUsermanagementRouteImport.update({
+  id: '/usermanagement',
+  path: '/usermanagement',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -93,23 +93,24 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof Admin_layoutRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/usermanagement': typeof AdminUsermanagementRoute
   '/auth': typeof Auth_layoutRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-otp': typeof AuthVerifyOtpRoute
   '/main': typeof Main_layoutRoute
   '/main/home': typeof MainHomeRoute
-  '/main/': typeof MainIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof Admin_layoutRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/usermanagement': typeof AdminUsermanagementRoute
   '/auth': typeof Auth_layoutRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-otp': typeof AuthVerifyOtpRoute
-  '/main': typeof MainIndexRoute
+  '/main': typeof Main_layoutRoute
   '/main/home': typeof MainHomeRoute
 }
 export interface FileRoutesById {
@@ -118,6 +119,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/admin/__layout': typeof Admin_layoutRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/usermanagement': typeof AdminUsermanagementRoute
   '/auth': typeof AuthRouteWithChildren
   '/auth/__layout': typeof Auth_layoutRoute
   '/auth/login': typeof AuthLoginRoute
@@ -126,7 +128,6 @@ export interface FileRoutesById {
   '/main': typeof MainRouteWithChildren
   '/main/__layout': typeof Main_layoutRoute
   '/main/home': typeof MainHomeRoute
-  '/main/': typeof MainIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -134,18 +135,19 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin/dashboard'
+    | '/admin/usermanagement'
     | '/auth'
     | '/auth/login'
     | '/auth/signup'
     | '/auth/verify-otp'
     | '/main'
     | '/main/home'
-    | '/main/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
     | '/admin'
     | '/admin/dashboard'
+    | '/admin/usermanagement'
     | '/auth'
     | '/auth/login'
     | '/auth/signup'
@@ -158,6 +160,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/__layout'
     | '/admin/dashboard'
+    | '/admin/usermanagement'
     | '/auth'
     | '/auth/__layout'
     | '/auth/login'
@@ -166,7 +169,6 @@ export interface FileRouteTypes {
     | '/main'
     | '/main/__layout'
     | '/main/home'
-    | '/main/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,13 +207,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/main/': {
-      id: '/main/'
-      path: '/'
-      fullPath: '/main/'
-      preLoaderRoute: typeof MainIndexRouteImport
-      parentRoute: typeof MainRoute
     }
     '/main/home': {
       id: '/main/home'
@@ -255,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Auth_layoutRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/admin/usermanagement': {
+      id: '/admin/usermanagement'
+      path: '/usermanagement'
+      fullPath: '/admin/usermanagement'
+      preLoaderRoute: typeof AdminUsermanagementRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/dashboard'
@@ -275,11 +277,13 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   Admin_layoutRoute: typeof Admin_layoutRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminUsermanagementRoute: typeof AdminUsermanagementRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   Admin_layoutRoute: Admin_layoutRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminUsermanagementRoute: AdminUsermanagementRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -303,13 +307,11 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 interface MainRouteChildren {
   Main_layoutRoute: typeof Main_layoutRoute
   MainHomeRoute: typeof MainHomeRoute
-  MainIndexRoute: typeof MainIndexRoute
 }
 
 const MainRouteChildren: MainRouteChildren = {
   Main_layoutRoute: Main_layoutRoute,
   MainHomeRoute: MainHomeRoute,
-  MainIndexRoute: MainIndexRoute,
 }
 
 const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)

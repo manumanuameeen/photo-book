@@ -20,10 +20,8 @@ apiClient.interceptors.response.use(
                     const { useAuthStore } = await import("../modules/auth/store/useAuthStore");
                     useAuthStore.getState().setUser(data.user);
                 }
-              
                 return apiClient(original);
             } catch (err) {
-               
                 await tokenService.logout();
                 return Promise.reject(err);
             }
@@ -32,5 +30,4 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
 export default apiClient;

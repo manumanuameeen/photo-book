@@ -8,7 +8,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useVerifyOtp, useResendOtp } from "../../hooks/useAuth";
 
 const OTP_LENGTH = 6;
-const OTP_TIMER_DURATION = 120;
+const OTP_TIMER_DURATION = 10;
 
 const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();

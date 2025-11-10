@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useAuthStore } from "../modules/auth/store/useAuthStore";
+import { useAuthStore } from "../../modules/auth/store/useAuthStore";
 import {
   User,
   LogOut,
@@ -10,7 +10,7 @@ import {
   Calendar,
   ToolCase
 } from "lucide-react";
-import photoBookLogo from "../assets/photoBook-icon.png";
+import photoBookLogo  from "../../assets/photoBook-icon.png"
 
 const Colors = {
   darkGreen: "#2e4a2d",

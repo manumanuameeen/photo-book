@@ -1,6 +1,7 @@
-import { IAdminService } from "../IAdminService";
-import { IAdminUserQuery, IPaginationUsers, IUserResponse } from "../../../interfaces/admin/IAdminUser.interface";
-import { IAdminRepository } from "repositories/interface/IAdminReporitory";
+import type{ IAdminService } from "../interface/IAdminService.ts";
+import type { IAdminUserQuery, IPaginationUsers, IUserResponse } from "../../../interfaces/admin/IAdminUser.interface.ts";
+import type { IAdminRepository } from "../../../repositories/interface/IAdminReporitory.ts"
+
 
 
 export class AdminServices implements IAdminService {

@@ -44,8 +44,10 @@ export class AuthController implements IAuthController {
   }
 
   async resendOtp(req: express.Request, res: express.Response): Promise<void> {
+    console.log("reached controller")
     try {
       const { email } = req.body;
+      console.log("email from backned controller",email)
       const result = await this.authService.resendOtp(email);
       res.json({ success: true, message: result.message });
     } catch (error: any) {

@@ -17,7 +17,9 @@ export class AuthRepository {
     return res.data;
   }
   async resendOtp(email: string): Promise<{ message: string }> {
-    const res = await apiClient.post<{ message: string }>("/auth/resend-otp", { email });
+    console.log("from repo frontend",email)
+    const res = await apiClient.post<{ message: string }>("/user/resend-otp",{email} );
+
     return res.data;
   }
 

@@ -1,4 +1,4 @@
-import { IAdminUserQuery, IPaginationUsers, IUserResponse } from "../../interfaces/admin/IAdminUser.interface";
+import type {  IPaginationUsers,IAdminUserQuery, IUserResponse } from "../../interfaces/admin/IAdminUser.interface.ts";
 
 export interface IAdminRepository{
     getAllUser(query:IAdminUserQuery):Promise<IPaginationUsers>;

@@ -1,6 +1,6 @@
-import { User } from "../../../model/userModel";
-import type { IAdminRepository } from "../../interface/IAdminReporitory";
-import type { IUserResponse, IAdminUserQuery, IPaginationUsers } from "../../../interfaces/admin/IAdminUser.interface";
+import { User } from "../../../model/userModel.ts";
+import type { IAdminRepository } from "../../interface/IAdminReporitory.ts";
+import type { IUserResponse, IAdminUserQuery, IPaginationUsers } from "../../../interfaces/admin/IAdminUser.interface.ts";
 
 export class AdminRepository implements IAdminRepository {
     async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
@@ -13,7 +13,7 @@ export class AdminRepository implements IAdminRepository {
             .skip(skip)
             .limit(limit)
             .lean();
-
+console.log("user from adminusrrepo",users)
         const formatedUser: IUserResponse[] = users.map((user) => ({
             _id: user._id.toString(),
             name: user.name,

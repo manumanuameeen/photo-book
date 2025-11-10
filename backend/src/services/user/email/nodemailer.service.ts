@@ -5,6 +5,7 @@ import { mailTransport } from "../../../config/email.ts";
 export class NodeMailerService implements IEmailservice {
   async sendOtp(email: string, otp: string, name: string): Promise<void> {
     try {
+      console.log("email from nodemailer",email)
       const mailOptions = {
         from: `"photobook app" <${process.env.SMTP_USER}>`,
         to: email,
