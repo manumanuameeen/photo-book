@@ -18,9 +18,9 @@ import { Route as AuthVerifyOtpRouteImport } from './routes/auth/verify-otp'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as Auth_layoutRouteImport } from './routes/auth/__layout'
-import { Route as AdminUsermanagementRouteImport } from './routes/admin/usermanagement'
-import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as Admin_layoutRouteImport } from './routes/admin/__layout'
+import { Route as Admin_layoutUsermanagementRouteImport } from './routes/admin/__layout/usermanagement'
+import { Route as Admin_layoutDashboardRouteImport } from './routes/admin/__layout/dashboard'
 
 const MainRouteImport = createFileRoute('/main')()
 const AuthRouteImport = createFileRoute('/auth')()
@@ -74,52 +74,51 @@ const Auth_layoutRoute = Auth_layoutRouteImport.update({
   id: '/__layout',
   getParentRoute: () => AuthRoute,
 } as any)
-const AdminUsermanagementRoute = AdminUsermanagementRouteImport.update({
-  id: '/usermanagement',
-  path: '/usermanagement',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminDashboardRoute = AdminDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AdminRoute,
-} as any)
 const Admin_layoutRoute = Admin_layoutRouteImport.update({
   id: '/__layout',
   getParentRoute: () => AdminRoute,
 } as any)
+const Admin_layoutUsermanagementRoute =
+  Admin_layoutUsermanagementRouteImport.update({
+    id: '/usermanagement',
+    path: '/usermanagement',
+    getParentRoute: () => Admin_layoutRoute,
+  } as any)
+const Admin_layoutDashboardRoute = Admin_layoutDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => Admin_layoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
-  '/admin': typeof Admin_layoutRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
-  '/admin/usermanagement': typeof AdminUsermanagementRoute
+  '/admin': typeof Admin_layoutRouteWithChildren
   '/auth': typeof Auth_layoutRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-otp': typeof AuthVerifyOtpRoute
   '/main': typeof Main_layoutRoute
   '/main/home': typeof MainHomeRoute
+  '/admin/dashboard': typeof Admin_layoutDashboardRoute
+  '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
-  '/admin': typeof Admin_layoutRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
-  '/admin/usermanagement': typeof AdminUsermanagementRoute
+  '/admin': typeof Admin_layoutRouteWithChildren
   '/auth': typeof Auth_layoutRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-otp': typeof AuthVerifyOtpRoute
   '/main': typeof Main_layoutRoute
   '/main/home': typeof MainHomeRoute
+  '/admin/dashboard': typeof Admin_layoutDashboardRoute
+  '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
-  '/admin/__layout': typeof Admin_layoutRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
-  '/admin/usermanagement': typeof AdminUsermanagementRoute
+  '/admin/__layout': typeof Admin_layoutRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/auth/__layout': typeof Auth_layoutRoute
   '/auth/login': typeof AuthLoginRoute
@@ -128,39 +127,39 @@ export interface FileRoutesById {
   '/main': typeof MainRouteWithChildren
   '/main/__layout': typeof Main_layoutRoute
   '/main/home': typeof MainHomeRoute
+  '/admin/__layout/dashboard': typeof Admin_layoutDashboardRoute
+  '/admin/__layout/usermanagement': typeof Admin_layoutUsermanagementRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/about'
     | '/admin'
-    | '/admin/dashboard'
-    | '/admin/usermanagement'
     | '/auth'
     | '/auth/login'
     | '/auth/signup'
     | '/auth/verify-otp'
     | '/main'
     | '/main/home'
+    | '/admin/dashboard'
+    | '/admin/usermanagement'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
     | '/admin'
-    | '/admin/dashboard'
-    | '/admin/usermanagement'
     | '/auth'
     | '/auth/login'
     | '/auth/signup'
     | '/auth/verify-otp'
     | '/main'
     | '/main/home'
+    | '/admin/dashboard'
+    | '/admin/usermanagement'
   id:
     | '__root__'
     | '/about'
     | '/admin'
     | '/admin/__layout'
-    | '/admin/dashboard'
-    | '/admin/usermanagement'
     | '/auth'
     | '/auth/__layout'
     | '/auth/login'
@@ -169,6 +168,8 @@ export interface FileRouteTypes {
     | '/main'
     | '/main/__layout'
     | '/main/home'
+    | '/admin/__layout/dashboard'
+    | '/admin/__layout/usermanagement'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -250,20 +251,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Auth_layoutRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/admin/usermanagement': {
-      id: '/admin/usermanagement'
-      path: '/usermanagement'
-      fullPath: '/admin/usermanagement'
-      preLoaderRoute: typeof AdminUsermanagementRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/dashboard': {
-      id: '/admin/dashboard'
-      path: '/dashboard'
-      fullPath: '/admin/dashboard'
-      preLoaderRoute: typeof AdminDashboardRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/__layout': {
       id: '/admin/__layout'
       path: '/admin'
@@ -271,19 +258,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Admin_layoutRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/__layout/usermanagement': {
+      id: '/admin/__layout/usermanagement'
+      path: '/usermanagement'
+      fullPath: '/admin/usermanagement'
+      preLoaderRoute: typeof Admin_layoutUsermanagementRouteImport
+      parentRoute: typeof Admin_layoutRoute
+    }
+    '/admin/__layout/dashboard': {
+      id: '/admin/__layout/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof Admin_layoutDashboardRouteImport
+      parentRoute: typeof Admin_layoutRoute
+    }
   }
 }
 
+interface Admin_layoutRouteChildren {
+  Admin_layoutDashboardRoute: typeof Admin_layoutDashboardRoute
+  Admin_layoutUsermanagementRoute: typeof Admin_layoutUsermanagementRoute
+}
+
+const Admin_layoutRouteChildren: Admin_layoutRouteChildren = {
+  Admin_layoutDashboardRoute: Admin_layoutDashboardRoute,
+  Admin_layoutUsermanagementRoute: Admin_layoutUsermanagementRoute,
+}
+
+const Admin_layoutRouteWithChildren = Admin_layoutRoute._addFileChildren(
+  Admin_layoutRouteChildren,
+)
+
 interface AdminRouteChildren {
-  Admin_layoutRoute: typeof Admin_layoutRoute
-  AdminDashboardRoute: typeof AdminDashboardRoute
-  AdminUsermanagementRoute: typeof AdminUsermanagementRoute
+  Admin_layoutRoute: typeof Admin_layoutRouteWithChildren
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  Admin_layoutRoute: Admin_layoutRoute,
-  AdminDashboardRoute: AdminDashboardRoute,
-  AdminUsermanagementRoute: AdminUsermanagementRoute,
+  Admin_layoutRoute: Admin_layoutRouteWithChildren,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

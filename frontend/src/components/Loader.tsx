@@ -1,46 +1,56 @@
+import React from "react";
+import {motion } from "framer-motion"
+
 interface LoaderProps {
-    text?: string;
-    fullscreen?: boolean;
+  text?: string;
+  fullscreen?: boolean;
 }
 
-const Loader: React.FC<LoaderProps> = ({ text = "Loading...", fullscreen = true }) => {
-    const containerClass = fullscreen
-        ? "flex items-center justify-center min-h-screen bg-gray-100"
-        : "flex items-center justify-center p-6";
+const Loader: React.FC<LoaderProps> = ({
+  text = "Loading...",
+  fullscreen = true,
+}) => {
+  const containerClass = fullscreen
+    ? "flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"
+    : "flex flex-col items-center justify-center p-6";
 
-    return (
-        <div className={containerClass}>
-            <div className="flex flex-col items-center justify-center space-y-8">
+  return (
+    <div className={containerClass}>
+      <motion.div
+        className="relative flex items-center justify-center w-20 h-20"
+        initial={{ scale: 0.9 }}
+        animate={{ rotate: 360, scale: [0.9, 1.05, 0.9] }}
+        transition={{
+          rotate: { repeat: Infinity, duration: 1.6, ease: "linear" },
+          scale: { repeat: Infinity, duration: 1.8, ease: "easeInOut" },
+        }}
+      >
+        <div className="absolute inset-0 rounded-full border-[6px] border-transparent border-t-green-600 border-r-green-800 animate-spin-slow"></div>
 
+        <motion.div
+          className="w-10 h-10 rounded-full bg-green-700 shadow-[0_0_20px_4px_rgba(16,185,129,0.4)]"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [1, 0.6, 1],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 1.8,
+            ease: "easeInOut",
+          }}
+        />
+      </motion.div>
 
-                <div className="relative">
-                    <div className="w-32 h-32 border-8 border-green-950 rounded-lg relative overflow-hidden">
-
-                        <div className="absolute inset-0">
-                            <div className="absolute top-3 left-3 w-8 h-8 border-l-4 border-t-4 border-green-700"></div>
-                            <div className="absolute top-3 right-3 w-8 h-8 border-r-4 border-t-4 border-green-700"></div>
-                            <div className="absolute bottom-3 left-3 w-8 h-8 border-l-4 border-b-4 border-green-700"></div>
-                            <div className="absolute bottom-3 right-3 w-8 h-8 border-r-4 border-b-4 border-green-700"></div>
-                        </div>
-
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="relative">
-                                <div className="w-3 h-3 bg-green-600 rounded-full"></div>
-                                <div className="absolute inset-0 w-3 h-3 bg-green-600 rounded-full animate-ping"></div>
-                            </div>
-                        </div>
-
-                        <div className="absolute inset-0 bg-green-500 opacity-0 animate-flash rounded-lg"></div>
-                    </div>
-                </div>
-
-                <p className="text-green-950 font-semibold text-lg tracking-wider">
-                    {text || "Loading..."}
-                </p>
-            </div>
-        </div>
-    );
+      <motion.p
+        className="mt-8 text-lg font-medium text-gray-800 tracking-wide"
+        initial={{ opacity: 0.3 }}
+        animate={{ opacity: [0.3, 1, 0.3] }}
+        transition={{ repeat: Infinity, duration: 1.5 }}
+      >
+        {text}
+      </motion.p>
+    </div>
+  );
 };
 
-
-export default Loader
+export default Loader;

@@ -125,8 +125,8 @@ export class AuthService {
   }
 
   private issueTokens(user: IUser) {
-    const accessToken = createAccessToken(user._id!.toString());
-    const refreshToken = createRefreshToken(user._id!.toString());
+    const accessToken = createAccessToken(user._id!.toString(),user.email,user.role);
+    const refreshToken = createRefreshToken(user._id!.toString(),user.email,user.role);
     redisClient.setEx(`rt:${refreshToken}`, 7 * 24 * 60 * 60, user._id!.toString());
     return { accessToken, refreshToken, user };
   }
