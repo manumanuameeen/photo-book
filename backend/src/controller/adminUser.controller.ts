@@ -11,9 +11,7 @@ export class AdminController implements IAdminController {
 
   getAllUser = async (req: Request, res: Response): Promise<void> => {
     try {
-      
       const { page = "1", limit = "10", sort = "createdAt", search = "" } = req.query;
-
 
       const users = await this.adminService.getAllUser({
         page: Number(page),
@@ -21,7 +19,6 @@ export class AdminController implements IAdminController {
         sort: String(sort),
         search: String(search),
       });
-
 
       res.status(200).json({
         success: true,

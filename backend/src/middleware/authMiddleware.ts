@@ -15,13 +15,8 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
-export const verifyAccessToken = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const verifyAccessToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-
     const token = req.cookies.accessToken;
 
     if (!token) {
@@ -32,17 +27,11 @@ export const verifyAccessToken = (
       });
     }
 
-
-    const decoded = Jwt.verify(
-      token,
-      process.env.ACCESS_TOKEN_SECRET!
-    ) as JWTPayload;
-
+    const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
 
     req.user = decoded;
     req.role = decoded.role;
     req.userId = decoded.userId;
-
 
     next();
   } catch (error) {

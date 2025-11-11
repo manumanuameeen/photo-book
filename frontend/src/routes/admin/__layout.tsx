@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import AdminSidebar from '../../layouts/admin/AdminSIdeBar'
-import AdminHeader from '../../layouts/admin/AdminHeader'
+import AdminHeader from '../../layouts/admin/AdminHeader.tsx'
+import AdminSidebar from '../../layouts/admin/AdminSIdeBar.tsx'
 import { useAuthStore } from '../../modules/auth/store/useAuthStore'
 
 export const Route = createFileRoute('/admin/__layout')({

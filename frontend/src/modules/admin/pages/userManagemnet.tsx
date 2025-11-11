@@ -6,6 +6,8 @@ import toast, { Toaster } from "react-hot-toast";
 import Loader from "../../../components/Loader";
 import type { IUser } from "../types/admin.type";
 import { Eye, Lock, Unlock } from "lucide-react";
+import { AxiosError } from "axios";
+
 
 interface UserTableData {
   id: string;
@@ -36,10 +38,12 @@ const UserManagement: React.FC = () => {
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Data</h2>
             <p className="text-gray-600 mb-4">
-              {(error as any)?.response?.data?.message || (error as Error)?.message || "Failed to load users"}
+              {(error as AxiosError<{ message?: string }>)?.response?.data?.message
+                || (error as Error)?.message || "Failed to load users"}
             </p>
             <p className="text-sm text-gray-500 mb-4">
-              Status: {(error as any)?.response?.status || "Unknown"}
+              Status: {(error as AxiosError)?.response?.status
+                || "Unknown"}
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -74,7 +78,7 @@ const UserManagement: React.FC = () => {
     blockUser.mutate(id, {
       onSuccess: () => {
         toast.success("User blocked successfully");
-        console.log("✅ User blocked:", id);
+        console.log("✅ user blocked:", id);
       },
       onError: (error: any) => {
         const errorMessage = error.response?.data?.message || "Failed to block user";
@@ -133,11 +137,10 @@ const UserManagement: React.FC = () => {
       header: "Status",
       render: (user) => (
         <span
-          className={`px-3 py-1 text-xs font-semibold rounded-full uppercase ${
-            user.status === "Active"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
+          className={`px-3 py-1 text-xs font-semibold rounded-full uppercase ${user.status === "Active"
+            ? "bg-green-100 text-green-800"
+            : "bg-red-100 text-red-800"
+            }`}
         >
           {user.status}
         </span>
@@ -198,7 +201,7 @@ const UserManagement: React.FC = () => {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
-      
+
       <AdminDataTable
         title="User Management"
         entityName="users"

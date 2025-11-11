@@ -10,7 +10,7 @@ export interface IUserResponse {
   name: string;
   email: string;
   role: string;
-  isBlocked: Boolean;
+  isBlocked: boolean;
 }
 
 export interface IPaginationUsers {

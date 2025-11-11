@@ -1,18 +1,13 @@
 import React, { useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { RouterProvider, createRouter } from "@tanstack/react-router"
-import { routeTree } from "./routeTree.gen"
+import { RouterProvider } from "@tanstack/react-router"
 import { useAuthStore } from "./modules/auth/store/useAuthStore"
+import {router} from "./router"
 import "./index.css"
 const queryClient = new QueryClient()
-const router = createRouter({ routeTree })
 
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router
-  }
-}
+
 
 const AppWrapper: React.FC = () => {
   const rehydrateUser = useAuthStore((state) => state.rehydrateUser)

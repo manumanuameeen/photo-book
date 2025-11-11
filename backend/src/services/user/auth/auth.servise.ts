@@ -7,7 +7,6 @@ import { createAccessToken, createRefreshToken } from "../../../utils/token.ts";
 import { Otpservice } from "../otp/otp.service.ts";
 import { NodeMailerService } from "../email/nodemailer.service.ts";
 
-
 export class AuthService {
   private userRepository: UserRepositery;
   private emailService: NodeMailerService;
@@ -75,12 +74,12 @@ export class AuthService {
 
   async resendOtp(email: string) {
     const cachedData = await redisClient.get(`otp:${email}`);
-    console.log("from backend service", cachedData)
+    console.log("from backend service", cachedData);
     if (!cachedData) throw new Error("No signup data found. Please signup again.");
 
     const userData = JSON.parse(cachedData);
     const newOtp = this.otpService.generateOtp();
-    console.log("newemail:", newOtp)
+    console.log("newemail:", newOtp);
     await redisClient.setEx(`otp:${email}`, 300, JSON.stringify({ ...userData, otp: newOtp }));
 
     await this.emailService.sendOtp(email, newOtp, userData.name);
@@ -92,7 +91,7 @@ export class AuthService {
     if (!user) throw new Error("Invalid credentials");
 
     if (user.isBlocked) {
-      throw new Error("user blocked please contact Later...")
+      throw new Error("user blocked please contact Later...");
     }
 
     const match = await user.comparePassword(password);
@@ -108,16 +107,15 @@ export class AuthService {
     const user = await this.userRepository.findById(storedId);
     if (!user) throw new Error("User not found");
 
-
     if (user.isBlocked) {
-      throw new Error("user blocked please contact Later...")
+      throw new Error("user blocked please contact Later...");
     }
 
     await redisClient.del(`rt:${oldRefreshToken}`);
     const { accessToken, refreshToken } = this.issueTokens(user);
     await redisClient.setEx(`rt:${refreshToken}`, 7 * 24 * 60 * 60, user._id!.toString());
 
-    return { accessToken, refreshToken,user };
+    return { accessToken, refreshToken, user };
   }
 
   async logout(refreshToken: string) {
@@ -125,8 +123,8 @@ export class AuthService {
   }
 
   private issueTokens(user: IUser) {
-    const accessToken = createAccessToken(user._id!.toString(),user.email,user.role);
-    const refreshToken = createRefreshToken(user._id!.toString(),user.email,user.role);
+    const accessToken = createAccessToken(user._id!.toString(), user.email, user.role);
+    const refreshToken = createRefreshToken(user._id!.toString(), user.email, user.role);
     redisClient.setEx(`rt:${refreshToken}`, 7 * 24 * 60 * 60, user._id!.toString());
     return { accessToken, refreshToken, user };
   }

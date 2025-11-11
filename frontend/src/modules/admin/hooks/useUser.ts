@@ -6,7 +6,7 @@ import type { IPagination } from "../types/IPagination";
 
 export const useAdminUser = (page = 1, limit = 10, search = "") => {
 
-    let params: IPagination = {
+    const  params: IPagination = {
         page: page,
         limit: limit,
         search: search

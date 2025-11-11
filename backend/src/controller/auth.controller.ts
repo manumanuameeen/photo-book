@@ -10,7 +10,6 @@ export class AuthController implements IAuthController {
     this.authService = authService;
   }
 
-
   async signup(req: express.Request, res: express.Response): Promise<void> {
     try {
       const { name, email, password, phone } = req.body;
@@ -44,10 +43,10 @@ export class AuthController implements IAuthController {
   }
 
   async resendOtp(req: express.Request, res: express.Response): Promise<void> {
-    console.log("reached controller")
+    console.log("reached controller");
     try {
       const { email } = req.body;
-      console.log("email from backned controller",email)
+      console.log("email from backned controller", email);
       const result = await this.authService.resendOtp(email);
       res.json({ success: true, message: result.message });
     } catch (error: any) {
@@ -63,7 +62,7 @@ export class AuthController implements IAuthController {
       res.json({
         success: true,
         message: "Login successful",
-        user: { _id: user._id, name: user.name, email: user.email,role:user.role },
+        user: { _id: user._id, name: user.name, email: user.email, role: user.role },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
@@ -74,9 +73,9 @@ export class AuthController implements IAuthController {
     try {
       const old = req.cookies.refreshToken;
       if (!old) throw new Error("Missing refresh token");
-      const { accessToken, refreshToken ,user} = await this.authService.refresh(old);
+      const { accessToken, refreshToken, user } = await this.authService.refresh(old);
       this.setCookies(res, accessToken, refreshToken);
-      res.json({ success: true, accessToken, refreshToken,user });
+      res.json({ success: true, accessToken, refreshToken, user });
     } catch (error: any) {
       res.status(402).json({ success: false, message: error.message });
     }

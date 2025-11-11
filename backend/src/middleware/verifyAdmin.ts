@@ -5,18 +5,12 @@ interface AuthRequest extends Request {
   user?: any;
 }
 
-export const verifyAdmin = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-
-
-  if (!req.role) {  
+export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.role) {
     console.log(" No role found");
     return res.status(401).json({
       message: "Authentication required",
-      redirectTo: "/auth/login"
+      redirectTo: "/auth/login",
     });
   }
 
@@ -24,7 +18,7 @@ export const verifyAdmin = (
     console.log(" user is not admin, role:", req.role);
     return res.status(403).json({
       message: "Access denied. Admins only.",
-      redirectTo: "/auth/login"
+      redirectTo: "/auth/login",
     });
   }
 
