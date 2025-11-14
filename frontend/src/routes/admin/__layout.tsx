@@ -1,38 +1,42 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import AdminHeader from '../../layouts/admin/AdminHeader.tsx'
-import AdminSidebar from '../../layouts/admin/AdminSIdeBar.tsx'
-import { useAuthStore } from '../../modules/auth/store/useAuthStore'
+import AdminSidebar from '../../layouts/admin/AdminSideBar.tsx'
 
 export const Route = createFileRoute('/admin/__layout')({
-
-  beforeLoad: async ({ location }) => {
-    const { rehydrateUser, user } = useAuthStore.getState();
-    if (!user) {
-      await rehydrateUser();
+  loader: async ({ location }) => {
+    const cached = sessionStorage.getItem("auth-cache");
+    if (cached) {
+      try {
+        const { user, expires } = JSON.parse(cached);
+        if (Date.now() < expires && user.role === "admin") {
+          return { user };
+        }
+      } catch {}
     }
 
-    const currentState = useAuthStore.getState();
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/user/refresh-token`, {
+      method: "POST",
+      credentials: "include",
+    });
 
-    if (!currentState.isAuthenticated || !currentState.user) {
-      throw redirect({
-        to: '/auth/login',
-        search: {
-          redirect: location.href,
-        },
-      });
+    if (!res.ok) {
+      throw redirect({ to: "/auth/login", search: { redirect: location.href } });
     }
 
-    if (currentState.user.role !== "admin") {
-      throw redirect({
-        to: "/auth/login",
-
-      })
+    const data = await res.json();
+    if (data.data.user.role !== "admin") {
+      throw redirect({ to: "/auth/login" });
     }
-  }, component: RouteComponent,
-})
 
-function RouteComponent() {
-  return (
+    sessionStorage.setItem("auth-cache", JSON.stringify({
+      user: data.data.user,
+      expires: Date.now() + 5 * 60 * 1000,
+    }));
+
+    return { user: data.data.user };
+  },
+
+  component: () => (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
       <div className="flex-1 flex flex-col">
@@ -42,6 +46,5 @@ function RouteComponent() {
         </main>
       </div>
     </div>
-  )
-}
-
+  ),
+});

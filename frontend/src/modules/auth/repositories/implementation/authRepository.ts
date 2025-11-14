@@ -14,7 +14,9 @@ export class AuthRepository {
   }
   async login(data: ILoginRequest): Promise<IAuthResponse> {
     const res = await apiClient.post<IAuthResponse>("/user/login", data);
+    console.log("from authrespository",res.data)
     return res.data;
+
   }
   async resendOtp(email: string): Promise<{ message: string }> {
     console.log("from repo frontend",email)

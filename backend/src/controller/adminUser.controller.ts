@@ -1,7 +1,9 @@
 import type { Request, Response } from "express";
 import type { IAdminService } from "../services/admin/interface/IAdminService";
 import type { IAdminController } from "../interfaces/admin/IAdminController";
-
+import { z } from "zod";
+import { AdminUserQueryDto } from "../dto/admin.dto.ts";
+import { AdminMapper } from "../mappers/admin.mapper.ts";
 export class AdminController implements IAdminController {
   private adminService: IAdminService;
 
@@ -9,21 +11,33 @@ export class AdminController implements IAdminController {
     this.adminService = adminService;
   }
 
+  private _validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
+    return schema.parse(data);
+  }
+
+
   getAllUser = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { page = "1", limit = "10", sort = "createdAt", search = "" } = req.query;
 
-      const users = await this.adminService.getAllUser({
-        page: Number(page),
-        limit: Number(limit),
-        sort: String(sort),
-        search: String(search),
-      });
+      const queryDto = this._validate(AdminUserQueryDto, req.query);
 
+      const queryInput = AdminMapper.toQueryInput(queryDto);
+
+
+      const result = await this.adminService.getAllUser(queryInput)
+      // console.log("result. fro mcontroller:", result)
       res.status(200).json({
         success: true,
         message: "Users fetched successfully",
-        users: users,
+        data: {
+          users: result.users.map((AdminMapper.toUserResponse)),
+          pagination: {
+            total: result.total,
+            totalPage: result.totalPages,
+            currentPage: result.currentPage
+
+          },
+        },
       });
     } catch (error: any) {
       console.error(" CONTROLLER ERROR:", error);

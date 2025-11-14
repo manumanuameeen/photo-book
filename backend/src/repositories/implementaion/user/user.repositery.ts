@@ -1,22 +1,14 @@
 import { User } from "../../../model/userModel.ts";
 import type { IUser } from "../../../model/userModel.ts";
+import type { IUserRepository } from "../../interface/IUserRespository.ts"
+import { BaseRepository } from "../../base/BaseRepository.ts";
 
-import type { IUserRepository } from "../../interface/IuserRepository.ts";
-export class UserRepositery implements IUserRepository {
-  async createUser(data: Partial<IUser>): Promise<IUser> {
-    const user = new User(data);
-    return await user.save();
+export class UserRepository extends BaseRepository<IUser> implements IUserRepository {
+  constructor() {
+    super(User);
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
-    return await User.findOne({ email: email });
-  }
-
-  async findById(_id: string): Promise<IUser | null> {
-    return await User.findById(_id).exec();
-  }
-
-  async updateUser(id: string, data: Partial<IUser>): Promise<IUser | null> {
-    return await User.findByIdAndUpdate(id, data, { new: true }).exec();
-  }
+    return await this._model.findOne({ email }).exec();
+  } 
 }

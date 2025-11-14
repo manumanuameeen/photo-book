@@ -10,7 +10,7 @@ import {
   Calendar,
   ToolCase
 } from "lucide-react";
-import photoBookLogo  from "../../assets/photoBook-icon.png"
+import photoBookLogo from "../../assets/photoBook-icon.png"
 
 const Colors = {
   darkGreen: "#2e4a2d",
@@ -39,7 +39,7 @@ const Header: React.FC = () => {
           <span className="text-xl font-bold" style={{ color: Colors.darkGreen }}>PhotoBook</span>
         </div>
 
-     
+
         <nav className="hidden md:flex space-x-6 text-sm font-medium items-center">
           <div className="flex items-center space-x-1 cursor-pointer" onClick={() => navigate({ to: "/main/home" })}>
             <Home size={16} />
@@ -58,10 +58,9 @@ const Header: React.FC = () => {
             <span>Equipment</span>
           </div>
 
-         
+
           {user && (
-            <div className="flex items-center space-x-1 cursor-pointer" 
-            // onClick={() => navigate({ to: "/dashboard" })}
+            <div className="flex items-center space-x-1 cursor-pointer"
             >
               <LayoutDashboard size={16} />
               <span>Dashboard</span>
@@ -89,11 +88,11 @@ const Header: React.FC = () => {
             </>
           ) : (
             <div className="relative">
-            
+
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center space-x-1 border border-gray-200 px-3 py-1 rounded-full hover:shadow"
-              style={{backgroundColor:Colors.bgCream,color:Colors.darkGreen}}
+                style={{ backgroundColor: Colors.bgCream, color: Colors.darkGreen }}
 
               >
                 <User size={18} />
@@ -104,14 +103,12 @@ const Header: React.FC = () => {
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg py-2 z-50">
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
-                    // onClick={() => navigate({ to: "/profile" })}
                   >
                     <User size={16} className="mr-2" />
                     Profile
                   </button>
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
-                    // onClick={() => navigate({ to: "/h" })}
                   >
                     <LayoutDashboard size={16} className="mr-2" />
                     Dashboard

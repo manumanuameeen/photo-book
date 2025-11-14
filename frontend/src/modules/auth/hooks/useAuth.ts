@@ -21,7 +21,9 @@ export function useVerifyOtp() {
 
 export function useLogin() {
   return useMutation<IAuthResponse, Error, ILoginRequest>({
-    mutationFn: (data) => authService.login(data),
+    mutationFn: (data) => { console.log(data)
+      return authService.login(data)}
+    ,
   });
 }
 

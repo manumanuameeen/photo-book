@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "print-files": "tsx printFrontendFiles.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
@@ -45,6 +46,7 @@
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
+    "tsx": "^4.20.6",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
     "vite": "^7.2.2"

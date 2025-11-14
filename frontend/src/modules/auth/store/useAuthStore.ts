@@ -20,7 +20,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       role: null,
 
-      setUser: (user) =>
+      setUser: (user: IUser) =>
         set({
           user,
           isAuthenticated: true,
@@ -37,12 +37,7 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           await authService.logout();
-
-          set({
-            user: null,
-            isAuthenticated: false,
-            role: null,
-          });
+          set({ user: null, isAuthenticated: false, role: null });
         } catch (error) {
           console.error("Logout failed:", error);
           throw error;
@@ -50,28 +45,35 @@ export const useAuthStore = create<AuthState>()(
       },
 
       rehydrateUser: async () => {
-        try {
-          const data = await authService.getCurrentUser();
-          if (data?.user) {
-            set({
-              user: data.user,
-              isAuthenticated: true,
-              role: data.user.role as "user" | "admin" | "photographer",
-            });
-          } else {
-            set({
-              user: null,
-              isAuthenticated: false,
-              role: null,
-            });
-          }
-        } catch (error) {
-          console.error("Rehydrate Failed", error);
+        const cached = sessionStorage.getItem("auth-cache");
+        if (cached) {
+          try {
+            const { user, expires } = JSON.parse(cached);
+            if (Date.now() < expires) {
+              set({
+                user,
+                isAuthenticated: true,
+                role: user.role as any,
+              });
+              return;
+            }
+          } catch {}
+        }
+
+        const data = await authService.getCurrentUser();
+        if (data?.data?.user) {
+          const cache = {
+            user: data.data.user,
+            expires: Date.now() + 5 * 60 * 1000,
+          };
+          sessionStorage.setItem("auth-cache", JSON.stringify(cache));
           set({
-            user: null,
-            isAuthenticated: false,
-            role: null,
+            user: data.data.user,
+            isAuthenticated: true,
+            role: data.data.user.role as any,
           });
+        } else {
+          set({ user: null, isAuthenticated: false, role: null });
         }
       },
     }),

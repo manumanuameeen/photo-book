@@ -1,4 +1,3 @@
-import apiClient from "../../../services/apiClient";
 import { authRepository } from "../repositories/implementation/authRepository";
 import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest } from "../types/auth.types";
 import type { IAuthService } from "./IAuthsevice";
@@ -22,8 +21,17 @@ class AuthService implements IAuthService {
 
   async getCurrentUser(): Promise<IAuthResponse | null> {
     try {
-      const res = await apiClient.post<IAuthResponse>("/user/refresh-token");
-      return res.data;
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/user/refresh-token`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" }
+      })
+
+      if(!res.ok){
+        return null
+      }
+
+      return await res.json();
     } catch (error: unknown) {
       console.log("Error in refreshing Token", error);
       return null;

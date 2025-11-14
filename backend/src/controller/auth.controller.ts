@@ -1,107 +1,139 @@
-import express from "express";
-
-import { AuthService } from "../services/user/auth/auth.servise.ts";
+import type { Request, Response } from "express";
+import { z } from "zod";
 import type { IAuthController } from "../interfaces/user/IauthController.ts";
+import type { IAuthService } from "../services/user/auth/IAuthService.ts";
+import type { UnknownError } from "../../types";
+import { LoginDto, ResendOtpDto, SignupDto, VerifyOtpDto } from "../dto/auth.dto.ts";
+import { ApiResponse } from "../utils/response.ts";
+import { HttpStatus } from "../constants/httpStatus.ts";
+import { Messages } from "../constants/messages.ts";
+import { ENV } from "../constants/env.ts";
 
 export class AuthController implements IAuthController {
-  private authService: AuthService;
+  private readonly _authService: IAuthService;
 
-  constructor(authService: AuthService) {
-    this.authService = authService;
+  constructor(authService: IAuthService) {
+    this._authService = authService;
   }
 
-  async signup(req: express.Request, res: express.Response): Promise<void> {
+  private _validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
+    return schema.parse(data);
+  }
+
+  async signup(req: Request, res: Response): Promise<void> {
     try {
-      const { name, email, password, phone } = req.body;
-      const result = await this.authService.signup({ name, email, password, phone });
-      res.status(201).json({
-        success: true,
-        message: result.message,
-      });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      const input = this._validate(SignupDto, req.body);
+      const result = await this._authService.signup(input);
+      ApiResponse.success(res, null, result.message, HttpStatus.CREATED);
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
     }
   }
 
-  async verifyOtp(req: express.Request, res: express.Response): Promise<void> {
+  async verifyOtp(req: Request, res: Response): Promise<void> {
     try {
-      const { email, otp } = req.body;
-      const { accessToken, refreshToken, user } = await this.authService.verifyOtp(email, otp);
-      this.setCookies(res, accessToken, refreshToken);
-      res.json({
-        success: true,
-        message: "Login successful",
+      const input = this._validate(VerifyOtpDto, req.body);
+      const result = await this._authService.verifyOtp(input);
+      this._setCookies(res, result.accessToken, result.refreshToken);
+      ApiResponse.success(res, {
         user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
+          id: result.user._id,
+          name: result.user.name,
+          email: result.user.email,
         },
-      });
-    } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      }, Messages.OTP_VERIFIED);
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
     }
   }
 
-  async resendOtp(req: express.Request, res: express.Response): Promise<void> {
-    console.log("reached controller");
+  async resendOtp(req: Request, res: Response): Promise<void> {
     try {
-      const { email } = req.body;
-      console.log("email from backned controller", email);
-      const result = await this.authService.resendOtp(email);
-      res.json({ success: true, message: result.message });
-    } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      const input = this._validate(ResendOtpDto, req.body);
+      const result = await this._authService.resendOtp(input);
+      ApiResponse.success(res, null, result.message);
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
     }
   }
 
-  async login(req: express.Request, res: express.Response): Promise<void> {
+  async login(req: Request, res: Response): Promise<void> {
     try {
-      const { email, password } = req.body;
-      const { accessToken, refreshToken, user } = await this.authService.login(email, password);
-      this.setCookies(res, accessToken, refreshToken);
-      res.json({
-        success: true,
-        message: "Login successful",
-        user: { _id: user._id, name: user.name, email: user.email, role: user.role },
-      });
-    } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      const input = this._validate(LoginDto, req.body);
+      const result = await this._authService.login(input);
+      this._setCookies(res, result.accessToken, result.refreshToken);
+      ApiResponse.success(res, {
+        user: {
+          id: result.user._id,
+          name: result.user.name,
+          email: result.user.email,
+          role: result.user.role,
+        },
+      }, Messages.LOGIN_SUCCESS);
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
     }
   }
 
-  async refresh(req: express.Request, res: express.Response): Promise<void> {
+  async refresh(req: Request, res: Response): Promise<void> {
     try {
-      const old = req.cookies.refreshToken;
-      if (!old) throw new Error("Missing refresh token");
-      const { accessToken, refreshToken, user } = await this.authService.refresh(old);
-      this.setCookies(res, accessToken, refreshToken);
-      res.json({ success: true, accessToken, refreshToken, user });
-    } catch (error: any) {
-      res.status(402).json({ success: false, message: error.message });
+      const refreshToken = req.cookies.refreshToken;
+      if (!refreshToken) {
+
+        console.log("errororororo found")
+        throw new Error(Messages.REFRESH_TOKEN_MISSING)
+      };
+      const result = await this._authService.refresh(refreshToken);
+      this._setCookies(res, result.accessToken, result.refreshToken);
+      ApiResponse.success(res, { user: result.user });
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
     }
   }
 
-  async logout(req: express.Request, res: express.Response): Promise<void> {
-    const token = req.cookies.refreshToken;
-    if (token) await this.authService.logout(token);
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
-    res.json({ success: true, message: "Logged out" });
+  async forgetpassword(_req: Request, res: Response): Promise<void> {
+    ApiResponse.error(res, "Not implemented", HttpStatus.NOT_FOUND);
   }
 
-  private setCookies(res: express.Response, access: string, refresh: string) {
+  async logout(req: Request, res: Response): Promise<void> {
+    try {
+      const refreshToken = req.cookies.refreshToken;
+      if (refreshToken) await this._authService.logout(refreshToken);
+      res.clearCookie("accessToken").clearCookie("refreshToken");
+      ApiResponse.success(res, null, Messages.LOGOUT_SUCCESS);
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
+    }
+  }
+
+  private _handleError(res: Response, error: UnknownError) {
+    if (error instanceof z.ZodError) {
+      return ApiResponse.error(res, "Validation failed", HttpStatus.BAD_REQUEST);
+    }
+    if (error instanceof Error) {
+      const status = error.message.includes("blocked")
+        ? HttpStatus.FORBIDDEN
+        : error.message.includes("exists")
+        ? HttpStatus.CONFLICT
+        : HttpStatus.BAD_REQUEST;
+      return ApiResponse.error(res, error.message, status);
+    }
+    return ApiResponse.error(res, Messages.INTERNAL_ERROR);
+  }
+
+  private _setCookies(res: Response, access: string, refresh: string) {
     const isProd = process.env.NODE_ENV === "production";
     res.cookie("accessToken", access, {
       httpOnly: true,
       secure: isProd,
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
+      sameSite: "lax",
+      maxAge: ENV.ACCESS_TOKEN_MAX_AGE,
     });
     res.cookie("refreshToken", refresh, {
       httpOnly: true,
       secure: isProd,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+      maxAge: ENV.REFRESH_TOKEN_MAX_AGE,
     });
   }
 }

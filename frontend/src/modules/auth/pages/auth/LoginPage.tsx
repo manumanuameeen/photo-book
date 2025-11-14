@@ -226,40 +226,37 @@ const LoginPage: React.FC = () => {
     return validationErrors;
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  const validationErrors = validateForm(formData);
+  setErrors(validationErrors);
+  if (Object.keys(validationErrors).length > 0) return;
 
-    const validationErrors = validateForm(formData);
-    setErrors(validationErrors);
+  loginMutation.mutate(formData, {
 
-    if (Object.keys(validationErrors).length > 0) return;
+    onSuccess: (response) => {
+      const user = response.data.user
+  setUser(user);
+  toast.success("Login successful! Welcome back.");
 
-    loginMutation.mutate(formData, {
-      onSuccess: (response) => {
-        setUser(response.user);
+  const redirectTo = user.role === "admin" 
+    ? "/admin/dashboard" 
+    : "/main/home";
 
-        toast.success("Login successful! Welcome back.");
-        console.log("Login response:", response);
+  console.log("Redirecting to:", redirectTo);
 
-        if (response.user.role === "admin") {
-          setTimeout(() => {
-            navigate({ to: "/admin/dashboard" })
-          }, 1000)
-          setFormData({ email: "", password: "" });
-        } else {
-          setTimeout(() => {
-            navigate({ to: "/main/home" })
-          }, 1000)
-          setFormData({ email: "", password: "" });
-        }
-      },
-      onError: (error: any) => {
-        const errorMessage =
-          error.response?.data?.message || "Login failed. Please check your credentials. Try later..";
-        toast.error(errorMessage);
-      },
-    });
-  };
+  // Navigate immediately
+  navigate({ to: redirectTo });
+
+  // Reset form
+  setFormData({ email: "", password: "" });
+},
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || "Login failed. Please try again.";
+      toast.error(msg);
+    },
+  });
+};
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3">

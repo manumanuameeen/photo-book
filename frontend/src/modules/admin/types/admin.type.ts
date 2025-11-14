@@ -10,7 +10,7 @@ export interface IUser {
 export interface IUserListResponce {
   success: boolean;
   message: string;
-  users: {
+  data: {
     users: IUser[];
     total: number;
     currentPage: number;

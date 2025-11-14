@@ -127,22 +127,7 @@ const HomePage = () => {
       <section className="relative py-16 px-4 text-center overflow-hidden min-h-[500px]">
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            className="absolute w-full h-full object-cover"
-            onError={(e) => {
-              console.log('Video failed to load, using fallback');
-              e.currentTarget.style.display = 'none';
-            }}
-          >
-            <source src="/videos/wedding-background.mp4" type="video/mp4" />
-            <source src="https://cdn.pixabay.com/video/2022/10/18/135743-762618093_large.mp4" type="video/mp4" />
-            <source src="https://cdn.pixabay.com/video/2021/08/09/84560-587830514_large.mp4" type="video/mp4" />
-            <source src="https://cdn.pixabay.com/video/2023/04/15/159049-820005824_large.mp4" type="video/mp4" />
-          </video>
+      
           
           {/* Fallback background if video doesn't load */}
           <div 

@@ -58,9 +58,10 @@ const UserManagement: React.FC = () => {
   }
 
   let usersArray: IUser[] = [];
+  console.log(" Found users at data.users.users1",);
 
-  if (data?.users?.users && Array.isArray(data.users.users)) {
-    usersArray = data.users.users;
+  if (data?.data?.users && Array.isArray(data?.data?.users)) {
+    usersArray = data.data.users;
     console.log(" Found users at data.users.users");
   }
 
@@ -207,7 +208,7 @@ const UserManagement: React.FC = () => {
         entityName="users"
         columns={columns}
         data={users}
-        totalItems={data?.users?.total ?? 0}
+        totalItems={data?.data?.total ?? 0}
         currentPage={currentPage}
         itemsPerPage={10}
         onPageChange={setCurrentPage}

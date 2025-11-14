@@ -10,14 +10,19 @@ export class AdminRepository implements IAdminRepository {
   async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
     const { limit, page, search, sort } = query;
     const skip = (page - 1) * limit;
-    const searchQuery = search ? { name: { $regex: search, $options: "i" } } : {};
+    const roleFilter = { role: { $ne: "admin" } };
+    const searchQuery = search
+      ? { ...roleFilter, name: { $regex: search, $options: "i" } }
+      : roleFilter;
 
     const users = await User.find(searchQuery)
       .sort({ [sort]: 1 })
       .skip(skip)
       .limit(limit)
       .lean();
-    console.log("user from adminusrrepo", users);
+
+      console.log('user gettgin inthe backend ',users)
+      
     const formatedUser: IUserResponse[] = users.map((user) => ({
       _id: user._id.toString(),
       name: user.name,
