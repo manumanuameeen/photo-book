@@ -5,12 +5,16 @@ import type {
   IAdminUserQuery,
   IPaginationUsers,
 } from "../../../interfaces/admin/IAdminUser.interface.ts";
+import { AdminMapper } from "../../../mappers/admin.mapper.ts";
 
 export class AdminRepository implements IAdminRepository {
+
+
+
   async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
     const { limit, page, search, sort } = query;
     const skip = (page - 1) * limit;
-    const roleFilter = { role: { $ne: "admin" } };
+    const roleFilter = { role: { $ne: "admin" } };// only user
     const searchQuery = search
       ? { ...roleFilter, name: { $regex: search, $options: "i" } }
       : roleFilter;
@@ -21,15 +25,9 @@ export class AdminRepository implements IAdminRepository {
       .limit(limit)
       .lean();
 
-      console.log('user gettgin inthe backend ',users)
-      
-    const formatedUser: IUserResponse[] = users.map((user) => ({
-      _id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      isBlocked: user.isBlocked,
-    }));
+    // console.log('user gettgin inthe backend ', users)
+
+    const formatedUser : IUserResponse [] = users.map(AdminMapper.toUserResponse);
 
     const total = await User.countDocuments(searchQuery);
 
@@ -41,7 +39,7 @@ export class AdminRepository implements IAdminRepository {
     };
   }
 
-  async getUserById(userId: string): Promise<IUserResponse | null> {
+  async getUser(userId: string): Promise<IUserResponse | null> {
     const user = await User.findById(userId).lean();
     if (!user) return null;
 

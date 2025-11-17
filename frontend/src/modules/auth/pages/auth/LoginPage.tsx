@@ -2,7 +2,8 @@ import React, { useState, memo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
-
+import { getErrorMessage } from "../../../../utils/errorhandler";
+// import type{ ApiError } from "../../types/apiError";
 import { useNavigate } from "@tanstack/react-router";
 import { useLogin } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
@@ -181,7 +182,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
       <div className="text-center pt-2">
         <button
           type="button"
-
+          onClick={() => navigate({ to: "/auth/forgetPassword" })}
           className="text-xs text-green-700 hover:underline font-medium"
         >
           Forgot your password?
@@ -226,37 +227,31 @@ const LoginPage: React.FC = () => {
     return validationErrors;
   };
 
-const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
-  const validationErrors = validateForm(formData);
-  setErrors(validationErrors);
-  if (Object.keys(validationErrors).length > 0) return;
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const validationErrors = validateForm(formData);
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
 
-  loginMutation.mutate(formData, {
+    loginMutation.mutate(formData, {
+      onSuccess: (response) => {
+        const user = response.data.user
+        setUser(user);
+        toast.success("Login successful! Welcome back.");
 
-    onSuccess: (response) => {
-      const user = response.data.user
-  setUser(user);
-  toast.success("Login successful! Welcome back.");
+        const redirectTo = user.role === "admin"
+          ? "/admin/dashboard"
+          : "/main/home";
 
-  const redirectTo = user.role === "admin" 
-    ? "/admin/dashboard" 
-    : "/main/home";
-
-  console.log("Redirecting to:", redirectTo);
-
-  // Navigate immediately
-  navigate({ to: redirectTo });
-
-  // Reset form
-  setFormData({ email: "", password: "" });
-},
-    onError: (error: any) => {
-      const msg = error.response?.data?.message || "Login failed. Please try again.";
-      toast.error(msg);
-    },
-  });
-};
+        navigate({ to: redirectTo });
+        setFormData({ email: "", password: "" });
+      },
+      onError: (error: unknown) => {
+        const msg = getErrorMessage(error);
+        toast.error(msg);
+      },
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3">

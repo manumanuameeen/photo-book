@@ -1,6 +1,5 @@
-// import apiClient from "./apiClient";
 import axios from "axios";
-
+import { useAuthStore } from "../modules/auth/store/useAuthStore";
 const rawClient = axios.create({
     baseURL:"http://localhost:5000/api",
     withCredentials:true,
@@ -16,7 +15,6 @@ export class TokenServise{
 
     async logout(){
         await rawClient.post("/user/logout");
-        const {useAuthStore} = await import("../modules/auth/store/useAuthStore")
         useAuthStore.getState().clearUser();
     }
 

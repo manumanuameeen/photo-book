@@ -7,6 +7,9 @@ import Loader from "../../../components/Loader";
 import type { IUser } from "../types/admin.type";
 import { Eye, Lock, Unlock } from "lucide-react";
 import { AxiosError } from "axios";
+// import type { ApiError } from "../../../utils/errorhandler";
+import { getErrorMessage } from "../../../utils/errorhandler";
+import { confirm } from "../../../components/ConfirmToaster";
 
 
 interface UserTableData {
@@ -75,16 +78,17 @@ const UserManagement: React.FC = () => {
     avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`,
   }));
 
+
   const handleBlock = (id: string) => {
+
+  
     blockUser.mutate(id, {
       onSuccess: () => {
         toast.success("User blocked successfully");
-        console.log("✅ user blocked:", id);
       },
-      onError: (error: any) => {
-        const errorMessage = error.response?.data?.message || "Failed to block user";
+      onError: (error:unknown) => {
+        const errorMessage = getErrorMessage(error);
         toast.error(errorMessage);
-        console.error(" Block error:", error);
       },
     });
   };
@@ -93,16 +97,53 @@ const UserManagement: React.FC = () => {
     unblockUser.mutate(id, {
       onSuccess: () => {
         toast.success("User unblocked successfully");
-        console.log(" User unblocked:", id);
       },
-      onError: (error: any) => {
-        const errorMessage = error.response?.data?.message || "Failed to unblock user";
+      onError: (error: unknown) => {
+        const errorMessage = getErrorMessage(error);
         toast.error(errorMessage);
-        console.error(" Unblock error:", error);
       },
     });
   };
 
+
+  //  const handleBlock = (id: string) => {
+
+  //   confirm(
+  //     "Are you want to block this user?",
+  //     () => {
+  //       blockUser.mutate(id, {
+  //         onSuccess: () => {
+  //           toast.success("User blocked successfully");
+  //         },
+  //         onError: (error: unknown) => {
+  //           const errorMessage = getErrorMessage(error);
+  //           toast.error(errorMessage);
+  //         },
+  //       });
+  //     }
+  //   )
+
+  // };
+
+  // const handleUnblock = (id: string) => {
+  //   confirm(
+  //     "Are you sure you want to unblock this user?",
+  //     () => {
+  //       unblockUser.mutate(id, {
+  //         onSuccess: () => {
+  //           toast.success("User unblocked successfully");
+  //         },
+  //         onError: (error: unknown) => {
+  //           const errorMessage = getErrorMessage(error);
+  //           toast.error(errorMessage);
+  //         },
+  //       });
+  //     }
+  //   )
+  // };
+ 
+ 
+ 
   const columns: Column<UserTableData>[] = [
     {
       header: "Name",

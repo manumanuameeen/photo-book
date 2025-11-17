@@ -16,7 +16,10 @@ import { Route as MainHomeRouteImport } from './routes/main/home'
 import { Route as Main_layoutRouteImport } from './routes/main/__layout'
 import { Route as AuthVerifyOtpRouteImport } from './routes/auth/verify-otp'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth/resetPassword'
+import { Route as AuthResetOtpRouteImport } from './routes/auth/reset-otp'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthForgetPasswordRouteImport } from './routes/auth/forgetPassword'
 import { Route as Auth_layoutRouteImport } from './routes/auth/__layout'
 import { Route as Admin_layoutRouteImport } from './routes/admin/__layout'
 import { Route as Admin_layoutUsermanagementRouteImport } from './routes/admin/__layout/usermanagement'
@@ -65,9 +68,24 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/resetPassword',
+  path: '/resetPassword',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthResetOtpRoute = AuthResetOtpRouteImport.update({
+  id: '/reset-otp',
+  path: '/reset-otp',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthForgetPasswordRoute = AuthForgetPasswordRouteImport.update({
+  id: '/forgetPassword',
+  path: '/forgetPassword',
   getParentRoute: () => AuthRoute,
 } as any)
 const Auth_layoutRoute = Auth_layoutRouteImport.update({
@@ -94,7 +112,10 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof Admin_layoutRouteWithChildren
   '/auth': typeof Auth_layoutRoute
+  '/auth/forgetPassword': typeof AuthForgetPasswordRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/reset-otp': typeof AuthResetOtpRoute
+  '/auth/resetPassword': typeof AuthResetPasswordRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-otp': typeof AuthVerifyOtpRoute
   '/main': typeof Main_layoutRoute
@@ -106,7 +127,10 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof Admin_layoutRouteWithChildren
   '/auth': typeof Auth_layoutRoute
+  '/auth/forgetPassword': typeof AuthForgetPasswordRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/reset-otp': typeof AuthResetOtpRoute
+  '/auth/resetPassword': typeof AuthResetPasswordRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-otp': typeof AuthVerifyOtpRoute
   '/main': typeof Main_layoutRoute
@@ -121,7 +145,10 @@ export interface FileRoutesById {
   '/admin/__layout': typeof Admin_layoutRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/auth/__layout': typeof Auth_layoutRoute
+  '/auth/forgetPassword': typeof AuthForgetPasswordRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/reset-otp': typeof AuthResetOtpRoute
+  '/auth/resetPassword': typeof AuthResetPasswordRoute
   '/auth/signup': typeof AuthSignupRoute
   '/auth/verify-otp': typeof AuthVerifyOtpRoute
   '/main': typeof MainRouteWithChildren
@@ -136,7 +163,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/auth'
+    | '/auth/forgetPassword'
     | '/auth/login'
+    | '/auth/reset-otp'
+    | '/auth/resetPassword'
     | '/auth/signup'
     | '/auth/verify-otp'
     | '/main'
@@ -148,7 +178,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/auth'
+    | '/auth/forgetPassword'
     | '/auth/login'
+    | '/auth/reset-otp'
+    | '/auth/resetPassword'
     | '/auth/signup'
     | '/auth/verify-otp'
     | '/main'
@@ -162,7 +195,10 @@ export interface FileRouteTypes {
     | '/admin/__layout'
     | '/auth'
     | '/auth/__layout'
+    | '/auth/forgetPassword'
     | '/auth/login'
+    | '/auth/reset-otp'
+    | '/auth/resetPassword'
     | '/auth/signup'
     | '/auth/verify-otp'
     | '/main'
@@ -237,11 +273,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/auth/resetPassword': {
+      id: '/auth/resetPassword'
+      path: '/resetPassword'
+      fullPath: '/auth/resetPassword'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/reset-otp': {
+      id: '/auth/reset-otp'
+      path: '/reset-otp'
+      fullPath: '/auth/reset-otp'
+      preLoaderRoute: typeof AuthResetOtpRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/login': {
       id: '/auth/login'
       path: '/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/forgetPassword': {
+      id: '/auth/forgetPassword'
+      path: '/forgetPassword'
+      fullPath: '/auth/forgetPassword'
+      preLoaderRoute: typeof AuthForgetPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
     '/auth/__layout': {
@@ -301,14 +358,20 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AuthRouteChildren {
   Auth_layoutRoute: typeof Auth_layoutRoute
+  AuthForgetPasswordRoute: typeof AuthForgetPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
+  AuthResetOtpRoute: typeof AuthResetOtpRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignupRoute: typeof AuthSignupRoute
   AuthVerifyOtpRoute: typeof AuthVerifyOtpRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   Auth_layoutRoute: Auth_layoutRoute,
+  AuthForgetPasswordRoute: AuthForgetPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
+  AuthResetOtpRoute: AuthResetOtpRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignupRoute: AuthSignupRoute,
   AuthVerifyOtpRoute: AuthVerifyOtpRoute,
 }

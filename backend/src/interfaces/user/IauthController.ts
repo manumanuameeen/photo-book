@@ -7,4 +7,6 @@ export interface IAuthController {
   login(req: express.Request, res: express.Response): Promise<void>;
   refresh(req: express.Request, res: express.Response): Promise<void>;
   forgetpassword(req: express.Request, res: express.Response): Promise<void>;
+  verifyResetOtp(req: express.Request, res: express.Response): Promise<void>;
+  resetPassword(req: express.Request, res: express.Response): Promise<void>;
 }

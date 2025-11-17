@@ -15,3 +15,17 @@ export interface IAuthResponse {
 export interface ISignupRequest { name: string; email: string; password: string; phone: string; }
 export interface ILoginRequest { email: string; password: string; }
 export interface IVerifyOtpRequest { email: string; otp: string; }
+export interface IForgetPassword {
+  email: string
+};
+
+export interface IVerifyResetOtp {
+  email: string,
+  otp: string
+};
+
+export interface IResetPassword {
+  email: string,
+  newPassword: string,
+  confirmPassword: string,
+}

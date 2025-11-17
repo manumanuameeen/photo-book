@@ -1,15 +1,16 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import type { UserRole } from "../interfaces/user/userRole.enum.ts";
-import type { UserStatus } from "../interfaces/user/userStatus.enum.ts";
-
+import type { UserRoleType } from "../interfaces/user/userRole.enum.ts";
+import UserRole from "../interfaces/user/userRole.enum.ts";
+import type { UserStatusType } from "../interfaces/user/userStatus.enum.ts";
+import UserStatus from "../interfaces/user/userStatus.enum.ts";
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
   phone: string;
-  role: UserRole;
-  status: UserStatus;
+  role: UserRoleType;
+  status: UserStatusType;
   isBlocked: boolean;
   walletBalance: number;
   comparePassword(candidate: string): Promise<boolean>;
@@ -21,8 +22,16 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true, minlength: 8 },
     phone: { type: String, required: true },
-    role: { type: String, enum: Object.values({} as any), default: "user" },
-    status: { type: String, enum: Object.values({} as any), default: "active" },
+   role: { 
+      type: String, 
+      enum: Object.values(UserRole), 
+      default: UserRole.USER 
+    },
+    status: { 
+      type: String, 
+      enum: Object.values(UserStatus), 
+      default: UserStatus.ACTIVE 
+    },
     isBlocked: { type: Boolean, default: false },
     walletBalance: { type: Number, default: 0 },
   },

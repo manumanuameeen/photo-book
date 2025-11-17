@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { IAuthController } from "../interfaces/user/IauthController.ts";
 import type { IAuthService } from "../services/user/auth/IAuthService.ts";
 import type { UnknownError } from "../../types";
-import { LoginDto, ResendOtpDto, SignupDto, VerifyOtpDto } from "../dto/auth.dto.ts";
+import { ForgetPasswordDto, LoginDto, ResendOtpDto, ResetPasswordDto, SignupDto, VerifyOtpDto, VerifyResetOtpDto } from "../dto/auth.dto.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { Messages } from "../constants/messages.ts";
@@ -20,7 +20,7 @@ export class AuthController implements IAuthController {
     return schema.parse(data);
   }
 
-  async signup(req: Request, res: Response): Promise<void> {
+  signup = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this._validate(SignupDto, req.body);
       const result = await this._authService.signup(input);
@@ -30,7 +30,7 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async verifyOtp(req: Request, res: Response): Promise<void> {
+  verifyOtp = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this._validate(VerifyOtpDto, req.body);
       const result = await this._authService.verifyOtp(input);
@@ -47,7 +47,7 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async resendOtp(req: Request, res: Response): Promise<void> {
+  resendOtp = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this._validate(ResendOtpDto, req.body);
       const result = await this._authService.resendOtp(input);
@@ -57,7 +57,7 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async login(req: Request, res: Response): Promise<void> {
+  login = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this._validate(LoginDto, req.body);
       const result = await this._authService.login(input);
@@ -75,12 +75,11 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async refresh(req: Request, res: Response): Promise<void> {
+  refresh = async (req: Request, res: Response): Promise<void> => {
     try {
       const refreshToken = req.cookies.refreshToken;
       if (!refreshToken) {
 
-        console.log("errororororo found")
         throw new Error(Messages.REFRESH_TOKEN_MISSING)
       };
       const result = await this._authService.refresh(refreshToken);
@@ -91,16 +90,47 @@ export class AuthController implements IAuthController {
     }
   }
 
-  async forgetpassword(_req: Request, res: Response): Promise<void> {
-    ApiResponse.error(res, "Not implemented", HttpStatus.NOT_FOUND);
-  }
-
-  async logout(req: Request, res: Response): Promise<void> {
+  logout = async (req: Request, res: Response): Promise<void> => {
     try {
       const refreshToken = req.cookies.refreshToken;
       if (refreshToken) await this._authService.logout(refreshToken);
       res.clearCookie("accessToken").clearCookie("refreshToken");
       ApiResponse.success(res, null, Messages.LOGOUT_SUCCESS);
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
+    }
+
+  }
+
+  forgetpassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      // console.log(req)
+      const input = this._validate(ForgetPasswordDto, req.body);
+      const result = await this._authService.forgetPassword(input);
+      ApiResponse.success(res, null, result.message)
+
+    } catch (error: UnknownError) {
+      this._handleError(res, error);
+    }
+  }
+
+  verifyResetOtp = async (req: Request, res: Response): Promise<void> => {
+    try {
+
+      const input = this._validate(VerifyResetOtpDto, req.body);
+      const result = await this._authService.verifyResetOtp(input)
+      ApiResponse.success(res, null, result.message)
+
+    } catch (error: UnknownError) {
+      this._handleError(res, error)
+    }
+  }
+
+  resetPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const input = this._validate(ResetPasswordDto, req.body);
+      const result = await this._authService.resetPassword(input);
+      ApiResponse.success(res, null, result.message)
     } catch (error: UnknownError) {
       this._handleError(res, error);
     }
@@ -114,8 +144,8 @@ export class AuthController implements IAuthController {
       const status = error.message.includes("blocked")
         ? HttpStatus.FORBIDDEN
         : error.message.includes("exists")
-        ? HttpStatus.CONFLICT
-        : HttpStatus.BAD_REQUEST;
+          ? HttpStatus.CONFLICT
+          : HttpStatus.BAD_REQUEST;
       return ApiResponse.error(res, error.message, status);
     }
     return ApiResponse.error(res, Messages.INTERNAL_ERROR);

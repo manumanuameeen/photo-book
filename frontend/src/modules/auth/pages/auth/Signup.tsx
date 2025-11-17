@@ -287,8 +287,8 @@ const Signup: React.FC = () => {
       onSuccess: (response) => {
         console.log("✅ Signup successful:", response);
         
-        if (response.user) {
-          setUser(response.user);
+        if (response.data.user) {
+          setUser(response.data.user);
         }
         
         sessionStorage.setItem('pendingVerificationEmail', signupData.email);

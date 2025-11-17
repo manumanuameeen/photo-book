@@ -5,6 +5,9 @@ import type {
   ISignupRequest,
   IVerifyOtpRequest,
   IAuthResponse,
+  IForgetPassword,
+  IResetPassword,
+  IVerifyResetOtp
 } from "../types/auth.types";
 
 export function useSignup() {
@@ -21,8 +24,10 @@ export function useVerifyOtp() {
 
 export function useLogin() {
   return useMutation<IAuthResponse, Error, ILoginRequest>({
-    mutationFn: (data) => { console.log(data)
-      return authService.login(data)}
+    mutationFn: (data) => {
+      // console.log(data)
+      return authService.login(data)
+    }
     ,
   });
 }
@@ -31,6 +36,23 @@ export function useResendOtp() {
   return useMutation<{ message: string }, Error, string>({
     mutationFn: (email) => authService.resendOtp(email),
   });
+}
 
 
+export function useForgetPassword() {
+  return useMutation<{message:string},Error,IForgetPassword>({
+    mutationFn: (data) => authService.forgetPassword(data)
+  })
+}
+
+export function useVerifyResetOtp() {
+  return useMutation<{message:string},Error,IVerifyResetOtp>({
+    mutationFn: (data) =>  authService.verifyResetOtp(data) 
+  })
+}
+
+export function useResetPassword() {
+  return useMutation<{message:string},Error,IResetPassword>({
+    mutationFn: (data)=>authService.resetPassword(data)
+  })
 }

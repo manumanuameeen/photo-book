@@ -4,6 +4,9 @@ import type { IAdminController } from "../interfaces/admin/IAdminController";
 import { z } from "zod";
 import { AdminUserQueryDto } from "../dto/admin.dto.ts";
 import { AdminMapper } from "../mappers/admin.mapper.ts";
+
+
+
 export class AdminController implements IAdminController {
   private adminService: IAdminService;
 
@@ -22,18 +25,16 @@ export class AdminController implements IAdminController {
       const queryDto = this._validate(AdminUserQueryDto, req.query);
 
       const queryInput = AdminMapper.toQueryInput(queryDto);
-
-
       const result = await this.adminService.getAllUser(queryInput)
       // console.log("result. fro mcontroller:", result)
       res.status(200).json({
         success: true,
         message: "Users fetched successfully",
         data: {
-          users: result.users.map((AdminMapper.toUserResponse)),
+          users: result.users.map(AdminMapper.toUserResponse),
           pagination: {
             total: result.total,
-            totalPage: result.totalPages,
+            totalPages: result.totalPages,
             currentPage: result.currentPage
 
           },
@@ -48,10 +49,10 @@ export class AdminController implements IAdminController {
     }
   };
 
-  getUserId = async (req: Request, res: Response): Promise<void> => {
+  getUser = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const user = await this.adminService.getUserById(id);
+      const user = await this.adminService.getUser(id);
 
       if (!user) {
         res.status(404).json({

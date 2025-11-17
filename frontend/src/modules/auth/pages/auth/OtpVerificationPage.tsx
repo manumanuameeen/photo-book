@@ -21,6 +21,7 @@ const VerifyOtp: React.FC = () => {
   
   const getEmail = (): string => {
     const sessionEmail = sessionStorage.getItem('pendingVerificationEmail');
+    console.log("geting email from ",sessionEmail )
     if (sessionEmail) return sessionEmail;
     if (user?.email) return user.email;
     return "";

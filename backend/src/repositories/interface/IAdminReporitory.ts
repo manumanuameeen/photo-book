@@ -6,7 +6,7 @@ import type {
 
 export interface IAdminRepository {
   getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers>;
-  getUserById(userId: string): Promise<IUserResponse | null>;
+  getUser(userId: string): Promise<IUserResponse | null>;
   blockUser(userId: string): Promise<IUserResponse | null>;
   unblockUser(userId: string): Promise<IUserResponse | null>;
 }

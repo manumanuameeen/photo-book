@@ -17,8 +17,8 @@ export class AdminServices implements IAdminService {
     return this.adminRepository.getAllUser(query);
   }
 
-  getUserById(userId: string): Promise<IUserResponse | null> {
-    return this.adminRepository.getUserById(userId);
+  getUser(userId: string): Promise<IUserResponse | null> {
+    return this.adminRepository.getUser(userId);
   }
 
   async blockUser(userId: string): Promise<IUserResponse | null> {

@@ -13,6 +13,11 @@ interface AuthState {
   rehydrateUser: () => Promise<void>;
 }
 
+interface CacheData {
+  user: IUser;
+  expires: number;
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -48,31 +53,38 @@ export const useAuthStore = create<AuthState>()(
         const cached = sessionStorage.getItem("auth-cache");
         if (cached) {
           try {
-            const { user, expires } = JSON.parse(cached);
+            const { user, expires }: CacheData = JSON.parse(cached);
             if (Date.now() < expires) {
               set({
                 user,
                 isAuthenticated: true,
-                role: user.role as any,
+                role: user.role as "user" | "admin" | "photographer",
               });
               return;
             }
-          } catch {}
+          } catch (err) {
+            console.error("Failed to parse cache:", err);
+          }
         }
 
-        const data = await authService.getCurrentUser();
-        if (data?.data?.user) {
-          const cache = {
-            user: data.data.user,
-            expires: Date.now() + 5 * 60 * 1000,
-          };
-          sessionStorage.setItem("auth-cache", JSON.stringify(cache));
-          set({
-            user: data.data.user,
-            isAuthenticated: true,
-            role: data.data.user.role as any,
-          });
-        } else {
+        try {
+          const data = await authService.getCurrentUser();
+          if (data?.data?.user) {
+            const cache: CacheData = {
+              user: data.data.user,
+              expires: Date.now() + 5 * 60 * 1000,
+            };
+            sessionStorage.setItem("auth-cache", JSON.stringify(cache));
+            set({
+              user: data.data.user,
+              isAuthenticated: true,
+              role: data.data.user.role as "user" | "admin" | "photographer",
+            });
+          } else {
+            set({ user: null, isAuthenticated: false, role: null });
+          }
+        } catch (err) {
+          console.error("Failed to rehydrate user:", err);
           set({ user: null, isAuthenticated: false, role: null });
         }
       },

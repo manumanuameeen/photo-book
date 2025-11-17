@@ -1,5 +1,6 @@
 import { tokenService } from "./tokenService";
-import axios from "axios";
+import axios,{ AxiosError } from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
 import { router } from "../main";
 import toast from "react-hot-toast";
 
@@ -8,15 +9,18 @@ const apiClient = axios.create({
     withCredentials: true,
 });
 
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+    _retry?: boolean;
+}
 
 let isRefreshing = false;
-let refreshPromise: any = null;
+let refreshPromise: Promise<{ user?: unknown }> | null = null;
 
 apiClient.interceptors.response.use(
     (res) => res,
-    async (error) => {
+    async (error: AxiosError) => {
         const status = error.response?.status;
-        const original = error.config;
+        const original = error.config as ExtendedAxiosRequestConfig;
 
         if (status === 401 && original && !original._retry) {
             original._retry = true;
@@ -33,7 +37,7 @@ apiClient.interceptors.response.use(
                 const data = await refreshPromise;
                 if (data?.user) {
                     const { useAuthStore } = await import("../modules/auth/store/useAuthStore");
-                    useAuthStore.getState().setUser(data.user);
+                    useAuthStore.getState().setUser(data.user as never);
                 }
                 return apiClient(original);
             } catch (err) {
@@ -45,9 +49,13 @@ apiClient.interceptors.response.use(
         }
 
         if (status === 403) {
-            toast.error(error.response?.data?.message || "Access denied.");
-        } else if (error.response?.data?.message) {
-            toast.error(error.response.data.message);
+            const message = (error.response?.data as { message?: string })?.message;
+            toast.error(message || "Access denied.");
+        } else if (error.response?.data) {
+            const message = (error.response.data as { message?: string })?.message;
+            if (message) {
+                toast.error(message);
+            }
         }
 
         return Promise.reject(error);

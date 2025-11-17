@@ -32,9 +32,9 @@ export const useBlockUser = () => {
     return useMutation({
         mutationFn: (id: string) => AdminUserService.blockuser(id),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-user"], exact: false }),
-
     });
 }
+
 
 export const useUnblockUser = () => {
 
@@ -43,5 +43,4 @@ export const useUnblockUser = () => {
         mutationFn: (id: string) => AdminUserService.unblockUser(id),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-user"],exact:false })
     })
-
 }

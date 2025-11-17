@@ -36,7 +36,23 @@ export class NodeMailerService implements IEmailservice {
     }
   }
 
-  //templata
+  async sendResetCode(email: string, otp: string, name: string): Promise<void> {
+    const html = `
+    <h2>Hi ${name},</h2>
+    <p>We received a request to reset your PhotoBook password.</p>
+    <div style="background:#f0f0f0;padding:20px;text-align:center;font-size:32px;letter-spacing:8px;">
+      <strong>${otp}</strong>
+    </div>
+    <p>This code expires in <strong>5 minutes</strong>.</p>
+    <p>If you didn't request this, ignore this email.</p>
+  `;
+    await mailTransport.sendMail({
+      from: `"PhotoBook" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Password Reset Code",
+      html,
+    });
+  }
 
   private getotpEmailTemplate(name: string, otp: string): string {
     return `

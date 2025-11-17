@@ -3,5 +3,5 @@ const UserStatus = {
   INACTIVE: "inactive",
   PENDING: "pending",
 } as const;
-export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
+export type UserStatusType = (typeof UserStatus)[keyof typeof UserStatus];
 export default UserStatus;

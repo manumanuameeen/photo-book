@@ -1,5 +1,5 @@
 import { authRepository } from "../repositories/implementation/authRepository";
-import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest } from "../types/auth.types";
+import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest, IForgetPassword, IVerifyResetOtp, IResetPassword } from "../types/auth.types";
 import type { IAuthService } from "./IAuthsevice";
 
 class AuthService implements IAuthService {
@@ -19,6 +19,19 @@ class AuthService implements IAuthService {
     return authRepository.logout();
   }
 
+  async forgetPassword(data:IForgetPassword): Promise<{ message: string; }> {
+    return authRepository.forgetPassword(data);
+  }
+
+  async verifyResetOtp(data:IVerifyResetOtp): Promise<{ message: string; }> {
+    return authRepository.verifyResetOtp(data)
+  }
+
+  async resetPassword(data:IResetPassword): Promise<{ message: string; }> {
+    return authRepository.resetPassword(data)
+  }
+
+
   async getCurrentUser(): Promise<IAuthResponse | null> {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/user/refresh-token`, {
@@ -27,7 +40,7 @@ class AuthService implements IAuthService {
         headers: { "Content-Type": "application/json" }
       })
 
-      if(!res.ok){
+      if (!res.ok) {
         return null
       }
 
