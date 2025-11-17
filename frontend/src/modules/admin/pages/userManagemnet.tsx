@@ -9,8 +9,6 @@ import { Eye, Lock, Unlock } from "lucide-react";
 import { AxiosError } from "axios";
 // import type { ApiError } from "../../../utils/errorhandler";
 import { getErrorMessage } from "../../../utils/errorhandler";
-import { confirm } from "../../../components/ConfirmToaster";
-
 
 interface UserTableData {
   id: string;

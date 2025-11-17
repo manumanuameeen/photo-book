@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import type { IAdminService } from "../services/admin/interface/IAdminService";
-import type { IAdminController } from "../interfaces/admin/IAdminController";
+import type { IAdminService } from "../services/admin/interface/IAdminService.ts";
+import type { IAdminController } from "../interfaces/admin/IAdminController.ts";
 import { z } from "zod";
 import { AdminUserQueryDto } from "../dto/admin.dto.ts";
 import { AdminMapper } from "../mappers/admin.mapper.ts";

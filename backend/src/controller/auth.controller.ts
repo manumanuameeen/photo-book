@@ -2,7 +2,8 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import type { IAuthController } from "../interfaces/user/IauthController.ts";
 import type { IAuthService } from "../services/user/auth/IAuthService.ts";
-import type { UnknownError } from "../../types";
+
+import {UnknownError} from "../../types/index.ts"
 import { ForgetPasswordDto, LoginDto, ResendOtpDto, ResetPasswordDto, SignupDto, VerifyOtpDto, VerifyResetOtpDto } from "../dto/auth.dto.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
