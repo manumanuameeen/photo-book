@@ -6,6 +6,19 @@ import photobookLogo from "../../../../assets/photoBook-icon.png";
 
 import { useNavigate } from '@tanstack/react-router'
 import { useVerifyOtp, useResendOtp } from "../../hooks/useAuth";
+import { ROUTES } from "../../../../constants/routes";
+
+
+
+interface VerifyOtpError {
+  response?: {
+    data?: {
+      message?: string
+    };
+  };
+  message?: string
+}
+
 
 const OTP_LENGTH = 6;
 const OTP_TIMER_DURATION = 10;
@@ -13,21 +26,14 @@ const OTP_TIMER_DURATION = 10;
 const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
   const { user, clearUser } = useAuthStore();
-  
+
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
 
   const [isVerifying, setIsVerifying] = useState(false);
-  
-  const getEmail = (): string => {
-    const sessionEmail = sessionStorage.getItem('pendingVerificationEmail');
-    console.log("geting email from ",sessionEmail )
-    if (sessionEmail) return sessionEmail;
-    if (user?.email) return user.email;
-    return "";
-  };
 
-  const email = getEmail();
+
+  const email = user?.email || "";
 
   const [otp, setOtp] = useState<string[]>(new Array(OTP_LENGTH).fill(""));
   const [timer, setTimer] = useState<number>(OTP_TIMER_DURATION);
@@ -37,12 +43,12 @@ const VerifyOtp: React.FC = () => {
   const fullOtpEntered = fullOtp.length === OTP_LENGTH;
 
   useEffect(() => {
-    if (isVerifying) return; 
-    
+    if (isVerifying) return;
+
     if (!email) {
       toast.error("No email found. Please sign up first.");
       const timeoutId = setTimeout(() => {
-        navigate({ to: "/auth/signup" });
+        navigate({ to: ROUTES.AUTH.SIGNUP });
       }, 1500);
       return () => clearTimeout(timeoutId);
     }
@@ -64,35 +70,28 @@ const VerifyOtp: React.FC = () => {
 
     if (!email) {
       toast.error("Email is missing. Please sign up again.");
-      navigate({ to: "/auth/signup" });
+      navigate({ to: ROUTES.AUTH.SIGNUP });
       return;
     }
 
-  
+
     setIsVerifying(true);
 
     verifyOtpMutation.mutate(
       { email, otp: fullOtp },
       {
-        onSuccess: (response) => {
+        onSuccess: () => {
           toast.success("OTP verified successfully!");
-          console.log("Verify OTP response:", response);
-          
-       
-          sessionStorage.removeItem('pendingVerificationEmail');
+          sessionStorage.removeItem("pendingVerificationEmail");
           clearUser();
-          
-         
-          navigate({ to: "/auth/login" });
+          navigate({ to: ROUTES.AUTH.LOGIN })
         },
-        onError: (error: any) => {
-        
+        onError: (error: unknown) => {
           setIsVerifying(false);
-          
-          const errorMessage =
-            error.response?.data?.message || "OTP verification failed";
+          const typedError = error as VerifyOtpError;
+          const errorMessage = typedError.response?.data?.message || "OTP verification failed";
           toast.error(errorMessage);
-          console.error("OTP verification error:", error);
+          console.log("OTP verifaication error:", error);
         },
       }
     );
@@ -103,7 +102,7 @@ const VerifyOtp: React.FC = () => {
 
     if (!email) {
       toast.error("Email is missing. Please sign up again.");
-      navigate({ to: "/auth/signup" });
+      navigate({ to:  ROUTES.AUTH.SIGNUP });
       return;
     }
 
@@ -114,14 +113,14 @@ const VerifyOtp: React.FC = () => {
         setTimer(OTP_TIMER_DURATION);
         inputRefs.current[0]?.focus();
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
+        const typedError = error as VerifyOtpError;
         const errorMessage =
-          error.response?.data?.message || "Failed to resend OTP";
+          typedError.response?.data?.message || "Failed to resend OTP";
         toast.error(errorMessage);
       },
     });
   };
-
   const isLoading = verifyOtpMutation.isPending || resendOtpMutation.isPending;
 
   if (!email && !isVerifying) {
@@ -138,7 +137,7 @@ const VerifyOtp: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-white p-3">
       <Toaster position="top-center" reverseOrder={false} />
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
-        
+
         <div
           className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
           style={{ backgroundColor: "#006039" }}
@@ -156,7 +155,7 @@ const VerifyOtp: React.FC = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
           <div className="flex items-center mb-4">
             <img
@@ -165,7 +164,7 @@ const VerifyOtp: React.FC = () => {
               style={{ width: 180, height: 120, marginRight: 20 }}
             />
           </div>
-          
+
           <div className="flex border-b mb-6 text-sm">
             <div className="px-3 py-2 text-green-700 font-semibold border-b-2 border-green-700">
               Verify OTP
@@ -186,12 +185,8 @@ const VerifyOtp: React.FC = () => {
                 type="text"
                 value={fullOtp}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, "").slice(0, OTP_LENGTH);
-                  const newOtp = value.split("");
-                  while (newOtp.length < OTP_LENGTH) {
-                    newOtp.push("");
-                  }
-                  setOtp(newOtp);
+                  const value = e.target.value.replace(/[^0-9]/g, "").slice(0, OTP_LENGTH)
+                  setOtp(value.split(""))
                 }}
                 placeholder="Enter 6-digit OTP"
                 maxLength={OTP_LENGTH}

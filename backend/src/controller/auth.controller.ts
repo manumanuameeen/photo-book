@@ -2,13 +2,21 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import type { IAuthController } from "../interfaces/user/IauthController.ts";
 import type { IAuthService } from "../services/user/auth/IAuthService.ts";
-
-import {UnknownError} from "../../types/index.ts"
-import { ForgetPasswordDto, LoginDto, ResendOtpDto, ResetPasswordDto, SignupDto, VerifyOtpDto, VerifyResetOtpDto } from "../dto/auth.dto.ts";
+import {
+  ForgetPasswordDto,
+  LoginDto,
+  ResendOtpDto,
+  ResetPasswordDto,
+  SignupDto,
+  VerifyOtpDto,
+  VerifyResetOtpDto,
+} from "../dto/auth.dto.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { Messages } from "../constants/messages.ts";
 import { ENV } from "../constants/env.ts";
+import { AppError } from "../utils/AppError.ts";
+import { UserMapper } from "../mappers/user.mapper.ts";
 
 export class AuthController implements IAuthController {
   private readonly _authService: IAuthService;
@@ -25,71 +33,90 @@ export class AuthController implements IAuthController {
     try {
       const input = this._validate(SignupDto, req.body);
       const result = await this._authService.signup(input);
-      ApiResponse.success(res, null, result.message, HttpStatus.CREATED);
-    } catch (error: UnknownError) {
+      ApiResponse.success(
+        res,
+        { user: { email: input.email, name: input.name } },
+        result.message,
+        HttpStatus.CREATED,
+      );
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
-  }
+  };
 
   verifyOtp = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this._validate(VerifyOtpDto, req.body);
       const result = await this._authService.verifyOtp(input);
       this._setCookies(res, result.accessToken, result.refreshToken);
-      ApiResponse.success(res, {
-        user: {
-          id: result.user._id,
-          name: result.user.name,
-          email: result.user.email,
+      ApiResponse.success(
+        res,
+        {
+          user: UserMapper.toAuthResponse(result.user),
         },
-      }, Messages.OTP_VERIFIED);
-    } catch (error: UnknownError) {
+        Messages.OTP_VERIFIED,
+      );
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
-  }
+  };
 
   resendOtp = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this._validate(ResendOtpDto, req.body);
       const result = await this._authService.resendOtp(input);
       ApiResponse.success(res, null, result.message);
-    } catch (error: UnknownError) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
-  }
+  };
 
   login = async (req: Request, res: Response): Promise<void> => {
     try {
+      console.log("login controller", req.body);
       const input = this._validate(LoginDto, req.body);
       const result = await this._authService.login(input);
       this._setCookies(res, result.accessToken, result.refreshToken);
-      ApiResponse.success(res, {
-        user: {
-          id: result.user._id,
-          name: result.user.name,
-          email: result.user.email,
-          role: result.user.role,
+      ApiResponse.success(
+        res,
+        {
+          user: UserMapper.toAuthResponse(result.user),
         },
-      }, Messages.LOGIN_SUCCESS);
-    } catch (error: UnknownError) {
+        Messages.LOGIN_SUCCESS,
+      );
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
-  }
+  };
 
   refresh = async (req: Request, res: Response): Promise<void> => {
     try {
       const refreshToken = req.cookies.refreshToken;
-      if (!refreshToken) {
 
-        throw new Error(Messages.REFRESH_TOKEN_MISSING)
-      };
+      console.log("🔄 Refresh token request received");
+      console.log("📝 Cookies:", req.cookies);
+
+      if (!refreshToken) {
+        console.log("❌ No refresh token found in cookies");
+        throw new AppError(Messages.REFRESH_TOKEN_MISSING, HttpStatus.UNAUTHORIZED);
+      }
+
+      console.log("✅ Refresh token found, attempting refresh...");
       const result = await this._authService.refresh(refreshToken);
+
+      console.log("✅ Refresh successful, setting new cookies");
       this._setCookies(res, result.accessToken, result.refreshToken);
-      ApiResponse.success(res, { user: result.user });
-    } catch (error: UnknownError) {
+
+      ApiResponse.success(res, { user: UserMapper.toAuthResponse(result.user) });
+    } catch (error: unknown) {
+      console.error("❌ Refresh error:", error);
+
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+
       this._handleError(res, error);
     }
-  }
+  };
 
   logout = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -97,74 +124,83 @@ export class AuthController implements IAuthController {
       if (refreshToken) await this._authService.logout(refreshToken);
       res.clearCookie("accessToken").clearCookie("refreshToken");
       ApiResponse.success(res, null, Messages.LOGOUT_SUCCESS);
-    } catch (error: UnknownError) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
-
-  }
+  };
 
   forgetpassword = async (req: Request, res: Response): Promise<void> => {
     try {
-      // console.log(req)
       const input = this._validate(ForgetPasswordDto, req.body);
       const result = await this._authService.forgetPassword(input);
-      ApiResponse.success(res, null, result.message)
-
-    } catch (error: UnknownError) {
+      ApiResponse.success(res, null, result.message);
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
-  }
+  };
 
   verifyResetOtp = async (req: Request, res: Response): Promise<void> => {
     try {
-
+      console.log("reached");
       const input = this._validate(VerifyResetOtpDto, req.body);
-      const result = await this._authService.verifyResetOtp(input)
-      ApiResponse.success(res, null, result.message)
-
-    } catch (error: UnknownError) {
-      this._handleError(res, error)
+      const result = await this._authService.verifyResetOtp(input);
+      ApiResponse.success(res, null, result.message);
+    } catch (error: unknown) {
+      this._handleError(res, error);
     }
-  }
+  };
 
   resetPassword = async (req: Request, res: Response): Promise<void> => {
     try {
       const input = this._validate(ResetPasswordDto, req.body);
       const result = await this._authService.resetPassword(input);
-      ApiResponse.success(res, null, result.message)
-    } catch (error: UnknownError) {
+      ApiResponse.success(res, null, result.message);
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
-  }
+  };
 
-  private _handleError(res: Response, error: UnknownError) {
+  private _handleError(res: Response, error: unknown): void {
     if (error instanceof z.ZodError) {
-      return ApiResponse.error(res, "Validation failed", HttpStatus.BAD_REQUEST);
+      ApiResponse.error(res, "Validation failed", HttpStatus.BAD_REQUEST);
+      return;
     }
+
+    if (error instanceof AppError) {
+      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
+      return;
+    }
+
     if (error instanceof Error) {
       const status = error.message.includes("blocked")
         ? HttpStatus.FORBIDDEN
         : error.message.includes("exists")
           ? HttpStatus.CONFLICT
           : HttpStatus.BAD_REQUEST;
-      return ApiResponse.error(res, error.message, status);
+      ApiResponse.error(res, error.message, status);
+      return;
     }
-    return ApiResponse.error(res, Messages.INTERNAL_ERROR);
+
+    ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 
-  private _setCookies(res: Response, access: string, refresh: string) {
+  private _setCookies(res: Response, access: string, refresh: string): void {
     const isProd = process.env.NODE_ENV === "production";
+
     res.cookie("accessToken", access, {
       httpOnly: true,
       secure: isProd,
       sameSite: "lax",
       maxAge: ENV.ACCESS_TOKEN_MAX_AGE,
     });
+
     res.cookie("refreshToken", refresh, {
       httpOnly: true,
       secure: isProd,
       sameSite: "lax",
       maxAge: ENV.REFRESH_TOKEN_MAX_AGE,
     });
+
+    console.log("cookies set successfully");
   }
 }

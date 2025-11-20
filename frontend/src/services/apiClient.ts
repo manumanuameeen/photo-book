@@ -1,11 +1,12 @@
 import { tokenService } from "./tokenService";
-import axios,{ AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
-import { router } from "../main";
+import { router } from "../router";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../modules/auth/store/useAuthStore";
 
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
     withCredentials: true,
 });
 
@@ -28,22 +29,32 @@ apiClient.interceptors.response.use(
             if (!isRefreshing) {
                 isRefreshing = true;
                 refreshPromise = tokenService.refreshAccessToken()
+                    .then((data) => {
+                        if (data?.user) {
+                            useAuthStore.getState().setUser(data.user as never);
+                        }
+                        return data;
+                    })
+                    .catch((err) => {
+                        useAuthStore.getState().clearUser();
+                        sessionStorage.removeItem("auth-cache");
+                        throw err;
+                    })
                     .finally(() => {
                         isRefreshing = false;
+                        refreshPromise = null;
                     });
             }
 
             try {
-                const data = await refreshPromise;
-                if (data?.user) {
-                    const { useAuthStore } = await import("../modules/auth/store/useAuthStore");
-                    useAuthStore.getState().setUser(data.user as never);
-                }
+                await refreshPromise;
                 return apiClient(original);
             } catch (err) {
-                await tokenService.logout();
-                toast.error("Session expired. Please login again.");
-                router.navigate({ to: "/auth/login" });
+                const currentPath = window.location.pathname;
+                if (!currentPath.includes('/auth/login')) {
+                    toast.error("Session expired. Please login again.");
+                    router.navigate({ to: "/auth/login" });
+                }
                 return Promise.reject(err);
             }
         }
@@ -51,9 +62,17 @@ apiClient.interceptors.response.use(
         if (status === 403) {
             const message = (error.response?.data as { message?: string })?.message;
             toast.error(message || "Access denied.");
-        } else if (error.response?.data) {
+
+            if (message?.toLowerCase().includes('block')) {
+                useAuthStore.getState().clearUser();
+                sessionStorage.removeItem("auth-cache");
+                router.navigate({ to: "/auth/login" });
+            }
+        }
+
+        if (error.response?.data) {
             const message = (error.response.data as { message?: string })?.message;
-            if (message) {
+            if (message && status !== 401) {
                 toast.error(message);
             }
         }

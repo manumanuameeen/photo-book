@@ -11,6 +11,8 @@ import {
   ToolCase
 } from "lucide-react";
 import photoBookLogo from "../../assets/photoBook-icon.png"
+import { toast } from "sonner";
+import { ROUTES } from "../../constants/routes";
 
 const Colors = {
   darkGreen: "#2e4a2d",
@@ -26,22 +28,23 @@ const Header: React.FC = () => {
   const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
+    toast.success("Logout successfully")
     await logout();
-    navigate({ to: "/auth/login" });
+    navigate({ to:ROUTES.AUTH.LOGIN });
   };
 
   return (
     <header className="bg-white shadow-sm py-4 px-6 md:px-12 border-b border-gray-100">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
 
-        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate({ to: "/main/home" })}>
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate({ to: ROUTES.USER.HOME })}>
           <img src={photoBookLogo} alt="PhotoBook" className="w-10 h-10" />
           <span className="text-xl font-bold" style={{ color: Colors.darkGreen }}>PhotoBook</span>
         </div>
 
 
         <nav className="hidden md:flex space-x-6 text-sm font-medium items-center">
-          <div className="flex items-center space-x-1 cursor-pointer" onClick={() => navigate({ to: "/main/home" })}>
+          <div className="flex items-center space-x-1 cursor-pointer" onClick={() => navigate({ to: ROUTES.USER.HOM })}>
             <Home size={16} />
             <span>Home</span>
           </div>

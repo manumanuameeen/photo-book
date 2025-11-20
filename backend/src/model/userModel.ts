@@ -4,6 +4,7 @@ import type { UserRoleType } from "../interfaces/user/userRole.enum.ts";
 import UserRole from "../interfaces/user/userRole.enum.ts";
 import type { UserStatusType } from "../interfaces/user/userStatus.enum.ts";
 import UserStatus from "../interfaces/user/userStatus.enum.ts";
+
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -22,15 +23,15 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true, minlength: 8 },
     phone: { type: String, required: true },
-   role: { 
-      type: String, 
-      enum: Object.values(UserRole), 
-      default: UserRole.USER 
+    role: {
+      type: String,
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
     },
-    status: { 
-      type: String, 
-      enum: Object.values(UserStatus), 
-      default: UserStatus.ACTIVE 
+    status: {
+      type: String,
+      enum: Object.values(UserStatus),
+      default: UserStatus.ACTIVE,
     },
     isBlocked: { type: Boolean, default: false },
     walletBalance: { type: Number, default: 0 },

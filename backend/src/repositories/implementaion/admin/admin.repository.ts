@@ -8,13 +8,10 @@ import type {
 import { AdminMapper } from "../../../mappers/admin.mapper.ts";
 
 export class AdminRepository implements IAdminRepository {
-
-
-
   async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
     const { limit, page, search, sort } = query;
     const skip = (page - 1) * limit;
-    const roleFilter = { role: { $ne: "admin" } };// only user
+    const roleFilter = { role: { $ne: "admin" } }; // only user
     const searchQuery = search
       ? { ...roleFilter, name: { $regex: search, $options: "i" } }
       : roleFilter;
@@ -25,9 +22,7 @@ export class AdminRepository implements IAdminRepository {
       .limit(limit)
       .lean();
 
-    // console.log('user gettgin inthe backend ', users)
-
-    const formatedUser : IUserResponse [] = users.map(AdminMapper.toUserResponse);
+    const formatedUser: IUserResponse[] = users.map(AdminMapper.toUserResponse);
 
     const total = await User.countDocuments(searchQuery);
 

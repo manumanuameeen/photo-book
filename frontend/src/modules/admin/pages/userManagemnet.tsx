@@ -2,13 +2,17 @@ import React, { useState } from "react";
 import type { Column } from "../../../components/tables/admin/admin.Table";
 import AdminDataTable from "../../../components/tables/admin/admin.Table";
 import { useAdminUser, useBlockUser, useUnblockUser } from "../hooks/useUser";
-import toast, { Toaster } from "react-hot-toast";
+import { toast } from "sonner";
+import { Toaster } from "react-hot-toast";
 import Loader from "../../../components/Loader";
 import type { IUser } from "../types/admin.type";
 import { Eye, Lock, Unlock } from "lucide-react";
 import { AxiosError } from "axios";
 // import type { ApiError } from "../../../utils/errorhandler";
 import { getErrorMessage } from "../../../utils/errorhandler";
+import { confirm } from "../../../components/ConfirmToaster";
+import SearchBar from "../../../components/SearchBat";
+import { useDebounce } from "../../../hooks/debounce";
 
 interface UserTableData {
   id: string;
@@ -21,8 +25,10 @@ interface UserTableData {
 }
 
 const UserManagement: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading, error, isError } = useAdminUser(currentPage, 10, "");
+  const debouncedSearch = useDebounce(searchTerm,500);
+  const { data, isLoading, error, isError } = useAdminUser(currentPage, 10, debouncedSearch);
   const blockUser = useBlockUser();
   const unblockUser = useUnblockUser();
 
@@ -77,71 +83,46 @@ const UserManagement: React.FC = () => {
   }));
 
 
+
+
   const handleBlock = (id: string) => {
 
-  
-    blockUser.mutate(id, {
-      onSuccess: () => {
-        toast.success("User blocked successfully");
-      },
-      onError: (error:unknown) => {
-        const errorMessage = getErrorMessage(error);
-        toast.error(errorMessage);
-      },
-    });
+    confirm(
+      "Are you want to block this user?",
+      () => {
+        blockUser.mutate(id, {
+          onSuccess: () => {
+            toast.success("User blocked successfully");
+          },
+          onError: (error: unknown) => {
+            const errorMessage = getErrorMessage(error);
+            toast.error(errorMessage);
+          },
+        });
+      }
+    )
+
   };
 
   const handleUnblock = (id: string) => {
-    unblockUser.mutate(id, {
-      onSuccess: () => {
-        toast.success("User unblocked successfully");
-      },
-      onError: (error: unknown) => {
-        const errorMessage = getErrorMessage(error);
-        toast.error(errorMessage);
-      },
-    });
+    confirm(
+      "Are you sure you want to unblock this user?",
+      () => {
+        unblockUser.mutate(id, {
+          onSuccess: () => {
+            toast.success("User unblocked successfully");
+          },
+          onError: (error: unknown) => {
+            const errorMessage = getErrorMessage(error);
+            toast.error(errorMessage);
+          },
+        });
+      }
+    )
   };
 
 
-  //  const handleBlock = (id: string) => {
 
-  //   confirm(
-  //     "Are you want to block this user?",
-  //     () => {
-  //       blockUser.mutate(id, {
-  //         onSuccess: () => {
-  //           toast.success("User blocked successfully");
-  //         },
-  //         onError: (error: unknown) => {
-  //           const errorMessage = getErrorMessage(error);
-  //           toast.error(errorMessage);
-  //         },
-  //       });
-  //     }
-  //   )
-
-  // };
-
-  // const handleUnblock = (id: string) => {
-  //   confirm(
-  //     "Are you sure you want to unblock this user?",
-  //     () => {
-  //       unblockUser.mutate(id, {
-  //         onSuccess: () => {
-  //           toast.success("User unblocked successfully");
-  //         },
-  //         onError: (error: unknown) => {
-  //           const errorMessage = getErrorMessage(error);
-  //           toast.error(errorMessage);
-  //         },
-  //       });
-  //     }
-  //   )
-  // };
- 
- 
- 
   const columns: Column<UserTableData>[] = [
     {
       header: "Name",
@@ -241,7 +222,16 @@ const UserManagement: React.FC = () => {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
-
+      <div className="flex justify-between items-center mb-4">
+        <SearchBar
+          value={searchTerm}
+          onChange={(value) => {
+            setSearchTerm(value);
+            setCurrentPage(1);
+          }}
+          placeholder="Search users..."
+        />
+      </div>
       <AdminDataTable
         title="User Management"
         entityName="users"
@@ -256,4 +246,4 @@ const UserManagement: React.FC = () => {
   );
 };
 
-export default UserManagement;
+export default UserManagement;

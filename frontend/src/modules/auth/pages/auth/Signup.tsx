@@ -7,6 +7,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { useSignup } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../../store/useAuthStore";
+import { ROUTES } from "../../../../constants/routes";
+
 
 interface SignupFormData {
   name: string;
@@ -15,6 +17,18 @@ interface SignupFormData {
   password: string;
   confirmPassword: string;
 }
+
+
+
+interface SignupError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string
+}
+
 
 type ValidationErrors = Partial<Record<keyof SignupFormData, string>>;
 
@@ -130,7 +144,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
     <div className="flex border-b mb-6 sm:mb-6 text-sm">
       <div
         className="px-3 py-2 text-gray-500 font-medium cursor-pointer hover:text-green-600 transition-colors"
-        onClick={() => navigate({ to: "/auth/login" })}
+        onClick={() => navigate({ to: ROUTES.AUTH.LOGIN })}
       >
         Login
       </div>
@@ -229,37 +243,37 @@ const Signup: React.FC = () => {
     const validationErrors: ValidationErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\d{10,15}$/;
-    
+
     if (!data.name || data.name.trim() === "") {
       validationErrors.name = "Full name is required.";
     } else if (data.name.trim().length < 2) {
       validationErrors.name = "Name must be at least 2 characters.";
     }
-    
+
     if (!data.email || data.email.trim() === "") {
       validationErrors.email = "Email is required.";
     } else if (!emailRegex.test(data.email)) {
       validationErrors.email = "Invalid email format.";
     }
-    
+
     if (!data.phone || data.phone.trim() === "") {
       validationErrors.phone = "Phone number is required.";
     } else if (!phoneRegex.test(data.phone)) {
       validationErrors.phone = "Phone must be 10-15 digits.";
     }
-    
+
     if (!data.password) {
       validationErrors.password = "Password is required.";
     } else if (data.password.length < 8) {
       validationErrors.password = "Password must be at least 8 characters.";
     }
-    
+
     if (!data.confirmPassword) {
       validationErrors.confirmPassword = "Please confirm your password.";
     } else if (data.password !== data.confirmPassword) {
       validationErrors.confirmPassword = "Passwords do not match.";
     }
-    
+
     return validationErrors;
   };
 
@@ -268,7 +282,7 @@ const Signup: React.FC = () => {
 
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
-    
+
     if (Object.keys(validationErrors).length > 0) {
       toast.error("Please fix the form errors");
       return;
@@ -286,15 +300,15 @@ const Signup: React.FC = () => {
     signupMutation.mutate(signupData, {
       onSuccess: (response) => {
         console.log("✅ Signup successful:", response);
-        
-        if (response.data.user) {
-          setUser(response.data.user);
-        }
-        
-        sessionStorage.setItem('pendingVerificationEmail', signupData.email);
-        
+
+        setUser({
+          email: signupData.email,
+          name: signupData.name,
+        });
+
+        sessionStorage.setItem("pendingVerificationEmail", signupData.email);
         toast.success("Account created! Check your email for OTP.");
-        
+
         setFormData({
           name: "",
           email: "",
@@ -302,20 +316,19 @@ const Signup: React.FC = () => {
           password: "",
           confirmPassword: "",
         });
-        
+
         setTimeout(() => {
-          console.log("🔄 Navigating to verify-otp page...");
-          navigate({ to: "/auth/verify-otp" });
+          navigate({ to:ROUTES.AUTH.VERIFY_OTP });
         }, 1000);
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         console.error("❌ Signup error:", error);
-        
+        const typedError = error as SignupError;
         const errorMessage =
-          error?.response?.data?.message || 
-          error?.message || 
+          typedError?.response?.data?.message ||
+          typedError?.message ||
           "Signup failed. Please try again.";
-        
+
         toast.error(errorMessage);
       },
     });

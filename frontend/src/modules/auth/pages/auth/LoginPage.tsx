@@ -8,6 +8,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useLogin } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../../store/useAuthStore";
+import { ROUTES } from "../../../../constants/routes";
 
 interface LoginFormData {
   email: string;
@@ -235,15 +236,17 @@ const LoginPage: React.FC = () => {
 
     loginMutation.mutate(formData, {
       onSuccess: (response) => {
+        toast.success("Login successful! Welcome back.");
         const user = response.data.user
         setUser(user);
-        toast.success("Login successful! Welcome back.");
 
         const redirectTo = user.role === "admin"
-          ? "/admin/dashboard"
-          : "/main/home";
+          ? ROUTES.ADMIN.DASHBOARD
+          : ROUTES.USER.HOME;
 
-        navigate({ to: redirectTo });
+      
+          navigate({ to: redirectTo });
+    
         setFormData({ email: "", password: "" });
       },
       onError: (error: unknown) => {

@@ -5,8 +5,6 @@ import { z } from "zod";
 import { AdminUserQueryDto } from "../dto/admin.dto.ts";
 import { AdminMapper } from "../mappers/admin.mapper.ts";
 
-
-
 export class AdminController implements IAdminController {
   private adminService: IAdminService;
 
@@ -18,14 +16,12 @@ export class AdminController implements IAdminController {
     return schema.parse(data);
   }
 
-
   getAllUser = async (req: Request, res: Response): Promise<void> => {
     try {
-
       const queryDto = this._validate(AdminUserQueryDto, req.query);
 
       const queryInput = AdminMapper.toQueryInput(queryDto);
-      const result = await this.adminService.getAllUser(queryInput)
+      const result = await this.adminService.getAllUser(queryInput);
       // console.log("result. fro mcontroller:", result)
       res.status(200).json({
         success: true,
@@ -35,8 +31,7 @@ export class AdminController implements IAdminController {
           pagination: {
             total: result.total,
             totalPages: result.totalPages,
-            currentPage: result.currentPage
-
+            currentPage: result.currentPage,
           },
         },
       });

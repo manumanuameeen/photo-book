@@ -3,6 +3,8 @@ import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest, I
 import type { IAuthService } from "./IAuthsevice";
 
 class AuthService implements IAuthService {
+
+  
   async signup(data: ISignupRequest): Promise<IAuthResponse> {
     return authRepository.signup(data);
   }

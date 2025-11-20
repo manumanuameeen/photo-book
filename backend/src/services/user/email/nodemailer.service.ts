@@ -1,8 +1,8 @@
-import type { IEmailservice } from "./IEmail.servise.ts";
+import type { IEmailService } from "./IEmailServise.ts";
 
 import { mailTransport } from "../../../config/email.ts";
 
-export class NodeMailerService implements IEmailservice {
+export class NodeMailerService implements IEmailService {
   async sendOtp(email: string, otp: string, name: string): Promise<void> {
     try {
       console.log("email from nodemailer", email);
@@ -15,8 +15,9 @@ export class NodeMailerService implements IEmailservice {
 
       await mailTransport.sendMail(mailOptions);
       console.log(`otp eamil sent successfulyy to ${email}`);
-      console.log(`otp :${otp}`);
+      console.log(`otp ${otp}`);
     } catch (error: any) {
+      console.log("erron in otp sent");
       throw new Error("Failed to send verification eamil. Please try again.", error);
     }
   }

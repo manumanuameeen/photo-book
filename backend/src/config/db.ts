@@ -6,7 +6,7 @@ export const connectDB = async (): Promise<void> => {
     if (!uri) throw new Error("MongoDB URI missing in environment variables");
 
     await mongoose.connect(uri, {
-      dbName: "photoBookDB"
+      dbName: "photoBookDB",
     });
     console.log("✅ MongoDB connected successfully");
     console.log("📂 Database:", mongoose.connection.db?.databaseName);
