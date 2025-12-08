@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AdminUserService } from "../services/implementaion/admin.user.service";
+import { AdminUserService } from "../services/implements/admin.user.service";
 import type { IPagination } from "../types/IPagination";
 
 
@@ -16,7 +16,9 @@ export const useAdminUser = (page = 1, limit = 10, search = "") => {
         queryKey: ['admin-user', params],
         queryFn: () => AdminUserService.getalluser(params)
     });
+
 };
+
 
 export const useAdminById = (id: string) => {
     return useQuery({

@@ -1,4 +1,5 @@
 import Jwt from "jsonwebtoken";
+import { PhotographerModel } from "../model/photographerModel";
 import type { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 dotenv.config();
@@ -9,13 +10,13 @@ interface JWTPayload {
   email: string;
 }
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: JWTPayload;
   role?: string;
   userId?: string;
 }
 
-export const verifyAccessToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const verifyAccessToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.cookies.accessToken;
 
@@ -28,6 +29,19 @@ export const verifyAccessToken = (req: AuthRequest, res: Response, next: NextFun
     }
 
     const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
+
+    // Check if photographer is blocked
+    if (decoded.role === "photographer") {
+      const photographer = await PhotographerModel.findOne({ userId: decoded.userId });
+      if (photographer && photographer.isBlock) {
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+        return res.status(403).json({
+          message: "Account is blocked. Please contact support.",
+          redirectTo: "/auth/login",
+        });
+      }
+    }
 
     req.user = decoded;
     req.role = decoded.role;

@@ -1,5 +1,5 @@
 
-import apiClient from "../../../../services/apiClient"; "../../../../services/apiClient";
+import apiClient from "../../../../services/apiClient"; 
 import type{ ISignupRequest,IAuthResponse,ILoginRequest,IVerifyOtpRequest, IForgetPassword, IVerifyResetOtp, IResetPassword } from "../../types/auth.types";
 import type {IAuthRespository} from "../interface/IAuthRepository"
 

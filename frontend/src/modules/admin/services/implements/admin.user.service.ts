@@ -1,6 +1,6 @@
 
 
-import type { IAdminUserService } from "../interface/IAdminUserService";
+import type { IAdminUserService } from "../interface/IAdminUser.interface";
 import type { IUserResponse,IUserListResponce } from "../../types/admin.type";
 import type { IPagination } from "../../types/IPagination";
 import type { IAdminUserRepo } from "../../repositories/interface/IAdminUserRepo";

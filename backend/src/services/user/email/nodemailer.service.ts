@@ -55,6 +55,38 @@ export class NodeMailerService implements IEmailService {
     });
   }
 
+  async sendApprovalEmail(email: string, name: string, message: string): Promise<void> {
+    try {
+      const mailOptions = {
+        from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: "🎉 Your Photographer Application Has Been Approved!",
+        html: this.getApprovalEmailTemplate(name, message),
+      };
+      await mailTransport.sendMail(mailOptions);
+      console.log(`Approval email sent to ${email}`);
+    } catch (error: any) {
+      console.error("Failed to send approval email:", error.message);
+      throw new Error("Failed to send approval email. Please try again.");
+    }
+  }
+
+  async sendRejectionEmail(email: string, name: string, reason: string): Promise<void> {
+    try {
+      const mailOptions = {
+        from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: "Update on Your Photographer Application",
+        html: this.getRejectionEmailTemplate(name, reason),
+      };
+      await mailTransport.sendMail(mailOptions);
+      console.log(`Rejection email sent to ${email}`);
+    } catch (error: any) {
+      console.error("Failed to send rejection email:", error.message);
+      throw new Error("Failed to send rejection email. Please try again.");
+    }
+  }
+
   private getotpEmailTemplate(name: string, otp: string): string {
     return `
       <!DOCTYPE html>
@@ -188,10 +220,6 @@ export class NodeMailerService implements IEmailService {
           </ul>
           <p style="text-align: center; margin: 30px 0;">
             <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}" 
-ends and family</li>
-          </ul>
-          <p style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}" 
                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                       color: white; 
                       padding: 12px 30px; 
@@ -201,6 +229,227 @@ ends and family</li>
               Get Started →
             </a>
           </p>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  private getApprovalEmailTemplate(name: string, message: string): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 40px 20px;
+          }
+          .container { 
+            background: white; 
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          }
+          .celebration {
+            text-align: center;
+            font-size: 64px;
+            margin: 20px 0;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .header h1 {
+            color: #667eea;
+            margin: 0;
+            font-size: 28px;
+          }
+          .content {
+            color: #333;
+            line-height: 1.6;
+          }
+          .message-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+          }
+          .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+          }
+          .footer { 
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="celebration">🎉</div>
+          <div class="header">
+            <h1>📸 PhotoBook</h1>
+          </div>
+          <div class="content">
+            <h2>Congratulations, ${name}!</h2>
+            <p>We're excited to inform you that your photographer application has been <strong>approved</strong>!</p>
+            
+            <div class="message-box">
+              <strong>Message from our team:</strong>
+              <p>${message}</p>
+            </div>
+            
+            <p>You can now:</p>
+            <ul>
+              <li>📷 Showcase your portfolio</li>
+              <li>🤝 Connect with clients</li>
+              <li>💼 Manage bookings and projects</li>
+              <li>⭐ Build your reputation</li>
+            </ul>
+            
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/photographer/dashboard" class="cta-button">
+                Go to Dashboard →
+              </a>
+            </div>
+            
+            <p>Welcome to the PhotoBook photographer community!</p>
+          </div>
+          <div class="footer">
+            <p>© 2025 PhotoBook. All rights reserved.</p>
+            <p>This is an automated message, please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  private getRejectionEmailTemplate(name: string, reason: string): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 40px 20px;
+          }
+          .container { 
+            background: white; 
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .header h1 {
+            color: #667eea;
+            margin: 0;
+            font-size: 28px;
+          }
+          .content {
+            color: #333;
+            line-height: 1.6;
+          }
+          .reason-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+            color: #856404;
+          }
+          .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+            color: #0d47a1;
+          }
+          .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+          }
+          .footer { 
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📸 PhotoBook</h1>
+          </div>
+          <div class="content">
+            <h2>Hi ${name},</h2>
+            <p>Thank you for your interest in joining PhotoBook as a photographer. After careful review, we regret to inform you that we are unable to approve your application at this time.</p>
+            
+            <div class="reason-box">
+              <strong>Reason:</strong>
+              <p>${reason}</p>
+            </div>
+            
+            <div class="info-box">
+              <strong>💡 What's Next?</strong>
+              <p>You're welcome to reapply in the future. We encourage you to:</p>
+              <ul>
+                <li>Review our photographer guidelines</li>
+                <li>Enhance your portfolio</li>
+                <li>Address the feedback provided above</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/photographer/apply" class="cta-button">
+                Reapply →
+              </a>
+            </div>
+            
+            <p>If you have any questions, please don't hesitate to contact our support team.</p>
+          </div>
+          <div class="footer">
+            <p>© 2025 PhotoBook. All rights reserved.</p>
+            <p>This is an automated message, please do not reply.</p>
+          </div>
         </div>
       </body>
       </html>

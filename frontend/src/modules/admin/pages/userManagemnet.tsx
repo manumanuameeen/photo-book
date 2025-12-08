@@ -11,7 +11,7 @@ import { AxiosError } from "axios";
 // import type { ApiError } from "../../../utils/errorhandler";
 import { getErrorMessage } from "../../../utils/errorhandler";
 import { confirm } from "../../../components/ConfirmToaster";
-import SearchBar from "../../../components/SearchBat";
+import SearchBar from "../../../components/common/SearchBat";
 import { useDebounce } from "../../../hooks/debounce";
 
 interface UserTableData {
@@ -246,4 +246,4 @@ const UserManagement: React.FC = () => {
   );
 };
 
-export default UserManagement;
+export default UserManagement;

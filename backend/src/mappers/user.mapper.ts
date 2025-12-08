@@ -2,8 +2,6 @@ import type { IUser } from "../model/userModel.ts";
 import { UserResponseDto, UserProfileResponseDto, AuthResponseDto } from "../dto/user.dto.ts";
 
 export class UserMapper {
-  //this for admin
-
   static toUserResponse(user: IUser): UserResponseDto {
     const dto = new UserResponseDto();
     dto.id = user.id;
@@ -16,18 +14,22 @@ export class UserMapper {
     return dto;
   }
 
-  //this for user itsown profiles things
-  static toProfileResponse(user: IUser): UserProfileResponseDto {
+  static toProfileResponse(user: IUser, applicationStatus?: "PENDING" | "APPROVED" | "REJECTED" | "NONE"): UserProfileResponseDto {
     const dto = new UserProfileResponseDto();
     dto.name = user.name;
     dto.email = user.email;
     dto.phone = user.phone;
     dto.role = user.role;
     dto.walletBalance = user.walletBalance;
+    dto.bio = user.bio;
+    dto.location = user.location;
+    dto.lat = user.lat;
+    dto.lng = user.lng;
+    dto.applicationStatus = applicationStatus || "NONE";
+    dto.createdAt = user.createdAt;
     return dto;
   }
 
-  //this for user auth login signup
   static toAuthResponse(user: IUser): AuthResponseDto["user"] {
     return {
       id: user.id,

@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import { router } from "./router";
 import { queryClient } from "./lib/queryClient"
 
-export  default function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Toaster richColors position="top-center" />
@@ -12,4 +12,3 @@ export  default function App() {
     </QueryClientProvider>
   );
 }
-// export { router };

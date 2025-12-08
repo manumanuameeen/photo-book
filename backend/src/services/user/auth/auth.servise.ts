@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import type { IAuthService } from "./IAuthService.ts";
 import type { IEmailService } from "../email/IEmailServise.ts";
-import type { IOtpService } from "../otp/IOtpService.ts"
+import type { IOtpService } from "../otp/IOtpService.ts";
 import type {
   ForgetPasswordDtoType,
   LoginDtoType,
@@ -45,7 +45,7 @@ export class AuthService implements IAuthService {
 
     await redisClient.setEx(
       `otp:${data.email}`,
-      parseInt(process.env.OTP_EXPIRY_SECONDS || "120", 10),
+      Number.parseInt(process.env.OTP_EXPIRY_SECONDS || "120", 10),
       JSON.stringify({ ...userData, otp, expiry }),
     );
 
@@ -175,13 +175,13 @@ export class AuthService implements IAuthService {
   private async _issueTokens(user: IUser) {
     const accessToken = createAccessToken(user._id!.toString(), user.email, user.role);
     const refreshToken = createRefreshToken(user._id!.toString(), user.email, user.role);
-    
+
     await redisClient.setEx(
       `rt:${refreshToken}`,
       Number(process.env.REFRESH_TOKEN_MAX_AGE),
       user._id!.toString(),
     );
-    
+
     return { accessToken, refreshToken, user };
   }
 }

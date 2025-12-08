@@ -7,95 +7,133 @@ import { Otpservice } from "../services/user/otp/otp.service.ts";
 import { TokenBlacklistService } from "../services/token/tokenBalcklist.service.ts";
 import { AuthController } from "../controller/auth.controller.ts";
 import { AdminController } from "../controller/adminUser.controller.ts";
-
+import { UserService } from "../services/user/user.service/user.service.ts";
+import { UserController } from "../controller/user.controller.ts";
+import { PhotographerController } from "../controller/photographer.controller.ts";
+import { PhotographerService } from "../services/photographer/photograher.service.ts";
+import { PhotographerRepository } from "../repositories/implementaion/photographer/PhotographerRespository.ts";
+import { CloudinaryService } from "../services/external/CloudinaryService.ts";
+import { S3FileService } from "../services/external/S3FileService.ts";
+import { AdminPhotographerService } from "../services/admin/AdminPhotographerService.ts";
+import { AdminPhotographerController } from "../controller/AdminPhotographerController.ts";
 
 class DIContainer {
-  // Repositories (Singleton)
+  //repository
   private _userRepository?: UserRepository;
   private _adminRepository?: AdminRepository;
+  private _photographerRespositoy?: PhotographerRepository;
 
-  // Services (Singleton)
+  //services
   private _emailService?: NodeMailerService;
   private _otpService?: Otpservice;
-
   private _tokenBlacklistService?: TokenBlacklistService;
   private _authService?: AuthService;
   private _adminService?: AdminServices;
+  private _userService?: UserService;
+  private _PhotographerService?: PhotographerService;
+  private _fileService?: S3FileService;
+  private _adminPhotographerService?: AdminPhotographerService;
 
-  // Controllers (Singleton)
+
+  //controller
   private _authController?: AuthController;
   private _adminController?: AdminController;
+  private _userController?: UserController;
+  private _photographerController?: PhotographerController;
+  private _adminPhotographerController?: AdminPhotographerController;
 
-  // Repositories
   get userRepository(): UserRepository {
-    if (!this._userRepository) {
-      this._userRepository = new UserRepository();
-    }
+    this._userRepository ??= new UserRepository();
     return this._userRepository;
   }
 
   get adminRepository(): AdminRepository {
-    if (!this._adminRepository) {
-      this._adminRepository = new AdminRepository();
-    }
+    this._adminRepository ??= new AdminRepository();
     return this._adminRepository;
   }
 
-  // Services
+  get photographerRepository(): PhotographerRepository {
+    this._photographerRespositoy ??= new PhotographerRepository();
+    return this._photographerRespositoy;
+  }
+
   get emailService(): NodeMailerService {
-    if (!this._emailService) {
-      this._emailService = new NodeMailerService();
-    }
+    this._emailService ??= new NodeMailerService();
     return this._emailService;
   }
 
   get otpService(): Otpservice {
-    if (!this._otpService) {
-      this._otpService = new Otpservice();
-    }
+    this._otpService ??= new Otpservice();
     return this._otpService;
   }
 
- 
-
   get tokenBlacklistService(): TokenBlacklistService {
-    if (!this._tokenBlacklistService) {
-      this._tokenBlacklistService = new TokenBlacklistService();
-    }
+    this._tokenBlacklistService ??= new TokenBlacklistService();
     return this._tokenBlacklistService;
   }
 
   get authService(): AuthService {
-    if (!this._authService) {
-      this._authService = new AuthService(
-        this.userRepository,
-        this.emailService,
-        this.otpService
-      );
-    }
+    this._authService ??= new AuthService(this.userRepository, this.emailService, this.otpService);
     return this._authService;
   }
 
   get adminService(): AdminServices {
-    if (!this._adminService) {
-      this._adminService = new AdminServices(this.adminRepository);
-    }
+    this._adminService ??= new AdminServices(this.adminRepository);
     return this._adminService;
   }
 
-  // Controllers
+  get userService(): UserService {
+    this._userService ??= new UserService(this.userRepository, this.photographerRepository);
+    return this._userService;
+  }
+
+  get photographerService(): PhotographerService {
+    this._PhotographerService ??= new PhotographerService(this.photographerRepository);
+    return this._PhotographerService;
+  }
+
+  get fileSevice(): S3FileService {
+    this._fileService ??= new S3FileService();
+    return this._fileService;
+  }
+
   get authController(): AuthController {
-    if (!this._authController) {
-      this._authController = new AuthController(this.authService);
-    }
+    this._authController ??= new AuthController(this.authService);
     return this._authController;
   }
 
   get adminController(): AdminController {
-    if (!this._adminController) {
-      this._adminController = new AdminController(this.adminService);
-    }
+    this._adminController ??= new AdminController(this.adminService);
     return this._adminController;
+  }
+
+  get userController(): UserController {
+    this._userController ??= new UserController(this.userService);
+    return this._userController;
+  }
+
+  get photogrpherController(): PhotographerController {
+    this._photographerController ??= new PhotographerController(
+      this.photographerService,
+      this.fileSevice,
+    );
+    return this._photographerController;
+  }
+
+  get adminPhotographerService(): AdminPhotographerService {
+    this._adminPhotographerService ??= new AdminPhotographerService(
+      this.photographerRepository,
+      this.userRepository,
+      this.emailService
+    );
+    return this._adminPhotographerService;
+  }
+
+  get adminPhotographerController(): AdminPhotographerController {
+    this._adminPhotographerController ??= new AdminPhotographerController(
+      this.adminPhotographerService
+    );
+    return this._adminPhotographerController;
   }
 }
 

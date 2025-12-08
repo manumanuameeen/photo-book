@@ -8,10 +8,11 @@ import type {
 import { AdminMapper } from "../../../mappers/admin.mapper.ts";
 
 export class AdminRepository implements IAdminRepository {
+  
   async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
     const { limit, page, search, sort } = query;
     const skip = (page - 1) * limit;
-    const roleFilter = { role: { $ne: "admin" } }; // only user
+    const roleFilter = { role: { $nin: ["admin","photographer"] } };
     const searchQuery = search
       ? { ...roleFilter, name: { $regex: search, $options: "i" } }
       : roleFilter;

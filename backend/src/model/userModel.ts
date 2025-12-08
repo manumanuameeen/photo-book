@@ -10,11 +10,17 @@ export interface IUser extends Document {
   email: string;
   password: string;
   phone: string;
+  bio?: string;
+  location?: string;
+  lat?: number;
+  lng?: number;
   role: UserRoleType;
   status: UserStatusType;
   isBlocked: boolean;
   walletBalance: number;
   comparePassword(candidate: string): Promise<boolean>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const userSchema = new Schema<IUser>(
@@ -23,6 +29,10 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true, minlength: 8 },
     phone: { type: String, required: true },
+    bio: { type: String, default: "" },
+    location: { type: String, default: "" },
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
     role: {
       type: String,
       enum: Object.values(UserRole),

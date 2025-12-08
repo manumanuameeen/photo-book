@@ -8,19 +8,11 @@ import {
   Home,
   Camera,
   Calendar,
-  ToolCase
+  ToolCase,
 } from "lucide-react";
 import photoBookLogo from "../../assets/photoBook-icon.png"
 import { toast } from "sonner";
 import { ROUTES } from "../../constants/routes";
-
-const Colors = {
-  darkGreen: "#2e4a2d",
-  lightGreen: "#5c8c5c",
-  gold: "#f7b731",
-  bgCream: "#e5efe1",
-  white: "#ffffff",
-};
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -30,40 +22,40 @@ const Header: React.FC = () => {
   const handleLogout = async () => {
     toast.success("Logout successfully")
     await logout();
-    navigate({ to:ROUTES.AUTH.LOGIN });
+    navigate({ to: ROUTES.AUTH.LOGIN });
   };
 
   return (
-    <header className="bg-white shadow-sm py-4 px-6 md:px-12 border-b border-gray-100">
+    <header className="shadow-sm py-4 px-6 md:px-12 border-b border-gray-100 transition-colors duration-300 bg-white">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
 
         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate({ to: ROUTES.USER.HOME })}>
           <img src={photoBookLogo} alt="PhotoBook" className="w-10 h-10" />
-          <span className="text-xl font-bold" style={{ color: Colors.darkGreen }}>PhotoBook</span>
+          <span className="text-xl font-bold text-gray-900">PhotoBook</span>
         </div>
 
 
-        <nav className="hidden md:flex space-x-6 text-sm font-medium items-center">
-          <div className="flex items-center space-x-1 cursor-pointer" onClick={() => navigate({ to: ROUTES.USER.HOM })}>
+        <nav className="hidden md:flex space-x-6 text-sm font-medium items-center text-gray-600">
+          <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" onClick={() => navigate({ to: ROUTES.USER.HOME })}>
             <Home size={16} />
             <span>Home</span>
           </div>
-          <div className="flex items-center space-x-1 cursor-pointer">
+          <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" >
             <Camera size={16} />
             <span>Photographers</span>
           </div>
-          <div className="flex items-center space-x-1 cursor-pointer">
+          <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors">
             <Calendar size={16} />
             <span>Book Session</span>
           </div>
-          <div className="flex items-center space-x-1 cursor-pointer">
+          <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors">
             <ToolCase size={16} />
             <span>Equipment</span>
           </div>
 
 
           {user && (
-            <div className="flex items-center space-x-1 cursor-pointer"
+            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors"
             >
               <LayoutDashboard size={16} />
               <span>Dashboard</span>
@@ -72,19 +64,18 @@ const Header: React.FC = () => {
         </nav>
 
         <div className="flex items-center space-x-4 relative">
+
           {!user ? (
             <>
               <button
-                onClick={() => navigate({ to: "/auth/login" })}
-                className="px-4 py-2 text-sm font-semibold rounded transition duration-200"
-                style={{ backgroundColor: Colors.darkGreen, color: Colors.white }}
+                onClick={() => navigate({ to: ROUTES.AUTH.LOGIN })}
+                className="px-4 py-2 text-sm font-semibold rounded transition duration-200 bg-gray-900 text-white hover:bg-gray-800"
               >
                 Login
               </button>
               <button
-                onClick={() => navigate({ to: "/auth/signup" })}
-                className="px-4 py-2 text-sm font-semibold rounded transition duration-200"
-                style={{ backgroundColor: Colors.gold, color: Colors.darkGreen }}
+                onClick={() => navigate({ to: ROUTES.AUTH.SIGNUP })}
+                className="px-4 py-2 text-sm font-semibold rounded transition duration-200 border border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Sign Up
               </button>
@@ -94,30 +85,28 @@ const Header: React.FC = () => {
 
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center space-x-1 border border-gray-200 px-3 py-1 rounded-full hover:shadow"
-                style={{ backgroundColor: Colors.bgCream, color: Colors.darkGreen }}
-
+                className="flex items-center space-x-1 border border-gray-200 px-3 py-1 rounded-full hover:shadow bg-gray-50 text-gray-700"
               >
                 <User size={18} />
                 <span className="flex item-center text-">{user.name}</span>
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg py-2 z-50">
+                <div className="absolute right-0 mt-2 w-40 border rounded shadow-lg py-2 z-50 bg-white border-gray-200">
                   <button
-                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
+                    className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50" onClick={() => navigate({ to: ROUTES.USER.PROFILE })}
                   >
                     <User size={16} className="mr-2" />
                     Profile
                   </button>
                   <button
-                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
+                    className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50"
                   >
                     <LayoutDashboard size={16} className="mr-2" />
                     Dashboard
                   </button>
                   <button
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:opacity-80 hover:bg-gray-50"
                     onClick={handleLogout}
                   >
                     <LogOut size={16} className="mr-2" />

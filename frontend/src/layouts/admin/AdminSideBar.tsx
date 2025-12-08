@@ -25,14 +25,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 1, name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin/dashboard" },
-  { id: 2, name: "Users", icon: <Users size={20} />, path: "/admin/usermanagement" },
-  { id: 3, name: "Photographers", icon: <Camera size={20} />, path: "/admin/photographers" },
-  { id: 4, name: "Bookings", icon: <BookOpen size={20} />, path: "/admin/bookings" },
-  { id: 5, name: "Rentals", icon: <Key size={20} />, path: "/admin/rentals" },
-  { id: 6, name: "Wallet", icon: <Wallet size={20} />, path: "/admin/wallet" },
-  { id: 7, name: "Chat", icon: <MessageSquare size={20} />, path: "/admin/chat" },
-  { id: 8, name: "Category", icon: <Grid size={20} />, path: "/admin/category" },
+  { id: 1, name: "Dashboard", icon: <LayoutDashboard size={20} />, path: ROUTES.ADMIN.DASHBOARD },
+  { id: 2, name: "Users", icon: <Users size={20} />, path: ROUTES.ADMIN.USERS },
+  { id: 3, name: "Photographers", icon: <Camera size={20} />, path: ROUTES.ADMIN.PHOTOGRAPHERS },
+  { id: 4, name: "Bookings", icon: <BookOpen size={20} />, path: "/admin/bookings" }, // TODO: Add to routes
+  { id: 5, name: "Rentals", icon: <Key size={20} />, path: "/admin/rentals" }, // TODO: Add to routes
+  { id: 6, name: "Wallet", icon: <Wallet size={20} />, path: "/admin/wallet" }, // TODO: Add to routes
+  { id: 7, name: "Chat", icon: <MessageSquare size={20} />, path: "/admin/chat" }, // TODO: Add to routes
+  { id: 8, name: "Category", icon: <Grid size={20} />, path: "/admin/category" }, // TODO: Add to routes
 ];
 
 const AdminSidebar: React.FC = () => {
@@ -70,7 +70,7 @@ const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-64 bg-white flex flex-col min-h-screen shadow-xl border-r border-gray-200">
+    <aside className="w-64 bg-white flex flex-col h-full shadow-xl border-r border-gray-200">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10  from-[#00693E] to-[#008848] rounded-lg flex items-center justify-center">

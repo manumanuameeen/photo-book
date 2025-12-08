@@ -22,7 +22,7 @@ export class AdminController implements IAdminController {
 
       const queryInput = AdminMapper.toQueryInput(queryDto);
       const result = await this.adminService.getAllUser(queryInput);
-      // console.log("result. fro mcontroller:", result)
+
       res.status(200).json({
         success: true,
         message: "Users fetched successfully",

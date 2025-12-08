@@ -17,7 +17,6 @@ export abstract class BaseRepository<T extends Document> {
 
   async findOne(query: Partial<T>): Promise<T | null> {
     const data = await this._model.findOne(query as any).exec();
-
     return data;
   }
 

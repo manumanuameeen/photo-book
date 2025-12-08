@@ -6,6 +6,10 @@ export const UpdateProfileDto = z.object({
     .string()
     .regex(/^\d{10}$/)
     .optional(),
+  bio: z.string().optional(),
+  location: z.string().optional(),
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
 });
 
 export const ChangePasswordDto = z
@@ -45,6 +49,12 @@ export class UserProfileResponseDto {
   phone!: string;
   role!: string;
   walletBalance!: number;
+  bio?: string;
+  location?: string;
+  lat?: number;
+  lng?: number;
+  applicationStatus?: "PENDING" | "APPROVED" | "REJECTED" | "NONE";
+  createdAt!: Date;
 }
 
 export type UpdateProfileDtoType = z.infer<typeof UpdateProfileDto>;

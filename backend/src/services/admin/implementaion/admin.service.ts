@@ -7,7 +7,7 @@ import type {
 import type { IAdminRepository } from "../../../repositories/interface/IAdminReporitory.ts";
 
 export class AdminServices implements IAdminService {
-  private adminRepository: IAdminRepository;
+  private readonly adminRepository: IAdminRepository;
 
   constructor(adminRepository: IAdminRepository) {
     this.adminRepository = adminRepository;

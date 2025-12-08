@@ -4,6 +4,7 @@ import type { InternalAxiosRequestConfig } from "axios";
 import { router } from "../router";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../modules/auth/store/useAuthStore";
+import { ROUTES } from "../constants/routes";
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
@@ -51,9 +52,9 @@ apiClient.interceptors.response.use(
                 return apiClient(original);
             } catch (err) {
                 const currentPath = window.location.pathname;
-                if (!currentPath.includes('/auth/login')) {
+                if (!currentPath.includes(ROUTES.AUTH.LOGIN)) {
                     toast.error("Session expired. Please login again.");
-                    router.navigate({ to: "/auth/login" });
+                    router.navigate({ to: ROUTES.AUTH.LOGIN });
                 }
                 return Promise.reject(err);
             }
@@ -66,7 +67,7 @@ apiClient.interceptors.response.use(
             if (message?.toLowerCase().includes('block')) {
                 useAuthStore.getState().clearUser();
                 sessionStorage.removeItem("auth-cache");
-                router.navigate({ to: "/auth/login" });
+                router.navigate({ to: ROUTES.AUTH.LOGIN });
             }
         }
 

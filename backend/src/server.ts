@@ -10,6 +10,8 @@ import { swaggerSpec } from "./config/swagger.ts";
 import morganLogger from "./middleware/morganLogger.ts";
 import authRoutes from "./routes/auth.routes.ts";
 import adminRoute from "./routes/admin.route.ts";
+import userRoute from "./routes/user.routes.ts";
+import photoRoute from "./routes/photographer.routes.ts";
 import { errorHandler } from "./middleware/errorMiddleware.ts";
 import { ROUTES } from "./constants/routes.ts";
 
@@ -30,7 +32,8 @@ connectDB();
 
 app.use(ROUTES.V1.AUTH.BASE, authRoutes);
 app.use(ROUTES.V1.ADMIN.BASE, adminRoute);
-
+app.use(ROUTES.V1.USER.BASE, userRoute);
+app.use(ROUTES.V1.PHOTOGRAPHER.BASE, photoRoute);
 app.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(errorHandler);

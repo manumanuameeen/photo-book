@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import AdminHeader from '../../layouts/admin/AdminHeader.tsx'
 import AdminSidebar from '../../layouts/admin/AdminSideBar.tsx'
+import { ROUTES } from "../../constants/routes.ts";
 
 interface CacheData {
   user: {
@@ -44,7 +45,7 @@ export const Route = createFileRoute('/admin/__layout')({
       if (!res.ok) {
         console.log("refresh failed, redirecting to login");
         throw redirect({
-          to: "/auth/login",
+          to: ROUTES.AUTH.LOGIN,
           search: { redirect: location.href }
         });
       }
@@ -54,12 +55,12 @@ export const Route = createFileRoute('/admin/__layout')({
 
       if (!data.success || !data.data?.user) {
         console.log("invalid response structure");
-        throw redirect({ to: "/auth/login" });
+        throw redirect({ to: ROUTES.AUTH.LOGIN });
       }
 
       if (data.data.user.role !== "admin") {
         console.log("user is not admin");
-        throw redirect({ to: "/auth/login" });
+        throw redirect({ to: ROUTES.AUTH.LOGIN });
       }
 
       const cacheData: CacheData = {
@@ -79,16 +80,21 @@ export const Route = createFileRoute('/admin/__layout')({
 
       sessionStorage.removeItem("auth-cache");
 
-      throw redirect({ to: "/auth/login" });
+      throw redirect({ to: ROUTES.AUTH.LOGIN });
     }
   },
 
   component: () => (
-    <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
-      <div className="flex-1 flex flex-col">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Sidebar - fixed width, full height */}
+      <div className="flex-shrink-0 h-full">
+        <AdminSidebar />
+      </div>
+
+      {/* Main Content - flexible width, scrolls vertically */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         <AdminHeader />
-        <main className="flex-1 p-6">
+        <main className="flex-1 overflow-y-auto p-6 scrollbar-hide">
           <Outlet />
         </main>
       </div>
