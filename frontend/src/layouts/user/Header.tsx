@@ -16,7 +16,7 @@ import { ROUTES } from "../../constants/routes";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout,role } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -40,7 +40,8 @@ const Header: React.FC = () => {
             <Home size={16} />
             <span>Home</span>
           </div>
-          <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" >
+          <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors"  onClick={()=>navigate({to:ROUTES.USER.PHOTOGRAPHER})}
+          >
             <Camera size={16} />
             <span>Photographers</span>
           </div>
@@ -54,9 +55,9 @@ const Header: React.FC = () => {
           </div>
 
 
-          {user && (
-            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors"
-            >
+          {role ==="photographer" && (
+            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" onClick={()=>navigate({to:ROUTES.PHOTOGRAPHER.DASHBOARD})}
+            >hh
               <LayoutDashboard size={16} />
               <span>Dashboard</span>
             </div>

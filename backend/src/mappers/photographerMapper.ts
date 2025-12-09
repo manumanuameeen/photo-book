@@ -3,6 +3,8 @@ import { PhotographerResponseDto } from "../dto/photographer.dto";
 
 export class PhotographerMapper {
   static toResponse(data: IPhotographer): PhotographerResponseDto {
+    console.log("mapper photographer - images:", data.portfolio.portfolioImages?.length || 0);
+    
     return {
       id: data.id.toString(),
       status: data.status,
@@ -21,7 +23,7 @@ export class PhotographerMapper {
         priceRange: data.professionalDetails.priceRange,
       },
 
-      portfolioImages: data.portfolio.portfolioImages || data.portfolio.portfolioImages || [],
+      portfolioImages: data.portfolio.portfolioImages || [],
     };
   }
 }

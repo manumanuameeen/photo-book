@@ -77,13 +77,7 @@ export class AuthController implements IAuthController {
       const input = this._validate(LoginDto, req.body);
       const result = await this._authService.login(input);
       this._setCookies(res, result.accessToken, result.refreshToken);
-      ApiResponse.success(
-        res,
-        {
-          user: UserMapper.toAuthResponse(result.user),
-        },
-        Messages.LOGIN_SUCCESS,
-      );
+      ApiResponse.success(res,{user: UserMapper.toAuthResponse(result.user),},Messages.LOGIN_SUCCESS,);
     } catch (error: unknown) {
       this._handleError(res, error);
     }

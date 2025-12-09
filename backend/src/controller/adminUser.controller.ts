@@ -18,6 +18,7 @@ export class AdminController implements IAdminController {
 
   getAllUser = async (req: Request, res: Response): Promise<void> => {
     try {
+      
       const queryDto = this._validate(AdminUserQueryDto, req.query);
 
       const queryInput = AdminMapper.toQueryInput(queryDto);

@@ -30,7 +30,7 @@ export const verifyAccessToken = async (req: AuthRequest, res: Response, next: N
 
     const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
 
-    // Check if photographer is blocked
+  
     if (decoded.role === "photographer") {
       const photographer = await PhotographerModel.findOne({ userId: decoded.userId });
       if (photographer && photographer.isBlock) {

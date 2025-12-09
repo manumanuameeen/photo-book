@@ -16,7 +16,34 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 let isRefreshing = false;
-let refreshPromise: Promise<{ user?: unknown }> | null = null;
+let failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?: unknown) => void }> = [];
+
+
+apiClient.interceptors.request.use(
+    async (config) => {
+        const authState = useAuthStore.getState();
+        
+        if (!authState.user) {
+            const cache = sessionStorage.getItem("auth-cache");
+            if (cache) {
+                try {
+                    const { user, expires } = JSON.parse(cache);
+                    if (Date.now() < expires) {
+                        authState.setUser(user);
+                    } else {
+                        sessionStorage.removeItem("auth-cache");
+                    }
+                } catch (error) {
+                    console.error("Error parsing auth cache:", error);
+                    sessionStorage.removeItem("auth-cache");
+                }
+            }
+        }
+        
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 apiClient.interceptors.response.use(
     (res) => res,
@@ -25,38 +52,39 @@ apiClient.interceptors.response.use(
         const original = error.config as ExtendedAxiosRequestConfig;
 
         if (status === 401 && original && !original._retry) {
-            original._retry = true;
-
-            if (!isRefreshing) {
-                isRefreshing = true;
-                refreshPromise = tokenService.refreshAccessToken()
-                    .then((data) => {
-                        if (data?.user) {
-                            useAuthStore.getState().setUser(data.user as never);
-                        }
-                        return data;
-                    })
-                    .catch((err) => {
-                        useAuthStore.getState().clearUser();
-                        sessionStorage.removeItem("auth-cache");
-                        throw err;
-                    })
-                    .finally(() => {
-                        isRefreshing = false;
-                        refreshPromise = null;
-                    });
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                })
+                    .then(() => apiClient(original))
+                    .catch(err => Promise.reject(err));
             }
 
+            original._retry = true;
+            isRefreshing = true;
+
             try {
-                await refreshPromise;
+                const data = await tokenService.refreshAccessToken();
+                
+                if (data?.user) {
+                    useAuthStore.getState().setUser(data.user as never);
+                }
+                
                 return apiClient(original);
+                
             } catch (err) {
+                useAuthStore.getState().clearUser();
+                sessionStorage.removeItem("auth-cache");
+                
                 const currentPath = window.location.pathname;
                 if (!currentPath.includes(ROUTES.AUTH.LOGIN)) {
                     toast.error("Session expired. Please login again.");
                     router.navigate({ to: ROUTES.AUTH.LOGIN });
                 }
+                
                 return Promise.reject(err);
+            } finally {
+                isRefreshing = false;
             }
         }
 

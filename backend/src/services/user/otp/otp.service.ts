@@ -1,7 +1,7 @@
 import { randomInt } from "crypto";
 import type { IOtpService } from "./IOtpService";
 
-export class Otpservice implements IOtpService {
+export class OtpService implements IOtpService {
   private readonly OTP_LENGTH = 6;
   private readonly OTP_EXPIRY_TIME = 2;
 

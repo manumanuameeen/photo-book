@@ -18,6 +18,7 @@ export const ROUTES = {
     HOME: "/main/home",
     PROFILE: "/main/profile",
     EDIT_PROFILE: "/main/editProfile",
+    PHOTOGRAPHER:"/main/photographer"
   },
   PHOTOGRAPHER: {
     APPLY: "/photographer/apply",

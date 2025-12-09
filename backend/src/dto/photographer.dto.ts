@@ -14,7 +14,8 @@ export const ApplyPhtographerDto = z.object({
   portfolioWebsite: z.string().url("Invalid URL").optional().or(z.literal("")),
   instagramHandle: z.string().optional().or(z.literal("")),
   personalWebsite: z.string().url("Invalid URL").optional().or(z.literal("")),
-  portfolioImages: z.array(z.string()).optional(),
+  
+  portfolioImages: z.array(z.string()).optional().default([]),
 
   businessName: z.string().min(2, "Business name is required"),
   professionalTitle: z.string().min(2, "Professional title is required"),

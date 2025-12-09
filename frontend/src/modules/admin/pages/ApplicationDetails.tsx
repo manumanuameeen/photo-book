@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { BaseButton } from '../../../components/BaseButton';
-import { ArrowLeft, MapPin, Globe, Instagram, Phone, Mail, Award, CheckCircle, XCircle, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Globe, Instagram, Phone, Mail, Award, CheckCircle, XCircle, Send, Loader2, X } from 'lucide-react';
 import { ROUTES } from "../../../constants/routes";
 import { useApplicationManagement } from '../hooks/useApplicationManagement';
 
 const ApplicationDetails: React.FC = () => {
-    // @ts-ignore
     const { id } = useParams({ from: '/admin/__layout/applications/$id' });
     const navigate = useNavigate();
-    const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+    const [isActionModalOpen, setIsActionModalOpen] = useState<boolean>(false);
     const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState<string>('');
+    const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
+    const [selectedImage, setSelectedImage] = useState<string>('');
 
     const { useApplicationById, approveApplication, rejectApplication, isApproving, isRejecting } = useApplicationManagement();
 
     const { data: application, isLoading } = useApplicationById(id);
 
-    const handleActionClick = (type: 'approve' | 'reject') => {
+    const handleActionClick = (type: 'approve' | 'reject'): void => {
         setActionType(type);
         setIsActionModalOpen(true);
-        // Pre-fill message based on action
         if (type === 'approve') {
             setMessage("Congratulations! Your application has been approved. We are excited to have you on board.");
         } else {
@@ -28,7 +28,7 @@ const ApplicationDetails: React.FC = () => {
         }
     };
 
-    const confirmAction = async () => {
+    const confirmAction = async (): Promise<void> => {
         if (!application) return;
 
         try {
@@ -40,11 +40,17 @@ const ApplicationDetails: React.FC = () => {
             setIsActionModalOpen(false);
             navigate({ to: ROUTES.ADMIN.APPLICATIONS });
         } catch (error) {
-            // Error already handled in hook
+             console.error("Action failed:", error);
         }
     };
 
-    const isSubmitting = isApproving || isRejecting;
+    const openImageModal = (imageUrl: string): void => {
+        setSelectedImage(imageUrl);
+        setIsImageModalOpen(true);
+    };
+
+
+    const isSubmitting: boolean = isApproving || isRejecting;
 
     if (isLoading || !application) {
         return (
@@ -128,7 +134,11 @@ const ApplicationDetails: React.FC = () => {
                         <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Portfolio</h2>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {application.portfolio.portfolioImages.map((img, i) => (
-                                <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 group relative">
+                                <div 
+                                    key={i} 
+                                    className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 group relative cursor-pointer"
+                                    onClick={() => openImageModal(img)}
+                                >
                                     <img src={img} alt={`Portfolio ${i}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                 </div>
                             ))}
@@ -184,7 +194,7 @@ const ApplicationDetails: React.FC = () => {
                             <div>
                                 <label className="text-xs font-semibold text-gray-400 uppercase">Specialties</label>
                                 <div className="flex flex-wrap gap-2 mt-1">
-                                    {application.professionalDetails.specialties.map(s => (
+                                    {application.professionalDetails.specialties.map((s: string) => (
                                         <span key={s} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md border border-gray-200">
                                             {s}
                                         </span>
@@ -229,6 +239,25 @@ const ApplicationDetails: React.FC = () => {
                                 <Send size={16} /> Send & {actionType === 'approve' ? 'Approve' : 'Reject'}
                             </BaseButton>
                         </div>
+                    </div>
+                </div>
+            )}
+            
+            {isImageModalOpen && (
+                <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4" onClick={() => setIsImageModalOpen(false)}>
+                    <div className="relative max-w-5xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                            onClick={() => setIsImageModalOpen(false)} 
+                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-10"
+                            aria-label="Close image viewer"
+                        >
+                            <X size={24} />
+                        </button>
+                        <img 
+                            src={selectedImage} 
+                            alt="Full-size portfolio view" 
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        />
                     </div>
                 </div>
             )}

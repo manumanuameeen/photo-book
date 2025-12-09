@@ -11,8 +11,8 @@ export interface IReview extends Document {
 
 const ReviewSchema: Schema = new Schema(
     {
-        reviewerId: { type: Schema.Types.ObjectId, ref: "User", required: true }, // Can review users or photographers
-        targetId: { type: Schema.Types.ObjectId, required: true }, // Can be booking or photographer
+        reviewerId: { type: Schema.Types.ObjectId, ref: "User", required: true }, 
+        targetId: { type: Schema.Types.ObjectId, required: true }, 
         type: { type: String, required: true },
         rating: { type: Number, required: true, min: 1, max: 5 },
         comment: { type: String, required: true },

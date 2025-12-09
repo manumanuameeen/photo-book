@@ -26,7 +26,7 @@ export const Messages = {
   IMAGE_UPLOAD_FAILED: "image upload failed",
   IMAGE_UPLOAD_RETURNED_NO_RESULT: "image upload returned no result",
   FAILED_TO_UPLOAD: "Failed to upload one or more images",
-  S3_DELETE_ERROR: "Cloudinary Delete Error",
+  S3_DELETE_ERROR: "S3 Delete Error",
   ALREADY_PHOTOGRAPHER: "You already applied once",
   PHOTOGRAPHER_NOT_FOUND: "Photographer not found",
   PHOTOGRAPHER_BLOCKED: "Photographer blocked successfully",

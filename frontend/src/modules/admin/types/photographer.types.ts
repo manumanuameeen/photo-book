@@ -34,6 +34,9 @@ export interface PaginatedPhotographersResponse {
     page: number;
     limit: number;
     totalPages: number;
+    approvedCount: number,
+    pendingCount: number,
+    rejectedCount: number
 }
 
 export interface GetPhotographersParams {
@@ -41,7 +44,7 @@ export interface GetPhotographersParams {
     limit?: number;
     search?: string;
     status?: "PENDING" | "APPROVED" | "REJECTED" | "ALL";
-    isBlocked?: "true" | "false" | "all";
+    isBlocked?: "true" | "false" | "all";  
 }
 
 export interface PhotographerStats {

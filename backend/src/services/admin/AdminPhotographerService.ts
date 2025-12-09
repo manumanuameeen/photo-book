@@ -28,7 +28,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
             limit,
             search: query.search,
             status: query.status,
-            isBlocked:query.isBlocked
+            isBlocked: query.isBlocked
         });
 
         return {
@@ -37,6 +37,9 @@ export class AdminPhotographerService implements IAdminPhotographerService {
             page: result.page,
             limit: result.limit,
             totalPages: result.totalPages,
+            approvedCount: result.approvedCount,
+            pendingCount:result.pendingCount,
+            rejectedCount:result.rejectedCount
         };
     }
 

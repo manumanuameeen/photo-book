@@ -14,6 +14,9 @@ export interface IPaginatedPhotographers {
   page: number;
   limit: number;
   totalPages: number;
+  rejectedCount:number;
+  pendingCount:number;
+  approvedCount:number;
 }
 
 export interface IPhotographerStats {
@@ -25,13 +28,11 @@ export interface IPhotographerStats {
 }
 
 export interface IPhotographerRepository {
-  // Base methods from BaseRepository
   create(data: Partial<IPhotographer>): Promise<IPhotographer>;
   findById(id: string): Promise<IPhotographer | null>;
   findOne(query: Partial<IPhotographer>): Promise<IPhotographer | null>;
   update(id: string, data: Partial<IPhotographer>): Promise<IPhotographer | null>;
 
-  // Custom methods
   findByUserId(userId: string): Promise<IPhotographer | null>;
   findAllWithPagination(query: IPhotographerQuery): Promise<IPaginatedPhotographers>;
   blockById(id: string): Promise<IPhotographer | null>;

@@ -7,6 +7,7 @@ interface AuthRequest extends Request {
 
 export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.role) {
+    console.log("reaching here ")
     console.log(" No role found");
     return res.status(401).json({
       message: "Authentication required",

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
     Phone,
     Mail,
@@ -10,16 +11,22 @@ import {
     ArrowLeft,
     ShieldAlert,
     ShieldCheck,
-    Loader2
+    Loader2,
+    Instagram,
+    Globe2,
+    X
 } from 'lucide-react';
 import { useParams, Link } from '@tanstack/react-router';
 import { usePhotographerManagement } from '../hooks/usePhotographerManagement';
 import { BaseButton } from '../../../components/BaseButton';
 import { ROUTES } from "../../../constants/routes";
 
-const AdminPhotographerProfile = () => {
+const AdminPhotographerProfile: React.FC = () => {
 
     const { id } = useParams({ strict: false });
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState('');
+
     const {
         usePhotographerById,
         blockPhotographer,
@@ -47,6 +54,11 @@ const AdminPhotographerProfile = () => {
         } catch (e) {
             console.error("Failed to toggle block status", e);
         }
+    };
+
+    const openImageModal = (imageUrl: string) => {
+        setSelectedImage(imageUrl);
+        setIsImageModalOpen(true);
     };
 
     if (isLoading) {
@@ -81,7 +93,6 @@ const AdminPhotographerProfile = () => {
         <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans text-gray-800">
             <div className="max-w-4xl mx-auto space-y-6">
 
-                {/* --- Back Button --- */}
                 <Link to={ROUTES.ADMIN.PHOTOGRAPHERS}>
                     <button className="flex items-center text-xs text-gray-500 hover:text-gray-700 transition-colors">
                         <ArrowLeft size={14} className="mr-1" />
@@ -145,7 +156,6 @@ const AdminPhotographerProfile = () => {
                     </div>
                 </div>
 
-                {/* --- About Section --- */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <h2 className="text-lg font-bold text-gray-900 mb-3">About</h2>
                     <p className="text-sm text-gray-600 leading-relaxed">
@@ -153,7 +163,6 @@ const AdminPhotographerProfile = () => {
                     </p>
                 </div>
 
-                {/* --- Contact Information --- */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <h2 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4">
@@ -169,7 +178,6 @@ const AdminPhotographerProfile = () => {
                     </div>
                 </div>
 
-                {/* --- Portfolio --- */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <h2 className="text-lg font-bold text-gray-900 mb-4">Portfolio</h2>
                     {photographer.portfolio.portfolioImages.length > 0 ? (
@@ -181,15 +189,46 @@ const AdminPhotographerProfile = () => {
                                     alt={`Portfolio ${index}`}
                                     className="w-full rounded-lg hover:opacity-90 transition-opacity cursor-pointer object-cover bg-gray-100"
                                     style={{ breakInside: 'avoid' }}
+                                    onClick={() => openImageModal(src)}
                                 />
                             ))}
                         </div>
                     ) : (
                         <p className="text-sm text-gray-500 italic">No portfolio images uploaded.</p>
-                    )}
+                    )} <div className="mt-4 flex flex-wrap gap-4">
+                        {photographer.portfolio.portfolioWebsite && (
+                            <a href={`https://${photographer.portfolio.portfolioWebsite}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-blue-600 hover:underline bg-blue-50 px-3 py-1.5 rounded-lg text-sm">
+                                <Globe2 size={16} /> Website
+                            </a>
+                        )}
+                        {photographer.portfolio.instagramHandle && (
+                            <a href={`https://instagram.com/${photographer.portfolio.instagramHandle.replace('@', '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-pink-600 hover:underline bg-pink-50 px-3 py-1.5 rounded-lg text-sm">
+                                <Instagram size={16} /> Instagram
+                            </a>
+                        )}
+                    </div>
                 </div>
 
             </div>
+
+            {isImageModalOpen && (
+                <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4" onClick={() => setIsImageModalOpen(false)}>
+                    <div className="relative max-w-5xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                            onClick={() => setIsImageModalOpen(false)} 
+                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-10"
+                            aria-label="Close image viewer"
+                        >
+                            <X size={24} />
+                        </button>
+                        <img 
+                            src={selectedImage} 
+                            alt="Full-size portfolio view" 
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

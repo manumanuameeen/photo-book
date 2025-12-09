@@ -33,7 +33,8 @@ export const useApply = () => {
                     formData.append('portfolioImages', file);
                 });
             }
-
+            
+            console.log("from usePhotographer.tsx",formData)
             const res = await apiClient.post<IPhotographerApplicationResponse>(
                 "/photographer/apply",
                 formData,
@@ -43,7 +44,7 @@ export const useApply = () => {
                     }
                 }
             );
-            console.log(res)
+            console.log("response from backedn usePhotographer.tsx",res.data.data.portfolioImages)
             return res.data;
         }
     })

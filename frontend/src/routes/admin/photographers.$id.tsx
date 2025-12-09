@@ -3,7 +3,3 @@ import AdminPhotogrpherProfile from "../../modules/admin/pages/AdminPhotographer
 export const Route = createFileRoute('/admin/photographers/$id')({
   component: AdminPhotogrpherProfile,
 })
-
-function RouteComponent() {
-  return <div></div>
-}

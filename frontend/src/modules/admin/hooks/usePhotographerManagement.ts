@@ -10,7 +10,6 @@ import { toast } from "sonner";
 export const usePhotographerManagement = () => {
     const queryClient = useQueryClient();
 
-    // Query for listing photographers
     const usePhotographers = (params: GetPhotographersParams) => {
         return useQuery({
             queryKey: ['photographers', params],
@@ -24,8 +23,7 @@ export const usePhotographerManagement = () => {
             placeholderData: (previousData) => previousData,
         });
     };
-
-    // Query for fetching a single photographer
+   
     const usePhotographerById = (id: string | null) => {
         return useQuery({
             queryKey: ['photographer', id],
@@ -37,7 +35,7 @@ export const usePhotographerManagement = () => {
         });
     };
 
-    // Mutation for blocking
+   
     const blockPhotographerMutation = useMutation({
         mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
             await adminPhotographerApi.blockPhotographer(id, reason);
@@ -53,7 +51,6 @@ export const usePhotographerManagement = () => {
         }
     });
 
-    // Mutation for unblocking
     const unblockPhotographerMutation = useMutation({
         mutationFn: async (id: string) => {
             await adminPhotographerApi.unblockPhotographer(id);

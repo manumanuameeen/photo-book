@@ -36,9 +36,12 @@ export class PhotographerRepository extends BaseRepository<IPhotographer> implem
         { "businessInfo.businessName": { $regex: search, $options: "i" } },
       ];
     }
-    const [photographers, total] = await Promise.all([
+    const [photographers, total ,approvedCount, pendingCount, rejectedCount,] = await Promise.all([
       this._model.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
       this._model.countDocuments(filter),
+      this._model.countDocuments({ status: "APPROVED" }),
+      this._model.countDocuments({ status: "PENDING" }),
+      this._model.countDocuments({ status: "REJECTED" }),
     ]);
 
     return {
@@ -47,6 +50,9 @@ export class PhotographerRepository extends BaseRepository<IPhotographer> implem
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+      approvedCount,
+      pendingCount,
+      rejectedCount
     };
   }
 

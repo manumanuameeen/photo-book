@@ -5,6 +5,7 @@ import type { IUserResponse,IUserListResponce } from "../../types/admin.type";
 import type { IPagination } from "../../types/IPagination";
 import type { IAdminUserRepo } from "../../repositories/interface/IAdminUserRepo";
 import { AdminUserRepository } from "../../repositories/implementation/adminUser.repository";
+
  class AdminUserServiceClass implements IAdminUserService{
 
 

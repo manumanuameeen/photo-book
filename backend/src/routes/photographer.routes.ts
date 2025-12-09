@@ -6,10 +6,5 @@ import { verifyAccessToken } from "../middleware/authMiddleware.ts";
 import { uploadMiddleware } from "../middleware/uploadMiddleware.ts";
 
 const photographerController = container.photogrpherController;
-router.post(
-  ROUTES.V1.PHOTOGRAPHER.APPLY,
-  verifyAccessToken,
-  uploadMiddleware.array("portfolioImages", 15),
-  photographerController.apply,
-);
+router.post(ROUTES.V1.PHOTOGRAPHER.APPLY,verifyAccessToken,uploadMiddleware.array("portfolioImages", 15),photographerController.apply,);
 export default router;

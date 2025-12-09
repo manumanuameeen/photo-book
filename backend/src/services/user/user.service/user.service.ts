@@ -1,5 +1,5 @@
 import { ChangePasswordDtoType, UpdateProfileDtoType, UserProfileResponseDto } from "dto/user.dto";
-import type { IUserSerivice } from "./IUserService.ts";
+import type { IUserService } from "./IUserService.ts";
 import type { IUserRepository } from "../../../repositories/interface/IUserRespository";
 import type { IPhotographerRepository } from "../../../repositories/interface/IPhotographerRepository";
 import { AppError } from "../../../utils/AppError.ts";
@@ -8,7 +8,7 @@ import { HttpStatus } from "../../../constants/httpStatus.ts";
 import { UserMapper } from "../../../mappers/user.mapper.ts";
 import bcrypt from "bcrypt";
 
-export class UserService implements IUserSerivice {
+export class UserService implements IUserService {
   private readonly _userRespository: IUserRepository;
   private readonly _photographerRepository: IPhotographerRepository;
 

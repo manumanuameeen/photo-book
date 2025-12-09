@@ -44,6 +44,9 @@ export interface IPaginatedPhotographersResponse {
     page: number;
     limit: number;
     totalPages: number;
+    approvedCount: number,
+    pendingCount: number,
+    rejectedCount: number
 }
 
 export interface IAdminPhotographerService {

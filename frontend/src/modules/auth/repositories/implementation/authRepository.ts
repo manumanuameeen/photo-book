@@ -34,7 +34,8 @@ export class AuthRepository implements IAuthRespository{
   }
 
    async forgetPassword(data:IForgetPassword): Promise<{ message: string; }> {
-    const res  = await apiClient.post<{message:string}>("/auth/forget-password",data)
+    console.log("reached frgetPassword")
+    const res  = await apiClient.post<{message:string}>("/auth/forgot-password",data)
     return res.data
   }
 

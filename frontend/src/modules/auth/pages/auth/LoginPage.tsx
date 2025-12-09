@@ -246,7 +246,7 @@ const LoginPage: React.FC = () => {
 
       
           navigate({ to: redirectTo });
-    
+  
         setFormData({ email: "", password: "" });
       },
       onError: (error: unknown) => {

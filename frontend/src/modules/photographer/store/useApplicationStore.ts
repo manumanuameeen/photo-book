@@ -25,7 +25,7 @@ const initialFormState: Partial<IPhotographerApplicationForm> = {
     portfolioWebsite: '',
     instagramHandle: '',
     personalWebsite: '',
-    portfolioImages: undefined,
+    portfolioImages: [],
     businessName: '',
     professionalTitle: '',
     businessBio: '',
@@ -52,7 +52,6 @@ export const useApplicationStore = create<ApplicationState>()(
             resetForm: () => set({
                 formData: initialFormState,
                 currentStep: 1,
-                // applicationStatus is NOT reset here intentionally 
             }),
 
             resetFormDataOnly: () => set({
@@ -64,10 +63,23 @@ export const useApplicationStore = create<ApplicationState>()(
             storage: createJSONStorage(() => localStorage),
             partialize: (state) => {
                 const { portfolioImages, ...restFormData } = state.formData;
+                console.log("Excluding portfolioImages from localStorage, count:", portfolioImages?.length || 0);
+                
                 return {
                     currentStep: state.currentStep,
                     applicationStatus: state.applicationStatus,
                     formData: restFormData,
+                }
+            },
+            merge: (persistedState: any, currentState: ApplicationState) => {
+                return {
+                    ...currentState,
+                    ...persistedState,
+                    formData: {
+                        ...currentState.formData,
+                        ...persistedState.formData,
+                        portfolioImages: currentState.formData.portfolioImages || [],
+                    }
                 }
             }
         }

@@ -35,13 +35,13 @@ const PhotographerManagement: React.FC = () => {
     const {
         data,
         isLoading: loading,
-        error
+        error,
     } = usePhotographers({
         search: debouncedSearch || undefined,
         page: page,
         status: "APPROVED"
     });
-
+    // console.log(data.)
     const photographers = data?.photographers || [];
 
 
@@ -185,7 +185,7 @@ const PhotographerManagement: React.FC = () => {
                             Pending Applications
                         </BaseButton>
                         <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm border border-white">
-                            3
+                            {data?.pendingCount }
                         </span>
                     </Link>
                 </div>

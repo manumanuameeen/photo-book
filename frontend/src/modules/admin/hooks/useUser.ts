@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminUserService } from "../services/implements/admin.user.service";
 import type { IPagination } from "../types/IPagination";
+import { useAuthStore } from "../../auth/store/useAuthStore";
 
 
 
 export const useAdminUser = (page = 1, limit = 10, search = "") => {
-
-    const  params: IPagination = {
+    const { user } = useAuthStore();
+    const params: IPagination = {
         page: page,
         limit: limit,
         search: search
@@ -14,7 +15,10 @@ export const useAdminUser = (page = 1, limit = 10, search = "") => {
 
     return useQuery({
         queryKey: ['admin-user', params],
-        queryFn: () => AdminUserService.getalluser(params)
+        queryFn: () => AdminUserService.getalluser(params),
+        enabled: !!user,
+        retry: 1,
+        staleTime: 30000
     });
 
 };
@@ -43,6 +47,6 @@ export const useUnblockUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (id: string) => AdminUserService.unblockUser(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-user"],exact:false })
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-user"], exact: false })
     })
 }

@@ -7,9 +7,9 @@ import type {
 } from "../../modules/admin/types/photographer.types";
 
 export const adminPhotographerApi = {
-    // Photographer Management
     getPhotographers: async (params: GetPhotographersParams): Promise<PaginatedPhotographersResponse> => {
         const response = await apiClient.get("/admin/photographers", { params });
+        // console.log("from the backend",response)
         return response.data.data;
     },
 
@@ -26,7 +26,6 @@ export const adminPhotographerApi = {
         await apiClient.patch(`/admin/photographers/${id}/unblock`);
     },
 
-    // Application Management
     getApplications: async (params: GetPhotographersParams): Promise<PaginatedPhotographersResponse> => {
         const response = await apiClient.get("/admin/applications", { params });
         return response.data.data;
@@ -45,7 +44,6 @@ export const adminPhotographerApi = {
         await apiClient.post(`/admin/applications/${id}/reject`, { reason });
     },
 
-    // Statistics
     getStatistics: async (): Promise<PhotographerStats> => {
         const response = await apiClient.get("/admin/photographers/statistics");
         return response.data.data;

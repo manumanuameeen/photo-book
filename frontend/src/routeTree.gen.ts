@@ -26,8 +26,10 @@ import { Route as Photographer_layoutProfileRouteImport } from './routes/photogr
 import { Route as Photographer_layoutDashboardRouteImport } from './routes/photographer/__layout/dashboard'
 import { Route as Photographer_layoutApplyRouteImport } from './routes/photographer/__layout/apply'
 import { Route as Main_layoutProfileRouteImport } from './routes/main/__layout/profile'
+import { Route as Main_layoutPhotographerRouteImport } from './routes/main/__layout/photographer'
 import { Route as Main_layoutHomeRouteImport } from './routes/main/__layout/home'
 import { Route as Main_layoutEditProfileRouteImport } from './routes/main/__layout/editProfile'
+import { Route as Main_layoutBookingRouteImport } from './routes/main/__layout/booking'
 import { Route as AdminPhotographersIdRouteImport } from './routes/admin/photographers.$id'
 import { Route as Admin_layoutUsermanagementRouteImport } from './routes/admin/__layout/usermanagement'
 import { Route as Admin_layoutPhotographersRouteImport } from './routes/admin/__layout/photographers'
@@ -134,6 +136,11 @@ const Main_layoutProfileRoute = Main_layoutProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => Main_layoutRoute,
 } as any)
+const Main_layoutPhotographerRoute = Main_layoutPhotographerRouteImport.update({
+  id: '/photographer',
+  path: '/photographer',
+  getParentRoute: () => Main_layoutRoute,
+} as any)
 const Main_layoutHomeRoute = Main_layoutHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -142,6 +149,11 @@ const Main_layoutHomeRoute = Main_layoutHomeRouteImport.update({
 const Main_layoutEditProfileRoute = Main_layoutEditProfileRouteImport.update({
   id: '/editProfile',
   path: '/editProfile',
+  getParentRoute: () => Main_layoutRoute,
+} as any)
+const Main_layoutBookingRoute = Main_layoutBookingRouteImport.update({
+  id: '/booking',
+  path: '/booking',
   getParentRoute: () => Main_layoutRoute,
 } as any)
 const AdminPhotographersIdRoute = AdminPhotographersIdRouteImport.update({
@@ -195,8 +207,10 @@ export interface FileRoutesByFullPath {
   '/admin/photographers': typeof Admin_layoutPhotographersRoute
   '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
   '/admin/photographers/$id': typeof AdminPhotographersIdRoute
+  '/main/booking': typeof Main_layoutBookingRoute
   '/main/editProfile': typeof Main_layoutEditProfileRoute
   '/main/home': typeof Main_layoutHomeRoute
+  '/main/photographer': typeof Main_layoutPhotographerRoute
   '/main/profile': typeof Main_layoutProfileRoute
   '/photographer/apply': typeof Photographer_layoutApplyRoute
   '/photographer/dashboard': typeof Photographer_layoutDashboardRoute
@@ -220,8 +234,10 @@ export interface FileRoutesByTo {
   '/admin/photographers': typeof Admin_layoutPhotographersRoute
   '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
   '/admin/photographers/$id': typeof AdminPhotographersIdRoute
+  '/main/booking': typeof Main_layoutBookingRoute
   '/main/editProfile': typeof Main_layoutEditProfileRoute
   '/main/home': typeof Main_layoutHomeRoute
+  '/main/photographer': typeof Main_layoutPhotographerRoute
   '/main/profile': typeof Main_layoutProfileRoute
   '/photographer/apply': typeof Photographer_layoutApplyRoute
   '/photographer/dashboard': typeof Photographer_layoutDashboardRoute
@@ -250,8 +266,10 @@ export interface FileRoutesById {
   '/admin/__layout/photographers': typeof Admin_layoutPhotographersRoute
   '/admin/__layout/usermanagement': typeof Admin_layoutUsermanagementRoute
   '/admin/photographers/$id': typeof AdminPhotographersIdRoute
+  '/main/__layout/booking': typeof Main_layoutBookingRoute
   '/main/__layout/editProfile': typeof Main_layoutEditProfileRoute
   '/main/__layout/home': typeof Main_layoutHomeRoute
+  '/main/__layout/photographer': typeof Main_layoutPhotographerRoute
   '/main/__layout/profile': typeof Main_layoutProfileRoute
   '/photographer/__layout/apply': typeof Photographer_layoutApplyRoute
   '/photographer/__layout/dashboard': typeof Photographer_layoutDashboardRoute
@@ -277,8 +295,10 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/usermanagement'
     | '/admin/photographers/$id'
+    | '/main/booking'
     | '/main/editProfile'
     | '/main/home'
+    | '/main/photographer'
     | '/main/profile'
     | '/photographer/apply'
     | '/photographer/dashboard'
@@ -302,8 +322,10 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/usermanagement'
     | '/admin/photographers/$id'
+    | '/main/booking'
     | '/main/editProfile'
     | '/main/home'
+    | '/main/photographer'
     | '/main/profile'
     | '/photographer/apply'
     | '/photographer/dashboard'
@@ -331,8 +353,10 @@ export interface FileRouteTypes {
     | '/admin/__layout/photographers'
     | '/admin/__layout/usermanagement'
     | '/admin/photographers/$id'
+    | '/main/__layout/booking'
     | '/main/__layout/editProfile'
     | '/main/__layout/home'
+    | '/main/__layout/photographer'
     | '/main/__layout/profile'
     | '/photographer/__layout/apply'
     | '/photographer/__layout/dashboard'
@@ -484,6 +508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Main_layoutProfileRouteImport
       parentRoute: typeof Main_layoutRoute
     }
+    '/main/__layout/photographer': {
+      id: '/main/__layout/photographer'
+      path: '/photographer'
+      fullPath: '/main/photographer'
+      preLoaderRoute: typeof Main_layoutPhotographerRouteImport
+      parentRoute: typeof Main_layoutRoute
+    }
     '/main/__layout/home': {
       id: '/main/__layout/home'
       path: '/home'
@@ -496,6 +527,13 @@ declare module '@tanstack/react-router' {
       path: '/editProfile'
       fullPath: '/main/editProfile'
       preLoaderRoute: typeof Main_layoutEditProfileRouteImport
+      parentRoute: typeof Main_layoutRoute
+    }
+    '/main/__layout/booking': {
+      id: '/main/__layout/booking'
+      path: '/booking'
+      fullPath: '/main/booking'
+      preLoaderRoute: typeof Main_layoutBookingRouteImport
       parentRoute: typeof Main_layoutRoute
     }
     '/admin/photographers/$id': {
@@ -598,14 +636,18 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface Main_layoutRouteChildren {
+  Main_layoutBookingRoute: typeof Main_layoutBookingRoute
   Main_layoutEditProfileRoute: typeof Main_layoutEditProfileRoute
   Main_layoutHomeRoute: typeof Main_layoutHomeRoute
+  Main_layoutPhotographerRoute: typeof Main_layoutPhotographerRoute
   Main_layoutProfileRoute: typeof Main_layoutProfileRoute
 }
 
 const Main_layoutRouteChildren: Main_layoutRouteChildren = {
+  Main_layoutBookingRoute: Main_layoutBookingRoute,
   Main_layoutEditProfileRoute: Main_layoutEditProfileRoute,
   Main_layoutHomeRoute: Main_layoutHomeRoute,
+  Main_layoutPhotographerRoute: Main_layoutPhotographerRoute,
   Main_layoutProfileRoute: Main_layoutProfileRoute,
 }
 
