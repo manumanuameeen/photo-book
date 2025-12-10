@@ -6,7 +6,6 @@ export const MouseFollower = () => {
     const cursorY = useMotionValue(-100);
     const [isClicking, setIsClicking] = useState(false);
 
-    // Very smooth "fluid" spring config
     const springConfig = { damping: 25, stiffness: 120, mass: 0.8 };
     const cursorXSpring = useSpring(cursorX, springConfig);
     const cursorYSpring = useSpring(cursorY, springConfig);
@@ -33,7 +32,6 @@ export const MouseFollower = () => {
 
     return (
         <>
-            {/* Main trailing ring - interacts with clicks */}
             <motion.div
                 className="fixed top-0 left-0 w-8 h-8 rounded-full border border-yellow-500 pointer-events-none z-[9999] mix-blend-difference"
                 style={{
@@ -47,7 +45,6 @@ export const MouseFollower = () => {
                     borderWidth: isClicking ? "4px" : "1px"
                 }}
             />
-            {/* Small dot - sharp and precise */}
             <motion.div
                 className="fixed top-0 left-0 w-1.5 h-1.5 bg-yellow-500 rounded-full pointer-events-none z-[9999] mix-blend-difference"
                 style={{
