@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import type { IAuthService } from "./IAuthService.ts";
 import type { IEmailService } from "../email/IEmailServise.ts";
-import type { IOtpService } from "../otp/IOtpService.ts";
+import type { IOtpService } from "../otp/IOtpservice.ts";
 import type {
   ForgetPasswordDtoType,
   LoginDtoType,
