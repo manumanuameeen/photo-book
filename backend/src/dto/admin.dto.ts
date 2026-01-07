@@ -5,6 +5,7 @@ export const AdminUserQueryDto = z.object({
   limit: z.coerce.number().int().min(1).max(15).default(10),
   sort: z.string().default("createdAt"),
   search: z.string().optional().default(""),
+  isBlocked: z.enum(["true", "false", "all"]).optional(),
 });
 
 export type AdminUserQueryDtoType = z.infer<typeof AdminUserQueryDto>;

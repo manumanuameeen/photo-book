@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Mail,
   Phone,
@@ -17,11 +17,46 @@ import Loader from "../../../components/Loader";
 import { useNavigate } from "@tanstack/react-router";
 import { ROUTES } from "../../../constants/routes";
 import { useApplicationStore } from "../../photographer/store/useApplicationStore";
+import { motion } from "framer-motion";
+import { userApi } from "../../../services/api/userApi";
+import { bookingApi } from "../../../services/api/bookingApi";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Calendar } from "lucide-react";
+
+
+
 
 const Profile = () => {
   const navigate = useNavigate();
   const { applicationStatus, setApplicationStatus } = useApplicationStore();
   const { data, isLoading, isError } = useProfile();
+  const queryClient = useQueryClient();
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    const toastId = toast.loading("Uploading image...");
+
+    try {
+      await userApi.uploadProfileImage(file);
+      toast.success("Profile image updated", { id: toastId });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.response?.data?.message || "Failed to upload image", { id: toastId });
+    }
+  };
 
   useEffect(() => {
     if (data?.applicationStatus) {
@@ -60,7 +95,15 @@ const Profile = () => {
     navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD });
   };
 
-  // Helper for Application Status Badge in new design
+  const handleWallet = () => {
+    navigate({ to: ROUTES.USER.WALLET });
+  };
+
+  const handleBookings = () => {
+    navigate({ to: ROUTES.USER.BOOKINGS });
+  };
+
+
   const StatusBadge = () => {
     if (applicationStatus === 'pending') {
       return (
@@ -87,7 +130,12 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-gray-50 font-sans text-gray-800"
+    >
 
       {/* --- Top Navigation Bar --- */}
       <div className="bg-[#1E5631] h-16 w-full shadow-sm"></div>
@@ -128,11 +176,27 @@ const Profile = () => {
               )}
 
               <button
+                onClick={handleBookings}
+                className="flex items-center gap-2 bg-white text-green-700 border border-green-700 px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-green-50 transition-colors"
+              >
+                <Calendar size={16} />
+                My Bookings
+              </button>
+
+              <button
                 onClick={handleEditProfile}
                 className="flex items-center gap-2 bg-[#1E5631] text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-[#164024] transition-colors"
               >
                 <Pencil size={16} />
                 Edit Profile
+              </button>
+
+              <button
+                onClick={handleWallet}
+                className="flex items-center gap-2 bg-white text-gray-700 border border-gray-300 px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-gray-50 transition-colors"
+              >
+                <CreditCard size={16} />
+                My Wallet
               </button>
             </div>
           </div>
@@ -148,9 +212,23 @@ const Profile = () => {
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Personal Identity</h2>
               <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-300 overflow-hidden">
-                  {/* Avatar: Check if we have an image URL in data, otherwise placeholder */}
-                  <User size={48} />
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-300 overflow-hidden relative group border-2 border-white shadow-md">
+                  {data.profileImage ? (
+                    <img src={data.profileImage} alt={data.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={48} />
+                  )}
+
+                  <label htmlFor="profile-upload" className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <Camera className="text-white" size={24} />
+                  </label>
+                  <input
+                    id="profile-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">{data.name}</h3>
                 <p className="text-sm text-gray-400 mt-1">{data.role}</p>
@@ -183,6 +261,16 @@ const Profile = () => {
           {/* === RIGHT COLUMN === */}
           <div className="space-y-6">
 
+            {/* My Bookings Teaser */}
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+              <h2 className="text-lg font-bold text-gray-700 mb-4">My Bookings</h2>
+              <p className="text-gray-500 text-sm mb-6">View and manage all your photography sessions and requests.</p>
+              <button onClick={handleBookings} className="text-green-700 font-semibold text-sm hover:underline flex items-center gap-2">
+                View all bookings
+                <CheckCircle size={14} />
+              </button>
+            </div>
+
             {/* Business & Platform Information - Only show fetching from bio or static or hide if not photographer */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">About Me</h2>
@@ -191,10 +279,7 @@ const Profile = () => {
               </p>
             </div>
 
-            {/* Just a placeholder block since User Profile usually doesn't have business info unless it's the fetched photographer profile. 
-                Keeping it simple for User Profile view as per user request to map fields. 
-             */}
-            {/* If we had more user-specific fields like wallet balance, we could show them here */}
+            {/* Account Status */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Account Status</h2>
               <div className="space-y-5">
@@ -215,7 +300,7 @@ const Profile = () => {
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

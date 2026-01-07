@@ -25,6 +25,7 @@ export class UserMapper {
     dto.location = user.location;
     dto.lat = user.lat;
     dto.lng = user.lng;
+    dto.profileImage = user.profileImage;
     dto.applicationStatus = applicationStatus || "NONE";
     dto.createdAt = user.createdAt;
     return dto;

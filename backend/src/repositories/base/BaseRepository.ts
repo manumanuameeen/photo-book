@@ -1,6 +1,7 @@
-import type { Model, Document } from "mongoose";
+import { Model, Document } from "mongoose";
+import { IBaseRepository } from "../interface/IBaseRepository";
 
-export abstract class BaseRepository<T extends Document> {
+export abstract class BaseRepository<T extends Document> implements IBaseRepository<T> {
   protected readonly _model: Model<T>;
 
   constructor(model: Model<T>) {
@@ -22,5 +23,10 @@ export abstract class BaseRepository<T extends Document> {
 
   async update(id: string, data: Partial<T>): Promise<T | null> {
     return await this._model.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await this._model.findByIdAndDelete(id).exec();
+    return !!result;
   }
 }

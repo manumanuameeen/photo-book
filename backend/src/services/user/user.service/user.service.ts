@@ -7,6 +7,9 @@ import { Messages } from "../../../constants/messages.ts";
 import { HttpStatus } from "../../../constants/httpStatus.ts";
 import { UserMapper } from "../../../mappers/user.mapper.ts";
 import bcrypt from "bcrypt";
+import { OtpService } from "../otp/otp.service.ts";
+import { NodeMailerService } from "../email/nodemailer.service.ts";
+import { S3FileService } from "../../external/S3FileService.ts";
 
 export class UserService implements IUserService {
   private readonly _userRespository: IUserRepository;
@@ -50,17 +53,64 @@ export class UserService implements IUserService {
     return UserMapper.toProfileResponse(updatedUser);
   }
 
+  async initiateChangePassword(userId: string): Promise<void> {
+    const user = await this._userRespository.findById(userId);
+    if (!user) throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
+
+    const otpService = new OtpService();
+    const otp = otpService.generateOtp();
+    const expiry = otpService.getOtpExpire();
+
+    user.otp = otp;
+    user.otpExpiry = expiry;
+    await this._userRespository.update(userId, user);
+
+    const mailer = new NodeMailerService();
+    await mailer.sendOtp(user.email, otp, user.name);
+  }
+
   async changePassword(userId: string, data: ChangePasswordDtoType): Promise<void> {
     const user = await this._userRespository.findById(userId);
-
     if (!user) throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
+
+    // Verify OTP
+    const otpService = new OtpService();
+    if (!data.otp || !otpService.isOtpValidate(user.otp || "", data.otp, user.otpExpiry)) {
+      throw new AppError(Messages.INVALID_OTP, HttpStatus.BAD_REQUEST);
+    }
 
     const isMatch = await bcrypt.compare(data.currentPassword, user.password);
     if (!isMatch) throw new AppError(Messages.CURRENT_PASSWORD_INCORRECT, HttpStatus.BAD_REQUEST);
 
     const hashedPasswod = await bcrypt.hash(data.newPassword, 10);
     user.password = hashedPasswod;
+    user.otp = undefined; // Clear OTP after success
+    user.otpExpiry = undefined;
 
     await this._userRespository.update(userId, user);
+  }
+
+  async uploadProfileImage(userId: string, file: Express.Multer.File): Promise<string> {
+    const user = await this._userRespository.findById(userId);
+    if (!user) throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
+
+    const s3Service = new S3FileService(); // Ideally injected, but instantiating here for now as per existing pattern
+    const imageUrl = await s3Service.uploadFile(file, "profile_images", userId);
+
+    user.profileImage = imageUrl;
+    await this._userRespository.update(userId, user);
+
+    return imageUrl;
+  }
+
+  async verifyOtp(userId: string, otp: string): Promise<boolean> {
+    const user = await this._userRespository.findById(userId);
+    if (!user) throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
+
+    const otpService = new OtpService();
+    if (!user.otp || !otpService.isOtpValidate(user.otp, otp, user.otpExpiry)) {
+      throw new AppError(Messages.INVALID_OTP, HttpStatus.BAD_REQUEST);
+    }
+    return true;
   }
 }

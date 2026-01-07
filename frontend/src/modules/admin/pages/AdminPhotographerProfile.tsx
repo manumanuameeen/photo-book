@@ -23,7 +23,7 @@ import { ROUTES } from "../../../constants/routes";
 
 const AdminPhotographerProfile: React.FC = () => {
 
-    const { id } = useParams({ strict: false });
+    const { id } = useParams({ from: '/admin/photographers/$id' });
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
 
@@ -100,11 +100,10 @@ const AdminPhotographerProfile: React.FC = () => {
                     </button>
                 </Link>
 
-
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="flex items-center gap-5">
                         <img
-                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(photographer.personalInfo.name)}&background=random&size=128`}
+                            // src={photographer.personalInfo}
                             alt={photographer.personalInfo.name}
                             className="w-24 h-24 rounded-full object-cover border-4 border-gray-50"
                         />
@@ -214,16 +213,16 @@ const AdminPhotographerProfile: React.FC = () => {
             {isImageModalOpen && (
                 <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4" onClick={() => setIsImageModalOpen(false)}>
                     <div className="relative max-w-5xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                            onClick={() => setIsImageModalOpen(false)} 
+                        <button
+                            onClick={() => setIsImageModalOpen(false)}
                             className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-10"
                             aria-label="Close image viewer"
                         >
                             <X size={24} />
                         </button>
-                        <img 
-                            src={selectedImage} 
-                            alt="Full-size portfolio view" 
+                        <img
+                            src={selectedImage}
+                            alt="Full-size portfolio view"
                             className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         />
                     </div>

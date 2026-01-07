@@ -8,6 +8,7 @@ export interface IUserResponse {
     location?: string;
     lat?: number;
     lng?: number;
+    profileImage?: string;
     applicationStatus?: "PENDING" | "APPROVED" | "REJECTED" | "NONE";
     createdAt: string;
 }

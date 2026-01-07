@@ -1,8 +1,9 @@
+
+
 import { motion } from 'framer-motion';
 import { MouseFollower } from '../../../components/common/MouseFollower';
 import { MagneticButton } from '../../../components/common/MagneticButton';
 import { TiltCard } from '../../../components/common/TiltCard';
-
 const categories = [
   {
     icon: 'fas fa-ring',

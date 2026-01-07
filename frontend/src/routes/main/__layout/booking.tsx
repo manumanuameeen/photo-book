@@ -1,9 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
+import BookingWizard from '../../../modules/user/pages/Booking'
 
 export const Route = createFileRoute('/main/__layout/booking')({
-  component: RouteComponent,
+  component: BookingWizard,
 })
-
-function RouteComponent() {
-  return <div>Hello "/main/__layout/booking"!</div>
-}

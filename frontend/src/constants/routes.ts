@@ -13,17 +13,26 @@ export const ROUTES = {
     PHOTOGRAPHERS: "/admin/photographers",
     APPLICATIONS: "/admin/applications",
     APPLICATION_DETAILS: "/admin/applications/$id",
+    CATEGORIES: "/admin/categories",
+    PENDING_CATEGORIES: "/admin/categories/pending",
   },
   USER: {
     HOME: "/main/home",
     PROFILE: "/main/profile",
     EDIT_PROFILE: "/main/editProfile",
-    PHOTOGRAPHER:"/main/photographer"
+    PHOTOGRAPHER: "/main/photographer",
+    PHOTOGRAPHER_DETAILS: "/main/photographer/$id",
+    BOOKING: "/main/booking",
+    BOOKINGS: "/main/bookings",
+    WALLET: "/main/wallet"
   },
   PHOTOGRAPHER: {
     APPLY: "/photographer/apply",
     DASHBOARD: "/photographer/dashboard",
     PROFILE: "/photographer/profile",
+    AVAILABILITY: "/photographer/availability",
+    BOOKINGS: "/photographer/bookings",
+    BOOKING_DETAILS: "/photographer/bookings/$id",
   },
   GENERAL: {
     ABOUT: "/about"

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { Search, MapPin, Loader2 } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { toast } from "sonner";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -24,7 +25,7 @@ interface SearchResult {
     lon: string;
 }
 
-function LocationMarker({ 
+function LocationMarker({
     position,
     onMapClick
 }: {
@@ -50,11 +51,11 @@ function LocationMarker({
 
 function MapUpdater({ center }: { center: [number, number] }) {
     const map = useMap();
-    
+
     useEffect(() => {
         map.setView(center, map.getZoom());
     }, [center, map]);
-    
+
     return null;
 }
 
@@ -70,7 +71,8 @@ export const SmallLocationPicker = ({
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showResults, setShowResults] = useState(false);
-    const searchTimeoutRef = useRef<NodeJS.Timeout>();
+    const [isLocating, setIsLocating] = useState(false);
+    const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     const reverseGeocode = async (lat: number, lng: number) => {
         try {
@@ -86,7 +88,6 @@ export const SmallLocationPicker = ({
         }
     };
 
-    // Handle map click
     const handleMapClick = async (lat: number, lng: number) => {
         setPosition([lat, lng]);
         const fullAddress = await reverseGeocode(lat, lng);
@@ -95,7 +96,31 @@ export const SmallLocationPicker = ({
         onLocationSelect({ address: fullAddress, lat, lng });
     };
 
-    // Search locations using Nominatim
+    const handleUseCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
+            return;
+        }
+
+        setIsLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                setPosition([latitude, longitude]);
+                const fullAddress = await reverseGeocode(latitude, longitude);
+                setAddress(fullAddress);
+                setSearchQuery(fullAddress);
+                onLocationSelect({ address: fullAddress, lat: latitude, lng: longitude });
+                setIsLocating(false);
+            },
+            (err) => {
+                console.error("Geolocation error:", err);
+                toast.error("Unable to retrieve your location. Please check browser permissions.");
+                setIsLocating(false);
+            }
+        );
+    };
+
     const searchLocation = async (query: string) => {
         if (!query.trim()) {
             setSearchResults([]);
@@ -118,7 +143,6 @@ export const SmallLocationPicker = ({
         }
     };
 
-    // Handle search input change with debounce
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
@@ -134,16 +158,15 @@ export const SmallLocationPicker = ({
         }, 500);
     };
 
-    // Handle selecting a search result
     const handleSelectResult = async (result: SearchResult) => {
         const lat = parseFloat(result.lat);
         const lng = parseFloat(result.lon);
-        
+
         setPosition([lat, lng]);
         setAddress(result.display_name);
         setSearchQuery(result.display_name);
         setShowResults(false);
-        
+
         onLocationSelect({
             address: result.display_name,
             lat,
@@ -151,7 +174,6 @@ export const SmallLocationPicker = ({
         });
     };
 
-    // Close search results when clicking outside
     useEffect(() => {
         const handleClickOutside = () => setShowResults(false);
         document.addEventListener('click', handleClickOutside);
@@ -160,28 +182,45 @@ export const SmallLocationPicker = ({
 
     return (
         <div className="w-full flex flex-col gap-4">
-            <label className="text-sm font-semibold text-gray-700">{label}</label>
-            
+            <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold text-gray-700">{label}</label>
+                <button
+                    type="button"
+                    onClick={handleUseCurrentLocation}
+                    disabled={isLocating}
+                    className="text-xs flex items-center gap-1.5 text-green-600 font-medium hover:bg-green-50 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                >
+                    {isLocating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
+                    Use Current Location
+                </button>
+            </div>
+
             {/* Search Input */}
             <div className="relative" onClick={(e) => e.stopPropagation()}>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <div className="relative flex items-center">
+                    <Search className="absolute left-3 text-gray-400" size={20} />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={handleSearchChange}
+                        onKeyDown={(e) => e.key === 'Enter' && searchLocation(searchQuery)}
                         onFocus={() => searchResults.length > 0 && setShowResults(true)}
                         placeholder="Search for a location..."
-                        className="w-full pl-11 pr-11 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
+                        className="w-full pl-10 pr-24 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
                     />
-                    {isSearching && (
-                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600 animate-spin" size={20} />
-                    )}
+                    <button
+                        type="button"
+                        onClick={() => searchLocation(searchQuery)}
+                        disabled={isSearching}
+                        className="absolute right-2 bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-800 transition-colors disabled:opacity-70 flex items-center gap-2"
+                    >
+                        {isSearching ? <Loader2 size={12} className="animate-spin" /> : "Search"}
+                    </button>
                 </div>
 
                 {/* Search Results Dropdown */}
                 {showResults && searchResults.length > 0 && (
-                    <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                    <div className="absolute z-[1000] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
                         {searchResults.map((result, index) => (
                             <button
                                 key={index}
@@ -196,8 +235,8 @@ export const SmallLocationPicker = ({
                 )}
             </div>
 
-            {/* Map Container - FIXED: height changed from h-96 to h-80 */}
-            <div className="h-80 rounded-xl overflow-hidden shadow-2xl border border-gray-200"> 
+            {/* Map Container - Reduced height from h-80/h-96 to h-64 for better layout */}
+            <div className="h-64 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
                 <MapContainer
                     center={position}
                     zoom={13}
@@ -205,25 +244,26 @@ export const SmallLocationPicker = ({
                     scrollWheelZoom={true}
                 >
                     <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
+                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                     />
                     <LocationMarker position={position} onMapClick={handleMapClick} />
                     <MapUpdater center={position} />
                 </MapContainer>
             </div>
 
-            {/* Selected Location Display with Coordinates */}
-            <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Selected Location:</p>
-                <div className="space-y-2">
-                    <p className="text-sm text-green-800 flex items-start gap-2">
-                        <MapPin className="flex-shrink-0 mt-0.5" size={16} />
-                        <span className="font-medium">{address}</span>
+
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-green-200 shadow-sm mt-2">
+                <p className="text-xs font-semibold text-green-800 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <MapPin size={14} /> Selected Location
+                </p>
+                <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-800 leading-relaxed">
+                        {address}
                     </p>
                     {position && (
-                        <p className="text-xs text-gray-600">
-                            📍 Coordinates: {position[0].toFixed(6)}, {position[1].toFixed(6)}
+                        <p className="text-[10px] text-gray-500 font-mono">
+                            {position[0].toFixed(6)}, {position[1].toFixed(6)}
                         </p>
                     )}
                 </div>

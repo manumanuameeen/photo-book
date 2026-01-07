@@ -11,4 +11,10 @@ export interface IAdminPhotographerController {
     approveApplication(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
     rejectApplication(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
     getStatistics(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+
+    getPackages(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+    approvePackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+    rejectPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+    blockPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+    unblockPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
 }

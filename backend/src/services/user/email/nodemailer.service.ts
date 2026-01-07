@@ -455,4 +455,56 @@ export class NodeMailerService implements IEmailService {
       </html>
     `;
   }
+  async sendBookingConfirmation(email: string, name: string, bookingDetails: any): Promise<void> {
+    try {
+      const mailOptions = {
+        from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: "New Booking Confirmed! 📸",
+        html: this.getBookingConfirmationTemplate(name, bookingDetails),
+      };
+      await mailTransport.sendMail(mailOptions);
+      console.log(`Booking confirmation email sent to ${email}`);
+    } catch (error: any) {
+      console.error("Failed to send booking confirmation email:", error.message);
+      // Don't throw to prevent blocking the flow, just log it
+    }
+  }
+
+  private getBookingConfirmationTemplate(name: string, details: any): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+          .container { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; }
+          .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+          .details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .highlight { color: #2E7D46; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📸 Booking Confirmed!</h1>
+          </div>
+          <p>Hi <strong>${name}</strong>,</p>
+          <p>Great news! A user has paid the deposit and confirmed their booking with you.</p>
+          
+          <div class="details">
+            <p><strong>Event:</strong> ${details.eventType}</p>
+            <p><strong>Date:</strong> ${new Date(details.eventDate).toLocaleDateString()}</p>
+            <p><strong>Package:</strong> ${details.packageDetails?.name}</p>
+            <p><strong>Location:</strong> ${details.location}</p>
+            <p><strong>Deposit Paid:</strong> <span class="highlight">$${details.depositeRequired}</span></p>
+          </div>
+
+          <p>Please check your dashboard for full details.</p>
+        </div>
+      </body>
+      </html>
+    `;
+  }
 }

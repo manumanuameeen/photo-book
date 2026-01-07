@@ -13,6 +13,10 @@ export const BlockPhotographerDto = z.object({
     reason: z.string().optional(),
 });
 
+export const BlockPackageDto = z.object({
+    reason: z.string().min(10, "Block reason must be at least 10 characters"),
+});
+
 export const ApprovedApplicationDto = z.object({
     message: z.string().min(10, 'Message must be least 10 charecters')
 });

@@ -1,5 +1,6 @@
 import Jwt from "jsonwebtoken";
 import { PhotographerModel } from "../model/photographerModel";
+import { HttpStatus } from "../constants/httpStatus";
 import type { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 dotenv.config();
@@ -21,24 +22,26 @@ export const verifyAccessToken = async (req: AuthRequest, res: Response, next: N
     const token = req.cookies.accessToken;
 
     if (!token) {
-      console.log(" No access token in cookies");
-      return res.status(401).json({
-        message: "Unauthorized - No token provided",
-        redirectTo: "/auth/login",
+      console.warn("⚠️ [Auth] No access token provided");
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        success: false,
+        message: "Unauthorized access. Please login again.",
+        code: "NO_TOKEN"
       });
     }
 
     const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
 
-  
+    // const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
     if (decoded.role === "photographer") {
-      const photographer = await PhotographerModel.findOne({ userId: decoded.userId });
-      if (photographer && photographer.isBlock) {
+      const photographer = await PhotographerModel.findOne({ userId: decoded.userId }).select('isBlock');
+      if (photographer?.isBlock) {
         res.clearCookie("accessToken");
         res.clearCookie("refreshToken");
-        return res.status(403).json({
-          message: "Account is blocked. Please contact support.",
-          redirectTo: "/auth/login",
+        return res.status(HttpStatus.FORBIDDEN).json({
+          success: false,
+          message: "Your account has been suspended. Please contact support.",
+          code: "ACCOUNT_BLOCKED"
         });
       }
     }
@@ -48,11 +51,17 @@ export const verifyAccessToken = async (req: AuthRequest, res: Response, next: N
     req.userId = decoded.userId;
 
     next();
-  } catch (error) {
-    console.error(" Token verification error:", error);
-    return res.status(403).json({
-      message: "Invalid or expired token",
-      redirectTo: "/auth/login",
+  } catch (error: any) {
+    const message = error.name === "TokenExpiredError"
+      ? "Session expired. Please refresh your token."
+      : "Invalid authentication token.";
+
+    console.error(`❌ [Auth Error]: ${message}`, error.message);
+
+    return res.status(HttpStatus.UNAUTHORIZED).json({
+      success: false,
+      message,
+      code: "INVALID_TOKEN"
     });
   }
 };

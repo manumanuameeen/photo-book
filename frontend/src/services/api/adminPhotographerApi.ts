@@ -48,4 +48,25 @@ export const adminPhotographerApi = {
         const response = await apiClient.get("/admin/photographers/statistics");
         return response.data.data;
     },
+
+    getPackages: async (page = 1, limit = 10, status = "ALL"): Promise<any> => {
+        const response = await apiClient.get("/admin/packages", { params: { page, limit, status } });
+        return response.data.data;
+    },
+
+    approvePackage: async (id: string): Promise<void> => {
+        await apiClient.post(`/admin/packages/${id}/approve`);
+    },
+
+    rejectPackage: async (id: string, reason: string): Promise<void> => {
+        await apiClient.post(`/admin/packages/${id}/reject`, { reason });
+    },
+
+    blockPackage: async (id: string, reason: string): Promise<void> => {
+        await apiClient.patch(`/admin/packages/${id}/block`, { reason });
+    },
+
+    unblockPackage: async (id: string): Promise<void> => {
+        await apiClient.patch(`/admin/packages/${id}/unblock`);
+    },
 };

@@ -16,8 +16,11 @@ export interface IUser extends Document {
   lng?: number;
   role: UserRoleType;
   status: UserStatusType;
+  otp?: string;
+  otpExpiry?: Date;
   isBlocked: boolean;
   walletBalance: number;
+  profileImage?: string;
   comparePassword(candidate: string): Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -33,6 +36,7 @@ const userSchema = new Schema<IUser>(
     location: { type: String, default: "" },
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },
+    profileImage: { type: String, default: "" },
     role: {
       type: String,
       enum: Object.values(UserRole),
@@ -43,6 +47,8 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(UserStatus),
       default: UserStatus.ACTIVE,
     },
+    otp: { type: String },
+    otpExpiry: { type: Date },
     isBlocked: { type: Boolean, default: false },
     walletBalance: { type: Number, default: 0 },
   },

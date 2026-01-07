@@ -14,9 +14,9 @@ export interface IPaginatedPhotographers {
   page: number;
   limit: number;
   totalPages: number;
-  rejectedCount:number;
-  pendingCount:number;
-  approvedCount:number;
+  rejectedCount: number;
+  pendingCount: number;
+  approvedCount: number;
 }
 
 export interface IPhotographerStats {
@@ -40,4 +40,6 @@ export interface IPhotographerRepository {
   approveById(id: string): Promise<IPhotographer | null>;
   rejectById(id: string, reason: string): Promise<IPhotographer | null>;
   getStatistics(): Promise<IPhotographerStats>;
+  getPublicPhotographers(filters: { category?: string; priceRange?: string; location?: string; lat?: number; lng?: number }): Promise<any[]>;
+  getPublicPhotographerById(id: string): Promise<any>;
 }
