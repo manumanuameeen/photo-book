@@ -7,6 +7,7 @@ import {
 import { IPhotographerRepository } from "../../repositories/interface/IPhotographerRepository";
 import { IUserRepository } from "../../repositories/interface/IUserRespository";
 import { IEmailService } from "../user/email/IEmailServise";
+import { IMessageService } from "../messaging/interface/IMessageService";
 import { AdminPhotographerMapper } from "../../mappers/adminPhotographerMapper";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
@@ -16,7 +17,8 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     constructor(
         private readonly _photographerRepo: IPhotographerRepository,
         private readonly _userRepo: IUserRepository,
-        private readonly _emailService: IEmailService
+        private readonly _emailService: IEmailService,
+        private readonly _messageService: IMessageService
     ) { }
 
     async getPhotographers(query: IGetPhotographersQuery): Promise<IPaginatedPhotographersResponse> {
@@ -38,8 +40,8 @@ export class AdminPhotographerService implements IAdminPhotographerService {
             limit: result.limit,
             totalPages: result.totalPages,
             approvedCount: result.approvedCount,
-            pendingCount:result.pendingCount,
-            rejectedCount:result.rejectedCount
+            pendingCount: result.pendingCount,
+            rejectedCount: result.rejectedCount
         };
     }
 
@@ -106,5 +108,83 @@ export class AdminPhotographerService implements IAdminPhotographerService {
 
     async getStatistics() {
         return await this._photographerRepo.getStatistics();
+    }
+
+    async getPackages(query: any): Promise<any> {
+        const { BookingPackageModel } = await import("../../model/bookingPackageModel");
+
+        const page = parseInt(query.page || "1");
+        const limit = parseInt(query.limit || "10");
+        const skip = (page - 1) * limit;
+
+        const filter: any = {};
+
+        if (query.status) {
+            if (query.status === "APPROVED") {
+                // Active packages: Approved/Active AND Active toggle is on
+                filter.status = { $in: ["APPROVED", "ACTIVE"] };
+                filter.isActive = true;
+            } else if (query.status === "INACTIVE") {
+                // Inactive packages: Approved/Active BUT Active toggle is off
+                filter.status = { $in: ["APPROVED", "ACTIVE"] };
+                filter.isActive = false;
+            } else if (query.status === "REJECTED") {
+                // Blocked/Rejected packages
+                filter.status = "REJECTED";
+            } else if (query.status !== "ALL") {
+                // Other explicit statuses like PENDING
+                filter.status = query.status;
+            }
+        }
+        // If status is ALL or undefined, no filter is applied (returns everything)
+
+        const packages = await BookingPackageModel.find(filter)
+            .populate("photographer", "personalInfo.name personalInfo.email")
+            .populate("categoryId", "name")
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const total = await BookingPackageModel.countDocuments(filter);
+
+        return {
+            packages,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+        };
+    }
+
+    async approvePackage(id: string, adminId?: string): Promise<void> {
+        const { BookingPackageModel } = await import("../../model/bookingPackageModel");
+        const pkg = await BookingPackageModel.findByIdAndUpdate(id, { status: "APPROVED", isActive: true });
+        if (pkg) {
+            await this._messageService.sendSystemMessage(pkg.photographer.toString(), `Your package "${pkg.name}" has been approved.`, adminId);
+        }
+    }
+
+    async rejectPackage(id: string, reason: string, adminId?: string): Promise<void> {
+        const { BookingPackageModel } = await import("../../model/bookingPackageModel");
+        const pkg = await BookingPackageModel.findByIdAndUpdate(id, { status: "REJECTED", rejectionReason: reason, isActive: false });
+        if (pkg) {
+            await this._messageService.sendSystemMessage(pkg.photographer.toString(), `Your package "${pkg.name}" has been rejected. Reason: ${reason}`, adminId);
+        }
+    }
+
+    async blockPackage(id: string, reason: string, adminId?: string): Promise<void> {
+        const { BookingPackageModel } = await import("../../model/bookingPackageModel");
+        const pkg = await BookingPackageModel.findByIdAndUpdate(id, { status: "REJECTED", rejectionReason: reason, isActive: false });
+        if (pkg) {
+            await this._messageService.sendSystemMessage(pkg.photographer.toString(), `Your package "${pkg.name}" has been blocked. Reason: ${reason}`, adminId);
+        }
+    }
+
+    async unblockPackage(id: string, adminId?: string): Promise<void> {
+        const { BookingPackageModel } = await import("../../model/bookingPackageModel");
+        const pkg = await BookingPackageModel.findByIdAndUpdate(id, { status: "APPROVED", rejectionReason: undefined, isActive: true });
+        if (pkg) {
+            await this._messageService.sendSystemMessage(pkg.photographer.toString(), `Your package "${pkg.name}" has been unblocked.`, adminId);
+        }
     }
 }

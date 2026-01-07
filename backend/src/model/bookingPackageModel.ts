@@ -4,11 +4,16 @@ export interface IBookingPackage extends Document {
     photographer: mongoose.Types.ObjectId;
     name: string;
     description: string;
-    editedPhoto: number;
+    coverImage: string;
+    price: number;
+    features: string[];
+    deliveryTime: string;
     baseprice: number;
+    editedPhoto: number;
     isActive: boolean;
     categoryId: mongoose.Types.ObjectId;
-    status: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'DELETED';
+    rejectionReason?: string;
     createdAt: Date;
 }
 
@@ -17,11 +22,16 @@ const BookingPackageSchema: Schema = new Schema(
         photographer: { type: Schema.Types.ObjectId, ref: "Photographer", required: true },
         name: { type: String, required: true },
         description: { type: String, required: true },
-        editedPhoto: { type: Number, required: true },
+        coverImage: { type: String },
+        price: { type: Number },
         baseprice: { type: Number, required: true },
+        editedPhoto: { type: Number, required: true },
+        features: [{ type: String }],
+        deliveryTime: { type: String },
         isActive: { type: Boolean, default: true },
         categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
-        status: { type: String, required: true },
+        status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED', 'ACTIVE', 'DELETED'], default: 'APPROVED' },
+        rejectionReason: { type: String },
     },
     { timestamps: true }
 );

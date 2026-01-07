@@ -2,5 +2,7 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "../../middleware/authMiddleware";
 
 export interface IPhtogrpherController {
-  apply(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+  apply(req: any, res: any, next: any): Promise<void>;
+  getDashboardStats(req: any, res: any, next: any): Promise<void>;
+  getPhotographers(req: any, res: any, next: any): Promise<void>;
 }

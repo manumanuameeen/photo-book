@@ -9,6 +9,8 @@ import {
   MessageSquare,
   Grid,
   LogOut,
+  Tag,
+  ClipboardCheck
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../modules/auth/store/useAuthStore.ts";
@@ -17,22 +19,12 @@ import { toast } from "sonner"
 import { confirm } from "../../components/ConfirmToaster.tsx";
 import { ROUTES } from "../../constants/routes.ts";
 
-interface NavItem {
-  id: number;
-  name: string;
-  icon: React.ReactNode;
-  path: string;
-}
-
-const navItems: NavItem[] = [
+const navItems = [
   { id: 1, name: "Dashboard", icon: <LayoutDashboard size={20} />, path: ROUTES.ADMIN.DASHBOARD },
   { id: 2, name: "Users", icon: <Users size={20} />, path: ROUTES.ADMIN.USERS },
   { id: 3, name: "Photographers", icon: <Camera size={20} />, path: ROUTES.ADMIN.PHOTOGRAPHERS },
-  { id: 4, name: "Bookings", icon: <BookOpen size={20} />, path: "/admin/bookings" }, // TODO: Add to routes
-  { id: 5, name: "Rentals", icon: <Key size={20} />, path: "/admin/rentals" }, // TODO: Add to routes
-  { id: 6, name: "Wallet", icon: <Wallet size={20} />, path: "/admin/wallet" }, // TODO: Add to routes
-  { id: 7, name: "Chat", icon: <MessageSquare size={20} />, path: "/admin/chat" }, // TODO: Add to routes
-  { id: 8, name: "Category", icon: <Grid size={20} />, path: "/admin/category" }, // TODO: Add to routes
+  { id: 4, name: "Categories", icon: <Tag size={20} />, path: "/admin/categories" },
+  { id: 5, name: "Packages", icon: <ClipboardCheck size={20} />, path: "/admin/packages" },
 ];
 
 const AdminSidebar: React.FC = () => {

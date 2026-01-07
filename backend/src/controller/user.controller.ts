@@ -22,7 +22,7 @@ export class UserController implements IUserController {
             }
 
             const user = await this._userService.getProfile(userId);
-            ApiResponse.success(res, user, "Profile fetched successfully");
+            ApiResponse.success(res, user, Messages.PROFILE_FETCHED);
         } catch (error: unknown) {
             this._handleError(res, error);
         }
@@ -36,7 +36,7 @@ export class UserController implements IUserController {
             }
 
             const updatedUser = await this._userService.updateProfile(userId, req.body);
-            ApiResponse.success(res, updatedUser, "Profile updated successfully");
+            ApiResponse.success(res, updatedUser, Messages.PROFILE_UPDATED);
         } catch (error: unknown) {
             this._handleError(res, error);
         }
@@ -56,6 +56,38 @@ export class UserController implements IUserController {
         }
     };
 
+    initiateChangePassword = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.user?.userId;
+            if (!userId) {
+                throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+            }
+
+            await this._userService.initiateChangePassword(userId);
+            ApiResponse.success(res, null, Messages.OTP_SENT);
+        } catch (error: unknown) {
+            this._handleError(res, error);
+        }
+    };
+
+    uploadProfileImage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.user?.userId;
+            if (!userId) {
+                throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+            }
+
+            if (!req.file) {
+                throw new AppError("No image file provided", HttpStatus.BAD_REQUEST);
+            }
+
+            const imageUrl = await this._userService.uploadProfileImage(userId, req.file);
+            ApiResponse.success(res, { imageUrl }, "Profile image uploaded successfully");
+        } catch (error: unknown) {
+            this._handleError(res, error);
+        }
+    };
+
     private _handleError(res: Response, error: unknown): void {
         if (error instanceof AppError) {
             ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
@@ -69,4 +101,23 @@ export class UserController implements IUserController {
 
         ApiResponse.error(res, Messages.INTERNAL_ERROR);
     }
+
+    verifyOtp = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const userId = req.user?.userId;
+            if (!userId) {
+                throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+            }
+
+            const { otp } = req.body;
+            if (!otp) {
+                throw new AppError(Messages.INVALID_OTP, HttpStatus.BAD_REQUEST);
+            }
+
+            await this._userService.verifyOtp(userId, otp);
+            ApiResponse.success(res, null, Messages.OTP_VERIFIED);
+        } catch (error: unknown) {
+            this._handleError(res, error);
+        }
+    };
 }

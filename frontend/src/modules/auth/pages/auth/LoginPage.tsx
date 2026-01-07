@@ -205,6 +205,17 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
 
+  // Redirect if already logged in
+  React.useEffect(() => {
+    const { user } = useAuthStore.getState();
+    if (user) {
+      const redirectTo = user.role === "admin"
+        ? ROUTES.ADMIN.DASHBOARD
+        : ROUTES.USER.HOME;
+      navigate({ to: redirectTo });
+    }
+  }, [navigate]);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -244,9 +255,9 @@ const LoginPage: React.FC = () => {
           ? ROUTES.ADMIN.DASHBOARD
           : ROUTES.USER.HOME;
 
-      
-          navigate({ to: redirectTo });
-  
+
+        navigate({ to: redirectTo });
+
         setFormData({ email: "", password: "" });
       },
       onError: (error: unknown) => {

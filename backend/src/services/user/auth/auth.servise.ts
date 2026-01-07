@@ -15,6 +15,7 @@ import type {
   SignupDtoType,
   VerifyOtpDtoType,
 } from "../../../dto/auth.dto.ts";
+import type { IWalletService } from "../../interfaces/IWalletService";
 import { Messages } from "../../../constants/messages.ts";
 import { AuthMapper } from "../../../mappers/auth.mapper.ts";
 import bcrypt from "bcrypt";
@@ -26,11 +27,13 @@ export class AuthService implements IAuthService {
   private readonly _userRepo: IUserRepository;
   private readonly _emailService: IEmailService;
   private readonly _otpService: IOtpService;
+  private readonly _walletService: IWalletService;
 
-  constructor(useRepo: IUserRepository, emailRepo: IEmailService, otpRepo: IOtpService) {
+  constructor(useRepo: IUserRepository, emailRepo: IEmailService, otpRepo: IOtpService, walletService: IWalletService) {
     this._userRepo = useRepo;
     this._emailService = emailRepo;
     this._otpService = otpRepo;
+    this._walletService = walletService;
   }
 
   async signup(data: SignupDtoType) {
@@ -65,6 +68,12 @@ export class AuthService implements IAuthService {
 
     const user = await this._userRepo.create(payload);
 
+    try {
+      await this._walletService.ensureWalletExists(user._id!.toString(), user.role);
+    } catch (error) {
+      console.error("Failed to create wallet for user:", user._id, error);
+    }
+
     await redisClient.del(`otp:${data.email}`);
     await this._emailService.sendWelcomeEmail(user.email, user.name);
 
@@ -93,6 +102,13 @@ export class AuthService implements IAuthService {
     if (!user || !(await user.comparePassword(data.password)))
       throw new Error(Messages.INVALID_CREDENTIALS);
     if (user.isBlocked) throw new Error(Messages.USER_BLOCKED);
+
+    // Ensure wallet exists for logging in user (self-healing)
+    try {
+      await this._walletService.ensureWalletExists(user._id!.toString(), user.role);
+    } catch (err) {
+      console.error("Error creating wallet on login", err);
+    }
 
     return this._issueTokens(user);
   }

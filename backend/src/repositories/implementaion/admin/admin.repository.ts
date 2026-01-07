@@ -8,16 +8,24 @@ import type {
 import { AdminMapper } from "../../../mappers/admin.mapper.ts";
 
 export class AdminRepository implements IAdminRepository {
-  
-  async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
-    const { limit, page, search, sort } = query;
-    const skip = (page - 1) * limit;
-    const roleFilter = { role: { $nin: ["admin","photographer"] } };
-    const searchQuery = search
-      ? { ...roleFilter, name: { $regex: search, $options: "i" } }
-      : roleFilter;
 
-    const users = await User.find(searchQuery)
+  async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
+    const { limit, page, search, sort, isBlocked } = query;
+    const skip = (page - 1) * limit;
+
+    const roleFilter = { role: { $nin: ["admin", "photographer"] } };
+
+    let filterQuery: any = { ...roleFilter };
+
+    if (search) {
+      filterQuery.name = { $regex: search, $options: "i" };
+    }
+
+    if (isBlocked && isBlocked !== "all") {
+      filterQuery.isBlocked = isBlocked === "true";
+    }
+
+    const users = await User.find(filterQuery)
       .sort({ [sort]: 1 })
       .skip(skip)
       .limit(limit)
@@ -25,7 +33,7 @@ export class AdminRepository implements IAdminRepository {
 
     const formatedUser: IUserResponse[] = users.map(AdminMapper.toUserResponse);
 
-    const total = await User.countDocuments(searchQuery);
+    const total = await User.countDocuments(filterQuery);
 
     return {
       users: formatedUser,

@@ -8,6 +8,7 @@ export class AdminMapper {
       limit: dto.limit,
       sort: dto.sort,
       search: dto.search.trim(),
+      isBlocked: dto.isBlocked,
     };
   }
 

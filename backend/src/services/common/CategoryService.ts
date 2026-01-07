@@ -1,0 +1,102 @@
+import { ICategoryService, ICategoryQuery, ICategoryPagination } from "./ICategoryService.ts";
+import { CategoryRepository } from "../../repositories/implementaion/CategoryRepository.ts";
+import { ICategory, CategoryType } from "../../model/categoryModel.ts";
+import { AppError } from "../../utils/AppError.ts";
+import { HttpStatus } from "../../constants/httpStatus.ts";
+import { Messages } from "../../constants/messages.ts";
+import { IMessageService } from "../messaging/interface/IMessageService.ts";
+import mongoose from "mongoose";
+
+export class CategoryService implements ICategoryService {
+    private _repository: CategoryRepository;
+    private _messageService: IMessageService;
+
+    constructor(repository: CategoryRepository, messageService: IMessageService) {
+        this._repository = repository;
+        this._messageService = messageService;
+    }
+
+    async getCategories(query: ICategoryQuery): Promise<ICategoryPagination> {
+        return await this._repository.findAll(query);
+    }
+
+    async createCategory(name: string, type: string, description: string): Promise<ICategory> {
+        const normalizedName = name.trim().toLowerCase();
+
+        const existingCategory = await this._repository.findOne({ name: normalizedName });
+        if (existingCategory) {
+            throw new AppError(Messages.CATEGORY_ALREADY_EXISTS, HttpStatus.CONFLICT);
+        }
+
+        return await this._repository.create({ name: normalizedName, type, description, isBlocked: false });
+    }
+
+    async suggestCategory(name: string, type: string, description: string, explanation: string, userId: string): Promise<ICategory> {
+        // Suggested categories are created with PENDING status and isSuggested: true
+        return await this._repository.create({
+            name,
+            type,
+            description,
+            explanation,
+            isBlocked: true,
+            isSuggested: true,
+            suggestionStatus: 'PENDING',
+            requestedBy: new mongoose.Types.ObjectId(userId)
+        });
+    }
+
+    async approveCategory(id: string, message?: string, adminId?: string): Promise<ICategory | null> {
+        const updated = await this._repository.update(id, {
+            suggestionStatus: 'APPROVED',
+            isBlocked: false,
+            isSuggested: false // Once approved, it becomes a regular category
+        });
+
+        if (updated && updated.requestedBy) {
+            const content = message || `Your category suggestion "${updated.name}" has been approved.`;
+            await this._messageService.sendSystemMessage(updated.requestedBy.toString(), content, adminId);
+        }
+
+        return updated;
+    }
+
+    async rejectCategory(id: string, reason: string, adminId?: string): Promise<ICategory | null> {
+        const updated = await this._repository.update(id, {
+            suggestionStatus: 'REJECTED',
+            rejectionReason: reason,
+            isBlocked: true,
+            isSuggested: false
+        });
+
+        if (updated && updated.requestedBy) {
+            const content = `Your category suggestion "${updated.name}" was rejected. Reason: ${reason}`;
+            await this._messageService.sendSystemMessage(updated.requestedBy.toString(), content, adminId);
+        }
+
+        return updated;
+    }
+
+    async updateCategory(id: string, data: Partial<ICategory>): Promise<ICategory | null> {
+        if (data.name) {
+            const normalizedName = data.name.trim().toLowerCase();
+            const existingCategory = await this._repository.findOne({ name: normalizedName, _id: { $ne: id } } as any);
+
+            if (existingCategory) {
+                throw new AppError(Messages.CATEGORY_ALREADY_EXISTS, HttpStatus.CONFLICT);
+            }
+            data.name = normalizedName;
+        }
+        return await this._repository.update(id, data);
+    }
+
+    async deleteCategory(id: string): Promise<boolean> {
+        // Can either soft delete (block) or hard delete. User said "remove", typically hard delete for simple items or soft delete.
+        // Let's assume Hard delete for now as "isBlocked" exists for soft delete/ban.
+        // But wait, existing ICategoryRepository/BaseRepository has delete? Yes.
+        // Let's use delete() from repository.
+        if (this._repository.delete) {
+            return await this._repository.delete(id);
+        }
+        return false;
+    }
+}

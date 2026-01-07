@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+
 export enum PaymentType {
     DEPOSIT = "DEPOSIT",
     FULL_PAYMENT = "FULL_PAYMENT",

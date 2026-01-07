@@ -9,4 +9,14 @@ export interface IUserController {
     res: express.Response,
     next: express.NextFunction,
   ): Promise<void>;
+  initiateChangePassword(
+    req: AuthRequest,
+    res: express.Response,
+    next: express.NextFunction,
+  ): Promise<void>;
+  uploadProfileImage(
+    req: AuthRequest,
+    res: express.Response,
+    next: express.NextFunction,
+  ): Promise<void>;
 }

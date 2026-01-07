@@ -19,7 +19,6 @@ export class AdminPhotographerController implements IAdminPhotographerController
         try {
             const query = GetPhotographersQueryDto.parse(req.query);
             const result = await this.service.getPhotographers(query);
-            console.log("from controller",result)
             ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
         } catch (error) {
             next(error);
@@ -97,6 +96,53 @@ export class AdminPhotographerController implements IAdminPhotographerController
         try {
             const result = await this.service.getStatistics();
             ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    getPackages = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const result = await this.service.getPackages(req.query);
+            ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    approvePackage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            await this.service.approvePackage(req.params.id, req.user?.userId);
+            ApiResponse.success(res, null, "Package approved successfully", HttpStatus.OK);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    rejectPackage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { reason } = req.body;
+            await this.service.rejectPackage(req.params.id, reason, req.user?.userId);
+            ApiResponse.success(res, null, "Package rejected successfully", HttpStatus.OK);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    blockPackage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { reason } = req.body;
+            await this.service.blockPackage(req.params.id, reason, req.user?.userId);
+            ApiResponse.success(res, null, "Package blocked successfully", HttpStatus.OK);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    unblockPackage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            await this.service.unblockPackage(req.params.id, req.user?.userId);
+            ApiResponse.success(res, null, "Package unblocked successfully", HttpStatus.OK);
         } catch (error) {
             next(error);
         }

@@ -9,7 +9,7 @@ export class S3FileService implements IFileService {
     private _bucketName: string;
 
     constructor() {
-     
+
         if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
             console.error("❌ AWS credentials not found in environment variables");
             throw new Error("AWS credentials are not configured");
@@ -23,7 +23,7 @@ export class S3FileService implements IFileService {
         this._s3 = new AWS.S3({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-            region: process.env.AWS_REGION ||"ap-south-1"
+            region: process.env.AWS_REGION || "ap-south-1"
         });
         this._bucketName = process.env.BUCKET_NAME;
 
@@ -37,15 +37,15 @@ export class S3FileService implements IFileService {
         const dd = String(date.getDate()).padStart(2, "0");
         const timeStamp = Date.now();
 
-      
+
         const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-        
+
         return `${userType}/${userId}/${yyyy}/${mm}/${dd}/${timeStamp}-${sanitizedFileName}`;
     }
 
     async uploadFile(file: Express.Multer.File, userType: string, userId: string): Promise<string> {
         const key = this._buildKey(userType, userId, file.originalname);
-        
+
         console.log("Uploading file to S3:", {
             bucket: this._bucketName,
             key: key,
@@ -73,7 +73,7 @@ export class S3FileService implements IFileService {
                 bucket: this._bucketName,
                 key: key
             });
-            
+
             if (error.code === 'NoSuchBucket') {
                 throw new AppError(`S3 bucket '${this._bucketName}' does not exist`, HttpStatus.BAD_REQUEST);
             } else if (error.code === 'InvalidAccessKeyId') {
@@ -83,14 +83,14 @@ export class S3FileService implements IFileService {
             } else if (error.code === 'AccessDenied') {
                 throw new AppError("Access denied to S3 bucket", HttpStatus.BAD_REQUEST);
             }
-            
+
             throw new AppError(`Image upload failed: ${error.message}`, HttpStatus.BAD_REQUEST);
         }
     }
 
     async uploadMultipleFiles(files: Express.Multer.File[], userType: string, userId: string): Promise<string[]> {
         console.log(`📤 Uploading ${files.length} files to S3...`);
-        
+
         try {
             const uploadPromises = files.map((file) => this.uploadFile(file, userType, userId));
             const results = await Promise.all(uploadPromises);

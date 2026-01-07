@@ -12,4 +12,7 @@ export class UserRepository extends BaseRepository<IUser> implements IUserReposi
     const data = await this.findOne({ email: email.toLowerCase().trim() } as Partial<IUser>);
     return data;
   }
+
+
+
 }

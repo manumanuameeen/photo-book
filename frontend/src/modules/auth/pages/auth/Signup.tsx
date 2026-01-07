@@ -233,6 +233,17 @@ const Signup: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
 
+  // Redirect if already logged in
+  React.useEffect(() => {
+    const { user } = useAuthStore.getState();
+    if (user) {
+      const redirectTo = user.role === "admin"
+        ? ROUTES.ADMIN.DASHBOARD
+        : ROUTES.USER.HOME;
+      navigate({ to: redirectTo });
+    }
+  }, [navigate]);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -301,10 +312,7 @@ const Signup: React.FC = () => {
       onSuccess: (response) => {
         console.log("✅ Signup successful:", response);
 
-        setUser({
-          email: signupData.email,
-          name: signupData.name,
-        });
+        setUser(response.data.user);
 
         sessionStorage.setItem("pendingVerificationEmail", signupData.email);
         toast.success("Account created! Check your email for OTP.");
@@ -318,7 +326,7 @@ const Signup: React.FC = () => {
         });
 
         setTimeout(() => {
-          navigate({ to:ROUTES.AUTH.VERIFY_OTP });
+          navigate({ to: ROUTES.AUTH.VERIFY_OTP });
         }, 1000);
       },
       onError: (error: unknown) => {

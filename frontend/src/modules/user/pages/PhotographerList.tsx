@@ -1,234 +1,383 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import {
     Search,
     ChevronDown,
-    Menu,
+    Filter,
+    MapPin,
     Star,
-    Filter
+    AlertCircle,
+    Navigation
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuthStore } from '../../auth/store/useAuthStore';
+import { userPhotographerApi, type PhotographerFilter } from '../../../services/api/userPhotographerApi';
+import { ROUTES } from '../../../constants/routes';
+import Loader from '../../../components/Loader';
+
+interface Photographer {
+    id: string;
+    userId: string;
+    name: string;
+    image: string;
+    category: string;
+    location: string;
+    rating: number;
+    reviews: number;
+    price: string;
+    photosCount: string;
+    experience: string;
+    tags: string[];
+    available: boolean;
+    type: 'individual' | 'group';
+}
 
 const PhotographerSearch = () => {
-    const [activeTab, setActiveTab] = useState('individual');
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<'individual' | 'groups'>('individual');
+    const { user } = useAuthStore();
 
-    const photographers = [
-        {
-            id: 1,
-            name: "Sarah Johnson",
-            image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop", // Wedding setup
-            category: "Wedding & Portrait Photography",
-            location: "New York, NY",
-            rating: 4.9,
-            reviews: 234,
-            price: "$150/hour",
-            photosCount: "450 photos",
-            experience: "8 years",
-            tags: ["Wedding", "Portrait", "Engagement"],
-            available: true
-        },
-        {
-            id: 2,
-            name: "Michael Chen",
-            image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=800&auto=format&fit=crop", // Event hall
-            category: "Corporate & Events Photography",
-            location: "Los Angeles, CA",
-            rating: 4.7,
-            reviews: 189,
-            price: "$120/hour",
-            photosCount: "320 photos",
-            experience: "6 years",
-            tags: ["Corporate", "Events", "Headshots"],
-            available: true
-        },
-        {
-            id: 3,
-            name: "Emma Davis",
-            image: "https://images.unsplash.com/photo-1470246973918-29a53221c197?q=80&w=800&auto=format&fit=crop", // Outdoors
-            category: "Outdoor & Adventure Photography",
-            location: "Denver, CO",
-            rating: 4.8,
-            reviews: 156,
-            price: "$180/hour",
-            photosCount: "280 photos",
-            experience: "5 years",
-            tags: ["Outdoor", "Adventure", "Nature"],
-            available: true
-        },
-        {
-            id: 4,
-            name: "David Rodríguez",
-            image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop", // Portrait
-            category: "Fashion & Editorial Photography",
-            location: "Miami, FL",
-            rating: 4.9,
-            reviews: 298,
-            price: "Unavailable",
-            photosCount: "520 photos",
-            experience: "10 years",
-            tags: ["Fashion", "Editorial", "Studio"],
-            available: false // Triggers the gray/disabled state
+    // State for real data
+    const [photographers, setPhotographers] = useState<Photographer[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Filters state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [category, setCategory] = useState('All Categories');
+    const [priceRange, setPriceRange] = useState('All Prices');
+    const [location, setLocation] = useState('All Locations');
+
+    // Geolocation state
+    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [isLocating, setIsLocating] = useState(false);
+
+    const fetchPhotographers = useCallback(async (forcedLocation?: { lat: number; lng: number } | null) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            // Use passed location or current state userLocation
+            const locToUse = forcedLocation !== undefined ? forcedLocation : userLocation;
+
+            const filters: PhotographerFilter = {};
+            if (category !== 'All Categories') filters.category = category;
+            if (priceRange !== 'All Prices') filters.priceRange = priceRange;
+
+            // Prioritize coordinates if available
+            if (locToUse) {
+                filters.lat = locToUse.lat;
+                filters.lng = locToUse.lng;
+            } else if (location !== 'All Locations') {
+                filters.location = location;
+            }
+
+            const data = await userPhotographerApi.getPhotographers(filters);
+            setPhotographers(data);
+        } catch (err: any) {
+            console.error("Failed to fetch photographers:", err);
+            const errorMessage = err.response?.data?.message || err.message || "Failed to load photographers. Please try again later.";
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
-    ];
+    }, [category, priceRange, location, userLocation]);
+
+    const handleNearMe = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
+            return;
+        }
+
+        setIsLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const newLoc = { lat: latitude, lng: longitude };
+                setUserLocation(newLoc);
+                setLocation('All Locations'); // Reset text filter
+                setIsLocating(false);
+                // Trigger fetch immediately with new location
+                fetchPhotographers(newLoc);
+                toast.success("Found your location!");
+            },
+            (error) => {
+                console.error("Geolocation error:", error);
+                toast.error("Unable to retrieve your location. Please check permissions.");
+                setIsLocating(false);
+            }
+        );
+    };
+
+    // If location dropdown changes, clear userLocation so we use text search
+    useEffect(() => {
+        if (location !== 'All Locations') {
+            setUserLocation(null);
+        }
+    }, [location]);
+
+    useEffect(() => {
+        fetchPhotographers();
+    }, [fetchPhotographers]);
+
+
+
+    const filteredPhotographers = photographers.filter(p => {
+
+        if (activeTab === 'individual' && p.type !== 'individual') return false;
+        if (activeTab === 'groups' && p.type !== 'group') return false;
+
+
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return (
+                (p.name?.toLowerCase() || '').includes(query) ||
+                (p.category?.toLowerCase() || '').includes(query) ||
+                (p.location?.toLowerCase() || '').includes(query) ||
+                (p.tags && p.tags.some(tag => (tag?.toLowerCase() || '').includes(query)))
+            );
+        }
+        return true;
+    }).filter(p => !user || p.userId !== user._id);
+
+    const isPhotographerClient = user?.role === 'photographer';
 
     return (
-        <div className="min-h-screen bg-white font-sans text-gray-800">
+        <div className="min-h-screen bg-gray-50/50 font-sans text-gray-800">
 
-            <div className="bg-[#2E7D46] px-4 py-12 md:py-16 text-center shadow-md">
-                <h1 className="text-3xl md:text-5xl text-white mb-3 font-serif italic tracking-wide">
-                    Find <span className="text-white">Your Perfect</span> <span className="text-yellow-400">Photographer</span>
+
+            <div className="bg-[#2E7D46] px-4 py-16 md:py-24 text-center shadow-md relative overflow-hidden">
+                <h1 className="text-4xl md:text-6xl text-white mb-4 font-serif italic tracking-wide relative z-10">
+                    Find <span className="text-white not-italic font-sans font-bold">Your Perfect</span> <span className="text-yellow-400">Photographer</span>
                 </h1>
-                <p className="text-green-100 text-sm md:text-base font-light max-w-2xl mx-auto">
-                    Browse individual photographers and professional wedding teams for your special occasions
+                <p className="text-green-100 text-sm md:text-lg font-light max-w-2xl mx-auto relative z-10">
+                    Browse individual photographers and professional wedding teams for your special occasions.
                 </p>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
-                <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-8 border border-gray-100">
-
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+                {/* Filter Bar */}
+                <div className="bg-white rounded-xl shadow-xl p-4 md:p-6 mb-10 border border-gray-100">
                     <div className="flex flex-col lg:flex-row gap-4 mb-4">
                         <div className="flex-grow relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                             <input
                                 type="text"
                                 placeholder="Search photographers..."
-                                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm transition-all"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:w-auto">
-                            <div className="relative">
-                                <select className="w-full appearance-none bg-white border border-gray-200 px-4 py-2.5 pr-8 rounded-md text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer">
+                            <div className="relative group">
+                                <select
+                                    value={category}
+                                    onChange={(e) => setCategory(e.target.value)}
+                                    className="w-full appearance-none bg-white border border-gray-200 px-4 py-3 pr-10 rounded-lg text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer hover:border-green-300 transition-colors"
+                                >
                                     <option>All Categories</option>
                                     <option>Wedding</option>
                                     <option>Portrait</option>
+                                    <option>Events</option>
+                                    <option>Fashion</option>
                                 </select>
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-green-600 transition-colors" size={16} />
                             </div>
-                            <div className="relative">
-                                <select className="w-full appearance-none bg-white border border-gray-200 px-4 py-2.5 pr-8 rounded-md text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer">
+                            <div className="relative group">
+                                <select
+                                    value={priceRange}
+                                    onChange={(e) => setPriceRange(e.target.value)}
+                                    className="w-full appearance-none bg-white border border-gray-200 px-4 py-3 pr-10 rounded-lg text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer hover:border-green-300 transition-colors"
+                                >
                                     <option>All Prices</option>
                                     <option>$0 - $100/hr</option>
                                     <option>$100 - $200/hr</option>
+                                    <option>$200+/hr</option>
                                 </select>
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-green-600 transition-colors" size={16} />
                             </div>
-                            <div className="relative">
-                                <select className="w-full appearance-none bg-white border border-gray-200 px-4 py-2.5 pr-8 rounded-md text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer">
+                            <div className="relative group">
+                                <select
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                    className="w-full appearance-none bg-white border border-gray-200 px-4 py-3 pr-10 rounded-lg text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer hover:border-green-300 transition-colors"
+                                >
                                     <option>All Locations</option>
+                                    <option>Thiruvananthapuram</option>
+                                    <option>Kochi</option>
+                                    <option>Kozhikode</option>
+                                    <option>Thrissur</option>
+                                    <option>Kollam</option>
+                                    <option>Alappuzha</option>
+                                    <option>Kannur</option>
+                                    <option>Kottayam</option>
+                                    <option>Palakkad</option>
+                                    <option>Malappuram</option>
+                                    <option>Waynad</option>
+                                    <option>Idukki</option>
+                                    <option>Pathanamthitta</option>
+                                    <option>Kasargod</option>
                                     <option>New York</option>
                                     <option>Los Angeles</option>
+                                    <option>Chicago</option>
+                                    <option>Miami</option>
                                 </select>
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-green-600 transition-colors" size={16} />
                             </div>
                         </div>
 
-                        <button className="bg-[#2E7D46] hover:bg-[#256639] text-white p-2.5 rounded-md flex items-center justify-center transition-colors">
-                            <Menu size={20} />
+                        <button
+                            onClick={handleNearMe}
+                            disabled={isLocating}
+                            className={`p-3 rounded-lg flex items-center justify-center transition-all shadow-md active:scale-95 border ${userLocation ? 'bg-green-100 text-green-700 border-green-200' : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'}`}
+                            title="Find near me"
+                        >
+                            <Navigation size={20} className={isLocating ? "animate-spin" : ""} />
+                            <span className="ml-2 hidden lg:inline">Near Me</span>
+                        </button>
+
+                        <button
+                            onClick={() => fetchPhotographers()}
+                            className="bg-[#2E7D46] hover:bg-[#256639] text-white p-3 rounded-lg flex items-center justify-center transition-all shadow-md active:scale-95"
+                        >
+                            <Filter size={20} />
                         </button>
                     </div>
 
-                    <button className="flex items-center text-xs text-gray-500 hover:text-green-700 font-medium transition-colors">
-                        More Filters <ChevronDown size={14} className="ml-1" />
-                    </button>
+                    <div className="flex justify-between items-center">
+                        <button className="flex items-center text-xs text-gray-500 hover:text-green-700 font-medium transition-colors">
+                            Advanced Filters <ChevronDown size={14} className="ml-1" />
+                        </button>
+                    </div>
                 </div>
 
-                <div className="border-b border-gray-200 mb-8 flex gap-8">
+                {/* Tabs */}
+                <div className="flex gap-8 mb-8 border-b border-gray-200">
                     <button
                         onClick={() => setActiveTab('individual')}
-                        className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'individual'
-                                ? 'border-green-600 text-green-700'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        className={`pb-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'individual'
+                            ? 'border-green-600 text-green-800'
+                            : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        Individual Photographers (4)
+                        Individual Photographers ({photographers.filter(p => p.type === 'individual').length})
                     </button>
                     <button
                         onClick={() => setActiveTab('groups')}
-                        className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'groups'
-                                ? 'border-green-600 text-green-700'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        className={`pb-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'groups'
+                            ? 'border-green-600 text-green-800'
+                            : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        Wedding Groups (3)
+                        Wedding Groups ({photographers.filter(p => p.type === 'group').length})
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-                    {photographers.map((photographer) => (
-                        <div key={photographer.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
-
-                            <div className="relative h-48 bg-gray-100">
-                                <img
-                                    src={photographer.image}
-                                    alt={photographer.name}
-                                    className={`w-full h-full object-cover ${!photographer.available ? 'grayscale opacity-80' : ''}`}
-                                />
-                                <div className={`absolute top-3 right-3 text-xs font-bold px-2 py-1 rounded shadow-sm ${photographer.available
-                                        ? 'bg-yellow-400 text-gray-900'
-                                        : 'bg-gray-600 text-white'
-                                    }`}>
-                                    {photographer.price}
+                {/* Content Area */}
+                {isLoading ? (
+                    <div className="flex justify-center items-center py-20">
+                        <Loader />
+                    </div>
+                ) : error ? (
+                    <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-red-100">
+                        <AlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900">Ooops! Something went wrong</h3>
+                        <p className="mt-2 text-sm text-gray-500">{error}</p>
+                        <button
+                            onClick={fetchPhotographers}
+                            className="mt-6 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : filteredPhotographers.length === 0 ? (
+                    <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+                        <Search className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900">No photographers found</h3>
+                        <p className="mt-2 text-sm text-gray-500">
+                            Try adjusting your filters or search terms to find what you're looking for.
+                        </p>
+                    </div>
+                ) : (
+                    /* Grid */
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+                        {filteredPhotographers.map((photographer) => (
+                            <div key={photographer.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100 hover:translate-y-[-4px]">
+                                <div className="relative h-64 bg-gray-100 overflow-hidden">
+                                    <img
+                                        src={photographer.image || "https://via.placeholder.com/400x300?text=No+Image"}
+                                        alt={photographer.name}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 </div>
-                            </div>
 
-                            <div className="p-4 flex-grow flex flex-col">
-                                <div className="mb-2">
-                                    <h3 className={`font-bold text-lg ${!photographer.available ? 'text-gray-500' : 'text-gray-900'}`}>
-                                        {photographer.name}
-                                    </h3>
-                                    <p className="text-xs text-gray-500 leading-tight mb-2">
-                                        {photographer.category} / <br /> {photographer.location}
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center mb-3">
-                                    <div className="flex text-yellow-400 mr-1.5">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={12} fill="currentColor" className={i >= Math.floor(photographer.rating) ? "text-gray-300 fill-gray-300" : ""} />
-                                        ))}
+                                <div className="p-6 flex flex-col flex-grow">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-gray-900 mb-1">{photographer.name}</h3>
+                                            <div className="flex items-center text-gray-500 text-sm">
+                                                <MapPin size={14} className="mr-1" />
+                                                {photographer.location || "Location Unavailable"}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center bg-green-50 px-2 py-1 rounded-lg">
+                                            <Star size={16} className="text-yellow-500 mr-1 fill-yellow-500" />
+                                            <span className="font-bold text-gray-700">{photographer.rating}</span>
+                                            <span className="text-gray-400 text-xs ml-1">({photographer.reviews})</span>
+                                        </div>
                                     </div>
-                                    <span className="text-xs font-bold text-gray-700 mr-1">{photographer.rating}</span>
-                                    <span className="text-xs text-gray-400">({photographer.reviews})</span>
-                                </div>
 
-                                <div className="flex gap-4 text-xs text-gray-500 mb-4 border-b border-gray-100 pb-3">
-                                    <span>{photographer.photosCount}</span>
-                                    <span>{photographer.experience}</span>
-                                </div>
+                                    <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-gray-100">
+                                        <div className="text-center border-r border-gray-100">
+                                            <div className="text-sm text-gray-400 mb-1">Starting at</div>
+                                            <div className="font-bold text-green-700 text-lg">{photographer.price}</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-sm text-gray-400 mb-1">Experience</div>
+                                            <div className="font-bold text-gray-700">{photographer.experience}</div>
+                                        </div>
+                                    </div>
 
-                                <div className="flex flex-wrap gap-1.5 mb-4">
-                                    {photographer.tags.map((tag, i) => (
-                                        <span key={i} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-medium">
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
+                                    <div className="flex flex-wrap gap-2 mb-6">
+                                        {Array.isArray(photographer.tags) && photographer.tags.length > 0 ? (
+                                            photographer.tags.slice(0, 3).map((tag, index) => (
+                                                <span key={`${photographer.id}-tag-${index}`} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                                    {tag}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                                General
+                                            </span>
+                                        )}
+                                    </div>
 
-                                <div className="grid grid-cols-2 gap-2 mt-auto">
-                                    <button
-                                        disabled={!photographer.available}
-                                        className={`text-xs font-bold py-2 rounded transition-colors ${photographer.available
-                                                ? 'bg-[#2E7D46] text-white hover:bg-[#256639]'
-                                                : 'bg-gray-400 text-white cursor-not-allowed'
-                                            }`}
-                                    >
-                                        View Profile
-                                    </button>
-                                    <button
-                                        disabled={!photographer.available}
-                                        className={`text-xs font-bold py-2 rounded border transition-colors ${photographer.available
-                                                ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                                                : 'border-gray-200 text-gray-400 cursor-not-allowed'
-                                            }`}
-                                    >
-                                        Book Now
-                                    </button>
+                                    <div className="flex gap-3 mt-auto">
+                                        <button
+                                            onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: photographer.id } })}
+                                            className={`px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm ${user?.role !== 'photographer' ? 'flex-1' : 'w-full'}`}
+                                        >
+                                            View Profile
+                                        </button>
+                                        {user?.role !== 'photographer' && (
+                                            <button
+                                                onClick={() => toast.success(`Booking ${photographer.name}`)}
+                                                className="flex-1 px-4 py-2 bg-[#1E5631] text-white font-medium rounded-lg hover:bg-[#164024] transition-colors text-sm"
+                                            >
+                                                Book Now
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
-        </div>
+        </div >
     );
 };
 

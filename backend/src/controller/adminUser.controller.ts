@@ -4,6 +4,10 @@ import type { IAdminController } from "../interfaces/admin/IAdminController.ts";
 import { z } from "zod";
 import { AdminUserQueryDto } from "../dto/admin.dto.ts";
 import { AdminMapper } from "../mappers/admin.mapper.ts";
+import { ApiResponse } from '../utils/response.ts';
+import { Messages } from "../constants/messages.ts";
+import { AppError } from "../utils/AppError.ts";
+import { HttpStatus } from "../constants/httpStatus.ts";
 
 export class AdminController implements IAdminController {
   private adminService: IAdminService;
@@ -18,30 +22,25 @@ export class AdminController implements IAdminController {
 
   getAllUser = async (req: Request, res: Response): Promise<void> => {
     try {
-      
+
       const queryDto = this._validate(AdminUserQueryDto, req.query);
 
       const queryInput = AdminMapper.toQueryInput(queryDto);
       const result = await this.adminService.getAllUser(queryInput);
 
-      res.status(200).json({
-        success: true,
-        message: "Users fetched successfully",
-        data: {
-          users: result.users.map(AdminMapper.toUserResponse),
-          pagination: {
-            total: result.total,
-            totalPages: result.totalPages,
-            currentPage: result.currentPage,
-          },
+      const responseData = {
+        users: result.users.map(AdminMapper.toUserResponse),
+        pagination: {
+          total: result.total,
+          totalPages: result.totalPages,
+          currentPage: result.currentPage,
         },
-      });
+      };
+
+      ApiResponse.success(res, responseData, Messages.USERS_FETCHED);
     } catch (error: any) {
       console.error(" CONTROLLER ERROR:", error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "Internal server error",
-      });
+      ApiResponse.error(res, error.message || Messages.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   };
 
@@ -51,24 +50,17 @@ export class AdminController implements IAdminController {
       const user = await this.adminService.getUser(id);
 
       if (!user) {
-        res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
-        return;
+        throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
       }
 
-      res.status(200).json({
-        success: true,
-        message: "User fetched successfully",
-        data: user,
-      });
+      ApiResponse.success(res, user, Messages.USER_FETCHED);
     } catch (error: any) {
       console.error("Error fetching user:", error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "Internal server error",
-      });
+      if (error instanceof AppError) {
+        ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
+      } else {
+        ApiResponse.error(res, error.message || Messages.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
   };
 
@@ -77,17 +69,10 @@ export class AdminController implements IAdminController {
       const { id } = req.params;
       const user = await this.adminService.blockUser(id);
 
-      res.status(200).json({
-        success: true,
-        message: "User blocked successfully",
-        data: user,
-      });
+      ApiResponse.success(res, user, Messages.USER_BLOCKED_SUCCESS);
     } catch (error: any) {
       console.error("Error blocking user:", error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "Internal server error",
-      });
+      ApiResponse.error(res, error.message || Messages.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   };
 
@@ -96,17 +81,10 @@ export class AdminController implements IAdminController {
       const { id } = req.params;
       const user = await this.adminService.unblockUser(id);
 
-      res.status(200).json({
-        success: true,
-        message: "User unblocked successfully",
-        data: user,
-      });
+      ApiResponse.success(res, user, Messages.USER_UNBLOCKED_SUCCESS);
     } catch (error: any) {
       console.error("Error unblocking user:", error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "Internal server error",
-      });
+      ApiResponse.error(res, error.message || Messages.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   };
 }

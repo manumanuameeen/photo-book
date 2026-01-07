@@ -3,6 +3,7 @@ export interface IAdminUserQuery {
   limit: number;
   sort: string;
   search: string;
+  isBlocked?: "true" | "false" | "all";
 }
 
 export interface IUserResponse {

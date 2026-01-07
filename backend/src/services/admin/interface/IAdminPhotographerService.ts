@@ -61,4 +61,10 @@ export interface IAdminPhotographerService {
     rejectApplication(id: string, reason: string): Promise<void>;
 
     getStatistics(): Promise<IPhotographerStats>;
+
+    getPackages(query: any): Promise<any>;
+    approvePackage(id: string, adminId?: string): Promise<void>;
+    rejectPackage(id: string, reason: string, adminId?: string): Promise<void>;
+    blockPackage(id: string, reason: string, adminId?: string): Promise<void>;
+    unblockPackage(id: string, adminId?: string): Promise<void>;
 }
