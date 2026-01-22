@@ -124,7 +124,7 @@ const Packages = () => {
                     }
                 });
             }
-            setPortfolioImages([...new Set(allImages)]); // deduplicate
+            setPortfolioImages([...new Set(allImages)]); 
         } catch (error) {
             console.error("Failed to load portfolio images", error);
         }
@@ -163,7 +163,7 @@ const Packages = () => {
             formData.append('categoryId', data.categoryId);
             formData.append('isActive', 'true');
 
-            // Handle features
+            
             let featuresArray: string[] = [];
             if (typeof data.features === 'string') {
                 featuresArray = (data.features as string).split(',').map((f: string) => f.trim()).filter(f => f.length > 0);
@@ -172,7 +172,7 @@ const Packages = () => {
             }
             formData.append('features', JSON.stringify(featuresArray));
 
-            // Handle cover image
+            
             if (croppedFile) {
                 formData.append('coverImage', croppedFile);
             } else if (imageSelectionMode === 'portfolio' && selectedPortfolioImage) {
@@ -264,7 +264,7 @@ const Packages = () => {
 
     const getStatusColor = (status: string, isActive: boolean) => {
         if (status === 'REJECTED') return 'bg-red-100 text-red-700';
-        // Active/Approved
+        
         if (!isActive) return 'bg-gray-100 text-gray-800';
         return 'bg-green-100 text-green-700';
     };
@@ -272,7 +272,7 @@ const Packages = () => {
     const filteredPackages = packages.filter(pkg => {
         if (filterStatus === 'ALL') return true;
 
-        // Robust boolean check: true unless explicitly false or "false"
+        
         const isActive = pkg.isActive !== false && String(pkg.isActive) !== 'false';
         const status = pkg.status?.toUpperCase();
 
@@ -308,7 +308,7 @@ const Packages = () => {
                         onClick={() => navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD })}
                         className="self-start flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
                     >
-                        <ArrowLeft size={16} /> {/* Requires ArrowLeft import from lucide-react */}
+                        <ArrowLeft size={16} /> {}
                         <span className="font-medium">Back to Dashboard</span>
                     </button>
                     <div className="flex justify-between items-center">
@@ -397,7 +397,7 @@ const Packages = () => {
                     </div>
                 </div>
 
-                {/* Filter Tabs */}
+                {}
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
                     <div className="inline-flex bg-gray-100/50 p-1.5 rounded-xl gap-1">
                         {[

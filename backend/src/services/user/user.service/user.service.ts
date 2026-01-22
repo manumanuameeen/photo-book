@@ -1,15 +1,19 @@
-import { ChangePasswordDtoType, UpdateProfileDtoType, UserProfileResponseDto } from "dto/user.dto";
-import type { IUserService } from "./IUserService.ts";
-import type { IUserRepository } from "../../../repositories/interface/IUserRespository";
-import type { IPhotographerRepository } from "../../../repositories/interface/IPhotographerRepository";
-import { AppError } from "../../../utils/AppError.ts";
-import { Messages } from "../../../constants/messages.ts";
-import { HttpStatus } from "../../../constants/httpStatus.ts";
-import { UserMapper } from "../../../mappers/user.mapper.ts";
 import bcrypt from "bcrypt";
-import { OtpService } from "../otp/otp.service.ts";
-import { NodeMailerService } from "../email/nodemailer.service.ts";
+import {
+  ChangePasswordDtoType,
+  UpdateProfileDtoType,
+  UserProfileResponseDto,
+} from "../../../dto/user.dto.ts";
+import { IPhotographerRepository } from "../../../interfaces/repositories/IPhotographerRepository.ts";
+import { IUserRepository } from "../../../interfaces/repositories/IUserRepository.ts";
+import { IUserService } from "../../../interfaces/services/IUserService.ts";
+import { UserMapper } from "../../../mappers/user.mapper.ts";
+import { AppError } from "../../../utils/AppError.ts";
+import { HttpStatus } from "../../../constants/httpStatus.ts";
+import { Messages } from "../../../constants/messages.ts";
 import { S3FileService } from "../../external/S3FileService.ts";
+import { NodeMailerService } from "../email/nodemailer.service.ts";
+import { OtpService } from "../otp/otp.service.ts";
 
 export class UserService implements IUserService {
   private readonly _userRespository: IUserRepository;
@@ -26,8 +30,10 @@ export class UserService implements IUserService {
 
     const application = await this._photographerRepository.findByUserId(userId);
     const applicationStatus = application ? application.status : "NONE";
+    const rejectionReason = application ? application.rejectionReason : undefined;
+    const approvalMessage = application ? application.approvalMessage : undefined;
 
-    return UserMapper.toProfileResponse(user, applicationStatus);
+    return UserMapper.toProfileResponse(user, applicationStatus, rejectionReason, approvalMessage);
   }
 
   async updateProfile(userId: string, data: UpdateProfileDtoType): Promise<UserProfileResponseDto> {
@@ -73,18 +79,17 @@ export class UserService implements IUserService {
     const user = await this._userRespository.findById(userId);
     if (!user) throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
 
-    // Verify OTP
     const otpService = new OtpService();
     if (!data.otp || !otpService.isOtpValidate(user.otp || "", data.otp, user.otpExpiry)) {
       throw new AppError(Messages.INVALID_OTP, HttpStatus.BAD_REQUEST);
     }
 
-    const isMatch = await bcrypt.compare(data.currentPassword, user.password);
+    const isMatch = await bcrypt.compare(data.currentPassword, user.password || "");
     if (!isMatch) throw new AppError(Messages.CURRENT_PASSWORD_INCORRECT, HttpStatus.BAD_REQUEST);
 
     const hashedPasswod = await bcrypt.hash(data.newPassword, 10);
     user.password = hashedPasswod;
-    user.otp = undefined; // Clear OTP after success
+    user.otp = undefined;
     user.otpExpiry = undefined;
 
     await this._userRespository.update(userId, user);
@@ -94,7 +99,7 @@ export class UserService implements IUserService {
     const user = await this._userRespository.findById(userId);
     if (!user) throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
 
-    const s3Service = new S3FileService(); // Ideally injected, but instantiating here for now as per existing pattern
+    const s3Service = new S3FileService();
     const imageUrl = await s3Service.uploadFile(file, "profile_images", userId);
 
     user.profileImage = imageUrl;

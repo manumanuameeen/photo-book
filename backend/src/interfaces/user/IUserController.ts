@@ -1,5 +1,5 @@
 import express from "express";
-import type { AuthRequest } from "../../middleware/authMiddleware";
+import type { AuthRequest } from "../../middleware/authMiddleware.ts";
 
 export interface IUserController {
   getProfile(req: AuthRequest, res: express.Response, next: express.NextFunction): Promise<void>;

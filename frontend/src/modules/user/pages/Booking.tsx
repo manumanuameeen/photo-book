@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearch } from '@tanstack/react-router';
 import { type PackageData } from '../../../services/api/packageApi';
 import { bookingApi } from '../../../services/api/bookingApi';
@@ -62,38 +62,19 @@ function BookingWizard() {
         packageId: search.packageId || null
     });
 
-    // Load Data
-    useEffect(() => {
-        // Auth Check
-        if (!user) {
-            toast.error("Please login to book a session");
-            navigate({ to: ROUTES.AUTH.LOGIN } as any);
-            return;
-        }
 
-        if (search.photographerId) {
-            loadInitialData(search.photographerId);
-        } else {
-            setLoading(false);
-        }
-    }, [search.photographerId, user]);
-
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-    const loadInitialData = async (id: string) => {
+    const loadInitialData = useCallback(async (id: string) => {
         try {
             setLoading(true);
-            // Fetch only photographer, packages are embedded
+
             const photog = await userPhotographerApi.getPhotographerById(id);
 
             setPhotographerName(photog.name);
 
-            // Use embedded packages if available, or fetch if legacy/separate?
-            // Based on PhotographerDetails, they are in `photographer.packages`.
             const loadedPackages = photog.packages || [];
             setPackages(loadedPackages);
 
-            // Auto-advance if package pre-selected
+
             if (search.packageId) {
                 const found = loadedPackages.find((p: any) => p.id === search.packageId);
                 if (found) {
@@ -106,7 +87,25 @@ function BookingWizard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [search.packageId]);
+
+
+    useEffect(() => {
+
+        if (!user) {
+            toast.error("Please login to book a session");
+            navigate({ to: ROUTES.AUTH.LOGIN } as any);
+            return;
+        }
+
+        if (search.photographerId) {
+            loadInitialData(search.photographerId);
+        } else {
+            setLoading(false);
+        }
+    }, [search.photographerId, user, navigate, loadInitialData]);
+
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const handleNextStep = () => {
         if (step === 1) {
@@ -129,7 +128,7 @@ function BookingWizard() {
     };
 
     const handleSubmit = async () => {
-        // Validate Step 2
+
         const newErrors: { [key: string]: string } = {};
         if (!formData.date) newErrors.date = "Event date is required";
         if (!formData.startTime) newErrors.startTime = "Start time is required";
@@ -161,7 +160,7 @@ function BookingWizard() {
             } as any);
 
             toast.success("Booking request sent successfully!");
-            setStep(3); // Go to Success
+            setStep(3);
         } catch (error: any) {
             console.error("Booking Error:", error);
             toast.error(error.response?.data?.message || "Failed to submit booking request");
@@ -183,9 +182,18 @@ function BookingWizard() {
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4 font-sans">
 
-            {/* Header / Stepper - Simplified */}
             <div className="max-w-4xl mx-auto mb-10 text-center">
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4 cursor-pointer hover:text-green-700 transition" onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } } as any)}>
+                <div
+                    className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4 cursor-pointer hover:text-green-700 transition"
+                    onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } } as any)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } } as any);
+                        }
+                    }}
+                >
                     <ChevronLeft size={16} />
                     Back to Photographer
                 </div>
@@ -193,7 +201,6 @@ function BookingWizard() {
                     Book Your Session <span className="text-gray-400 text-lg font-sans not-italic">with {photographerName}</span>
                 </h1>
 
-                {/* Progress Indicators */}
                 <div className="flex items-center justify-center gap-4 mt-6">
                     <StepIndicator current={step} number={1} icon={<PackageIcon size={16} />} />
                     <div className={`w-16 h-0.5 ${step > 1 ? 'bg-green-600' : 'bg-gray-200'}`} />
@@ -206,7 +213,6 @@ function BookingWizard() {
             <div className="max-w-5xl mx-auto">
                 <AnimatePresence mode='wait'>
 
-                    {/* STEP 1: SELECT PACKAGE */}
                     {step === 1 && (
                         <motion.div
                             key="step1"
@@ -229,6 +235,13 @@ function BookingWizard() {
                                     {packages.map((pkg) => (
                                         <div
                                             key={pkg.id}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    setFormData({ ...formData, packageId: pkg.id || null })
+                                                }
+                                            }}
                                             ref={el => {
                                                 if (formData.packageId === pkg.id && el) {
                                                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -275,7 +288,6 @@ function BookingWizard() {
                         </motion.div>
                     )}
 
-                    {/* STEP 2: EVENT DETAILS */}
                     {step === 2 && (
                         <motion.div
                             key="step2"
@@ -290,13 +302,19 @@ function BookingWizard() {
                             </div>
 
                             <div className="space-y-6">
-                                {/* Row 1: Date & Time */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Event Date *</label>
                                         <div
                                             className="relative cursor-pointer"
                                             onClick={() => setIsAvailabilityModalOpen(true)}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    setIsAvailabilityModalOpen(true)
+                                                }
+                                            }}
                                         >
                                             <input
                                                 readOnly
@@ -318,7 +336,7 @@ function BookingWizard() {
                                                 value={formData.startTime}
                                                 onChange={(e) => {
                                                     setFormData({ ...formData, startTime: e.target.value });
-                                                    setErrors({ ...errors, startTime: '' }); // Clear error
+                                                    setErrors({ ...errors, startTime: '' });
                                                 }}
                                                 className={`w-full pl-4 pr-10 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.startTime ? 'border-red-500' : 'border-gray-200'}`}
                                             />
@@ -328,7 +346,6 @@ function BookingWizard() {
                                     </div>
                                 </div>
 
-                                {/* Location */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Event Location *</label>
                                     <SmallLocationPicker
@@ -349,7 +366,6 @@ function BookingWizard() {
                                     {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
                                 </div>
 
-                                {/* Event Type */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Event Type *</label>
                                     <select
@@ -372,7 +388,6 @@ function BookingWizard() {
 
                                 <hr className="border-gray-100 my-4" />
 
-                                {/* Contact Info */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name *</label>
                                     <div className="relative">
@@ -447,7 +462,6 @@ function BookingWizard() {
                         </motion.div>
                     )}
 
-                    {/* STEP 3: SUCCESS */}
                     {step === 3 && (
                         <motion.div
                             key="step3"
@@ -497,8 +511,7 @@ function BookingWizard() {
                                     Back to Home
                                 </button>
                                 <button
-                                    // onClick={() => navigate({ to: ROUTES.USER.DASHBOARD })} // Assuming dashboard exists
-                                    onClick={() => toast.info("Dashboard coming soon")}
+                                    onClick={() => navigate({ to: ROUTES.USER.DASHBOARD as any })}
                                     className="flex-1 py-3 bg-green-700 text-white rounded-xl font-medium hover:bg-green-800"
                                 >
                                     View Dashboard

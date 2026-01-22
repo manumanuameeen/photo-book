@@ -1,14 +1,15 @@
 import React, { useState, memo } from "react";
+import { GoogleLogin } from "@react-oauth/google";
 import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { getErrorMessage } from "../../../../utils/errorhandler";
-// import type{ ApiError } from "../../types/apiError";
 import { useNavigate } from "@tanstack/react-router";
-import { useLogin } from "../../hooks/useAuth";
+import { useLogin, useGoogleLogin } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../../store/useAuthStore";
 import { ROUTES } from "../../../../constants/routes";
+import { type IAuthResponse } from "../../types/auth.types";
 
 interface LoginFormData {
   email: string;
@@ -106,7 +107,9 @@ interface FormPanelProps {
   passwordVisible: boolean;
   setPasswordVisible: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
+  googleLoading: boolean;
   navigate: ReturnType<typeof useNavigate>;
+  handleGoogleSuccess: (credentialResponse: any) => void;
 }
 
 const FormPanel: React.FC<FormPanelProps> = ({
@@ -118,6 +121,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
   setPasswordVisible,
   loading,
   navigate,
+  handleGoogleSuccess,
 }) => (
   <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
     <div className="flex items-center mb-4">
@@ -135,10 +139,20 @@ const FormPanel: React.FC<FormPanelProps> = ({
       </div>
       <div
         className="px-3 py-2 text-gray-500 font-medium cursor-pointer"
-        onClick={() => navigate({ to: "/auth/signup" })}
+        onClick={() => navigate({ to: ROUTES.AUTH.SIGNUP })}
       >
         Sign Up
       </div>
+    </div>
+
+    <div className="mb-4 flex justify-center">
+      <GoogleLogin
+        onSuccess={handleGoogleSuccess}
+        onError={() => {
+          console.log('Login Failed');
+          toast.error("Google Login Failed");
+        }}
+      />
     </div>
 
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -183,7 +197,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
       <div className="text-center pt-2">
         <button
           type="button"
-          onClick={() => navigate({ to: "/auth/forgetPassword" })}
+          onClick={() => navigate({ to: ROUTES.AUTH.FORGOT_PASSWORD })}
           className="text-xs text-green-700 hover:underline font-medium"
         >
           Forgot your password?
@@ -197,6 +211,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
   const loginMutation = useLogin();
+  const googleLoginMutation = useGoogleLogin();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
@@ -205,7 +220,7 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Redirect if already logged in
+
   React.useEffect(() => {
     const { user } = useAuthStore.getState();
     if (user) {
@@ -267,6 +282,24 @@ const LoginPage: React.FC = () => {
     });
   };
 
+  const handleGoogleSuccess = (credentialResponse: any) => {
+    if (credentialResponse.credential) {
+      googleLoginMutation.mutate(credentialResponse.credential, {
+        onSuccess: (response: IAuthResponse) => {
+          toast.success("Google Login successful!");
+          const user = response.data.user;
+          setUser(user);
+          const redirectTo = user.role === "admin" ? ROUTES.ADMIN.DASHBOARD : ROUTES.USER.HOME;
+          navigate({ to: redirectTo });
+        },
+        onError: (error: unknown) => {
+          const msg = getErrorMessage(error);
+          toast.error(msg);
+        }
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3">
       <Toaster position="top-center" reverseOrder={false} />
@@ -280,6 +313,8 @@ const LoginPage: React.FC = () => {
           passwordVisible={passwordVisible}
           setPasswordVisible={setPasswordVisible}
           loading={loginMutation.isPending}
+          googleLoading={googleLoginMutation.isPending}
+          handleGoogleSuccess={handleGoogleSuccess}
           navigate={navigate}
         />
       </div>

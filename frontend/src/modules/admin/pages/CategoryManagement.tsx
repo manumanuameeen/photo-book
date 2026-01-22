@@ -139,12 +139,7 @@ const CategoryManagement = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div className="flex items-center gap-4">
-                        {/* <button
-                            onClick={() => window.history.back()}
-                            className="bg-white p-3 rounded-xl shadow-sm hover:shadow-md transition-all text-gray-600 hover:text-gray-900 border border-gray-100"
-                        >
-                            <ArrowLeft size={20} />
-                        </button> */}
+                        {}
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
                             <p className="text-gray-500 mt-1">Manage standard categories and review suggestions.</p>
@@ -171,8 +166,8 @@ const CategoryManagement = () => {
                     <div className="inline-flex bg-gray-100/50 p-1.5 rounded-xl gap-1">
                         {[
                             { id: 'ALL', label: 'All', icon: Layers },
-                            // { id: 'ACTIVE', label: 'Active', icon: CheckCircle2 },
-                            // { id: 'INACTIVE', label: 'Inactive', icon: Power },
+                            
+                            
                             { id: 'BLOCKED', label: 'Blocked', icon: ShieldAlert },
                             { id: 'REQUESTS', label: 'Requests', icon: Lightbulb }
                         ].map((item) => (
@@ -234,11 +229,11 @@ const CategoryManagement = () => {
                                         className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden"
                                     >
                                         <div className="flex flex-col md:flex-row items-stretch md:items-center">
-                                            {/* Status Badge Side */}
+                                            {}
                                             <div className={`w-2 md:w-3 ${cat.isBlocked ? 'bg-red-500' : (cat.isActive === false ? 'bg-amber-400' : 'bg-green-500')}`} />
 
                                             <div className="flex-1 p-5 md:p-6 flex flex-col md:flex-row items-center gap-6">
-                                                {/* Icon & Name */}
+                                                {}
                                                 <div className="flex items-center gap-5 flex-1 min-w-0 w-full md:w-auto">
                                                     <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-gray-900 group-hover:bg-gray-100 transition-all shrink-0">
                                                         <Layers size={28} />
@@ -261,14 +256,14 @@ const CategoryManagement = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Description */}
+                                                {}
                                                 <div className="hidden lg:block flex-[1.5] min-w-0">
                                                     <p className="text-sm text-gray-500 line-clamp-2 italic leading-relaxed">
                                                         {cat.description}
                                                     </p>
                                                 </div>
 
-                                                {/* Actions */}
+                                                {}
                                                 <div className="flex items-center gap-2 w-full md:w-auto justify-end">
                                                     {cat.isSuggested ? (
                                                         <div className="flex gap-2">
@@ -287,13 +282,7 @@ const CategoryManagement = () => {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            {/* <button
-                                                                onClick={() => handleToggleStatus(cat)}
-                                                                className={`p-2.5 rounded-xl transition-all ${cat.isActive === false ? 'bg-gray-50 text-gray-400 hover:bg-green-50 hover:text-green-600' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}
-                                                                title={cat.isActive === false ? "Activate" : "Deactivate"}
-                                                            >
-                                                                <Power size={18} />
-                                                            </button> */}
+                                                            {}
                                                             <button
                                                                 onClick={() => handleEdit(cat)}
                                                                 className="p-2.5 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-all"

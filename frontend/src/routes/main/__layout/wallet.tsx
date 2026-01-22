@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { walletApi, WalletDetails } from '../../../services/api/walletApi'
+import { walletApi,type WalletDetails } from '../../../services/api/walletApi'
 import { Wallet, ArrowUpRight, ArrowDownLeft, History, CreditCard, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 

@@ -1,10 +1,10 @@
 export interface IUser {
-  id: string; // Changed from _id to match DTO usually, or keep both if unsure, but DTO uses id
+  id: string; 
   name: string;
   email: string;
   phone: string;
   role: 'user' | 'admin' | "photographer";
-  status?: 'active' | 'blocked'; // made optional as it might not be in profile response
+  status?: 'active' | 'blocked'; 
   walletBalance: number;
   bio?: string;
   location?: string;
@@ -12,6 +12,6 @@ export interface IUser {
   lng?: number;
   profileImage?: string;
   applicationStatus?: "PENDING" | "APPROVED" | "REJECTED" | "NONE";
-  createdAt?: string; // Date comes as string usually in JSON
+  createdAt?: string; 
   updatedAt?: string;
 }

@@ -1,8 +1,7 @@
-
-import { UserRepository } from "../repositories/implementaion/user/user.repositery.ts";
+import { UserRepository } from "../repositories/implementaion/user/user.repository.ts";
 import { AdminRepository } from "../repositories/implementaion/admin/admin.repository.ts";
-import { PhotographerRepository } from "../repositories/implementaion/photographer/PhotographerRespository.ts";
-import { AuthService } from "../services/user/auth/auth.servise.ts";
+import { PhotographerRepository } from "../repositories/implementaion/photographer/PhotographerRepository.ts";
+import { AuthService } from "../services/user/auth/auth.service.ts";
 import { AdminServices } from "../services/admin/implementaion/admin.service.ts";
 import { NodeMailerService } from "../services/user/email/nodemailer.service.ts";
 import { OtpService } from "../services/user/otp/otp.service.ts";
@@ -24,388 +23,354 @@ import { PackageAvailabilityController } from "../controller/packageAvailability
 import { PortfolioRepository } from "../repositories/implementaion/PortfolioRepository.ts";
 import { PortfolioService } from "../services/photographer/PortfolioService.ts";
 import { PortfolioController } from "../controller/portfolio.controller.ts";
-import { IPortfolioController } from "../controller/interface/IPortfolioController.ts";
-
+import { IPortfolioController } from "../interfaces/controllers/IPortfolioController.ts";
 import { CategoryRepository } from "../repositories/implementaion/CategoryRepository.ts";
 import { MessageRepository } from "../repositories/implementaion/MessageRepository.ts";
 import { CategoryService } from "../services/common/CategoryService.ts";
 import { MessageService } from "../services/messaging/MessageService.ts";
 import { CategoryController } from "../controller/CategoryController.ts";
-import { ICategoryController } from "../controller/interface/ICategoryController.ts";
-
+import { ICategoryController } from "../interfaces/controllers/ICategoryController.ts";
 import { BookingRepository } from "../repositories/implementaion/booking/BookingRepository.ts";
 import { BookingService } from "../services/implementaion/BookingService.ts";
 import { BookingController } from "../controller/BookingController.ts";
-import { IBookingController } from "../controller/interface/IBookingController.ts";
-import { MessageController, IMessageController } from "../controller/MessageController.ts";
-
+import { IBookingController } from "../interfaces/controllers/IBookingController.ts";
+import { MessageController } from "../controller/MessageController.ts";
+import { IMessageController } from "../interfaces/controllers/IMessageController.ts";
 import { WalletRepository } from "../repositories/implementaion/wallet/WalletRepository.ts";
 import { WalletService } from "../services/implementaion/WalletService.ts";
 import { BookingQueueService } from "../services/common/BookingQueueService.ts";
 import { StripeService } from "../services/implementaion/StripeService.ts";
 import { WalletController } from "../controller/WalletController.ts";
 import { PaymentController } from "../controller/PaymentController.ts";
+import { PaymentService } from "../services/implementaion/PaymentService.ts";
+import { RentalRepository } from "../repositories/implementaion/rental/RentalRepository.ts";
+import { RentalService } from "../services/implementaion/RentalService.ts";
+import { RentalController } from "../controller/RentalController.ts";
+import { PdfService } from "../services/implementaion/PdfService.ts";
 
 class DIContainer {
-    // repositories (singleton)
-    private _userRepository?: UserRepository;
-    private _adminRepository?: AdminRepository;
-    private _photographerRepository?: PhotographerRepository;
-    private _packageRepository?: PackageRepository;
-    private _availabilityRepository?: AvailabilityRepository;
-    private _portfolioRepository?: PortfolioRepository;
-    private _categoryRepository?: CategoryRepository;
-    private _messageRepository?: MessageRepository;
-    private _bookingRepository?: BookingRepository;
-    private _walletRepository?: WalletRepository;
+  private _userRepository?: UserRepository;
+  private _adminRepository?: AdminRepository;
+  private _photographerRepository?: PhotographerRepository;
+  private _packageRepository?: PackageRepository;
+  private _availabilityRepository?: AvailabilityRepository;
+  private _portfolioRepository?: PortfolioRepository;
+  private _categoryRepository?: CategoryRepository;
+  private _messageRepository?: MessageRepository;
+  private _bookingRepository?: BookingRepository;
+  private _walletRepository?: WalletRepository;
+  private _rentalRepository?: RentalRepository;
+  private _pdfService?: PdfService;
 
-    // services (singleton)
-    private _emailService?: NodeMailerService;
-    private _otpService?: OtpService;
-    private _tokenBlacklistService?: TokenBlacklistService;
-    private _fileService?: S3FileService;
-    private _authService?: AuthService;
-    private _adminService?: AdminServices;
-    private _userService?: UserService;
-    private _photographerService?: PhotographerService;
-    private _adminPhotographerService?: AdminPhotographerService;
-    private _packageService?: PackageService;
-    private _availabilityService?: AvailabilityService;
-    private _portfolioService?: PortfolioService;
-    private _categoryService?: CategoryService;
-    private _messageService?: MessageService;
-    private _bookingService?: BookingService;
-    private _walletService?: WalletService;
-    private _bookingQueueService?: BookingQueueService;
-    private _stripeService?: StripeService;
+  private _emailService?: NodeMailerService;
+  private _otpService?: OtpService;
+  private _tokenBlacklistService?: TokenBlacklistService;
+  private _fileService?: S3FileService;
+  private _authService?: AuthService;
+  private _adminService?: AdminServices;
+  private _userService?: UserService;
+  private _photographerService?: PhotographerService;
+  private _adminPhotographerService?: AdminPhotographerService;
+  private _packageService?: PackageService;
+  private _availabilityService?: AvailabilityService;
+  private _portfolioService?: PortfolioService;
+  private _categoryService?: CategoryService;
+  private _messageService?: MessageService;
+  private _bookingService?: BookingService;
+  private _walletService?: WalletService;
+  private _bookingQueueService?: BookingQueueService;
+  private _stripeService?: StripeService;
+  private _paymentService?: PaymentService;
+  private _rentalService?: RentalService;
 
-    // controllers (singleton)
-    private _authController?: AuthController;
-    private _adminController?: AdminController;
-    private _userController?: UserController;
-    private _photographerController?: PhotographerController;
-    private _adminPhotographerController?: AdminPhotographerController;
-    private _packageAvailabilityController?: PackageAvailabilityController;
-    private _portfolioController?: IPortfolioController;
-    private _categoryController?: ICategoryController;
-    private _bookingController?: IBookingController;
-    private _messageController?: IMessageController;
-    private _walletController?: WalletController;
-    private _paymentController?: PaymentController;
+  private _authController?: AuthController;
+  private _adminController?: AdminController;
+  private _userController?: UserController;
+  private _photographerController?: PhotographerController;
+  private _adminPhotographerController?: AdminPhotographerController;
+  private _packageAvailabilityController?: PackageAvailabilityController;
+  private _portfolioController?: IPortfolioController;
+  private _categoryController?: ICategoryController;
+  private _bookingController?: IBookingController;
+  private _messageController?: IMessageController;
+  private _walletController?: WalletController;
+  private _paymentController?: PaymentController;
+  private _rentalController?: RentalController;
 
-    // ...
+  get bookingQueueService(): BookingQueueService {
+    this._bookingQueueService ??= new BookingQueueService();
+    return this._bookingQueueService;
+  }
 
-    get bookingQueueService(): BookingQueueService {
-        if (!this._bookingQueueService) {
-            this._bookingQueueService = new BookingQueueService();
-        }
-        return this._bookingQueueService;
-    }
+  get userRepository(): UserRepository {
+    this._userRepository ??= new UserRepository();
+    return this._userRepository;
+  }
 
-    // controllers (singleton)
+  get adminRepository(): AdminRepository {
+    this._adminRepository ??= new AdminRepository();
+    return this._adminRepository;
+  }
 
+  get photographerRepository(): PhotographerRepository {
+    this._photographerRepository ??= new PhotographerRepository();
+    return this._photographerRepository;
+  }
 
-    // repositories
-    get userRepository(): UserRepository {
-        if (!this._userRepository) {
-            this._userRepository = new UserRepository();
-        }
-        return this._userRepository;
-    }
+  get packageRepository(): PackageRepository {
+    this._packageRepository ??= new PackageRepository();
+    return this._packageRepository;
+  }
 
-    get adminRepository(): AdminRepository {
-        if (!this._adminRepository) {
-            this._adminRepository = new AdminRepository();
-        }
-        return this._adminRepository;
-    }
+  get availabilityRepository(): AvailabilityRepository {
+    this._availabilityRepository ??= new AvailabilityRepository();
+    return this._availabilityRepository;
+  }
 
-    get photographerRepository(): PhotographerRepository {
-        if (!this._photographerRepository) {
-            this._photographerRepository = new PhotographerRepository();
-        }
-        return this._photographerRepository;
-    }
+  get portfolioRepository(): PortfolioRepository {
+    this._portfolioRepository ??= new PortfolioRepository();
+    return this._portfolioRepository;
+  }
 
-    get packageRepository(): PackageRepository {
-        if (!this._packageRepository) {
-            this._packageRepository = new PackageRepository();
-        }
-        return this._packageRepository;
-    }
+  get categoryRepository(): CategoryRepository {
+    this._categoryRepository ??= new CategoryRepository();
+    return this._categoryRepository;
+  }
 
-    get availabilityRepository(): AvailabilityRepository {
-        if (!this._availabilityRepository) {
-            this._availabilityRepository = new AvailabilityRepository();
-        }
-        return this._availabilityRepository;
-    }
+  get messageRepository(): MessageRepository {
+    this._messageRepository ??= new MessageRepository();
+    return this._messageRepository;
+  }
 
-    get portfolioRepository(): PortfolioRepository {
-        if (!this._portfolioRepository) {
-            this._portfolioRepository = new PortfolioRepository();
-        }
-        return this._portfolioRepository;
-    }
+  get bookingRepository(): BookingRepository {
+    this._bookingRepository ??= new BookingRepository();
+    return this._bookingRepository;
+  }
 
-    get categoryRepository(): CategoryRepository {
-        if (!this._categoryRepository) {
-            this._categoryRepository = new CategoryRepository();
-        }
-        return this._categoryRepository;
-    }
+  get walletRepository(): WalletRepository {
+    this._walletRepository ??= new WalletRepository();
+    return this._walletRepository;
+  }
 
-    get messageRepository(): MessageRepository {
-        if (!this._messageRepository) {
-            this._messageRepository = new MessageRepository();
-        }
-        return this._messageRepository;
-    }
+  get rentalRepository(): RentalRepository {
+    this._rentalRepository ??= new RentalRepository();
+    return this._rentalRepository;
+  }
 
-    get bookingRepository(): BookingRepository {
-        if (!this._bookingRepository) {
-            this._bookingRepository = new BookingRepository();
-        }
-        return this._bookingRepository;
-    }
+  get pdfService(): PdfService {
+    this._pdfService ??= new PdfService();
+    return this._pdfService;
+  }
 
-    get walletRepository(): WalletRepository {
-        if (!this._walletRepository) {
-            this._walletRepository = new WalletRepository();
-        }
-        return this._walletRepository;
-    }
+  get emailService(): NodeMailerService {
+    this._emailService ??= new NodeMailerService();
+    return this._emailService;
+  }
 
-    // Services
-    get emailService(): NodeMailerService {
-        if (!this._emailService) {
-            this._emailService = new NodeMailerService();
-        }
-        return this._emailService;
-    }
+  get otpService(): OtpService {
+    this._otpService ??= new OtpService();
+    return this._otpService;
+  }
 
-    get otpService(): OtpService {
-        if (!this._otpService) {
-            this._otpService = new OtpService();
-        }
-        return this._otpService;
-    }
+  get tokenBlacklistService(): TokenBlacklistService {
+    this._tokenBlacklistService ??= new TokenBlacklistService();
+    return this._tokenBlacklistService;
+  }
 
-    get tokenBlacklistService(): TokenBlacklistService {
-        if (!this._tokenBlacklistService) {
-            this._tokenBlacklistService = new TokenBlacklistService();
-        }
-        return this._tokenBlacklistService;
-    }
+  get fileService(): S3FileService {
+    this._fileService ??= new S3FileService();
+    return this._fileService;
+  }
 
-    get fileService(): S3FileService {
-        if (!this._fileService) {
-            this._fileService = new S3FileService();
-        }
-        return this._fileService;
-    }
+  get authService(): AuthService {
+    this._authService ??= new AuthService(
+      this.userRepository,
+      this.emailService,
+      this.otpService,
+      this.walletService,
+    );
+    return this._authService;
+  }
 
-    get authService(): AuthService {
-        if (!this._authService) {
-            this._authService = new AuthService(
-                this.userRepository,
-                this.emailService,
-                this.otpService,
-                this.walletService
-            );
-        }
-        return this._authService;
-    }
+  get adminService(): AdminServices {
+    this._adminService ??= new AdminServices(this.adminRepository);
+    return this._adminService;
+  }
 
-    get adminService(): AdminServices {
-        if (!this._adminService) {
-            this._adminService = new AdminServices(this.adminRepository);
-        }
-        return this._adminService;
-    }
+  get userService(): UserService {
+    this._userService ??= new UserService(this.userRepository, this.photographerRepository);
+    return this._userService;
+  }
 
-    get userService(): UserService {
-        if (!this._userService) {
-            this._userService = new UserService(this.userRepository, this.photographerRepository);
-        }
-        return this._userService;
-    }
+  get photographerService(): PhotographerService {
+    this._photographerService ??= new PhotographerService(
+      this.photographerRepository,
+      this.messageService,
+    );
+    return this._photographerService;
+  }
 
-    get photographerService(): PhotographerService {
-        if (!this._photographerService) {
-            this._photographerService = new PhotographerService(
-                this.photographerRepository,
-                this.messageService
-            );
-        }
-        return this._photographerService;
-    }
+  get adminPhotographerService(): AdminPhotographerService {
+    this._adminPhotographerService ??= new AdminPhotographerService(
+      this.photographerRepository,
+      this.userRepository,
+      this.emailService,
+      this.messageService,
+    );
+    return this._adminPhotographerService;
+  }
 
-    get adminPhotographerService(): AdminPhotographerService {
-        if (!this._adminPhotographerService) {
-            this._adminPhotographerService = new AdminPhotographerService(
-                this.photographerRepository,
-                this.userRepository,
-                this.emailService,
-                this.messageService
-            );
-        }
-        return this._adminPhotographerService;
-    }
+  get packageService(): PackageService {
+    this._packageService ??= new PackageService(this.packageRepository);
+    return this._packageService;
+  }
 
-    get packageService(): PackageService {
-        if (!this._packageService) {
-            this._packageService = new PackageService(this.packageRepository);
-        }
-        return this._packageService;
-    }
+  get availabilityService(): AvailabilityService {
+    this._availabilityService ??= new AvailabilityService(this.availabilityRepository);
+    return this._availabilityService;
+  }
 
-    get availabilityService(): AvailabilityService {
-        if (!this._availabilityService) {
-            this._availabilityService = new AvailabilityService(this.availabilityRepository);
-        }
-        return this._availabilityService;
-    }
+  get portfolioService(): PortfolioService {
+    this._portfolioService ??= new PortfolioService(this.portfolioRepository);
+    return this._portfolioService;
+  }
 
-    get portfolioService(): PortfolioService {
-        if (!this._portfolioService) {
-            this._portfolioService = new PortfolioService(this.portfolioRepository);
-        }
-        return this._portfolioService;
-    }
+  get categoryService(): CategoryService {
+    this._categoryService ??= new CategoryService(this.categoryRepository, this.messageService);
+    return this._categoryService;
+  }
 
-    get categoryService(): CategoryService {
-        if (!this._categoryService) {
-            this._categoryService = new CategoryService(this.categoryRepository, this.messageService);
-        }
-        return this._categoryService;
-    }
+  get messageService(): MessageService {
+    this._messageService ??= new MessageService(this.messageRepository);
+    return this._messageService;
+  }
 
-    get messageService(): MessageService {
-        if (!this._messageService) {
-            this._messageService = new MessageService(this.messageRepository);
-        }
-        return this._messageService;
-    }
+  get walletService(): WalletService {
+    this._walletService ??= new WalletService(this.walletRepository);
+    return this._walletService;
+  }
 
-    get walletService(): WalletService {
-        if (!this._walletService) {
-            this._walletService = new WalletService(this.walletRepository);
-        }
-        return this._walletService;
-    }
+  get rentalService(): RentalService {
+    this._rentalService ??= new RentalService(
+      this.rentalRepository,
+      this.pdfService,
+      this.emailService,
+      this.stripeService, // Injected
+      this.walletService, // Injected
+      this.paymentService, // Injected
+      this.userRepository, // New injection
+    );
+    return this._rentalService;
+  }
 
-    get bookingService(): BookingService {
-        if (!this._bookingService) {
-            this._bookingService = new BookingService(
-                this.bookingRepository,
-                this.walletService,
-                this.bookingQueueService,
-                this.emailService,
-                this.messageService,
-                this.availabilityService
-            );
-        }
-        return this._bookingService;
-    }
+  get bookingService(): BookingService {
+    this._bookingService ??= new BookingService(
+      this.bookingRepository,
+      this.walletService,
+      this.bookingQueueService,
+      this.emailService,
+      this.messageService,
+      this.availabilityService,
+      this.stripeService, // Injected
+      this.paymentService, // Injected
+    );
+    return this._bookingService;
+  }
 
-    // Controllers
-    get authController(): AuthController {
-        if (!this._authController) {
-            this._authController = new AuthController(this.authService);
-        }
-        return this._authController;
-    }
+  get authController(): AuthController {
+    this._authController ??= new AuthController(this.authService);
+    return this._authController;
+  }
 
-    get adminController(): AdminController {
-        if (!this._adminController) {
-            this._adminController = new AdminController(this.adminService);
-        }
-        return this._adminController;
-    }
+  get adminController(): AdminController {
+    this._adminController ??= new AdminController(this.adminService);
+    return this._adminController;
+  }
 
+  get userController(): UserController {
+    this._userController ??= new UserController(this.userService);
+    return this._userController;
+  }
 
-    get userController(): UserController {
-        if (!this._userController) {
-            this._userController = new UserController(this.userService);
-        }
-        return this._userController;
-    }
+  get photographerController(): PhotographerController {
+    this._photographerController ??= new PhotographerController(
+      this.photographerService,
+      this.fileService,
+    );
+    return this._photographerController;
+  }
 
-    get photographerController(): PhotographerController {
-        if (!this._photographerController) {
-            this._photographerController = new PhotographerController(this.photographerService, this.fileService);
-        }
-        return this._photographerController;
-    }
+  get adminPhotographerController(): AdminPhotographerController {
+    this._adminPhotographerController ??= new AdminPhotographerController(
+      this.adminPhotographerService,
+    );
+    return this._adminPhotographerController;
+  }
 
-    get adminPhotographerController(): AdminPhotographerController {
-        if (!this._adminPhotographerController) {
-            this._adminPhotographerController = new AdminPhotographerController(this.adminPhotographerService);
-        }
-        return this._adminPhotographerController;
-    }
+  get packageAvailabilityController(): PackageAvailabilityController {
+    this._packageAvailabilityController ??= new PackageAvailabilityController(
+      this.packageService,
+      this.availabilityService,
+      this.fileService,
+    );
+    return this._packageAvailabilityController;
+  }
 
-    get packageAvailabilityController(): PackageAvailabilityController {
-        if (!this._packageAvailabilityController) {
-            this._packageAvailabilityController = new PackageAvailabilityController(
-                this.packageService,
-                this.availabilityService,
-                this.fileService
-            );
-        }
-        return this._packageAvailabilityController;
-    }
+  get portfolioController(): IPortfolioController {
+    this._portfolioController ??= new PortfolioController(this.portfolioService, this.fileService);
+    return this._portfolioController;
+  }
 
-    get portfolioController(): IPortfolioController {
-        if (!this._portfolioController) {
-            this._portfolioController = new PortfolioController(this.portfolioService, this.fileService);
-        }
-        return this._portfolioController;
-    }
+  get categoryController(): ICategoryController {
+    this._categoryController ??= new CategoryController(this.categoryService);
+    return this._categoryController;
+  }
 
-    get categoryController(): ICategoryController {
-        if (!this._categoryController) {
-            this._categoryController = new CategoryController(this.categoryService);
-        }
-        return this._categoryController;
-    }
+  get bookingController(): IBookingController {
+    this._bookingController ??= new BookingController(this.bookingService);
+    return this._bookingController;
+  }
 
-    get bookingController(): IBookingController {
-        if (!this._bookingController) {
-            this._bookingController = new BookingController(this.bookingService);
-        }
-        return this._bookingController;
-    }
+  get messageController(): IMessageController {
+    this._messageController ??= new MessageController(this.messageService);
+    return this._messageController;
+  }
 
-    get messageController(): IMessageController {
-        if (!this._messageController) {
-            this._messageController = new MessageController(this.messageService);
-        }
-        return this._messageController;
-    }
+  get stripeService(): StripeService {
+    this._stripeService ??= new StripeService();
+    return this._stripeService;
+  }
 
-    get stripeService(): StripeService {
-        if (!this._stripeService) {
-            this._stripeService = new StripeService();
-        }
-        return this._stripeService;
-    }
+  get walletController(): WalletController {
+    this._walletController ??= new WalletController(
+      this.walletService,
+      this.bookingRepository,
+      this.rentalRepository
+    );
+    return this._walletController;
+  }
 
-    get walletController(): WalletController {
-        if (!this._walletController) {
-            this._walletController = new WalletController(this.walletService);
-        }
-        return this._walletController;
-    }
+  get paymentController(): PaymentController {
+    this._paymentController ??= new PaymentController(this.stripeService, this.walletService);
+    return this._paymentController;
+  }
 
-    get paymentController(): PaymentController {
-        if (!this._paymentController) {
-            this._paymentController = new PaymentController(); // PaymentController internally instantiates services currently? checking...
-        }
-        return this._paymentController;
-    }
+  get rentalController(): RentalController {
+    this._rentalController ??= new RentalController(this.rentalService, this.fileService);
+    return this._rentalController;
+  }
+
+  get paymentService(): PaymentService {
+    this._paymentService ??= new PaymentService(
+      this.walletService,
+      this.messageService,
+      this.emailService,
+      this.stripeService,
+      this.rentalRepository,
+      this.bookingRepository,
+    );
+    return this._paymentService;
+  }
 }
-
 
 export const container = new DIContainer();

@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { CheckCircle } from "lucide-react";
+import { ROUTES } from "../../../constants/routes";
 
 export function PaymentSuccessPage() {
     const navigate = useNavigate();
@@ -20,16 +21,13 @@ export function PaymentSuccessPage() {
 
                 <div className="flex gap-4">
                     <button
-                        onClick={() => navigate({ to: "/main/home" })}
+                        onClick={() => navigate({ to: ROUTES.USER.HOME })}
                         className="flex-1 py-3 px-6 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                     >
                         Go Home
                     </button>
                     <button
-                        // Assuming user bookings route exists, strictly it's usually /profile or /bookings
-                        // Based on routeTree: /photographer/bookings (for photog), but for user?
-                        // Likely in profile. assuming /main/profile for now.
-                        onClick={() => navigate({ to: "/main/profile" })}
+                        onClick={() => navigate({ to: ROUTES.USER.PROFILE })}
                         className="flex-1 py-3 px-6 bg-green-600 rounded-lg text-white font-medium hover:bg-green-700 transition-colors"
                     >
                         View Bookings

@@ -8,7 +8,7 @@ import Loader from "../../../components/Loader";
 import type { IUser } from "../types/admin.type";
 import { Eye, Lock, Unlock } from "lucide-react";
 import { AxiosError } from "axios";
-// import type { ApiError } from "../../../utils/errorhandler";
+
 import { getErrorMessage } from "../../../utils/errorhandler";
 import { confirm } from "../../../components/ConfirmToaster";
 import SearchBar from "../../../components/common/SearchBat";

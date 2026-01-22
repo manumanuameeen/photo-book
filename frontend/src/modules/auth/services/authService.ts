@@ -4,7 +4,7 @@ import type { IAuthService } from "./IAuthsevice";
 
 class AuthService implements IAuthService {
 
-  
+
   async signup(data: ISignupRequest): Promise<IAuthResponse> {
     return authRepository.signup(data);
   }
@@ -21,16 +21,20 @@ class AuthService implements IAuthService {
     return authRepository.logout();
   }
 
-  async forgetPassword(data:IForgetPassword): Promise<{ message: string; }> {
+  async forgetPassword(data: IForgetPassword): Promise<{ message: string; }> {
     return authRepository.forgetPassword(data);
   }
 
-  async verifyResetOtp(data:IVerifyResetOtp): Promise<{ message: string; }> {
+  async verifyResetOtp(data: IVerifyResetOtp): Promise<{ message: string; }> {
     return authRepository.verifyResetOtp(data)
   }
 
-  async resetPassword(data:IResetPassword): Promise<{ message: string; }> {
+  async resetPassword(data: IResetPassword): Promise<{ message: string; }> {
     return authRepository.resetPassword(data)
+  }
+
+  async googleLogin(token: string): Promise<IAuthResponse> {
+    return authRepository.googleLogin(token);
   }
 
 

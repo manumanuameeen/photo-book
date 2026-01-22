@@ -7,6 +7,7 @@ export const HttpStatus = {
   NOT_FOUND: 404,
   CONFLICT: 409,
   INTERNAL_SERVER_ERROR: 500,
+  NOT_IMPLEMENTED: 501,
 } as const;
 
 export type HttpStatus = (typeof HttpStatus)[keyof typeof HttpStatus];

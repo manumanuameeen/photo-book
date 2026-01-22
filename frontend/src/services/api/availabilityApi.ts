@@ -19,5 +19,12 @@ export const availabilityApi = {
             endDate
         });
         return response.data.data;
+    },
+
+    updateSettings: async (settings: { noticeInterval?: string, bufferTime?: string }) => {
+        const response = await apiClient.put("/photographer/profile", {
+            professionalDetails: settings
+        });
+        return response.data.data;
     }
 };

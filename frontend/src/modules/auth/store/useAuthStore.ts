@@ -46,8 +46,8 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           console.log("🚪 Logout initiated");
-          
-          // ✅ Call logout API
+
+
           const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
             method: "POST",
             credentials: "include",
@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error("❌ Logout error:", error);
         } finally {
-          // ✅ Always clear local state
+
           sessionStorage.removeItem("auth-cache");
           set({ user: null, isAuthenticated: false, role: null });
         }
@@ -72,8 +72,8 @@ export const useAuthStore = create<AuthState>()(
 
       rehydrateUser: async () => {
         console.log("🔄 Rehydrating user...");
-        
-        // ✅ Check cache first
+
+
         const cached = sessionStorage.getItem("auth-cache");
         if (cached) {
           try {
@@ -94,10 +94,10 @@ export const useAuthStore = create<AuthState>()(
           }
         }
 
-        // ✅ Try to refresh token
+
         try {
           console.log("🔄 Attempting token refresh for rehydration...");
-          
+
           const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh-token`, {
             method: "POST",
             credentials: "include",
@@ -118,8 +118,8 @@ export const useAuthStore = create<AuthState>()(
 
           if (data.success && data.data?.user) {
             console.log("✅ Rehydration successful");
-            
-            // ✅ Cache the user
+
+
             const cache: CacheData = {
               user: data.data.user,
               expires: Date.now() + 5 * 60 * 1000,

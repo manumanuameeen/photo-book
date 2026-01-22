@@ -1,10 +1,10 @@
-import { IPhotographer } from "../model/photographerModel";
-import { PhotographerResponseDto } from "../dto/photographer.dto";
+import { IPhotographer } from "../model/photographerModel.ts";
+import { PhotographerResponseDto } from "../dto/photographer.dto.ts";
 
 export class PhotographerMapper {
   static toResponse(data: IPhotographer): PhotographerResponseDto {
     console.log("mapper photographer - images:", data.portfolio.portfolioImages?.length || 0);
-    
+
     return {
       id: data.id.toString(),
       status: data.status,

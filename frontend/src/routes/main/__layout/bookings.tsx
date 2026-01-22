@@ -21,7 +21,7 @@ function UserBookingsPage() {
   const { data, isLoading, refetch } = useUserBookings(page, LIMIT);
   const queryClient = useQueryClient();
 
-  // Handle data structure
+  
   const bookings = data?.bookings || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / LIMIT);
@@ -126,7 +126,7 @@ function UserBookingsPage() {
             </div>
           )}
 
-          {/* Pagination Controls */}
+          {}
           {totalPages > 1 && (
             <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-100">
               <button

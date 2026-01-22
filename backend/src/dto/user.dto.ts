@@ -17,7 +17,7 @@ export const ChangePasswordDto = z
     currentPassword: z.string().min(8),
     newPassword: z.string().min(8),
     confirmPassword: z.string().min(8),
-    otp: z.string().optional(), // OTP is required but might be optional if we kept old flow, but logic requires it now. Let's make it string first.
+    otp: z.string().optional(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Password do not match",
@@ -56,6 +56,8 @@ export class UserProfileResponseDto {
   lng?: number;
   profileImage?: string;
   applicationStatus?: "PENDING" | "APPROVED" | "REJECTED" | "NONE";
+  rejectionReason?: string;
+  approvalMessage?: string;
   createdAt!: Date;
 }
 

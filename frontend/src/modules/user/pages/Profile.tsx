@@ -137,12 +137,12 @@ const Profile = () => {
       className="min-h-screen bg-gray-50 font-sans text-gray-800"
     >
 
-      {/* --- Top Navigation Bar --- */}
+      {}
       <div className="bg-[#1E5631] h-16 w-full shadow-sm"></div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
 
-        {/* --- Breadcrumb & Header --- */}
+        {}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
@@ -154,7 +154,7 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-3">
-              {/* Modify buttons based on status */}
+              {}
               {(applicationStatus === 'none' || applicationStatus === 'rejected') && (
                 <button
                   onClick={handleApplyNow}
@@ -202,13 +202,13 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* --- Main Grid Content --- */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* === LEFT COLUMN === */}
+          {}
           <div className="space-y-6">
 
-            {/* Personal Identity Card */}
+            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Personal Identity</h2>
               <div className="flex flex-col items-center text-center">
@@ -235,7 +235,7 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Contact Details Card */}
+            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Contact Details</h2>
               <div className="space-y-5">
@@ -258,10 +258,10 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* === RIGHT COLUMN === */}
+          {}
           <div className="space-y-6">
 
-            {/* My Bookings Teaser */}
+            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-4">My Bookings</h2>
               <p className="text-gray-500 text-sm mb-6">View and manage all your photography sessions and requests.</p>
@@ -271,7 +271,7 @@ const Profile = () => {
               </button>
             </div>
 
-            {/* Business & Platform Information - Only show fetching from bio or static or hide if not photographer */}
+            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">About Me</h2>
               <p className="text-gray-600 text-sm leading-relaxed">
@@ -279,7 +279,7 @@ const Profile = () => {
               </p>
             </div>
 
-            {/* Account Status */}
+            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Account Status</h2>
               <div className="space-y-5">
@@ -304,7 +304,7 @@ const Profile = () => {
   );
 };
 
-// --- Helper Component for Fields ---
+
 const InfoField = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string | number, icon: any, isLink?: boolean }) => (
   <div>
     <label className="block text-xs font-medium text-gray-500 mb-1.5 ml-1">{label}</label>

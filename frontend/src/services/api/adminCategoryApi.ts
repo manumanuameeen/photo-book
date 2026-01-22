@@ -26,7 +26,7 @@ export const adminCategoryApi = {
         const response = await apiClient.get("/admin/categories", {
             params: { search, page, limit, isBlocked, isSuggested, isActive }
         });
-        // console.log("response from categoryapi",response);
+        
         return response.data.data;
     },
 

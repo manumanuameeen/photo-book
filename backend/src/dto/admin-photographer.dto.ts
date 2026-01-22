@@ -1,28 +1,27 @@
-import { X } from "lucide-react";
 import { z } from "zod";
 
 export const GetPhotographersQueryDto = z.object({
-    page: z.string().optional().default("1"),
-    limit: z.string().optional().default("10"),
-    search: z.string().optional(),
-    status: z.enum(["PENDING", "APPROVED", "REJECTED", "ALL"]),
-    isBlocked: z.enum(["true", "false", "all"]).optional(),
-})
+  page: z.string().optional().default("1"),
+  limit: z.string().optional().default("10"),
+  search: z.string().optional(),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED", "ALL"]),
+  isBlocked: z.enum(["true", "false", "all"]).optional(),
+});
 
 export const BlockPhotographerDto = z.object({
-    reason: z.string().optional(),
+  reason: z.string().optional(),
 });
 
 export const BlockPackageDto = z.object({
-    reason: z.string().min(10, "Block reason must be at least 10 characters"),
+  reason: z.string().min(10, "Block reason must be at least 10 characters"),
 });
 
 export const ApprovedApplicationDto = z.object({
-    message: z.string().min(10, 'Message must be least 10 charecters')
+  message: z.string().min(10, "Message must be least 10 charecters"),
 });
 
 export const RejectedApplicationDto = z.object({
-    reason: z.string().min(20, "Reason must be at least 20 charecters"),
+  reason: z.string().min(20, "Reason must be at least 20 charecters"),
 });
 
 export type GetPhotographersQueryDtoType = z.infer<typeof GetPhotographersQueryDto>;

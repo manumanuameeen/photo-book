@@ -6,6 +6,7 @@ export const ROUTES = {
       VERIFY_OTP: "/verify-otp",
       RESEND_OTP: "/resend-otp",
       LOGIN: "/login",
+      GOOGLE_LOGIN: "/google-login",
       REFRESH: "/refresh-token",
       LOGOUT: "/logout",
       FORGOT_PASSWORD: "/forgot-password",
@@ -26,7 +27,7 @@ export const ROUTES = {
       APPLY: "/apply",
       DASHBOARD: "/dashboard",
       SUGGEST_CATEGORY: "/category/suggest",
-
+      GET_BOOKINGS: "/bookings",
 
       PORTFOLIO_SECTION: "/portfolio/section",
       PORTFOLIO_SECTIONS: "/portfolio/sections",
@@ -37,10 +38,15 @@ export const ROUTES = {
       PACKAGE_BY_ID: "/packages/:id",
       PUBLIC_PACKAGES: "/:photographerId/packages",
 
-      // Availability
       AVAILABILITY: "/availability",
+      BLOCK_RANGE: "/availability/block-range",
+      DELETE_AVAILABILITY: "/availability/:date",
 
-      // Categories
+      PUBLIC_AVAILABILITY: "/public/photographers/:id/availability",
+      PUBLIC_LIST: "/public/photographers",
+      PUBLIC_DETAILS: "/public/photographers/:id",
+      ADD_REVIEW: "/public/photographers/:id/review",
+
       CATEGORIES: "/categories",
     },
     ADMIN: {
@@ -51,27 +57,23 @@ export const ROUTES = {
       BLOCK: "/users/:id/block",
       UNBLOCK: "/users/:id/unblock",
 
-
       PHOTOGRAPHERS: "/photographers",
       PHOTOGRAPHER_STATS: "/photographers/stats",
       PHOTOGRAPHER_BY_ID: "/photographers/:id",
       PHOTOGRAPHER_BLOCK: "/photographers/:id/block",
       PHOTOGRAPHER_UNBLOCK: "/photographers/:id/unblock",
 
-
       APPLICATIONS: "/applications",
       APPLICATION_BY_ID: "/applications/:id",
       APPLICATION_APPROVE: "/applications/:id/approve",
       APPLICATION_REJECT: "/applications/:id/reject",
 
-      // Package Management
       PACKAGES: "/packages",
       PACKAGE_APPROVE: "/packages/:id/approve",
       PACKAGE_REJECT: "/packages/:id/reject",
       PACKAGE_BLOCK: "/packages/:id/block",
       PACKAGE_UNBLOCK: "/packages/:id/unblock",
 
-      // Category Management
       CATEGORY: "/category",
       CATEGORY_BY_ID: "/category/:id",
       CATEGORY_APPROVE: "/category/:id/approve",
@@ -87,9 +89,22 @@ export const ROUTES = {
       ACCEPT: "/:id/accept",
       REJECT: "/:id/reject",
       CANCEL: "/:id/cancel",
+      PAY: "/:id/pay",
+      PAYMENT_INTENT: "/:id/payment-intent",
+      START_WORK: "/:id/start-work",
+      END_WORK: "/:id/end-work",
+      CONFIRM_END_WORK: "/:id/confirm-end-work",
+      DELIVER_WORK: "/:id/deliver-work",
+      CONFIRM_DELIVERY: "/:id/confirm-delivery",
+      COMPLETE: "/:id/complete",
     },
     MESSAGE: {
       BASE: "/api/v1/message",
+      GET_ALL: "/",
+      GET_SENT: "/sent",
+      MARK_READ: "/:id/read",
+      DELETE: "/:id",
+      SEND: "/",
     },
     PAYMENT: {
       BASE: "/api/v1/payment",
@@ -99,6 +114,37 @@ export const ROUTES = {
     WALLET: {
       BASE: "/api/v1/wallet",
       DETAILS: "/",
+      TRANSACTIONS: "/transactions",
+      ESCROW_STATS: "/escrow-stats",
+      DASHBOARD_STATS: "/dashboard-stats",
+    },
+    RENTAL: {
+      BASE: "/api/v1/rental",
+      GET_ITEMS: "/items",
+      GET_ITEM_DETAILS: "/items/:id",
+      RENT_ITEM: "/orders",
+      USER_ORDERS: "/orders",
+      CONFIRM_PAYMENT: "/orders/:id/confirm-payment",
+      MY_ITEMS: "/my-items",
+      UPDATE_ITEM_STATUS: "/items/:id/status",
+      ADMIN_ITEMS: "/admin/items",
+      OWNER_ORDERS: "/owner/orders",
+      ADMIN_ORDERS: "/admin/orders",
+      UPDATE_ORDER_STATUS: "/orders/:id/status",
+      ADMIN_ORDER_DETAILS: "/admin/orders/:id",
+      ACCEPT_ORDER: "/orders/:id/accept",
+      REJECT_ORDER: "/orders/:id/reject",
+      PAY_DEPOSIT: "/orders/:id/pay",
+      DEPOSIT_INTENT: "/orders/:id/payment-intent",
+      BALANCE_INTENT: "/orders/:id/balance-payment-intent",
+      PAY_BALANCE: "/orders/:id/pay-balance",
+      COMPLETE_ORDER: "/orders/:id/complete",
+      UPDATE_ITEM: "/items/:id",
+      CHECK_AVAILABILITY: "/items/:id/availability",
+      GET_UNAVAILABLE: "/items/:id/unavailable",
+      BLOCK_ITEM: "/items/:id/block",
+      UNBLOCK_ITEM: "/items/:id/unblock",
+      STATS: "/stats",
     },
   },
 } as const;

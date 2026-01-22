@@ -1,4 +1,4 @@
-import type { IEmailService } from "./IEmailServise.ts";
+import type { IEmailService } from "../../../interfaces/services/IEmailService.ts";
 
 import { mailTransport } from "../../../config/email.ts";
 
@@ -467,7 +467,6 @@ export class NodeMailerService implements IEmailService {
       console.log(`Booking confirmation email sent to ${email}`);
     } catch (error: any) {
       console.error("Failed to send booking confirmation email:", error.message);
-      // Don't throw to prevent blocking the flow, just log it
     }
   }
 

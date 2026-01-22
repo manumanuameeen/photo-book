@@ -87,5 +87,32 @@ export const useBookingActions = () => {
         }
     });
 
-    return { acceptBooking, rejectBooking };
+    const startWork = useMutation({
+        mutationFn: ({ id }: { id: string }) => bookingApi.startWork(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['photographerDashboard'] });
+            toast.success("Work started!");
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || "Failed to start work")
+    });
+
+    const endWork = useMutation({
+        mutationFn: ({ id }: { id: string }) => bookingApi.endWork(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['photographerDashboard'] });
+            toast.success("Work ended. Awaiting user confirmation.");
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || "Failed to end work")
+    });
+
+    const deliverWork = useMutation({
+        mutationFn: ({ id }: { id: string }) => bookingApi.deliverWork(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['photographerDashboard'] });
+            toast.success("Work delivered!");
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || "Failed to deliver work")
+    });
+
+    return { acceptBooking, rejectBooking, startWork, endWork, deliverWork };
 };

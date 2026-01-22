@@ -1,10 +1,10 @@
-import type { IAdminService } from "../interface/IAdminService.ts";
+import type { IAdminService } from "../../../interfaces/services/IAdminService.ts";
 import type {
   IAdminUserQuery,
   IPaginationUsers,
   IUserResponse,
 } from "../../../interfaces/admin/IAdminUser.interface.ts";
-import type { IAdminRepository } from "../../../repositories/interface/IAdminReporitory.ts";
+import type { IAdminRepository } from "../../../interfaces/repositories/IAdminRepository.ts";
 
 export class AdminServices implements IAdminService {
   private readonly adminRepository: IAdminRepository;

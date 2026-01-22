@@ -5,7 +5,7 @@ export const useUserBookings = (page: number = 1, limit: number = 10) => {
     return useQuery({
         queryKey: ["userBookings", page, limit],
         queryFn: () => bookingApi.getUserBookings(page, limit),
-        placeholderData: (previousData) => previousData, // Keep previous data while fetching new page for smoother UX
+        placeholderData: (previousData) => previousData,
     });
 };
 
@@ -17,4 +17,26 @@ export const useCancelBooking = () => {
             queryClient.invalidateQueries({ queryKey: ["userBookings"] });
         },
     });
+};
+
+export const useUserActions = () => {
+    const queryClient = useQueryClient();
+
+    const confirmEndWork = useMutation({
+        mutationFn: (id: string) => bookingApi.confirmEndWork(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["userBookings"] });
+            queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
+        }
+    });
+
+    const confirmDelivery = useMutation({
+        mutationFn: (id: string) => bookingApi.confirmDelivery(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["userBookings"] });
+            queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
+        }
+    });
+
+    return { confirmEndWork, confirmDelivery };
 };

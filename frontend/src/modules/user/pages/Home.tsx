@@ -1,6 +1,8 @@
 
-
+import { useNavigate } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
+import { ROUTES } from '../../../constants/routes';
+import { Link } from '@tanstack/react-router';
 import { MouseFollower } from '../../../components/common/MouseFollower';
 import { MagneticButton } from '../../../components/common/MagneticButton';
 import { TiltCard } from '../../../components/common/TiltCard';
@@ -33,6 +35,7 @@ const categories = [
 
 const photographers = [
   {
+    id: 'sarah-johnson-id',
     name: 'Sarah Johnson',
     role: 'Wedding Photographer',
     rating: 4.9,
@@ -41,6 +44,7 @@ const photographers = [
     image: 'https://randomuser.me/api/portraits/women/44.jpg'
   },
   {
+    id: 'michael-chen-id',
     name: 'Michael Chen',
     role: 'Portrait Specialist',
     rating: 4.8,
@@ -49,6 +53,7 @@ const photographers = [
     image: 'https://randomuser.me/api/portraits/men/32.jpg'
   },
   {
+    id: 'emma-davis-id',
     name: 'Emma Davis',
     role: 'Adventure & Nature',
     rating: 4.7,
@@ -78,28 +83,28 @@ const HomePage = () => {
       }
     }
   };
-
+  const navigate = useNavigate();
   const titleText = "Capture Perfect Moments";
   const words = titleText.split(" ");
 
   return (
     <div className="min-h-screen bg-gray-50">
       <MouseFollower />
-      {/* <Header /> */}
+      { }
 
-      {/* Hero Section with Background Photo */}
+      { }
       <section className="relative py-24 px-4 overflow-hidden min-h-[500px] flex items-center justify-center">
-        {/* Background Image */}
+        { }
         <div
           className="absolute inset-0 bg-cover bg-center bg-gray-900"
         ></div>
 
-        {/* Dark Green Overlay */}
+        { }
         <div
           className="absolute inset-0 bg-green-900/85"
         ></div>
 
-        {/* Content */}
+        { }
         <motion.div
           className="relative z-10 bg-white max-w-4xl mx-auto p-8 md:p-12 rounded-xl shadow-2xl text-center"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -158,7 +163,8 @@ const HomePage = () => {
             </motion.div>
 
             <MagneticButton
-              className="px-6 py-3 font-bold rounded-md flex-shrink-0 w-full md:w-auto flex items-center justify-center space-x-2 transition duration-200 bg-yellow-500 text-green-900"
+              onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER })}
+              className="px-6 py-3 font-semibold rounded-md flex-shrink-0 w-full md:w-auto flex items-center justify-center space-x-2 transition duration-200 bg-yellow-500 text-green-900"
             >
               <i className="fas fa-search z-10 relative"></i>
               <span className="z-10 relative">Search</span>
@@ -167,11 +173,11 @@ const HomePage = () => {
         </motion.div>
       </section>
 
-      {/* Popular Categories Section with Video Background */}
+      { }
       <section className="relative py-16 px-4 text-center overflow-hidden min-h-[500px]">
-        {/* Video Background */}
+        { }
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          {/* Fallback background if video doesn't load */}
+          { }
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
@@ -179,11 +185,11 @@ const HomePage = () => {
             }}
           ></div>
 
-          {/* White/Light overlay for elegant wedding theme */}
+          { }
           <div className="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-sm"></div>
         </div>
 
-        {/* Content on top of video */}
+        { }
         <div className="relative z-10">
           <motion.h3
             className="text-3xl font-bold mb-4 drop-shadow-lg text-green-900"
@@ -218,7 +224,7 @@ const HomePage = () => {
                   className="relative overflow-hidden rounded-xl shadow-2xl border-2 border-white transition-all duration-300 group cursor-pointer h-48"
                   variants={fadeInUp}
                 >
-                  {/* Background Image */}
+                  { }
                   <div
                     className="absolute inset-0 bg-cover bg-center"
                     style={{
@@ -226,12 +232,12 @@ const HomePage = () => {
                     }}
                   ></div>
 
-                  {/* Overlay for better text readability - Green tinted */}
+                  { }
                   <div
                     className="absolute inset-0 bg-green-800/60 from-green-900 via-green-800/80 to-green-700/60 group-hover:from-green-900/90 group-hover:via-green-800/70 transition-all duration-300"
                   ></div>
 
-                  {/* Content */}
+                  { }
                   <div className="relative z-10 h-full flex flex-col items-center justify-center p-6">
                     <div
                       className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl shadow-lg bg-yellow-500 text-green-900"
@@ -250,7 +256,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured Photographers Section */}
+      { }
       <section className="py-16 px-4 text-center bg-gray-50">
         <motion.h3
           className="text-3xl font-bold mb-4 text-green-900"
@@ -309,17 +315,23 @@ const HomePage = () => {
               <div className="flex items-center text-sm font-semibold mb-4 text-green-700">
                 <i className="fas fa-star mr-1"></i> {p.rating} <span className="text-gray-400 ml-1">({p.reviews} reviews)</span>
               </div>
-              <MagneticButton
-                className="px-8 py-2 font-semibold rounded-md text-white transition-all duration-200 hover:shadow-lg w-full bg-green-700"
+              <Link
+                to={ROUTES.USER.PHOTOGRAPHER_DETAILS}
+                params={{ id: p.id }}
+                className="w-full"
               >
-                <span className="relative z-10">View Profile</span>
-              </MagneticButton>
+                <MagneticButton
+                  className="px-8 py-2 font-semibold rounded-md text-white transition-all duration-200 hover:shadow-lg w-full bg-green-700"
+                >
+                  <span className="relative z-10">View Profile</span>
+                </MagneticButton>
+              </Link>
             </motion.div>
           ))}
         </motion.div>
       </section>
 
-      {/* Stats Section */}
+      { }
       <section className="py-16 px-4 text-center bg-white">
         <motion.div
           className="flex flex-wrap justify-center gap-12 md:gap-24 max-w-4xl mx-auto"
@@ -343,7 +355,7 @@ const HomePage = () => {
         </motion.div>
       </section>
 
-      {/* <Footer /> */}
+      { }
     </div>
   );
 };

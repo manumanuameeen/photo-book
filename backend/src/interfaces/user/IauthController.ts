@@ -5,6 +5,7 @@ export interface IAuthController {
   verifyOtp(req: express.Request, res: express.Response): Promise<void>;
   resendOtp(req: express.Request, res: express.Response): Promise<void>;
   login(req: express.Request, res: express.Response): Promise<void>;
+  googleLogin(req: express.Request, res: express.Response): Promise<void>;
   refresh(req: express.Request, res: express.Response): Promise<void>;
   forgetpassword(req: express.Request, res: express.Response): Promise<void>;
   verifyResetOtp(req: express.Request, res: express.Response): Promise<void>;

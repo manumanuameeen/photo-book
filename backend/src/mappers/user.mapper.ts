@@ -7,18 +7,23 @@ export class UserMapper {
     dto.id = user.id;
     dto.name = user.name;
     dto.email = user.email;
-    dto.phone = user.phone;
+    dto.phone = user.phone || "";
     dto.role = user.role;
     dto.walletBalance = user.walletBalance;
     dto.isBlocked = user.isBlocked;
     return dto;
   }
 
-  static toProfileResponse(user: IUser, applicationStatus?: "PENDING" | "APPROVED" | "REJECTED" | "NONE"): UserProfileResponseDto {
+  static toProfileResponse(
+    user: IUser,
+    applicationStatus?: "PENDING" | "APPROVED" | "REJECTED" | "NONE",
+    rejectionReason?: string,
+    approvalMessage?: string,
+  ): UserProfileResponseDto {
     const dto = new UserProfileResponseDto();
     dto.name = user.name;
     dto.email = user.email;
-    dto.phone = user.phone;
+    dto.phone = user.phone || "";
     dto.role = user.role;
     dto.walletBalance = user.walletBalance;
     dto.bio = user.bio;
@@ -27,6 +32,8 @@ export class UserMapper {
     dto.lng = user.lng;
     dto.profileImage = user.profileImage;
     dto.applicationStatus = applicationStatus || "NONE";
+    dto.rejectionReason = rejectionReason;
+    dto.approvalMessage = approvalMessage;
     dto.createdAt = user.createdAt;
     return dto;
   }

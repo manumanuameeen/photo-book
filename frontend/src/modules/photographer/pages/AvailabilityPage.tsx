@@ -4,19 +4,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { availabilityApi } from '../../../services/api/availabilityApi';
+import { photographerApi } from '../../../services/api/photographerApi';
+import { AxiosError } from 'axios';
+
+import type { IAvailability, IAvailabilitySlot } from '../../../types/availability';
+
+import { ROUTES } from '../../../constants/routes';
 
 const AvailabilityPage = () => {
     const router = useRouter();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [availabilities, setAvailabilities] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [availabilities, setAvailabilities] = useState<IAvailability[]>([]);
+    const [settings, setSettings] = useState({ noticeInterval: '24 hours', bufferTime: 'None' });
+
     const [isBlocking, setIsBlocking] = useState(false);
 
-    // Fetch availability for next 3 months
+
     const fetchAvailabilities = async () => {
-        setIsLoading(true);
         try {
             const startStr = new Date().toISOString();
             const end = new Date();
@@ -24,11 +30,17 @@ const AvailabilityPage = () => {
             const endStr = end.toISOString();
             const data = await availabilityApi.getAvailability(startStr, endStr);
             setAvailabilities(data);
+
+            const profile = await photographerApi.getProfile();
+            if (profile?.professionalDetails) {
+                setSettings({
+                    noticeInterval: profile.professionalDetails.noticeInterval || '24 hours',
+                    bufferTime: profile.professionalDetails.bufferTime || 'None'
+                });
+            }
         } catch (error) {
             console.error("Failed to fetch availability", error);
             toast.error("Failed to load availability data");
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -61,8 +73,8 @@ const AvailabilityPage = () => {
 
         if (!avail) return 'AVAILABLE';
 
-        // Check slots for BOOKED status
-        const hasBooking = avail.slots.some((s: any) => s.status === 'BOOKED');
+
+        const hasBooking = avail.slots.some((s: IAvailabilitySlot) => s.status === 'BOOKED');
         if (hasBooking) return 'BOOKED';
 
         if (!avail.isFullDayAvailable) return 'BLOCKED';
@@ -108,15 +120,19 @@ const AvailabilityPage = () => {
             fetchAvailabilities();
             setStartDate('');
             setEndDate('');
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to block dates");
+        } catch (error: unknown) {
+            let errorMessage = "Failed to block dates";
+            if (error instanceof AxiosError) {
+                errorMessage = error.response?.data?.message || errorMessage;
+            }
+            toast.error(errorMessage);
         } finally {
             setIsBlocking(false);
         }
     };
 
-    // --- Modal State ---
-    const [selectedDateInfo, setSelectedDateInfo] = useState<{ date: Date, status: string, availability?: any } | null>(null);
+
+    const [selectedDateInfo, setSelectedDateInfo] = useState<{ date: Date, status: string, availability?: IAvailability } | null>(null);
 
     const handleDateClick = (day: number, month: number, year: number) => {
         const date = new Date(year, month, day);
@@ -149,9 +165,25 @@ const AvailabilityPage = () => {
             });
             toast.success("Availability updated", { id: toastId });
             fetchAvailabilities();
-            setSelectedDateInfo(null); // Close modal
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to update availability", { id: toastId });
+            setSelectedDateInfo(null);
+        } catch (error: unknown) {
+            let errorMessage = "Failed to update availability";
+            if (error instanceof AxiosError) {
+                errorMessage = error.response?.data?.message || errorMessage;
+            }
+            toast.error(errorMessage, { id: toastId });
+        }
+    };
+
+    const handleUpdateSettings = async (type: 'noticeInterval' | 'bufferTime', value: string) => {
+        try {
+            const newSettings = { ...settings, [type]: value };
+            setSettings(newSettings);
+            await availabilityApi.updateSettings(newSettings);
+            toast.success("Settings updated successfully");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to update settings");
         }
     };
 
@@ -202,7 +234,7 @@ const AvailabilityPage = () => {
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Main Calendar View */}
+                    { }
                     <div className="lg:col-span-8 space-y-8">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                             <div className="flex items-center justify-between mb-8">
@@ -258,9 +290,9 @@ const AvailabilityPage = () => {
                         </div>
                     </div>
 
-                    {/* Sidebar Actions */}
+                    { }
                     <div className="lg:col-span-4 space-y-6">
-                        {/* Block Range Card */}
+                        { }
                         <div className="bg-[#1B3C2D] rounded-2xl p-6 text-white shadow-xl shadow-green-900/10">
                             <div className="flex items-center gap-3 mb-6">
                                 <Clock className="text-green-400" size={24} />
@@ -296,7 +328,7 @@ const AvailabilityPage = () => {
                             </div>
                         </div>
 
-                        {/* Settings Card */}
+                        { }
                         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                             <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <Info className="text-green-700" size={20} />
@@ -305,9 +337,13 @@ const AvailabilityPage = () => {
                             <div className="space-y-6">
                                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <label className="block text-xs font-bold text-gray-700 mb-2">Notice Interval</label>
-                                    <select className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none">
+                                    <select
+                                        value={settings.noticeInterval}
+                                        onChange={(e) => handleUpdateSettings('noticeInterval', e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none"
+                                    >
                                         <option>12 hours</option>
-                                        <option>24 hours (Default)</option>
+                                        <option>24 hours</option>
                                         <option>48 hours</option>
                                         <option>72 hours</option>
                                         <option>1 Week</option>
@@ -316,7 +352,11 @@ const AvailabilityPage = () => {
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <label className="block text-xs font-bold text-gray-700 mb-2">Post-Session Buffer</label>
-                                    <select className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none">
+                                    <select
+                                        value={settings.bufferTime}
+                                        onChange={(e) => handleUpdateSettings('bufferTime', e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none"
+                                    >
                                         <option>None</option>
                                         <option>30 minutes</option>
                                         <option>1 hour</option>
@@ -331,7 +371,7 @@ const AvailabilityPage = () => {
                     </div>
                 </div>
 
-                {/* Modal for Date Action */}
+                { }
                 {selectedDateInfo && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedDateInfo(null)}>
                         <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl" onClick={e => e.stopPropagation()}>
@@ -353,7 +393,8 @@ const AvailabilityPage = () => {
                                     <p className="text-sm text-gray-600 mb-2">This date is booked.</p>
                                     <p className="text-xs text-gray-400">To manage this booking, please visit your Bookings Dashboard.</p>
                                     <button
-                                        onClick={() => router.navigate({ to: '/photographer/bookings' } as any)}
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        onClick={() => router.navigate({ to: ROUTES.PHOTOGRAPHER.BOOKINGS })}
                                         className="mt-4 text-green-700 text-sm font-bold hover:underline"
                                     >
                                         Go to Bookings
@@ -396,7 +437,7 @@ const AvailabilityPage = () => {
                 )}
 
 
-                {/* Legend/Info footer */}
+                { }
                 <footer className="bg-orange-50/50 border border-orange-100 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
                     <div className="flex items-center gap-3 text-orange-800">
                         <AlertCircle size={24} />

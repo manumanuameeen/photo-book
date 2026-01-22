@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-
 export interface IPhotographer extends Document {
   userId: mongoose.Types.ObjectId;
   personalInfo: {
@@ -29,6 +28,7 @@ export interface IPhotographer extends Document {
   isBlock: boolean;
   status: "PENDING" | "APPROVED" | "REJECTED";
   rejectionReason?: string;
+  approvalMessage?: string;
   createdAt: Date;
 }
 const PhotographerSchema: Schema = new Schema(
@@ -60,6 +60,7 @@ const PhotographerSchema: Schema = new Schema(
     isBlock: { type: Boolean, default: false },
     status: { type: String, enum: ["PENDING", "APPROVED", "REJECTED"], default: "PENDING" },
     rejectionReason: { type: String },
+    approvalMessage: { type: String },
   },
   { timestamps: true },
 );

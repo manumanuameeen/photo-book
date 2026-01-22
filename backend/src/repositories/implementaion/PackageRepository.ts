@@ -1,14 +1,19 @@
-import { BaseRepository } from "../base/BaseRepository";
+import { BaseRepository } from "../base/BaseRepository.ts";
 import mongoose from "mongoose";
-import { BookingPackageModel, IBookingPackage } from "../../model/bookingPackageModel";
-import { IPackageRepository } from "../interface/IPackageRepository";
+import { BookingPackageModel, IBookingPackage } from "../../model/bookingPackageModel.ts";
+import { IPackageRepository } from "../../interfaces/repositories/IPackageRepository.ts";
 
-export class PackageRepository extends BaseRepository<IBookingPackage> implements IPackageRepository {
-    constructor() {
-        super(BookingPackageModel);
-    }
+export class PackageRepository
+  extends BaseRepository<IBookingPackage>
+  implements IPackageRepository
+{
+  constructor() {
+    super(BookingPackageModel);
+  }
 
-    async findByPhotographerId(photographerId: string): Promise<IBookingPackage[]> {
-        return await this._model.find({ photographer: new mongoose.Types.ObjectId(photographerId) }).exec();
-    }
+  async findByPhotographerId(photographerId: string): Promise<IBookingPackage[]> {
+    return await this._model
+      .find({ photographer: new mongoose.Types.ObjectId(photographerId) })
+      .exec();
+  }
 }

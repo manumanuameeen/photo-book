@@ -31,7 +31,7 @@ import { SmallLocationPicker } from "../../../components/MapLocationPicker";
 import { BaseButton } from "../../../components/BaseButton";
 import { userApi } from "../../../services/api/userApi";
 
-// --- Validation Schemas ---
+
 const profileSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters").trim(),
     phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
@@ -63,19 +63,19 @@ const EditProfilePage = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [isOtpVerified, setIsOtpVerified] = useState(false);
 
-    // --- Queries & Mutations ---
+    
     const { data: user, isLoading: isUserLoading } = useProfile();
     const updateProfileMutation = useUpdateProfile();
     const changePasswordMutation = useChangePassword();
     const initiateChangePasswordMutation = useInitiateChangePassword();
     const verifyOtpMutation = useVerifyOtp();
 
-    // --- Forms ---
+    
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
     });
 
-    // Update form values when user data loads
+    
     useEffect(() => {
         if (user) {
             profileForm.reset({
@@ -93,17 +93,17 @@ const EditProfilePage = () => {
         resolver: zodResolver(passwordSchema),
     });
 
-    // --- Handlers ---
+    
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Basic validation
+        
         if (!file.type.startsWith("image/")) {
             toast.error("Please select an image file");
             return;
         }
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        if (file.size > 5 * 1024 * 1024) { 
             toast.error("Image size should be less than 5MB");
             return;
         }
@@ -185,7 +185,7 @@ const EditProfilePage = () => {
     };
 
     const handleCancel = () => {
-        // Navigate back - determine where based on role or simple navigate back
+        
         navigate({ to: ROUTES.USER.PROFILE });
     };
 
@@ -209,7 +209,7 @@ const EditProfilePage = () => {
                     <span className="font-medium">Back to Profile</span>
                 </button>
 
-                {/* Header */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -232,7 +232,7 @@ const EditProfilePage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
 
-                    {/* Sidebar / Tabs */}
+                    {}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -261,7 +261,7 @@ const EditProfilePage = () => {
                         </button>
                     </motion.div>
 
-                    {/* Content Area */}
+                    {}
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -279,7 +279,7 @@ const EditProfilePage = () => {
                                         className="space-y-6"
                                     >
                                         <div className="flex items-start gap-6 border-b border-gray-100 pb-6 mb-6">
-                                            {/* Avatar Placeholder */}
+                                            {}
                                             <div className="relative w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-white shadow-md group">
                                                 {user?.profileImage ? (
                                                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
@@ -307,7 +307,7 @@ const EditProfilePage = () => {
                                         </div>
 
                                         <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                                            {/* Name */}
+                                            {}
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Full Name</label>
                                                 <div className="relative">
@@ -325,7 +325,7 @@ const EditProfilePage = () => {
                                                 )}
                                             </div>
 
-                                            {/* Email (Read Only) */}
+                                            {}
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Email Address</label>
                                                 <div className="relative opacity-60 cursor-not-allowed">
@@ -339,7 +339,7 @@ const EditProfilePage = () => {
                                                 <p className="text-xs text-gray-400">Email cannot be changed directly.</p>
                                             </div>
 
-                                            {/* Phone */}
+                                            {}
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Phone Number</label>
                                                 <div className="relative">
@@ -357,11 +357,11 @@ const EditProfilePage = () => {
                                                 )}
                                             </div>
 
-                                            {/* Location */}
+                                            {}
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Location</label>
 
-                                                {/* Map Picker Integration */}
+                                                {}
                                                 <SmallLocationPicker
                                                     label="Select Your Location"
                                                     initialLat={profileForm.watch('lat') || undefined}
@@ -375,7 +375,7 @@ const EditProfilePage = () => {
                                                 <div className="relative mt-2">
                                                     <input
                                                         {...profileForm.register('location')}
-                                                        readOnly // Location set by picker usually
+                                                        readOnly 
                                                         className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-600 outline-none"
                                                         placeholder="Selected location will appear here"
                                                     />
@@ -383,7 +383,7 @@ const EditProfilePage = () => {
                                             </div>
 
 
-                                            {/* Bio */}
+                                            {}
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Bio</label>
                                                 <textarea
@@ -446,7 +446,7 @@ const EditProfilePage = () => {
                                             )}
 
                                             <div className={otpSent ? "opacity-100 transition-opacity duration-500" : "opacity-40 pointer-events-none grayscale transition-all duration-500"}>
-                                                {/* OTP Input */}
+                                                {}
                                                 <div className="mb-6">
                                                     <label className="text-sm font-medium text-gray-700 block mb-2">Verification Code (OTP)</label>
                                                     <div className="flex gap-2">
@@ -481,7 +481,7 @@ const EditProfilePage = () => {
 
                                                 <hr className="border-gray-100 mb-6" />
 
-                                                {/* Current Password */}
+                                                {}
                                                 <div className="grid gap-2">
                                                     <label className="text-sm font-medium text-gray-700">Current Password</label>
                                                     <div className="relative">
@@ -501,7 +501,7 @@ const EditProfilePage = () => {
                                                     )}
                                                 </div>
 
-                                                {/* New Password */}
+                                                {}
                                                 <div className="grid gap-2 mt-4">
                                                     <label className="text-sm font-medium text-gray-700">New Password</label>
                                                     <div className="relative">
@@ -521,7 +521,7 @@ const EditProfilePage = () => {
                                                     )}
                                                 </div>
 
-                                                {/* Confirm Password */}
+                                                {}
                                                 <div className="grid gap-2 mt-4">
                                                     <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
                                                     <div className="relative">

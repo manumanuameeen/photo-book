@@ -26,23 +26,23 @@ const activities: ActivityItem[] = [
 const DashboardLayout: React.FC = () => {
   return (
     <div className="space-y-6">
-      {/* Top Metrics */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {topMetrics.map((data, index) => (
           <MetricCard key={index} data={data} />
         ))}
       </div>
       
-      {/* Small Metrics */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {smallMetrics.map((data, index) => (
           <MetricCard key={index} data={data} />
         ))}
       </div>
 
-      {/* Charts and Alerts */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Charts Section */}
+        {}
         <div className="col-span-1 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-md h-64">
             <h4 className="text-lg font-semibold text-gray-700 mb-4">Monthly Income</h4>
@@ -54,7 +54,7 @@ const DashboardLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Alerts Section */}
+        {}
         <div className="col-span-1 lg:col-span-2 space-y-4">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h4 className="text-lg font-semibold text-gray-700 mb-4">Alerts & Notifications</h4>
@@ -75,7 +75,7 @@ const DashboardLayout: React.FC = () => {
         </div>
       </div>
       
-      {/* Recent Activity */}
+      {}
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h4 className="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

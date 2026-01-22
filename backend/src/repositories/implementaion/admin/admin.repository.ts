@@ -1,5 +1,6 @@
-import { User } from "../../../model/userModel.ts";
-import type { IAdminRepository } from "../../interface/IAdminReporitory.ts";
+import { User, IUser } from "../../../model/userModel.ts";
+import { BaseRepository } from "../../base/BaseRepository.ts";
+import type { IAdminRepository } from "../../../interfaces/repositories/IAdminRepository.ts";
 import type {
   IUserResponse,
   IAdminUserQuery,
@@ -7,7 +8,10 @@ import type {
 } from "../../../interfaces/admin/IAdminUser.interface.ts";
 import { AdminMapper } from "../../../mappers/admin.mapper.ts";
 
-export class AdminRepository implements IAdminRepository {
+export class AdminRepository extends BaseRepository<IUser> implements IAdminRepository {
+  constructor() {
+    super(User);
+  }
 
   async getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
     const { limit, page, search, sort, isBlocked } = query;
@@ -15,7 +19,7 @@ export class AdminRepository implements IAdminRepository {
 
     const roleFilter = { role: { $nin: ["admin", "photographer"] } };
 
-    let filterQuery: any = { ...roleFilter };
+    const filterQuery: any = { ...roleFilter };
 
     if (search) {
       filterQuery.name = { $regex: search, $options: "i" };
@@ -25,15 +29,18 @@ export class AdminRepository implements IAdminRepository {
       filterQuery.isBlocked = isBlocked === "true";
     }
 
-    const users = await User.find(filterQuery)
+    const users = await this._model
+      .find(filterQuery)
       .sort({ [sort]: 1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    const formatedUser: IUserResponse[] = users.map(AdminMapper.toUserResponse);
+    const formatedUser: IUserResponse[] = (users as unknown as IUser[]).map(
+      AdminMapper.toUserResponse,
+    );
 
-    const total = await User.countDocuments(filterQuery);
+    const total = await this._model.countDocuments(filterQuery);
 
     return {
       users: formatedUser,
@@ -44,7 +51,7 @@ export class AdminRepository implements IAdminRepository {
   }
 
   async getUser(userId: string): Promise<IUserResponse | null> {
-    const user = await User.findById(userId).lean();
+    const user = await this._model.findById(userId).lean();
     if (!user) return null;
 
     return {
@@ -57,7 +64,9 @@ export class AdminRepository implements IAdminRepository {
   }
 
   async blockUser(userId: string): Promise<IUserResponse | null> {
-    const user = await User.findByIdAndUpdate(userId, { isBlocked: true }, { new: true }).lean();
+    const user = await this._model
+      .findByIdAndUpdate(userId, { isBlocked: true }, { new: true })
+      .lean();
     if (!user) return null;
 
     return {
@@ -70,7 +79,9 @@ export class AdminRepository implements IAdminRepository {
   }
 
   async unblockUser(userId: string): Promise<IUserResponse | null> {
-    const user = await User.findByIdAndUpdate(userId, { isBlocked: false }, { new: true }).lean();
+    const user = await this._model
+      .findByIdAndUpdate(userId, { isBlocked: false }, { new: true })
+      .lean();
     if (!user) return null;
 
     return {

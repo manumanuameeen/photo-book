@@ -37,18 +37,18 @@ const PhotographerSearch = () => {
     const [activeTab, setActiveTab] = useState<'individual' | 'groups'>('individual');
     const { user } = useAuthStore();
 
-    // State for real data
+
     const [photographers, setPhotographers] = useState<Photographer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Filters state
+
     const [searchQuery, setSearchQuery] = useState('');
     const [category, setCategory] = useState('All Categories');
     const [priceRange, setPriceRange] = useState('All Prices');
     const [location, setLocation] = useState('All Locations');
 
-    // Geolocation state
+
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [isLocating, setIsLocating] = useState(false);
 
@@ -57,14 +57,14 @@ const PhotographerSearch = () => {
             setIsLoading(true);
             setError(null);
 
-            // Use passed location or current state userLocation
+
             const locToUse = forcedLocation !== undefined ? forcedLocation : userLocation;
 
             const filters: PhotographerFilter = {};
             if (category !== 'All Categories') filters.category = category;
             if (priceRange !== 'All Prices') filters.priceRange = priceRange;
 
-            // Prioritize coordinates if available
+
             if (locToUse) {
                 filters.lat = locToUse.lat;
                 filters.lng = locToUse.lng;
@@ -74,7 +74,7 @@ const PhotographerSearch = () => {
 
             const data = await userPhotographerApi.getPhotographers(filters);
             setPhotographers(data);
-        } catch (err: any) {
+        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error("Failed to fetch photographers:", err);
             const errorMessage = err.response?.data?.message || err.message || "Failed to load photographers. Please try again later.";
             setError(errorMessage);
@@ -95,9 +95,9 @@ const PhotographerSearch = () => {
                 const { latitude, longitude } = position.coords;
                 const newLoc = { lat: latitude, lng: longitude };
                 setUserLocation(newLoc);
-                setLocation('All Locations'); // Reset text filter
+                setLocation('All Locations');
                 setIsLocating(false);
-                // Trigger fetch immediately with new location
+
                 fetchPhotographers(newLoc);
                 toast.success("Found your location!");
             },
@@ -109,7 +109,7 @@ const PhotographerSearch = () => {
         );
     };
 
-    // If location dropdown changes, clear userLocation so we use text search
+
     useEffect(() => {
         if (location !== 'All Locations') {
             setUserLocation(null);
@@ -134,7 +134,7 @@ const PhotographerSearch = () => {
                 (p.name?.toLowerCase() || '').includes(query) ||
                 (p.category?.toLowerCase() || '').includes(query) ||
                 (p.location?.toLowerCase() || '').includes(query) ||
-                (p.tags && p.tags.some(tag => (tag?.toLowerCase() || '').includes(query)))
+                (p.tags?.some(tag => (tag?.toLowerCase() || '').includes(query)))
             );
         }
         return true;
@@ -156,7 +156,7 @@ const PhotographerSearch = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
-                {/* Filter Bar */}
+                { }
                 <div className="bg-white rounded-xl shadow-xl p-4 md:p-6 mb-10 border border-gray-100">
                     <div className="flex flex-col lg:flex-row gap-4 mb-4">
                         <div className="flex-grow relative">
@@ -253,7 +253,7 @@ const PhotographerSearch = () => {
                     </div>
                 </div>
 
-                {/* Tabs */}
+                { }
                 <div className="flex gap-8 mb-8 border-b border-gray-200">
                     <button
                         onClick={() => setActiveTab('individual')}
@@ -275,7 +275,7 @@ const PhotographerSearch = () => {
                     </button>
                 </div>
 
-                {/* Content Area */}
+                { }
                 {isLoading ? (
                     <div className="flex justify-center items-center py-20">
                         <Loader />
@@ -358,11 +358,11 @@ const PhotographerSearch = () => {
                                     <div className="flex gap-3 mt-auto">
                                         <button
                                             onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: photographer.id } })}
-                                            className={`px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm ${user?.role !== 'photographer' ? 'flex-1' : 'w-full'}`}
+                                            className={`px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm ${!isPhotographerClient ? 'flex-1' : 'w-full'}`}
                                         >
                                             View Profile
                                         </button>
-                                        {user?.role !== 'photographer' && (
+                                        {!isPhotographerClient && (
                                             <button
                                                 onClick={() => toast.success(`Booking ${photographer.name}`)}
                                                 className="flex-1 px-4 py-2 bg-[#1E5631] text-white font-medium rounded-lg hover:bg-[#164024] transition-colors text-sm"

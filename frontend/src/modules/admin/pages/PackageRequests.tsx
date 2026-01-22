@@ -36,7 +36,7 @@ const PackageRequests = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedPackage, setSelectedPackage] = useState<IPackage | null>(null);
 
-    // Filters
+    
     const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
     useEffect(() => {

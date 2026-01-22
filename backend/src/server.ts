@@ -1,12 +1,22 @@
+console.log("✅ server.ts started executing");
+console.log("🔥 TOP OF server.ts EXECUTED");
+
 import dotenv from "dotenv";
+console.log("🚀 server.ts script execution started...");
 dotenv.config();
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
 
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.ts";
-import swaggerUi from "swagger-ui-express";
-import { swaggerSpec } from "./config/swagger.ts";
 import morganLogger from "./middleware/morganLogger.ts";
 import authRoutes from "./routes/auth.routes.ts";
 import adminRoute from "./routes/admin.route.ts";
@@ -14,9 +24,11 @@ import userRoute from "./routes/user.routes.ts";
 import photoRoute from "./routes/photographer.routes.ts";
 import bookingRoute from "./routes/booking.routes.ts";
 import messageRoute from "./routes/message.routes.ts";
+import walletRoute from "./routes/wallet.routes.ts";
+import rentalRoute from "./routes/rental.routes.ts";
 import { errorHandler } from "./middleware/errorMiddleware.ts";
 import { ROUTES } from "./constants/routes.ts";
-import { CronService } from "./services/common/CronService.ts";
+// import { CronService } from "./services/common/CronService.ts";
 
 const app = express();
 const PORT = 5000;
@@ -31,22 +43,43 @@ app.use(
   }),
 );
 app.use(express.json());
-connectDB();
 
+console.log("⏳ Connecting to MongoDB...");
+try {
+  await connectDB();
+  console.log("✅ connectDB() executed.");
+} catch (e) {
+  console.error("❌ Critical DB Connection Error catch in server.ts:", e);
+}
+
+app.get("/", (req, res) => {
+  res.send(" Backend server is running successfully!");
+});
+
+console.log("➡️ Mounting Routes...");
 app.use(ROUTES.V1.AUTH.BASE, authRoutes);
 app.use(ROUTES.V1.ADMIN.BASE, adminRoute);
 app.use(ROUTES.V1.USER.BASE, userRoute);
 app.use(ROUTES.V1.PHOTOGRAPHER.BASE, photoRoute);
 app.use(ROUTES.V1.BOOKING.BASE, bookingRoute);
 app.use(ROUTES.V1.MESSAGE.BASE, messageRoute);
-import paymentRoute from "./routes/payment.routes.ts";
-app.use(ROUTES.V1.PAYMENT.BASE, paymentRoute);
-import walletRoute from "./routes/wallet.routes.ts";
-app.use(ROUTES.V1.WALLET.BASE, walletRoute);
-app.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(ROUTES.V1.RENTAL.BASE, rentalRoute);
+app.use("/api/v1/wallet", walletRoute);
+console.log("✅ Routes mounted.");
 
+console.log("➡️ Initializing CronService...");
+import { CronService } from "./services/common/CronService.ts";
 
-CronService.init();
+// ...
+
+// console.log("➡️ Initializing CronService...");
+try {
+  const { container } = await import("./di/container.ts");
+  CronService.init(container.bookingService);
+  console.log("✅ CronService initialized.");
+} catch (error) {
+  console.error("❌ CronService Initialization Failed:", error);
+}
 
 app.use(errorHandler);
 
@@ -54,6 +87,7 @@ app.get("/", (req, res) => {
   res.send(" Backend server is running successfully!");
 });
 
+console.log("➡️ Starting Server...");
 app.listen(PORT, async () => {
   console.log(`✅Server is running at http://localhost:${PORT}`);
 });

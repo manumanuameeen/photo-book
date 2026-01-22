@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CloudUpload, Edit2, Plus, CheckCircle, Image as ImageIcon, Trash2, X, FolderPlus, ArrowLeft } from 'lucide-react';
+import { Plus, Image as ImageIcon, Trash2, X, FolderPlus, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { portfolioApi, type IPortfolioSection } from '../../../services/api/portfolioApi';
 import { toast } from 'sonner';
@@ -8,7 +8,17 @@ import { ROUTES } from '../../../constants/routes';
 
 const SectionCard = ({ section, onDelete, onSelect }: { section: IPortfolioSection, onDelete: (id: string) => void, onSelect: (section: IPortfolioSection) => void }) => {
     return (
-        <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group relative" onClick={() => onSelect(section)}>
+        <div
+            className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group relative"
+            onClick={() => onSelect(section)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    onSelect(section);
+                }
+            }}
+        >
             <div className="aspect-video bg-gray-100 rounded-lg mb-3 overflow-hidden">
                 {section.coverImage || section.images[0] ? (
                     <img src={section.coverImage || section.images[0]} alt={section.title} className="w-full h-full object-cover" />
@@ -44,7 +54,7 @@ const ImageGrid = ({ images, onDelete, onAdd }: { images: string[], onDelete: (u
                 return;
             }
             onAdd(files);
-            // Reset input value to allow selecting same files again if needed
+
             e.target.value = '';
         }
     };
@@ -75,7 +85,6 @@ const ImageGrid = ({ images, onDelete, onAdd }: { images: string[], onDelete: (u
 const PortfolioManager = () => {
     const navigate = useNavigate();
     const [sections, setSections] = useState<IPortfolioSection[]>([]);
-    const [loading, setLoading] = useState(true);
     const [selectedSection, setSelectedSection] = useState<IPortfolioSection | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [newSectionTitle, setNewSectionTitle] = useState("");
@@ -89,9 +98,8 @@ const PortfolioManager = () => {
             const data = await portfolioApi.getSections();
             setSections(data);
         } catch (error) {
+            console.error(error);
             toast.error("Failed to load portfolio sections");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -104,6 +112,7 @@ const PortfolioManager = () => {
             setIsCreating(false);
             loadSections();
         } catch (error) {
+            console.error(error);
             toast.error("Failed to create section");
         }
     };
@@ -116,6 +125,7 @@ const PortfolioManager = () => {
             loadSections();
             if (selectedSection?._id === id) setSelectedSection(null);
         } catch (error) {
+            console.error(error);
             toast.error("Failed to delete section");
         }
     };
@@ -129,21 +139,21 @@ const PortfolioManager = () => {
         let currentSectionState = selectedSection;
 
         try {
-            // Process sequentially to avoid overwhelming backend or race conditions on the section update
+
             for (const file of files) {
                 try {
                     const updated = await portfolioApi.addImage(currentSectionState._id, file);
-                    currentSectionState = updated; // Update state tracking for next iteration
+                    currentSectionState = updated;
                     successCount++;
                 } catch (err) {
                     console.error("Single image upload failed", err);
-                    // Continue uploading others even if one fails
+
                 }
             }
 
-            // Final state update
+
             setSelectedSection(currentSectionState);
-            setSections(sections.map(s => s._id === currentSectionState._id ? currentSectionState : s)); // Use currentSectionState._id instead of updated._id which is out of scope
+            setSections(sections.map(s => s._id === currentSectionState._id ? currentSectionState : s));
 
             if (successCount === files.length) {
                 toast.success(`Successfully added ${successCount} images`, { id: toastId });
@@ -154,6 +164,7 @@ const PortfolioManager = () => {
             }
 
         } catch (error: any) {
+            console.error(error);
             toast.error("Error during upload process", { id: toastId });
         }
     };
@@ -166,6 +177,7 @@ const PortfolioManager = () => {
             setSections(sections.map(s => s._id === updated._id ? updated : s));
             toast.success("Image removed");
         } catch (error) {
+            console.error(error);
             toast.error("Failed to remove image");
         }
     };
@@ -193,6 +205,13 @@ const PortfolioManager = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div
                         onClick={() => setIsCreating(true)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                setIsCreating(true);
+                            }
+                        }}
                         className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-green-500 hover:bg-green-50/10 transition-all min-h-[200px]"
                     >
                         <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-3">

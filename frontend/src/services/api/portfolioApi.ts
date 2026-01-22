@@ -27,8 +27,8 @@ export const portfolioApi = {
         if (image instanceof File) {
             const formData = new FormData();
             formData.append('image', image);
-            // payload = formData;
-            // When sending FormData, axios/client usually handles headers, but if using custom client, ensure content-type is set
+            
+            
             const response = await apiClient.post(`/photographer/portfolio/section/${sectionId}/image`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });

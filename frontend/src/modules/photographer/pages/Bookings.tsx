@@ -47,13 +47,11 @@ const Bookings = () => {
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto space-y-6">
 
-                {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Booking Requests</h1>
                         <p className="text-sm text-gray-500">Manage your client bookings and schedule.</p>
                     </div>
-                    {/* Filter Tabs */}
                     <div className="flex bg-white p-1 rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
                         {tabs.map(tab => (
                             <button
@@ -70,7 +68,6 @@ const Bookings = () => {
                     </div>
                 </div>
 
-                {/* Content */}
                 {isLoading ? (
                     <div className="flex justify-center py-20">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-700"></div>
@@ -94,14 +91,12 @@ const Bookings = () => {
                                 >
                                     <div className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
 
-                                        {/* Date Block */}
                                         <div className="md:col-span-2 flex flex-col items-center justify-center p-3 bg-gray-50 rounded-lg text-center">
                                             <span className="text-xs font-bold text-gray-500 uppercase">{format(new Date(booking.eventDate), 'MMM')}</span>
                                             <span className="text-2xl font-bold text-gray-900">{format(new Date(booking.eventDate), 'dd')}</span>
                                             <span className="text-[10px] text-gray-400">{format(new Date(booking.eventDate), 'EEE')}</span>
                                         </div>
 
-                                        {/* Main Info */}
                                         <div className="md:col-span-5 space-y-2">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className={clsx("px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide", statusColors[booking.status || 'pending'])}>
@@ -122,7 +117,6 @@ const Bookings = () => {
                                             </div>
                                         </div>
 
-                                        {/* Client Info */}
                                         <div className="md:col-span-3 flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
                                                 {booking.clientImage ? (
@@ -137,12 +131,11 @@ const Bookings = () => {
                                             </div>
                                         </div>
 
-                                        {/* Price & Actions */}
                                         <div className="md:col-span-2 flex flex-col items-end gap-2">
                                             <div className="text-right">
                                                 <p className="text-lg font-bold text-[#2E7D46]">${booking.packagePrice.toLocaleString()}</p>
                                                 {booking.paymentStatus === 'deposit_paid' && (
-                                                    <p className="text-[10px] text-red-500 font-medium">Pending: ${(booking.packagePrice - (booking.packagePrice * 0.20)).toLocaleString()}</p>
+                                                    <p className="text-[10px] text-red-500 font-medium">Pending: ${(booking.packagePrice - (booking.packagePrice * 0.2)).toLocaleString()}</p>
                                                 )}
                                                 <p className="text-[10px] text-gray-400 capitalize">{booking.paymentStatus.replace('_', ' ')}</p>
                                             </div>
@@ -160,10 +153,7 @@ const Bookings = () => {
                                         </div>
                                     </div>
 
-                                    {/* Action Bar */}
                                     <div className="bg-gray-50 px-6 py-3 flex justify-end gap-3 border-t border-gray-100">
-                                        {/* Common Action: View Details */}
-                                        {/* Common Action: View Details */}
                                         {booking._id ? (
                                             <Link
                                                 to={ROUTES.PHOTOGRAPHER.BOOKING_DETAILS}
@@ -180,18 +170,17 @@ const Bookings = () => {
                                             </button>
                                         )}
 
-                                        {/* Status Specific Actions */}
                                         {booking.status === 'pending' && (
                                             <>
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); rejectBooking.mutate(booking._id); }}
+                                                    onClick={(e) => { e.stopPropagation(); rejectBooking.mutate({ id: booking._id, message: '' }); }}
                                                     disabled={rejectBooking.isPending || acceptBooking.isPending}
                                                     className="px-4 py-1.5 bg-white border border-red-200 text-red-600 rounded-md text-xs font-bold hover:bg-red-50 disabled:opacity-50"
                                                 >
                                                     {rejectBooking.isPending ? 'Rejecting...' : 'Reject'}
                                                 </button>
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); acceptBooking.mutate(booking._id); }}
+                                                    onClick={(e) => { e.stopPropagation(); acceptBooking.mutate({ id: booking._id, message: '' }); }}
                                                     disabled={rejectBooking.isPending || acceptBooking.isPending}
                                                     className="px-4 py-1.5 bg-[#2E7D46] text-white rounded-md text-xs font-bold hover:bg-green-700 shadow-sm disabled:opacity-50"
                                                 >
@@ -202,7 +191,7 @@ const Bookings = () => {
 
                                         {booking.status === 'accepted' && (
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); rejectBooking.mutate(booking._id); }} // Using reject as cancel for simplicity
+                                                onClick={(e) => { e.stopPropagation(); rejectBooking.mutate({ id: booking._id, message: 'Cancelled by photographer' }); }}
                                                 disabled={rejectBooking.isPending}
                                                 className="px-4 py-1.5 bg-white border border-red-200 text-red-600 rounded-md text-xs font-bold hover:bg-red-50 disabled:opacity-50"
                                             >
@@ -214,7 +203,6 @@ const Bookings = () => {
                             ))
                         )}
 
-                        {/* Pagination */}
                         {data?.pagination && data.pagination.totalPages > 1 && (
                             <div className="flex justify-center items-center gap-2 mt-6">
                                 <button

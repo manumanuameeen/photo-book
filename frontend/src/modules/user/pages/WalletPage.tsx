@@ -10,7 +10,7 @@ export function WalletPage() {
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
     const [showAddFunds, setShowAddFunds] = useState(false);
-    const [amountToAdd, setAmountToAdd] = useState(100); // Default amount
+    const [amountToAdd, setAmountToAdd] = useState(100); 
 
     useEffect(() => {
         fetchWalletDetails();
@@ -20,7 +20,7 @@ export function WalletPage() {
         try {
             const data = await walletApi.getWalletDetails();
             setBalance(data.balance || 0);
-            // Sort transactions by date desc if not already
+            
             const sortedTx = (data.transactions || []).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
             setTransactions(sortedTx);
         } catch (error) {
@@ -29,19 +29,19 @@ export function WalletPage() {
         }
     };
 
-    // Wait, I need to check CheckoutForm logic. 
-    // It calls `paymentApi.confirmPayment` inside `handleSubmit`.
-    // But `CheckoutForm` is hardcoded to call `paymentApi.confirmPayment`?
-    // If `CheckoutForm` is reused, how do I distinguish Booking vs Wallet Topup?
-    // `CheckoutForm` takes `onSuccess`. 
-    // Ah, CheckoutForm calls `paymentApi.confirmPayment` which calls `/payment/confirm`.
-    // That endpoint credits the wallet (PaymentController).
-    // This is PERFECT for Wallet Topup.
-    // For Booking, we used `bookingApi.confirmPayment` which is different endpoint `/booking/:id/confirm-payment`.
-    // So `CheckoutForm` needs to know WHICH API to call.
-    // Currently `CheckoutForm` imports `paymentApi` directly.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    // I need to Update `CheckoutForm` to accept an `onConfirm` prop or similar, OR strict reuse logic.
+    
 
     return (
         <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -50,7 +50,7 @@ export function WalletPage() {
             </h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Balance Card */}
+                {}
                 <div className="bg-gradient-to-br from-green-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
                     <div className="text-green-100 text-sm font-medium mb-1">Total Balance</div>
                     <div className="text-4xl font-bold mb-6">${balance.toFixed(2)}</div>
@@ -62,7 +62,7 @@ export function WalletPage() {
                     </button>
                 </div>
 
-                {/* Recent Activity */}
+                {}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 max-h-[400px] overflow-y-auto custom-scrollbar">
                     <div className="text-gray-500 text-sm font-medium mb-4 flex items-center gap-2 sticky top-0 bg-white pb-2 z-10">
                         <History size={16} /> Recent Activity
@@ -92,7 +92,7 @@ export function WalletPage() {
                 </div>
             </div>
 
-            {/* Add Funds Modal */}
+            {}
             {showAddFunds && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-xl p-6 w-full max-w-md relative">

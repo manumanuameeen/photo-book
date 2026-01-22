@@ -5,7 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useForgetPassword } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
-// import type { ApiError } from '../../types/apiError';
+
 import { getErrorMessage } from '../../../../utils/errorhandler';
 import { ROUTES } from '../../../../constants/routes';
 
@@ -21,7 +21,7 @@ const ForgotPassword: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !email.trim()) {
       toast.error('Please enter a valid email address.');
       return;
@@ -33,22 +33,22 @@ const ForgotPassword: React.FC = () => {
       return;
     }
 
-    // console.log("Submitting forget password for:", email.trim().toLowerCase());
+
 
     forgetPasswordMutation.mutate(
-      { email: email.trim().toLowerCase() }, 
+      { email: email.trim().toLowerCase() },
       {
         onSuccess: (response) => {
-        //   console.log("✅ Forget password success:", response);
+
           toast.success(response.message || "Reset code sent to your email!");
-          
+
           const normalizedEmail = email.trim().toLowerCase();
           sessionStorage.setItem('resetPasswordEmail', normalizedEmail);
           console.log("📧 Stored email in sessionStorage:", normalizedEmail);
-          
+
           setTimeout(() => {
             console.log("🔄 Navigating to /auth/reset-otp");
-            navigate({ to: "/auth/reset-otp" });
+            navigate({ to: ROUTES.AUTH.RESET_OTP });
           }, 1000);
         },
         onError: (error: unknown) => {
@@ -64,8 +64,8 @@ const ForgotPassword: React.FC = () => {
     <div className="min-h-screen bg-white flex items-center justify-center p-3">
       <Toaster position="top-center" reverseOrder={false} />
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
-        
-        {/* Green Panel */}
+
+        { }
         <div
           className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
           style={{ backgroundColor: Colors.darkGreen }}
@@ -84,7 +84,7 @@ const ForgotPassword: React.FC = () => {
           </div>
         </div>
 
-        {/* Form Panel */}
+        { }
         <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
           <div className="flex items-center mb-4">
             <img
@@ -135,7 +135,7 @@ const ForgotPassword: React.FC = () => {
 
           <div className="text-center pt-4">
             <button
-              onClick={() => navigate({ to: ROUTES.AUTH.LOGIN})}
+              onClick={() => navigate({ to: ROUTES.AUTH.LOGIN })}
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150"
             >
               &larr; Back to Login

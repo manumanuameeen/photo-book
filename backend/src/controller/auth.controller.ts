@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import type { IAuthController } from "../interfaces/user/IauthController.ts";
-import type { IAuthService } from "../services/user/auth/IAuthService.ts";
+import type { IAuthService } from "../interfaces/services/IAuthService.ts";
 import {
   ForgetPasswordDto,
   LoginDto,
@@ -77,7 +77,28 @@ export class AuthController implements IAuthController {
       const input = this._validate(LoginDto, req.body);
       const result = await this._authService.login(input);
       this._setCookies(res, result.accessToken, result.refreshToken);
-      ApiResponse.success(res,{user: UserMapper.toAuthResponse(result.user),},Messages.LOGIN_SUCCESS,);
+      ApiResponse.success(
+        res,
+        { user: UserMapper.toAuthResponse(result.user) },
+        Messages.LOGIN_SUCCESS,
+      );
+    } catch (error: unknown) {
+      this._handleError(res, error);
+    }
+  };
+
+  googleLogin = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { token } = req.body;
+      if (!token) throw new AppError("Google token is required", HttpStatus.BAD_REQUEST);
+
+      const result = await this._authService.googleLogin(token);
+      this._setCookies(res, result.accessToken, result.refreshToken);
+      ApiResponse.success(
+        res,
+        { user: UserMapper.toAuthResponse(result.user) },
+        Messages.LOGIN_SUCCESS,
+      );
     } catch (error: unknown) {
       this._handleError(res, error);
     }
@@ -156,7 +177,7 @@ export class AuthController implements IAuthController {
 
   private _handleError(res: Response, error: unknown): void {
     if (error instanceof z.ZodError) {
-      ApiResponse.error(res, "Validation failed", HttpStatus.BAD_REQUEST);
+      ApiResponse.error(res, Messages.VALIDATION_FAILED, HttpStatus.BAD_REQUEST);
       return;
     }
 

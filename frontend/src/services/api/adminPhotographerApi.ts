@@ -9,7 +9,7 @@ import type {
 export const adminPhotographerApi = {
     getPhotographers: async (params: GetPhotographersParams): Promise<PaginatedPhotographersResponse> => {
         const response = await apiClient.get("/admin/photographers", { params });
-        // console.log("from the backend",response)
+
         return response.data.data;
     },
 
@@ -45,7 +45,7 @@ export const adminPhotographerApi = {
     },
 
     getStatistics: async (): Promise<PhotographerStats> => {
-        const response = await apiClient.get("/admin/photographers/statistics");
+        const response = await apiClient.get("/admin/photographers/stats");
         return response.data.data;
     },
 

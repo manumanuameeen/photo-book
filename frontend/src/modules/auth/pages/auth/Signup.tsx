@@ -233,7 +233,7 @@ const Signup: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Redirect if already logged in
+  
   React.useEffect(() => {
     const { user } = useAuthStore.getState();
     if (user) {

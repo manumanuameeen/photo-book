@@ -8,8 +8,8 @@ import UserStatus from "../interfaces/user/userStatus.enum.ts";
 export interface IUser extends Document {
   name: string;
   email: string;
-  password: string;
-  phone: string;
+  password?: string;
+  phone?: string;
   bio?: string;
   location?: string;
   lat?: number;
@@ -21,6 +21,7 @@ export interface IUser extends Document {
   isBlocked: boolean;
   walletBalance: number;
   profileImage?: string;
+  authProvider: "local" | "google";
   comparePassword(candidate: string): Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -30,13 +31,29 @@ const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true, minlength: 8 },
-    phone: { type: String, required: true },
+    password: {
+      type: String,
+      required: function (this: IUser) {
+        return this.authProvider === "local";
+      },
+      minlength: 8,
+    },
+    phone: {
+      type: String,
+      required: function (this: IUser) {
+        return this.authProvider === "local";
+      },
+    },
     bio: { type: String, default: "" },
     location: { type: String, default: "" },
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },
     profileImage: { type: String, default: "" },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
     role: {
       type: String,
       enum: Object.values(UserRole),
@@ -56,7 +73,7 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password") || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });

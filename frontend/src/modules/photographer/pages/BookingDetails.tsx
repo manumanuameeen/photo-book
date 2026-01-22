@@ -10,14 +10,12 @@ import {
     MapPin,
     User,
     Mail,
-    Phone,
     ChevronLeft,
     CreditCard,
     CheckCircle,
     XCircle,
     AlertCircle
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { ROUTES } from '../../../constants/routes';
 
@@ -28,9 +26,8 @@ interface BookingDetailsPageProps {
 const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
     const navigate = useNavigate();
     const search: { source?: string } = useSearch({ strict: false });
-    const { acceptBooking, rejectBooking } = useBookingActions();
+    const { acceptBooking, rejectBooking, startWork, endWork, deliverWork } = useBookingActions();
 
-    // Moved state hooks up to avoid "Rendered more hooks" error
     const [actionConfig, setActionConfig] = React.useState<{ isOpen: boolean; type: 'accept' | 'reject' | null, bookingId: string | null }>({
         isOpen: false,
         type: null,
@@ -46,13 +43,12 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
 
     const handleBack = () => {
         if (search.source === 'dashboard') {
-            navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD } as any);
+            navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD });
         } else {
-            navigate({ to: ROUTES.PHOTOGRAPHER.BOOKINGS } as any);
+            navigate({ to: ROUTES.PHOTOGRAPHER.BOOKINGS });
         }
     };
 
-    // Helper function definition
     const openActionModal = (type: 'accept' | 'reject', id: string) => {
         setActionConfig({ isOpen: true, type, bookingId: id });
         setCustomMessage('');
@@ -86,6 +82,11 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
         pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
         accepted: 'bg-blue-100 text-blue-800 border-blue-200',
         waiting_for_deposit: 'bg-orange-100 text-orange-800 border-orange-200',
+        deposit_paid: 'bg-green-100 text-green-800 border-green-200',
+        work_started: 'bg-purple-100 text-purple-800 border-purple-200',
+        work_ended_pending: 'bg-amber-100 text-amber-800 border-amber-200',
+        work_ended: 'bg-teal-100 text-teal-800 border-teal-200',
+        work_delivered: 'bg-indigo-100 text-indigo-800 border-indigo-200',
         rejected: 'bg-red-100 text-red-800 border-red-200',
         cancelled: 'bg-gray-100 text-gray-800 border-gray-200',
         completed: 'bg-green-100 text-green-800 border-green-200'
@@ -110,7 +111,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
     return (
         <div className="min-h-screen bg-gray-50 p-6 font-sans">
             <div className="max-w-4xl mx-auto">
-                {/* Back Button */}
                 <button
                     onClick={handleBack}
                     className="flex items-center text-sm text-gray-500 hover:text-green-700 transition-colors mb-6"
@@ -119,7 +119,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                     {search.source === 'dashboard' ? 'Back to Dashboard' : 'Back to Bookings'}
                 </button>
 
-                {/* Header Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6 relative overflow-hidden">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                         <div>
@@ -137,7 +136,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                             )}
                         </div>
 
-                        {/* Actions */}
                         <div className="flex gap-3">
                             {booking.status === 'pending' && (
                                 <>
@@ -161,10 +159,40 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                             )}
                             {(booking.status === 'accepted' || booking.status === 'waiting_for_deposit') && (
                                 <button
-                                    onClick={() => openActionModal('reject', booking._id)} // Treating as cancel
+                                    onClick={() => openActionModal('reject', booking._id)}
                                     className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
                                 >
                                     Cancel Booking
+                                </button>
+                            )}
+                            {(booking.status === 'deposit_paid' || (booking.paymentStatus === 'deposit_paid' && booking.status === 'accepted')) && (
+                                <button
+                                    onClick={() => startWork.mutate({ id: booking._id })}
+                                    disabled={startWork.isPending}
+                                    className="flex items-center gap-2 px-6 py-2.5 bg-[#2E7D46] text-white rounded-xl font-bold hover:bg-green-800 shadow-md disabled:opacity-50 transition-all"
+                                >
+                                    <CheckCircle size={18} />
+                                    Start Work
+                                </button>
+                            )}
+                            {booking.status === 'work_started' && (
+                                <button
+                                    onClick={() => endWork.mutate({ id: booking._id })}
+                                    disabled={endWork.isPending}
+                                    className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md disabled:opacity-50 transition-all"
+                                >
+                                    <CheckCircle size={18} />
+                                    End Work
+                                </button>
+                            )}
+                            {booking.status === 'work_ended' && booking.paymentStatus === 'full_paid' && (
+                                <button
+                                    onClick={() => deliverWork.mutate({ id: booking._id })}
+                                    disabled={deliverWork.isPending}
+                                    className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-md disabled:opacity-50 transition-all"
+                                >
+                                    <CheckCircle size={18} />
+                                    Deliver Work
                                 </button>
                             )}
                         </div>
@@ -172,10 +200,7 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column: Event & Package */}
                     <div className="lg:col-span-2 space-y-6">
-
-                        {/* Event Details */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                             <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
                                 <Calendar className="text-green-600" size={20} />
@@ -208,7 +233,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                             </div>
                         </div>
 
-                        {/* Package Info */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                             <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
                                 <CreditCard className="text-green-600" size={20} />
@@ -241,7 +265,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                         </div>
                     </div>
 
-                    {/* Right Column: Client Info */}
                     <div className="space-y-6">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                             <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -271,7 +294,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                                         <p className="text-sm font-bold text-gray-900 truncate">{booking.userId?.email}</p>
                                     </div>
                                 </div>
-
                             </div>
 
                             <div className="mt-6 pt-6 border-t border-gray-100">
@@ -306,7 +328,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                     </div>
                 </div>
 
-                {/* --- Action Modal --- */}
                 {actionConfig.isOpen && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                         <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">

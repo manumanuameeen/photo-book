@@ -87,7 +87,7 @@ const VerifyResetOtp: React.FC = () => {
         onSuccess: (response) => {
           toast.success(response.message || "OTP verified! Set your new password.");
 
-          // Navigate to reset password page
+          
           navigate({ to: ROUTES.AUTH.RESET_PASSWORD });
         },
         onError: (error: unknown) => {

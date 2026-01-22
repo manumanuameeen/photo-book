@@ -1,86 +1,192 @@
-import { IWalletService } from "../interfaces/IWalletService";
-import { IWalletRepository } from "../../repositories/implementaion/wallet/WalletRepository";
-import { IWallet } from "../../model/walletModel";
+import { HttpStatus } from "../../constants/httpStatus.ts";
+import { Messages } from "../../constants/messages.ts";
+import { IWalletRepository } from "../../interfaces/repositories/IWalletRepository.ts";
+import { IWalletService } from "../../interfaces/services/IWalletService.ts";
+import { IWallet } from "../../model/walletModel.ts";
+import { AppError } from "../../utils/AppError.ts";
 
 export class WalletService implements IWalletService {
-    private walletRepository: IWalletRepository;
+  private readonly walletRepository: IWalletRepository;
 
-    constructor(walletRepository: IWalletRepository) {
-        this.walletRepository = walletRepository;
+  constructor(walletRepository: IWalletRepository) {
+    this.walletRepository = walletRepository;
+  }
+
+  async createWallet(userId: string, role: string): Promise<IWallet> {
+    const targetId = await this._resolveUserId(userId);
+    const existing = await this.walletRepository.findByUser(targetId);
+    if (existing) return existing;
+    return await this.walletRepository.createWallet(targetId, role);
+  }
+
+  async getWallet(userId: string): Promise<IWallet | null> {
+    const targetId = await this._resolveUserId(userId);
+    const wallet = await this.walletRepository.findByUser(targetId);
+    return wallet;
+  }
+
+  private async _resolveUserId(userId: string): Promise<string> {
+    if (userId === "admin") {
+      const adminWallet = await this.walletRepository.findByRole("admin");
+      if (adminWallet) return adminWallet.userId.toString();
+
+      // Fallback: search for admin user if wallet not found by role
+      const { User } = await import("../../model/userModel.ts");
+      const adminUser = (await User.findOne({ role: "admin" })) as any;
+      if (adminUser) {
+        return adminUser._id.toString();
+      }
+      throw new AppError(Messages.ADMIN_WALLET_NOT_FOUND, HttpStatus.BAD_REQUEST);
+    }
+    return userId;
+  }
+
+  async getWalletTransactions(
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+    type?: string,
+  ): Promise<{ transactions: any[]; total: number; balance: number }> {
+    const targetId = await this._resolveUserId(userId);
+    const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
+    const { transactions, total } = await this.walletRepository.getTransactions(
+      wallet.userId.toString(),
+      page,
+      limit,
+      type,
+    );
+
+    return {
+      transactions,
+      total,
+      balance: wallet.balance,
+    };
+  }
+
+  async creditWallet(
+    userId: string,
+    amount: number,
+    description: string,
+    refId: string,
+  ): Promise<IWallet> {
+    const targetId = await this._resolveUserId(userId);
+    const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
+
+    // Idempotency Check
+    if (
+      wallet.transaction &&
+      wallet.transaction.some(
+        (t: any) => t.referenceId === refId && t.type === "CREDIT" && t.description === description,
+      )
+    ) {
+      console.warn(`[WalletService] Duplicate credit skipped for ref ${refId}`);
+      return wallet;
     }
 
-    async createWallet(userId: string, role: string): Promise<IWallet> {
-        const existing = await this.walletRepository.findByUser(userId);
-        if (existing) return existing;
-        return await this.walletRepository.createWallet(userId, role);
+    await this.walletRepository.updateBalance(targetId, amount);
+
+    const transaction = {
+      type: "CREDIT",
+      amount: amount,
+      description: description,
+      referenceId: refId,
+      date: new Date(),
+      status: "COMPLETED",
+    };
+
+    return (await this.walletRepository.addTransaction(targetId, transaction))!;
+  }
+
+  async ensureWalletExists(userId: string, role: string): Promise<IWallet> {
+    // If userId is "admin", resolver already handled it to return ObjectId string
+    // But we still need to check if passed the literal "admin"
+    if (userId === "admin") {
+      const targetId = await this._resolveUserId("admin");
+      return this.ensureWalletExists(targetId, "admin");
     }
 
-    async getWallet(userId: string): Promise<IWallet | null> {
-        let wallet = await this.walletRepository.findByUser(userId);
+    const existing = await this.walletRepository.findByUser(userId);
+    if (existing) return existing;
+    return await this.walletRepository.createWallet(userId, role);
+  }
 
-        return wallet;
+  async debitWallet(
+    userId: string,
+    amount: number,
+    description: string,
+    refId: string,
+  ): Promise<IWallet> {
+    const targetId = await this._resolveUserId(userId);
+    const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
+
+    if (!wallet || wallet.balance < amount) {
+      throw new AppError(Messages.INSUFFICIENT_WALLET_BALANCE, HttpStatus.BAD_REQUEST);
     }
 
-    async creditWallet(userId: string, amount: number, description: string, refId: string): Promise<IWallet> {
-        let targetId = userId;
-        if (userId === 'admin') {
-            const adminWallet = await this.ensureWalletExists('admin', 'admin');
-            targetId = adminWallet.userId.toString();
-        }
-
-        await this.walletRepository.updateBalance(targetId, amount);
-
-        const transaction = {
-            type: 'CREDIT',
-            amount: amount,
-            description: description,
-            referenceId: refId,
-            date: new Date(),
-            status: 'COMPLETED'
-        };
-
-        return (await this.walletRepository.addTransaction(targetId, transaction))!;
+    // Idempotency Check
+    if (
+      wallet.transaction &&
+      wallet.transaction.some((t: any) => t.referenceId === refId && t.type === "DEBIT")
+    ) {
+      console.warn(`[WalletService] Duplicate debit skipped for ref ${refId}`);
+      return wallet;
     }
 
-    async ensureWalletExists(userId: string, role: string): Promise<IWallet> {
-        if (userId === 'admin') {
-            const adminWallet = await this.walletRepository.findByRole('admin');
-            if (adminWallet) return adminWallet;
+    await this.walletRepository.updateBalance(targetId, -amount);
 
-            // Try to find an admin user to create a wallet for
-            const { User } = await import('../../model/userModel');
-            const adminUser = (await User.findOne({ role: 'admin' })) as any;
+    const transaction = {
+      type: "DEBIT",
+      amount: amount,
+      description: description,
+      referenceId: refId,
+      date: new Date(),
+      status: "COMPLETED",
+    };
 
-            if (adminUser) {
-                console.log(`[WalletService] Creating missing wallet for admin user ${adminUser._id}`);
-                return await this.walletRepository.createWallet(adminUser._id.toString(), 'admin');
-            } else {
-                throw new Error("Admin wallet not found and no Admin user exists to create one.");
-            }
-        }
+    return (await this.walletRepository.addTransaction(targetId, transaction))!;
+  }
 
-        const existing = await this.walletRepository.findByUser(userId);
-        if (existing) return existing;
-        return await this.walletRepository.createWallet(userId, role);
+  async creditPending(
+    userId: string,
+    amount: number,
+    description: string,
+    refId: string,
+  ): Promise<IWallet> {
+    const targetId = await this._resolveUserId(userId);
+    const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
+
+    // Idempotency Check
+    if (
+      wallet.transaction &&
+      wallet.transaction.some((t: any) => t.referenceId === refId && t.status === "PENDING")
+    ) {
+      console.warn(`[WalletService] Duplicate pending credit skipped for ref ${refId}`);
+      return wallet;
     }
 
-    async debitWallet(userId: string, amount: number, description: string, refId: string): Promise<IWallet> {
-        const wallet = await this.walletRepository.findByUser(userId);
-        if (!wallet || wallet.balance < amount) {
-            throw new Error("Insufficient wallet balance");
-        }
+    const transaction = {
+      type: "CREDIT",
+      amount: amount,
+      description: description,
+      referenceId: refId,
+      date: new Date(),
+      status: "PENDING",
+    };
 
-        await this.walletRepository.updateBalance(userId, -amount);
+    return (await this.walletRepository.addTransaction(targetId, transaction))!;
+  }
 
-        const transaction = {
-            type: 'DEBIT',
-            amount: amount,
-            description: description,
-            referenceId: refId,
-            date: new Date(),
-            status: 'COMPLETED'
-        };
+  async releasePending(userId: string, refId: string): Promise<IWallet> {
+    const targetId = await this._resolveUserId(userId);
+    const wallet = await this.getWallet(targetId);
+    if (!wallet) throw new AppError("Wallet not found", HttpStatus.NOT_FOUND);
 
-        return (await this.walletRepository.addTransaction(userId, transaction))!;
-    }
+    const transaction = wallet.transaction.find((t) => t.referenceId === refId);
+    if (!transaction) throw new AppError("Transaction not found", HttpStatus.NOT_FOUND);
+    if (transaction.status !== "PENDING")
+      throw new AppError("Transaction is not pending", HttpStatus.BAD_REQUEST);
+
+    await this.walletRepository.updateBalance(targetId, transaction.amount);
+    return (await this.walletRepository.updateTransactionStatus(targetId, refId, "COMPLETED"))!;
+  }
 }

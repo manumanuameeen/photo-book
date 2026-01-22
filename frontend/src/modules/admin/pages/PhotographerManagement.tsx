@@ -8,6 +8,7 @@ import { Eye, Lock, Unlock, MessageSquare, Bell, Loader2 } from "lucide-react";
 import { confirm } from "../../../components/ConfirmToaster";
 import { usePhotographerManagement } from "../hooks/usePhotographerManagement";
 import type { Photographer } from "../types/photographer.types";
+import { toast } from "sonner";
 
 interface PhotographerTableData {
     id: string;
@@ -41,7 +42,7 @@ const PhotographerManagement: React.FC = () => {
         page: page,
         status: "APPROVED"
     });
-    // console.log(data.)
+
     const photographers = data?.photographers || [];
 
 
@@ -58,7 +59,10 @@ const PhotographerManagement: React.FC = () => {
         confirm("Are you sure you want to block this photographer?", async () => {
             try {
                 await blockPhotographer({ id });
+                toast.success("Photographer blocked successfully");
             } catch (error) {
+                console.error("Failed to block photographer:", error);
+                toast.error("Failed to block photographer");
             }
         });
     };
@@ -67,7 +71,10 @@ const PhotographerManagement: React.FC = () => {
         confirm("Are you sure you want to unblock this photographer?", async () => {
             try {
                 await unblockPhotographer(id);
+                toast.success("Photographer unblocked successfully");
             } catch (error) {
+                console.error("Failed to unblock photographer:", error);
+                toast.error("Failed to unblock photographer");
             }
         });
     };
@@ -90,7 +97,7 @@ const PhotographerManagement: React.FC = () => {
     const columns: Column<PhotographerTableData>[] = [
         {
             header: "Photographer",
-            render: (item) => (
+            render: (item: PhotographerTableData) => (
                 <div className="flex items-center gap-3">
                     <img
                         src={`https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`}
@@ -106,7 +113,7 @@ const PhotographerManagement: React.FC = () => {
         },
         {
             header: "Business",
-            render: (item) => (
+            render: (item: PhotographerTableData) => (
                 <div>
                     <p className="font-medium text-gray-700">{item.businessName}</p>
                     <p className="text-xs text-gray-500">{item.location}</p>
@@ -115,11 +122,11 @@ const PhotographerManagement: React.FC = () => {
         },
         {
             header: "Contact",
-            render: (item) => <span className="text-sm text-gray-600">{item.phone}</span>,
+            render: (item: PhotographerTableData) => <span className="text-sm text-gray-600">{item.phone}</span>,
         },
         {
             header: "Status",
-            render: (item) => (
+            render: (item: PhotographerTableData) => (
                 <span className={`px-3 py-1 text-xs font-semibold rounded-full ${item.isBlocked
                     ? "bg-red-100 text-red-800"
                     : "bg-green-100 text-green-800"
@@ -130,11 +137,10 @@ const PhotographerManagement: React.FC = () => {
         },
         {
             header: "Actions",
-            align: "right",
-            render: (item) => (
+            render: (item: PhotographerTableData) => (
                 <div className="flex justify-end gap-2">
                     <Link
-                        to="/admin/photographers/$id"
+                        to={ROUTES.ADMIN.PHOTOGRAPHER_DETAILS}
                         params={{ id: item.id }}
                         className="p-2 rounded-md bg-blue-100/50 hover:bg-blue-100 text-blue-600 transition-colors"
                         title="View Details"
@@ -185,7 +191,7 @@ const PhotographerManagement: React.FC = () => {
                             Pending Applications
                         </BaseButton>
                         <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm border border-white">
-                            {data?.pendingCount }
+                            {data?.pendingCount}
                         </span>
                     </Link>
                 </div>

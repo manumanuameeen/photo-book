@@ -12,7 +12,7 @@ import { MessageBox } from '../../../components/common/MessageBox';
 
 const PhotographerDashboard = () => {
     const { data: stats, isLoading, error } = usePhotographerDashboard();
-    const { acceptBooking, rejectBooking } = useBookingActions();
+    const { acceptBooking, rejectBooking, startWork, endWork, deliverWork } = useBookingActions();
     const [isMessageOpen, setIsMessageOpen] = React.useState(false);
 
     if (isLoading) {
@@ -38,14 +38,14 @@ const PhotographerDashboard = () => {
             className="min-h-screen bg-gray-50 font-sans text-gray-800"
         >
 
-            {/* MessageBox Modal Overlay */}
+            { }
             {isMessageOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <MessageBox onClose={() => setIsMessageOpen(false)} />
                 </div>
             )}
 
-            {/* --- Header --- */}
+            { }
             <header className="bg-[#2E7D46] text-white p-6 md:px-10 relative">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-4 w-full md:w-auto">
@@ -57,16 +57,16 @@ const PhotographerDashboard = () => {
                             <p className="text-sm text-green-100 opacity-90">Manage your sessions, track your earnings, and grow your business.</p>
                         </div>
                     </div>
-                    <button className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <Link to={ROUTES.USER.WALLET} className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                         Transaction History
-                    </button>
+                    </Link>
                 </div>
             </header>
 
-            {/* --- Main Content Grid --- */}
+            { }
             <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                {/* ================= LEFT COLUMN (Sidebar) ================= */}
+                { }
                 <motion.div
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -74,32 +74,32 @@ const PhotographerDashboard = () => {
                     className="lg:col-span-3 space-y-6"
                 >
 
-                    {/* Quick Actions */}
+                    { }
                     <section>
                         <h3 className="font-bold text-gray-900 mb-3">Quick Actions</h3>
                         <div className="space-y-3">
-                            <Link to={ROUTES.PHOTOGRAPHER.PROFILE} className="block w-full text-center bg-[#398E50] text-white py-2.5 rounded-lg font-medium text-sm hover:bg-[#2E7D46] transition-colors shadow-sm">
+                            <Link to={ROUTES.PHOTOGRAPHER.EDIT_PROFILE} className="block w-full text-center bg-[#398E50] text-white py-2.5 rounded-lg font-medium text-sm hover:bg-[#2E7D46] transition-colors shadow-sm">
                                 Edit Profile
                             </Link>
-                            <Link to="/photographer/portfolio" className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
+                            <Link to={ROUTES.PHOTOGRAPHER.PORTFOLIO} className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
                                 Update Portfolio
                             </Link>
-                            <Link to="/photographer/packages" className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
+                            <Link to={ROUTES.PHOTOGRAPHER.PACKAGES} className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
                                 Create Packages
                             </Link>
-                            <Link to="/photographer/availability" className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
+                            <Link to={ROUTES.PHOTOGRAPHER.AVAILABILITY} className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
                                 Set Availability
                             </Link>
-                            <Link to="/photographer/bookings" className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
+                            <Link to={ROUTES.PHOTOGRAPHER.BOOKINGS} className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
                                 Manage Bookings
                             </Link>
-                            <button className="w-full bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
+                            <Link to={ROUTES.USER.WALLET} className="block w-full text-center bg-white border border-green-600 text-green-700 py-2.5 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
                                 Wallet
-                            </button>
+                            </Link>
                         </div>
                     </section>
 
-                    {/* Report Issue */}
+                    { }
                     <section>
                         <h3 className="font-bold text-gray-900 mb-3">Report Issue</h3>
                         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
@@ -113,7 +113,7 @@ const PhotographerDashboard = () => {
                         </div>
                     </section>
 
-                    {/* Messages */}
+                    { }
                     <section>
                         <h3 className="font-bold text-gray-900 mb-3">Messages</h3>
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -151,7 +151,7 @@ const PhotographerDashboard = () => {
                     </section>
                 </motion.div>
 
-                {/* ================= CENTER COLUMN (Main Feed) ================= */}
+                { }
                 <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -159,7 +159,7 @@ const PhotographerDashboard = () => {
                     className="lg:col-span-5 space-y-6"
                 >
 
-                    {/* Stats Row */}
+                    { }
                     <div className="grid grid-cols-3 gap-4">
                         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                             <p className="text-xs text-gray-500 font-medium mb-1">Total Income</p>
@@ -180,11 +180,11 @@ const PhotographerDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Pending Requests */}
+                    { }
                     <section>
                         <h3 className="font-bold text-gray-900 mb-3">Pending Requests</h3>
                         <div className="space-y-3">
-                            {stats?.pendingRequests.map((req, i) => (
+                            {stats?.pendingRequests.map((req) => (
                                 <div key={req._id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                                     <div className="mb-4">
                                         <h4 className="font-bold text-gray-900">{req.clientName}</h4>
@@ -228,42 +228,83 @@ const PhotographerDashboard = () => {
                         </div>
                     </section>
 
-                    {/* Upcoming Bookings */}
+                    { }
                     <section>
                         <h3 className="font-bold text-gray-900 mb-3">Upcoming Bookings</h3>
                         <div className="space-y-3">
-                            {stats?.upcomingBookings.map((booking, i) => (
-                                <div key={booking._id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
-                                    <div className={`absolute top-5 right-5 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide
-                                            ${booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                            booking.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                                                booking.status === 'waiting_for_deposit' ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-gray-100 text-gray-700'}`}>
-                                        {booking.status === 'waiting_for_deposit' ? 'Deposit' : booking.status}
+                            {stats?.upcomingBookings.map((booking) => {
+                                const getStatusStyle = (status: string) => {
+                                    switch (status) {
+                                        case 'pending': return 'bg-yellow-100 text-yellow-700';
+                                        case 'accepted': return 'bg-green-100 text-green-700';
+                                        case 'waiting_for_deposit': return 'bg-orange-100 text-orange-700';
+                                        case 'confirmed': return 'bg-emerald-100 text-emerald-700';
+                                        case 'ongoing': return 'bg-purple-100 text-purple-700';
+                                        case 'delivered': return 'bg-blue-100 text-blue-700';
+                                        default: return 'bg-gray-100 text-gray-700';
+                                    }
+                                };
+                                return (
+                                    <div key={booking._id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+                                        <div className={`absolute top-5 right-5 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide
+                                            ${getStatusStyle(booking.status)}`}>
+                                            {booking.status === 'waiting_for_deposit' ? 'Deposit' : booking.status}
+                                        </div>
+                                        <div className="mb-4">
+                                            <h4 className="font-bold text-gray-900">{booking.clientName}</h4>
+                                            <p className="text-xs text-gray-500">{booking.date} • {booking.location}</p>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <button className="bg-white border border-green-600 text-green-700 px-4 py-1.5 rounded-md text-xs font-bold hover:bg-green-50">Message</button>
+
+                                            {(booking.status === 'deposit_paid' || booking.status === 'accepted') && (
+                                                <button
+                                                    onClick={() => startWork.mutate({ id: booking._id })}
+                                                    disabled={startWork.isPending}
+                                                    className="bg-[#2E7D46] text-white px-4 py-1.5 rounded-md text-xs font-bold hover:bg-green-800 disabled:opacity-50"
+                                                >
+                                                    Start Work
+                                                </button>
+                                            )}
+
+                                            {booking.status === 'work_started' && (
+                                                <button
+                                                    onClick={() => endWork.mutate({ id: booking._id })}
+                                                    disabled={endWork.isPending}
+                                                    className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-xs font-bold hover:bg-blue-700 disabled:opacity-50"
+                                                >
+                                                    End Work
+                                                </button>
+                                            )}
+
+                                            {booking.status === 'work_ended' && (
+                                                <button
+                                                    onClick={() => deliverWork.mutate({ id: booking._id })}
+                                                    disabled={deliverWork.isPending}
+                                                    className="bg-purple-600 text-white px-4 py-1.5 rounded-md text-xs font-bold hover:bg-purple-700 disabled:opacity-50"
+                                                >
+                                                    Deliver Work
+                                                </button>
+                                            )}
+
+                                            {booking._id ? (
+                                                <Link
+                                                    to={ROUTES.PHOTOGRAPHER.BOOKING_DETAILS}
+                                                    params={{ id: booking._id }}
+                                                    search={{ source: 'dashboard' }}
+                                                    className="border border-gray-300 text-gray-600 px-4 py-1.5 rounded-md text-xs font-bold hover:bg-gray-50 flex items-center justify-center"
+                                                >
+                                                    Details
+                                                </Link>
+                                            ) : (
+                                                <button disabled className="border border-gray-200 text-gray-300 px-4 py-1.5 rounded-md text-xs font-bold cursor-not-allowed flex items-center justify-center">
+                                                    Details
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="mb-4">
-                                        <h4 className="font-bold text-gray-900">{booking.clientName}</h4>
-                                        <p className="text-xs text-gray-500">{booking.date} • {booking.location}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button className="bg-[#398E50] text-white px-4 py-1.5 rounded-md text-xs font-bold hover:bg-green-700">Message Client</button>
-                                        {booking._id ? (
-                                            <Link
-                                                to={ROUTES.PHOTOGRAPHER.BOOKING_DETAILS}
-                                                params={{ id: booking._id }}
-                                                search={{ source: 'dashboard' }}
-                                                className="border border-gray-300 text-gray-600 px-4 py-1.5 rounded-md text-xs font-bold hover:bg-gray-50 flex items-center justify-center"
-                                            >
-                                                View Details
-                                            </Link>
-                                        ) : (
-                                            <button disabled className="border border-gray-200 text-gray-300 px-4 py-1.5 rounded-md text-xs font-bold cursor-not-allowed flex items-center justify-center">
-                                                View Details
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                             {(!stats?.upcomingBookings || stats.upcomingBookings.length === 0) && (
                                 <div className="p-4 text-center text-xs text-gray-400 bg-white rounded-xl border border-gray-200">No upcoming bookings</div>
                             )}
@@ -272,7 +313,7 @@ const PhotographerDashboard = () => {
 
                 </motion.div>
 
-                {/* ================= RIGHT COLUMN (Insights) ================= */}
+                { }
                 <motion.div
                     initial={{ x: 20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -280,16 +321,16 @@ const PhotographerDashboard = () => {
                     className="lg:col-span-4 space-y-6"
                 >
 
-                    {/* Performance Insights */}
+                    { }
                     <section>
                         <h3 className="font-bold text-gray-900 mb-3">Performance Insights</h3>
                         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-8">
 
-                            {/* Line Chart Mockup */}
+                            { }
                             <div>
                                 <h4 className="text-xs font-bold text-gray-500 mb-4">Monthly Revenue</h4>
                                 <div className="relative h-32 w-full border-l border-b border-gray-200">
-                                    {/* Simple SVG Line Graph */}
+                                    { }
                                     <svg viewBox="0 0 100 50" className="absolute bottom-0 left-0 w-full h-full overflow-visible" preserveAspectRatio="none">
                                         <path
                                             d="M0 35 Q 20 25, 40 10 T 80 5 T 100 20"
@@ -302,12 +343,12 @@ const PhotographerDashboard = () => {
                                         <circle cx="80" cy="5" r="2" fill="#2E7D46" />
                                         <circle cx="100" cy="20" r="2" fill="#2E7D46" />
                                     </svg>
-                                    {/* Y-Axis Labels */}
+                                    { }
                                     <div className="absolute -left-8 top-0 text-[8px] text-gray-400 flex flex-col justify-between h-full">
                                         <span>$5000</span>
                                         <span>$0</span>
                                     </div>
-                                    {/* X-Axis Labels */}
+                                    { }
                                     <div className="absolute left-0 -bottom-5 w-full flex justify-between text-[8px] text-gray-400">
                                         <span>Jun</span>
                                         <span>Jul</span>
@@ -319,11 +360,11 @@ const PhotographerDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Donut Chart Mockup */}
+                            { }
                             <div className="pt-4">
                                 <h4 className="text-xs font-bold text-gray-500 mb-4">Session Types</h4>
                                 <div className="flex items-center justify-center">
-                                    {/* CSS Conic Gradient for Donut Chart */}
+                                    { }
                                     <div
                                         className="w-32 h-32 rounded-full relative"
                                         style={{
@@ -344,7 +385,7 @@ const PhotographerDashboard = () => {
                         </div>
                     </section>
 
-                    {/* Latest Client Reviews */}
+                    { }
                     <section>
                         <h3 className="font-bold text-gray-900 mb-3">Latest Client Reviews</h3>
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">

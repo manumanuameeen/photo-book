@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     ArrowLeft,
     Mail,
@@ -6,7 +6,6 @@ import {
     MapPin,
     Briefcase,
     Camera,
-    CreditCard,
     DollarSign,
     Instagram,
     Globe,
@@ -14,20 +13,28 @@ import {
     Linkedin,
     User,
     Pencil,
+    Plus,
+    X,
+    Loader2,
+    Clock
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { ROUTES } from '../../../constants/routes';
-
-import { Plus, X, Loader2 } from 'lucide-react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { packageApi } from '../../../services/api/packageApi';
+import { photographerApi } from '../../../services/api/photographerApi';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PhotographerProfile = () => {
     const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
     const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<{ name: string; description: string; type: string; explanation: string }>();
+
+    const { data: profile, isLoading } = useQuery({
+        queryKey: ['photographerProfile'],
+        queryFn: photographerApi.getProfile
+    });
 
     const onSuggestSubmit = async (data: { name: string; description: string; type: string; explanation: string }) => {
         try {
@@ -36,18 +43,43 @@ const PhotographerProfile = () => {
             setIsSuggestModalOpen(false);
             reset();
         } catch (error) {
+            console.error(error);
             toast.error("Failed to submit suggestion");
         }
     };
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 font-sans">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="animate-spin text-green-700" size={48} />
+                    <p className="text-gray-500 font-medium tracking-wide">Loading your professional profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!profile) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 font-sans">
+                <div className="text-center">
+                    <p className="text-red-500 font-bold text-xl mb-4">Could not load profile</p>
+                    <Link to={ROUTES.PHOTOGRAPHER.DASHBOARD} className="text-green-700 font-medium hover:underline">
+                        Return to Dashboard
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
 
-            {/* --- Top Navigation Bar --- */}
+            { }
             <div className="bg-[#1E5631] h-16 w-full shadow-sm"></div>
 
             <div className="max-w-6xl mx-auto px-6 py-8">
 
-                {/* --- Breadcrumb & Header --- */}
+                { }
                 <div className="mb-8">
                     <Link to={ROUTES.PHOTOGRAPHER.DASHBOARD} className="flex items-center text-sm text-green-700 font-medium hover:underline mb-4">
                         <ArrowLeft size={16} className="mr-1" />
@@ -56,80 +88,86 @@ const PhotographerProfile = () => {
 
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <h1 className="text-3xl font-bold text-gray-900">My Account Information</h1>
-                        <button className="flex items-center gap-2 bg-[#1E5631] text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-[#164024] transition-colors">
+                        <Link
+                            to={ROUTES.PHOTOGRAPHER.EDIT_PROFILE}
+                            className="flex items-center gap-2 bg-[#1E5631] text-white px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-[#164024] transition-colors"
+                        >
                             <Pencil size={16} />
                             Edit Profile
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
-                {/* --- Main Grid Content --- */}
+                { }
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                    {/* === LEFT COLUMN === */}
+                    { }
                     <div className="space-y-6">
 
-                        {/* Personal Identity Card */}
+                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Personal Identity</h2>
                             <div className="flex flex-col items-center text-center">
-                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-300">
-                                    {/* Placeholder for Avatar if image is missing */}
-                                    <User size={48} />
+                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4 overflow-hidden border-4 border-white shadow-sm">
+                                    {profile.userId.profileImage ? (
+                                        <img src={profile.userId.profileImage} alt={profile.userId.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User size={48} className="text-gray-300" />
+                                    )}
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900">Sarah Elizabeth Johnson</h3>
-                                <p className="text-sm text-gray-400 mt-1">Member since March 2023</p>
+                                <h3 className="text-xl font-bold text-gray-900">{profile.userId.name}</h3>
+                                <p className="text-sm text-gray-400 mt-1">Member since {new Date(profile.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
                             </div>
                         </div>
 
-                        {/* Contact Details Card */}
+                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Contact Details</h2>
                             <div className="space-y-5">
                                 <InfoField
                                     label="Email Address"
-                                    value="sarah.johnson@email.com"
+                                    value={profile.userId.email}
                                     icon={Mail}
                                 />
                                 <InfoField
                                     label="Phone Number"
-                                    value="+1 (555) 123-4567"
+                                    value={profile.userId.phone || 'Not provided'}
                                     icon={Phone}
                                 />
                                 <InfoField
                                     label="Base Location"
-                                    value="Austin, Texas"
+                                    value={profile.baseLocation}
                                     icon={MapPin}
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* === RIGHT COLUMN === */}
+                    { }
                     <div className="space-y-6">
 
-                        {/* Business & Platform Information */}
+                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Business & Platform Information</h2>
                             <div className="space-y-5">
                                 <InfoField
                                     label="Business/Studio Name"
-                                    value="Sarah Johnson Photography LLC"
+                                    value={profile.businessName}
                                     icon={Briefcase}
                                 />
                                 <InfoField
                                     label="Main Genre"
-                                    value="Wedding & Portrait Photography"
+                                    value={profile.professionalDetails?.mainGenre || 'General'}
                                     icon={Camera}
                                 />
                                 <InfoField
-                                    label="Payment Account"
-                                    value="Bank Account ending in ****-4321"
-                                    icon={CreditCard}
+                                    label="Notice Interval"
+                                    value={profile.professionalDetails?.noticeInterval || '24 hours'}
+                                    icon={Clock}
                                 />
                                 <InfoField
                                     label="Standard Public Rate"
-                                    value="$150/Hour"
+                                    value={`$${profile.professionalDetails?.standardRate || 0}/Hour`}
                                     icon={DollarSign}
                                 />
                             </div>
@@ -141,33 +179,33 @@ const PhotographerProfile = () => {
                             </button>
                         </div>
 
-                        {/* Social Media Links */}
+                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Social Media Links</h2>
                             <div className="space-y-5">
                                 <InfoField
                                     label="Instagram Handle"
-                                    value="@sarahjohnsonphoto"
+                                    value={profile.professionalDetails?.instagram || 'Not linked'}
                                     icon={Instagram}
-                                    isLink
+                                    isLink={!!profile.professionalDetails?.instagram}
                                 />
                                 <InfoField
                                     label="External Website"
-                                    value="www.sarahjohnsonphotography.com"
+                                    value={profile.professionalDetails?.website || 'Not linked'}
                                     icon={Globe}
-                                    isLink
+                                    isLink={!!profile.professionalDetails?.website}
                                 />
                                 <InfoField
                                     label="Facebook Page"
-                                    value="Sarah Johnson Photography"
+                                    value={profile.professionalDetails?.facebook || 'Not linked'}
                                     icon={Facebook}
-                                    isLink
+                                    isLink={!!profile.professionalDetails?.facebook}
                                 />
                                 <InfoField
                                     label="LinkedIn Profile"
-                                    value="Sarah Johnson"
+                                    value={profile.professionalDetails?.linkedin || 'Not linked'}
                                     icon={Linkedin}
-                                    isLink
+                                    isLink={!!profile.professionalDetails?.linkedin}
                                 />
                             </div>
                         </div>
@@ -175,7 +213,7 @@ const PhotographerProfile = () => {
 
                 </div>
             </div>
-            {/* --- Suggest Category Modal --- */}
+            { }
             <AnimatePresence>
                 {isSuggestModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -195,16 +233,18 @@ const PhotographerProfile = () => {
                             <form onSubmit={handleSubmit(onSuggestSubmit)} className="p-6 space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Category Name</label>
+                                        <label htmlFor="name" className="block text-sm font-bold text-gray-700 mb-1">Category Name</label>
                                         <input
+                                            id="name"
                                             {...register("name", { required: "Category name is required" })}
                                             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-green-500"
                                             placeholder="e.g. Pet Photography"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Category Type</label>
+                                        <label htmlFor="type" className="block text-sm font-bold text-gray-700 mb-1">Category Type</label>
                                         <select
+                                            id="type"
                                             {...register("type", { required: "Category type is required" })}
                                             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-green-500"
                                         >
@@ -218,16 +258,18 @@ const PhotographerProfile = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                                    <label htmlFor="description" className="block text-sm font-bold text-gray-700 mb-1">Description</label>
                                     <textarea
+                                        id="description"
                                         {...register("description", { required: "Description is required" })}
                                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 h-20"
                                         placeholder="Brief description of the category..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Reason for Suggestion</label>
+                                    <label htmlFor="explanation" className="block text-sm font-bold text-gray-700 mb-1">Reason for Suggestion</label>
                                     <textarea
+                                        id="explanation"
                                         {...register("explanation", { required: "Explanation is required" })}
                                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-green-500 h-24"
                                         placeholder="Why is this category needed? Explain the value..."
@@ -259,8 +301,8 @@ const PhotographerProfile = () => {
     );
 };
 
-// --- Helper Component for Fields ---
-const InfoField = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string, icon: any, isLink?: boolean }) => (
+
+const InfoField = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string, icon: React.ElementType, isLink?: boolean }) => (
     <div>
         <label className="block text-xs font-medium text-gray-500 mb-1.5 ml-1">{label}</label>
         <div className={`

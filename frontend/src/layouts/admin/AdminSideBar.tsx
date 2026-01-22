@@ -3,18 +3,16 @@ import {
   LayoutDashboard,
   Users,
   Camera,
-  BookOpen,
-  Key,
-  Wallet,
-  MessageSquare,
-  Grid,
   LogOut,
   Tag,
-  ClipboardCheck
+  Package,
+  FileCheck,
+  ShoppingBag,
+  ListOrdered
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../modules/auth/store/useAuthStore.ts";
-// import toast from "react-hot-toast";
+
 import { toast } from "sonner"
 import { confirm } from "../../components/ConfirmToaster.tsx";
 import { ROUTES } from "../../constants/routes.ts";
@@ -23,8 +21,11 @@ const navItems = [
   { id: 1, name: "Dashboard", icon: <LayoutDashboard size={20} />, path: ROUTES.ADMIN.DASHBOARD },
   { id: 2, name: "Users", icon: <Users size={20} />, path: ROUTES.ADMIN.USERS },
   { id: 3, name: "Photographers", icon: <Camera size={20} />, path: ROUTES.ADMIN.PHOTOGRAPHERS },
-  { id: 4, name: "Categories", icon: <Tag size={20} />, path: "/admin/categories" },
-  { id: 5, name: "Packages", icon: <ClipboardCheck size={20} />, path: "/admin/packages" },
+  { id: 4, name: "Categories", icon: <Tag size={20} />, path: ROUTES.ADMIN.CATEGORIES },
+  { id: 5, name: "Packages", icon: <Package size={20} />, path: ROUTES.ADMIN.PACKAGES },
+  { id: 6, name: "Applications", icon: <FileCheck size={20} />, path: ROUTES.ADMIN.APPLICATIONS },
+  { id: 7, name: "Rentals", icon: <ShoppingBag size={20} />, path: ROUTES.ADMIN.RENTAL_MANAGEMENT },
+  { id: 8, name: "Rental Orders", icon: <ListOrdered size={20} />, path: ROUTES.ADMIN.RENTAL_ORDERS },
 ];
 
 const AdminSidebar: React.FC = () => {

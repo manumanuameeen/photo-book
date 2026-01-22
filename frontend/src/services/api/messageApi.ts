@@ -14,15 +14,15 @@ export interface SystemMessage {
 
 export const messageApi = {
     getMessages: async (): Promise<SystemMessage[]> => {
-        const response = await apiClient.get("/messages"); // Updated endpoint
+        const response = await apiClient.get("/messages");
         const messages = response.data.data;
         return messages.map((msg: any) => ({
             id: msg._id,
             content: msg.content,
             type: msg.type,
             isRead: msg.isRead,
-            senderName: msg.senderId ? msg.senderId.name : "System", // simplistic mapping
-            senderRole: "System", // Defaulting for now
+            senderName: msg.senderId ? msg.senderId.name : "System",
+            senderRole: "System",
             createdAt: msg.createdAt,
             fullDate: new Date(msg.createdAt).toLocaleString()
         }));
@@ -40,7 +40,7 @@ export const messageApi = {
             senderRole: "You",
             createdAt: msg.createdAt,
             fullDate: new Date(msg.createdAt).toLocaleString(),
-            receiverName: msg.receiverId ? msg.receiverId.name : "Unknown", // for sent items
+            receiverName: msg.receiverId ? msg.receiverId.name : "Unknown",
         }));
     },
 
@@ -52,9 +52,10 @@ export const messageApi = {
         await apiClient.delete(`/messages/${id}`);
     },
 
-    // Legacy or specific usage might still need this? 
-    // If dashboard stats still returns recentMessages, we can keep it or replace usage.
-    // For now, let's assume we are switching to the new API for the message box.
+    sendMessage: async (receiverId: string, content: string): Promise<void> => {
+        await apiClient.post("/messages", { receiverId, content });
+    },
+
     getSystemMessages: async (): Promise<SystemMessage[]> => {
         return await messageApi.getMessages();
     }

@@ -147,12 +147,12 @@ export const SmallLocationPicker = ({
         const value = e.target.value;
         setSearchQuery(value);
 
-        // Clear previous timeout
+        
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
 
-        // Set new timeout for search
+        
         searchTimeoutRef.current = setTimeout(() => {
             searchLocation(value);
         }, 500);
@@ -195,7 +195,7 @@ export const SmallLocationPicker = ({
                 </button>
             </div>
 
-            {/* Search Input */}
+            {}
             <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <div className="relative flex items-center">
                     <Search className="absolute left-3 text-gray-400" size={20} />
@@ -218,7 +218,7 @@ export const SmallLocationPicker = ({
                     </button>
                 </div>
 
-                {/* Search Results Dropdown */}
+                {}
                 {showResults && searchResults.length > 0 && (
                     <div className="absolute z-[1000] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
                         {searchResults.map((result, index) => (
@@ -235,7 +235,7 @@ export const SmallLocationPicker = ({
                 )}
             </div>
 
-            {/* Map Container - Reduced height from h-80/h-96 to h-64 for better layout */}
+            {}
             <div className="h-64 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
                 <MapContainer
                     center={position}
@@ -269,7 +269,7 @@ export const SmallLocationPicker = ({
                 </div>
             </div>
 
-            {/* Help Text */}
+            {}
             <p className="text-xs text-gray-500 italic">
                 💡 Tip: Search for a location or click directly on the map to set your position
             </p>

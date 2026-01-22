@@ -5,26 +5,35 @@ import { StripeWrapper } from "../../../components/payment/StripeWrapper";
 import { useAuthStore } from "../../auth/store/useAuthStore";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ROUTES } from "../../../constants/routes";
 
 export function PaymentPage() {
-    const { id } = useParams({ from: "/main/__layout/payment/$id" });
+    const { id } = useParams({ strict: false });
     const navigate = useNavigate();
     const { user } = useAuthStore();
+
     const [booking, setBooking] = useState<any>(null);
+    const [clientSecret, setClientSecret] = useState<string>("");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchBooking = async () => {
+        const fetchBookingAndIntent = async () => {
             try {
-                const data = await bookingApi.getBookingDetails(id);
-                setBooking(data);
+                if (!id) return;
+                const [bookingData, intentData] = await Promise.all([
+                    bookingApi.getBookingDetails(id),
+                    bookingApi.createPaymentIntent(id)
+                ]);
+                setBooking(bookingData);
+                setClientSecret(intentData.clientSecret);
             } catch (error) {
+                console.error("Failed to load booking or payment intent:", error);
                 toast.error("Failed to load booking details");
             } finally {
                 setLoading(false);
             }
         };
-        fetchBooking();
+        fetchBookingAndIntent();
     }, [id]);
 
     if (loading) {
@@ -35,12 +44,12 @@ export function PaymentPage() {
         );
     }
 
-    if (!booking) {
+    if (!booking || !id) {
         return <div className="text-center p-10">Booking not found.</div>;
     }
 
     const handleSuccess = () => {
-        navigate({ to: "/main/payment/success" });
+        navigate({ to: ROUTES.USER.PAYMENT_SUCCESS } as any);
     };
 
     return (
@@ -76,9 +85,10 @@ export function PaymentPage() {
                                 <StripeWrapper
                                     amount={booking.depositeRequired}
                                     userId={user?._id || ""}
+                                    clientSecret={clientSecret}
                                     onSuccess={handleSuccess}
-                                    onConfirmPayment={async () => {
-                                        await bookingApi.confirmPayment(id);
+                                    onConfirmPayment={async (paymentIntentId) => {
+                                        await bookingApi.confirmPayment(id, paymentIntentId);
                                     }}
                                 />
                             )}

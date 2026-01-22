@@ -11,7 +11,7 @@ import { toast } from "sonner";
 export const useApplicationManagement = () => {
     const queryClient = useQueryClient();
 
-    // Query for fetching applications
+    
     const useApplications = (params: GetPhotographersParams) => {
         return useQuery({
             queryKey: ['applications', params],
@@ -26,7 +26,7 @@ export const useApplicationManagement = () => {
         });
     };
 
-    // Query for fetching a single application details
+    
     const useApplicationById = (id: string) => {
         return useQuery({
             queryKey: ['application', id],
@@ -39,7 +39,7 @@ export const useApplicationManagement = () => {
         });
     };
 
-    // Mutation for approving application
+    
     const approveApplicationMutation = useMutation({
         mutationFn: async ({ id, message }: { id: string; message: string }) => {
             await adminPhotographerApi.approveApplication(id, message);
@@ -55,7 +55,7 @@ export const useApplicationManagement = () => {
         }
     });
 
-    // Mutation for rejecting application
+    
     const rejectApplicationMutation = useMutation({
         mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
             await adminPhotographerApi.rejectApplication(id, reason);

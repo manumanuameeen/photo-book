@@ -74,14 +74,14 @@ import { CheckAvailabilityModal } from '../components/CheckAvailabilityModal';
 
 const PhotographerDetails = () => {
     const navigate = useNavigate();
-    const { user } = useAuthStore();
+    const { user, role } = useAuthStore();
     const [selectedImage, setSelectedImage] = useState<PortfolioItem | null>(null);
     const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 3;
 
 
-    const { id } = useParams({ from: '/main/__layout/photographer_/$id' });
+    const { id } = useParams({ strict: false });
 
     const [photographer, setPhotographer] = useState<PhotographerDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -162,7 +162,7 @@ const PhotographerDetails = () => {
 
             const data = await userPhotographerApi.getPhotographerById(id);
             setPhotographer(data);
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error("Failed to submit review:", error);
             toast.error(error.response?.data?.message || "Failed to submit review");
         } finally {
@@ -170,9 +170,10 @@ const PhotographerDetails = () => {
         }
     };
 
-    // const navigate = useNavigate();
+
 
     const handleBack = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         navigate({ to: ROUTES.USER.PHOTOGRAPHER as any });
     };
 
@@ -183,9 +184,7 @@ const PhotographerDetails = () => {
         pkg.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const filteredPortfolioImages = portfolioImages.filter(item =>
-        item.sectionTitle.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Filtered portfolio images logic removed as it was unused and causing lint errors
 
     const totalPages = Math.ceil(filteredPackages.length / ITEMS_PER_PAGE);
     const paginatedPackages = filteredPackages.slice(
@@ -205,7 +204,7 @@ const PhotographerDetails = () => {
                         Back to Search
                     </button>
 
-                    {/* Search Bar */}
+                    { }
                     <div className="relative w-full md:w-96">
                         <input
                             type="text"
@@ -219,10 +218,10 @@ const PhotographerDetails = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column - Main Content */}
+                    { }
                     <div className="lg:col-span-2 space-y-8">
 
-                        {/* Profile Header Card */}
+                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-6 items-start">
                             <div className="relative">
                                 <img
@@ -264,11 +263,11 @@ const PhotographerDetails = () => {
                             </div>
                         </div>
 
-                        {/* Portfolio Gallery */}
+                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-lg font-bold text-gray-900">
-                                    {activeSection ? activeSection.title : "Portfolio Albums"} 
+                                    {activeSection ? activeSection.title : "Portfolio Albums"}
                                 </h2>
                                 {activeSection && (
                                     <button
@@ -282,7 +281,7 @@ const PhotographerDetails = () => {
                             </div>
 
                             {!activeSection ? (
-                                /* Album Grid View */
+
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                                     {photographer.portfolioSections && photographer.portfolioSections.length > 0 ? (
                                         photographer.portfolioSections.map((section) => (
@@ -290,9 +289,12 @@ const PhotographerDetails = () => {
                                                 key={section.id}
                                                 onClick={() => setActiveSection(section)}
                                                 className="group cursor-pointer flex flex-col"
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveSection(section); }}
                                             >
                                                 <div className="relative aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden shadow-sm border border-gray-100 mb-3 group-hover:shadow-md transition-all group-hover:-translate-y-1">
-                                                    {/* Folder Look - Stacked Effect */}
+                                                    { }
                                                     <div className="absolute top-0 right-0 w-full h-full bg-gray-200 translate-x-1 -translate-y-1 rounded-2xl -z-10"></div>
                                                     <div className="absolute top-0 right-0 w-full h-full bg-gray-300 translate-x-2 -translate-y-2 rounded-2xl -z-20"></div>
 
@@ -321,10 +323,13 @@ const PhotographerDetails = () => {
                                             </div>
                                         ))
                                     ) : photographer.portfolio && photographer.portfolio.length > 0 ? (
-                                        /* Fallback for legacy portfolio */
+
                                         <div
                                             onClick={() => setActiveSection({ id: 'legacy', title: 'General Portfolio', images: photographer.portfolio })}
                                             className="group cursor-pointer flex flex-col"
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveSection({ id: 'legacy', title: 'General Portfolio', images: photographer.portfolio }); }}
                                         >
                                             <div className="relative aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden shadow-sm border border-gray-100 mb-3 group-hover:shadow-md transition-all group-hover:-translate-y-1">
                                                 <img
@@ -355,17 +360,28 @@ const PhotographerDetails = () => {
                                     )}
                                 </div>
                             ) : (
-                                /* Album Detail View */
+
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 animate-in fade-in duration-300">
                                     {activeSection.images.map((img, idx) => (
                                         <div
                                             key={`${activeSection.id}-${idx}`}
                                             className="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity group relative bg-gray-100"
+                                            role="button"
+                                            tabIndex={0}
                                             onClick={() => setSelectedImage({
                                                 id: `${activeSection.id}-${idx}`,
                                                 image: img,
                                                 sectionTitle: activeSection.title
                                             })}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    setSelectedImage({
+                                                        id: `${activeSection.id}-${idx}`,
+                                                        image: img,
+                                                        sectionTitle: activeSection.title
+                                                    });
+                                                }
+                                            }}
                                         >
                                             <img
                                                 src={img}
@@ -384,7 +400,7 @@ const PhotographerDetails = () => {
                             )}
                         </div>
 
-                        {/* Packages Section (Moved from Sidebar) */}
+                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <h2 className="text-lg font-bold text-gray-900 mb-6">Packages</h2>
                             <div className="space-y-4 mb-6">
@@ -398,6 +414,9 @@ const PhotographerDetails = () => {
                                                     ? 'border-green-600 bg-green-50 ring-1 ring-green-600'
                                                     : 'border-gray-200 hover:border-green-300'
                                                     }`}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedPackage(pkg.id); }}
                                             >
                                                 <div className="flex justify-between items-center mb-3">
                                                     <h3 className="font-bold text-gray-900">{pkg.name}</h3>
@@ -414,7 +433,7 @@ const PhotographerDetails = () => {
                                             </div>
                                         ))}
 
-                                        {/* Pagination Controls */}
+                                        { }
                                         {totalPages > 1 && (
                                             <div className="flex justify-center items-center gap-2 mt-6">
                                                 <button
@@ -447,7 +466,7 @@ const PhotographerDetails = () => {
                             </div>
                         </div>
 
-                        {/* Reviews */}
+                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-lg font-bold text-gray-900">Client Reviews</h2>
@@ -485,8 +504,9 @@ const PhotographerDetails = () => {
                                     </div>
 
                                     <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
+                                        <label htmlFor="review-comment" className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
                                         <textarea
+                                            id="review-comment"
                                             value={reviewComment}
                                             onChange={(e) => setReviewComment(e.target.value)}
                                             placeholder="Tell us about your experience..."
@@ -550,58 +570,78 @@ const PhotographerDetails = () => {
 
                     </div>
 
-                    {/* Right Column - Booking Sidebar */}
+                    { }
                     <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-6">Booking Summary</h2>
+                        {role !== 'photographer' ? (
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
+                                <h2 className="text-lg font-bold text-gray-900 mb-6">Booking Summary</h2>
 
-                            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                                {selectedPackage ? (
-                                    <>
-                                        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">Selected Package</h3>
-                                        <p className="font-bold text-gray-900 text-lg">{photographer.packages.find(p => p.id === selectedPackage)?.name}</p>
-                                        <p className="font-bold text-green-600 text-xl mt-1">${photographer.packages.find(p => p.id === selectedPackage)?.price}</p>
-                                    </>
-                                ) : (
-                                    <p className="text-sm text-gray-500 italic">Select a package from the list to proceed with booking.</p>
-                                )}
+                                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                                    {selectedPackage ? (
+                                        <>
+                                            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">Selected Package</h3>
+                                            <p className="font-bold text-gray-900 text-lg">{photographer.packages.find(p => p.id === selectedPackage)?.name}</p>
+                                            <p className="font-bold text-green-600 text-xl mt-1">${photographer.packages.find(p => p.id === selectedPackage)?.price}</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 italic">Select a package from the list to proceed with booking.</p>
+                                    )}
+                                </div>
+
+                                <button
+                                    className="w-full bg-[#FFC107] hover:bg-[#FFB300] text-gray-900 font-bold py-3 rounded-lg shadow-sm transition-all active:scale-95 mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={!selectedPackage}
+                                    onClick={() => navigate({
+                                        to: ROUTES.USER.BOOKING,
+                                        search: {
+                                            photographerId: photographer.id,
+                                            packageId: selectedPackage
+                                        }
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    } as any)}
+                                >
+                                    Book Now
+                                </button>
+
+                                <button
+                                    onClick={() => setIsAvailabilityModalOpen(true)}
+                                    className="w-full bg-white border border-green-600 text-green-700 font-medium py-3 rounded-lg hover:bg-green-50 transition-colors"
+                                >
+                                    Check Availability
+                                </button>
+
+                                <div className="mt-6 text-center">
+                                    <p className="text-xs text-green-600 mb-1">Need something custom?</p>
+                                    <button className="text-xs text-gray-500 underline hover:text-green-700">Contact Photographer</button>
+                                </div>
                             </div>
-
-                            <button
-                                className="w-full bg-[#FFC107] hover:bg-[#FFB300] text-gray-900 font-bold py-3 rounded-lg shadow-sm transition-all active:scale-95 mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={!selectedPackage}
-                                onClick={() => navigate({
-                                    to: ROUTES.USER.BOOKING,
-                                    search: {
-                                        photographerId: photographer.id,
-                                        packageId: selectedPackage
-                                    }
-                                } as any)}
-                            >
-                                Book Now
-                            </button>
-
-                            <button
-                                onClick={() => setIsAvailabilityModalOpen(true)}
-                                className="w-full bg-white border border-green-600 text-green-700 font-medium py-3 rounded-lg hover:bg-green-50 transition-colors"
-                            >
-                                Check Availability
-                            </button>
-
-                            <div className="mt-6 text-center">
-                                <p className="text-xs text-green-600 mb-1">Need something custom?</p>
-                                <button className="text-xs text-gray-500 underline hover:text-green-700">Contact Photographer</button>
+                        ) : (
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6 text-center">
+                                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <User size={32} />
+                                </div>
+                                <h2 className="text-lg font-bold text-gray-900 mb-2">Photographer Profile</h2>
+                                <p className="text-sm text-gray-500 mb-4">You are viewing another photographer's profile. Booking is restricted for photographer accounts.</p>
+                                <button
+                                    onClick={() => navigate({ to: ROUTES.USER.HOME })}
+                                    className="text-sm font-medium text-blue-600 hover:underline"
+                                >
+                                    Return to Home
+                                </button>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Lightbox Modal */}
+            { }
             {selectedImage && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 transition-all duration-300"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedImage(null)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') setSelectedImage(null); }}
                 >
                     <button
                         className="absolute top-4 right-4 text-white hover:text-gray-300 focus:outline-none bg-black/50 rounded-full p-2"
@@ -612,6 +652,7 @@ const PhotographerDetails = () => {
                     <div
                         className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center"
                         onClick={(e) => e.stopPropagation()}
+                        role="presentation"
                     >
                         <img
                             src={selectedImage.image}
@@ -635,12 +676,13 @@ const PhotographerDetails = () => {
                     setIsAvailabilityModalOpen(false);
                     navigate({
                         to: ROUTES.USER.BOOKING,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         search: {
                             photographerId: photographer.id,
                             packageId: selectedPackage || undefined,
                             date: date.toISOString()
-                        }
-                    } as any);
+                        } as any
+                    });
                 }}
             />
         </div>

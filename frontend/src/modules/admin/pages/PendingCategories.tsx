@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Check, X, ArrowLeft, Layers, Search, Lightbulb, Clock, Eye, AlertCircle, Trash2, ShieldAlert } from 'lucide-react';
+import { Check, X, ArrowLeft, Search, Lightbulb, Clock, Eye, AlertCircle, Trash2, ShieldAlert } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { adminCategoryApi, type Category } from '../../../services/api/adminCategoryApi';
 import { toast } from 'sonner';
@@ -19,13 +19,12 @@ const PendingCategories = () => {
     const fetchPendingCategories = useCallback(async () => {
         setIsLoading(true);
         try {
-
             const data = await adminCategoryApi.getCategories(searchTerm, page, 10, "all", "true");
             if (data && Array.isArray(data.categories)) {
                 setCategories(data.categories);
                 setTotalPages(data.totalPages || 0);
             }
-        } catch (error) {
+        } catch (_) { // eslint-disable-line @typescript-eslint/no-unused-vars
             toast.error("Failed to load suggestions");
         } finally {
             setIsLoading(false);
@@ -48,7 +47,7 @@ const PendingCategories = () => {
             toast.success(`Category "${cat.name}" approved and active!`);
             fetchPendingCategories();
             setSelectedCategory(null);
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             toast.error(error.response?.data?.message || "Failed to approve category");
         }
     };
@@ -60,7 +59,7 @@ const PendingCategories = () => {
             toast.success("Suggestion discarded");
             fetchPendingCategories();
             setSelectedCategory(null);
-        } catch (error) {
+        } catch (_) { // eslint-disable-line @typescript-eslint/no-unused-vars
             toast.error("Failed to discard suggestion");
         }
     };
@@ -78,7 +77,7 @@ const PendingCategories = () => {
             setRejectionReason("");
             setSelectedCategory(null);
             fetchPendingCategories();
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             toast.error(error.response?.data?.message || "Failed to block category");
         }
     };
@@ -289,7 +288,7 @@ const PendingCategories = () => {
                 )}
             </AnimatePresence>
 
-            {/* Rejection Modal */}
+            {/* Reject/Block Modal */}
             <AnimatePresence>
                 {isRejectModalOpen && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -308,8 +307,9 @@ const PendingCategories = () => {
 
                             <div className="p-6 space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Reason for Blocking</label>
+                                    <label htmlFor="reason" className="text-sm font-bold text-gray-700">Reason for Blocking</label>
                                     <textarea
+                                        id="reason"
                                         value={rejectionReason}
                                         onChange={(e) => setRejectionReason(e.target.value)}
                                         className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500 h-32 resize-none"

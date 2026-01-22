@@ -13,11 +13,11 @@ import type {
 
 export function useSignup() {
   return useMutation<IAuthResponse, Error, ISignupRequest>({
-    mutationFn: async(data) => {
-      const res =await authService.signup(data)
+    mutationFn: async (data) => {
+      const res = await authService.signup(data)
       console.log("res in useAUth hook", res)
       return res;
-    }
+    },
   });
 }
 
@@ -32,7 +32,7 @@ export function useVerifyOtp() {
 export function useLogin() {
   return useMutation<IAuthResponse, Error, ILoginRequest>({
     mutationFn: (data) => {
-      // console.log(data)
+
       return authService.login(data)
     }
     ,
@@ -65,4 +65,13 @@ export function useResetPassword() {
   return useMutation<{ message: string }, Error, IResetPassword>({
     mutationFn: (data) => authService.resetPassword(data)
   })
+}
+
+export function useGoogleLogin() {
+  return useMutation<IAuthResponse, Error, string>({
+    mutationFn: (token) => {
+      console.log("google token in useAUth hook", token)
+      return authService.googleLogin(token)
+    },
+  });
 }

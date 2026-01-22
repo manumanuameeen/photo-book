@@ -42,7 +42,7 @@ export const MagneticButton = ({ children, className = "", onClick, style }: Mag
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
         >
-            {/* Sheen effect container */}
+            {}
             <motion.div
                 className="absolute inset-0 overflow-hidden rounded-md pointer-events-none"
                 initial={{ opacity: 0 }}

@@ -10,18 +10,24 @@ interface StripeWrapperProps {
     amount: number;
     userId: string;
     currency?: string;
+    clientSecret?: string; // New prop
     onSuccess?: () => void;
     onConfirmPayment?: (paymentIntentId: string) => Promise<void>;
 }
 
-export const StripeWrapper: React.FC<StripeWrapperProps> = ({ amount, userId, currency = "usd", onSuccess, onConfirmPayment }) => {
-    const [clientSecret, setClientSecret] = useState<string | null>(null);
+export const StripeWrapper: React.FC<StripeWrapperProps> = ({ amount, userId, currency = "usd", clientSecret: initialClientSecret, onSuccess, onConfirmPayment }) => {
+    const [clientSecret, setClientSecret] = useState<string | null>(initialClientSecret || null);
 
     useEffect(() => {
+        if (initialClientSecret) {
+            setClientSecret(initialClientSecret);
+            return;
+        }
+
         paymentApi.createPaymentIntent(amount, currency).then((data) => {
             setClientSecret(data.clientSecret);
         });
-    }, [amount, currency]);
+    }, [amount, currency, initialClientSecret]);
 
     if (!clientSecret) {
         return <div>Loading payment details...</div>;

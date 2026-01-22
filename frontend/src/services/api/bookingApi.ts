@@ -19,7 +19,8 @@ export interface BookingDetails {
     };
     eventDate: string;
     startTime: string;
-    status: 'pending' | 'accepted' | 'waiting_for_deposit' | 'rejected' | 'cancelled' | 'completed';
+    status: 'pending' | 'accepted' | 'waiting_for_deposit' | 'deposit_paid' | 'work_started' | 'work_ended_pending' | 'work_ended' | 'work_delivered' | 'rejected' | 'cancelled' | 'completed';
+    paymentStatus?: 'pending' | 'deposit_paid' | 'full_paid' | 'refunded';
     totalAmount: number;
     depositeRequired: number;
     paymentDeadline?: string;
@@ -30,27 +31,32 @@ export interface BookingDetails {
 }
 
 export const bookingApi = {
-    // User - Get their own bookings
-    // User - Get their own bookings with pagination
-    getUserBookings: async (page: number = 1, limit: number = 10): Promise<{ bookings: BookingDetails[], total: number }> => {
-        const response = await apiClient.get(`/booking/user/all?page=${page}&limit=${limit}`);
+
+
+    getUserBookings: async (page: number = 1, limit: number = 10, search: string = '', status: string = ''): Promise<{ bookings: BookingDetails[], total: number }> => {
+        const response = await apiClient.get(`/booking/user/all?page=${page}&limit=${limit}&search=${search}&status=${status}`);
         return response.data.data;
     },
 
-    // Photographer - Get their received bookings
+
     getPhotographerBookings: async (): Promise<BookingDetails[]> => {
         const response = await apiClient.get('/booking/photographer/all');
         return response.data.data;
     },
 
-    // Actions
+
     acceptBooking: async (bookingId: string, message?: string): Promise<BookingDetails> => {
         const response = await apiClient.patch(`/booking/${bookingId}/accept`, { message });
         return response.data.data;
     },
 
-    confirmPayment: async (bookingId: string): Promise<BookingDetails> => {
-        const response = await apiClient.patch(`/booking/${bookingId}/pay`);
+    createPaymentIntent: async (bookingId: string): Promise<{ url: string }> => {
+        const response = await apiClient.post(`/booking/${bookingId}/payment-intent`);
+        return response.data.data;
+    },
+
+    confirmPayment: async (bookingId: string, paymentIntentId?: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/pay`, { paymentIntentId });
         return response.data.data;
     },
 
@@ -71,6 +77,36 @@ export const bookingApi = {
 
     createBooking: async (data: any): Promise<BookingDetails> => {
         const response = await apiClient.post('/booking/', data);
+        return response.data.data;
+    },
+
+    completeBooking: async (bookingId: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/complete`);
+        return response.data.data;
+    },
+
+    startWork: async (bookingId: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/start-work`);
+        return response.data.data;
+    },
+
+    endWork: async (bookingId: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/end-work`);
+        return response.data.data;
+    },
+
+    deliverWork: async (bookingId: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/deliver-work`);
+        return response.data.data;
+    },
+
+    confirmEndWork: async (bookingId: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/confirm-end-work`);
+        return response.data.data;
+    },
+
+    confirmDelivery: async (bookingId: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/confirm-delivery`);
         return response.data.data;
     }
 };

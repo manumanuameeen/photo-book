@@ -85,7 +85,7 @@ const AdminPhotographerProfile: React.FC = () => {
         { icon: Mail, label: "Email", value: photographer.personalInfo.email },
         { icon: MapPin, label: "Location", value: photographer.personalInfo.location },
         { icon: Calendar, label: "Member Since", value: new Date(photographer.createdAt).toLocaleDateString() },
-        { icon: Camera, label: "Specialties", value: photographer.professionalDetails.specialties.join(", ") },
+        { icon: Camera, label: "Specialties", value: photographer.professionalDetails.specialties?.join(", ") || "None" },
         { icon: DollarSign, label: "Price Range", value: photographer.professionalDetails.priceRange },
     ];
 
@@ -103,7 +103,7 @@ const AdminPhotographerProfile: React.FC = () => {
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="flex items-center gap-5">
                         <img
-                            // src={photographer.personalInfo}
+                            src={photographer.personalInfo.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(photographer.personalInfo.name)}&background=random`}
                             alt={photographer.personalInfo.name}
                             className="w-24 h-24 rounded-full object-cover border-4 border-gray-50"
                         />

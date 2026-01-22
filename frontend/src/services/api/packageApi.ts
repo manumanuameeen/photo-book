@@ -9,7 +9,7 @@ export interface PackageData {
     editedPhoto: number;
     features: string[];
     deliveryTime: string;
-    categoryId: string; // ID
+    categoryId: string; 
     coverImage?: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     rejectionReason?: string;
@@ -29,7 +29,7 @@ export const packageApi = {
         return response.data.data.map((pkg: any) => ({
             ...pkg,
             id: pkg._id,
-            price: pkg.baseprice || pkg.price // Map baseprice to price
+            price: pkg.baseprice || pkg.price 
         }));
     },
 
@@ -49,7 +49,7 @@ export const packageApi = {
         return Array.isArray(response.data.data) ? response.data.data.map((pkg: any) => ({
             ...pkg,
             id: pkg._id,
-            price: pkg.baseprice || pkg.price // Map baseprice to price
+            price: pkg.baseprice || pkg.price 
         })) : [];
     },
 

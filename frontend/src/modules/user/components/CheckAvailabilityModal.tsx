@@ -76,7 +76,7 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
         const entry = availability.find(a => a.date.startsWith(dateStr));
 
         if (selectedDate && selectedDate.toDateString() === checkDate.toDateString()) return 'selected';
-        if (!entry) return 'unavailable'; // Default
+        if (!entry) return 'unavailable'; 
         if (!entry.isFullDayAvailable) return 'unavailable';
         return 'available';
     };
@@ -87,7 +87,7 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
 
-                {/* Left Side: Calendar */}
+                {}
                 <div className="p-6 md:p-8 flex-1 border-r border-gray-100 overflow-y-auto">
                     <button onClick={onClose} className="md:hidden mb-4 text-gray-500"><X /></button>
 
@@ -147,7 +147,7 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
                     </div>
                 </div>
 
-                {/* Right Side: details */}
+                {}
                 <div className="w-full md:w-80 bg-white p-6 md:p-8 flex flex-col h-full overflow-y-auto">
                     <div className="flex justify-between items-start mb-6">
                         <div>
