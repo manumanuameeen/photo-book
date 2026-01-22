@@ -6,3 +6,4 @@ export interface IPhtogrpherController {
   getDashboardStats(req: any, res: any, next: any): Promise<void>;
   getPhotographers(req: any, res: any, next: any): Promise<void>;
 }
+

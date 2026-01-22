@@ -506,4 +506,23 @@ export class NodeMailerService implements IEmailService {
       </html>
     `;
   }
+
+  async sendMail(to: string, subject: string, text: string, html: string, attachments?: any[]): Promise<void> {
+    try {
+      const mailOptions = {
+        from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
+        to,
+        subject,
+        text,
+        html,
+        attachments,
+      };
+      await mailTransport.sendMail(mailOptions);
+      console.log(`Generic email sent to ${to}`);
+    } catch (error: any) {
+      console.error(`Failed to send email to ${to}:`, error.message);
+      // We don't throw here to prevent blocking the main flow if email fails
+    }
+  }
 }
+

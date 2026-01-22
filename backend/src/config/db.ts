@@ -1,4 +1,4 @@
-﻿import mongoose from "mongoose";
+import mongoose from "mongoose";
 
 export const connectDB = async (): Promise<void> => {
   try {
@@ -8,10 +8,11 @@ export const connectDB = async (): Promise<void> => {
     await mongoose.connect(uri, {
       dbName: "photoBookDB",
     });
-    console.log("✅ MongoDB connected successfully");
-    console.log("📂 Database:", mongoose.connection.db?.databaseName);
+    console.log("? MongoDB connected successfully");
+    console.log("?? Database:", mongoose.connection.db?.databaseName);
   } catch (error: any) {
-    console.error("❌ MongoDB connection failed:", error.message);
+    console.error("? MongoDB connection failed:", error.message);
     process.exit(1);
   }
 };
+

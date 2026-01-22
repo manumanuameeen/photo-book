@@ -65,3 +65,4 @@ const PhotographerSchema: Schema = new Schema(
   { timestamps: true },
 );
 export const PhotographerModel = mongoose.model<IPhotographer>("Photographer", PhotographerSchema);
+

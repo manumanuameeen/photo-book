@@ -63,3 +63,4 @@ export class UserProfileResponseDto {
 
 export type UpdateProfileDtoType = z.infer<typeof UpdateProfileDto>;
 export type ChangePasswordDtoType = z.infer<typeof ChangePasswordDto>;
+

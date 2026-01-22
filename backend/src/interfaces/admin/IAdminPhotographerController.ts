@@ -18,3 +18,4 @@ export interface IAdminPhotographerController {
   blockPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
   unblockPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
 }
+

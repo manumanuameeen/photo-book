@@ -11,3 +11,4 @@ export const HttpStatus = {
 } as const;
 
 export type HttpStatus = (typeof HttpStatus)[keyof typeof HttpStatus];
+

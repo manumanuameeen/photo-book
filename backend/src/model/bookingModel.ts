@@ -114,3 +114,4 @@ const BookingSchema: Schema = new Schema(
 );
 
 export const BookingModel: Model<IBooking> = mongoose.model<IBooking>("Booking", BookingSchema);
+

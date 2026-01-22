@@ -97,6 +97,10 @@ export const bookingApi = {
 
     deliverWork: async (bookingId: string): Promise<BookingDetails> => {
         const response = await apiClient.patch(`/booking/${bookingId}/deliver-work`);
+        console.log(response)
+        console.log(response.data)
+        
+        console.log(response.data.data)
         return response.data.data;
     },
 

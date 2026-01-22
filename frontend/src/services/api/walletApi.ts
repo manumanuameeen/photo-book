@@ -13,6 +13,7 @@ export interface WalletDetails {
     _id: string;
     userId: string;
     balance: number;
+    pendingBalance?: number;
     transactions: WalletTransaction[];
 }
 
@@ -33,6 +34,7 @@ export interface EscrowBooking {
     };
     packageDetails: {
         name: string;
+        packagePrice?: number;
     };
     eventType: string;
 }
@@ -78,9 +80,9 @@ export const walletApi = {
         });
         return response.data.data;
     },
-    getWalletTransactions: async (page: number, limit: number, filter: string) => {
+    getWalletTransactions: async (page: number, limit: number, type: string) => {
         const response = await apiClient.get('/wallet/transactions', {
-            params: { page, limit, filter }
+            params: { page, limit, type }
         });
         return response.data.data;
     }

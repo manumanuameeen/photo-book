@@ -28,3 +28,4 @@ export interface IPhotographerCreate {
   };
   status: "PENDING" | "APPROVED" | "REJECTED";
 }
+

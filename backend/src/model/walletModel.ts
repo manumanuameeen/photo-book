@@ -38,3 +38,4 @@ const WalletSchema: Schema = new Schema(
 );
 
 export const WalletModel: Model<IWallet> = mongoose.model<IWallet>("Wallet", WalletSchema);
+

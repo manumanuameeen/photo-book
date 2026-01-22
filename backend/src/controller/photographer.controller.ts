@@ -213,3 +213,4 @@ export class PhotographerController implements IPhtogrpherController {
     }
   };
 }
+

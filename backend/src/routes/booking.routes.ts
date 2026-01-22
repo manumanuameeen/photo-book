@@ -59,3 +59,4 @@ router.patch(ROUTES.V1.BOOKING.CONFIRM_DELIVERY, verifyAccessToken, (req, res) =
 );
 
 export default router;
+

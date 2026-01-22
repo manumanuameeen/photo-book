@@ -31,3 +31,4 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
     return await this._model.findByIdAndUpdate(messageId, { isRead: true }, { new: true });
   }
 }
+

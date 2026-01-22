@@ -54,3 +54,4 @@ export type RefreshTokenDtoType = z.infer<typeof RefreshTokenDto>;
 export type ForgetPasswordDtoType = z.infer<typeof ForgetPasswordDto>;
 export type VerifyResetOtpDtoType = z.infer<typeof VerifyResetOtpDto>;
 export type ResetPasswordDtoType = z.infer<typeof ResetPasswordDto>;
+

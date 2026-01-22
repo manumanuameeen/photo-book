@@ -19,3 +19,4 @@ export const createRefreshToken = (userId: string, email: string, role: string) 
     expiresIn: "7d",
   });
 };
+

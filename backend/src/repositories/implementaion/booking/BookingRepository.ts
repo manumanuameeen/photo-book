@@ -160,3 +160,4 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
     };
   }
 }
+

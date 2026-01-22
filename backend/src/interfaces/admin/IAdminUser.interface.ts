@@ -20,3 +20,4 @@ export interface IPaginationUsers {
   totalPages: number;
   currentPage: number;
 }
+

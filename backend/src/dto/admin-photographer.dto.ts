@@ -28,3 +28,4 @@ export type GetPhotographersQueryDtoType = z.infer<typeof GetPhotographersQueryD
 export type BlockPhotographerDtoType = z.infer<typeof BlockPhotographerDto>;
 export type ApprovedApplicationDtoType = z.infer<typeof ApprovedApplicationDto>;
 export type RejectedApplicationDtoType = z.infer<typeof RejectedApplicationDto>;
+

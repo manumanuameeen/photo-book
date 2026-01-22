@@ -9,3 +9,4 @@ export const AdminUserQueryDto = z.object({
 });
 
 export type AdminUserQueryDtoType = z.infer<typeof AdminUserQueryDto>;
+

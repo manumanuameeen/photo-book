@@ -523,21 +523,22 @@ export class BookingService implements IBookingService {
     const booking = await this.bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
-    if (booking.status !== BookingStatus.WORK_ENDED) {
-      // Ideally work should be ended first.
-      // And payment should be full ideally?
-      // Prompt says: "user need to pay the pending amount... and photographer send the work"
-      // So we check payment status?
+    if (!booking.photographerId) {
+      throw new Error("Photographer information is missing");
     }
 
-    // Check if full payment is made?
-    // "user need to pay the pending amuont... and the phtogrpaher need to setn the work"
-    // implies payment first.
+    if (booking.status !== BookingStatus.WORK_ENDED) {
+      throw new Error("Work must be ended before delivery");
+    }
+
     if (booking.paymentStatus !== PaymentStatus.FULL_PAID) {
       throw new Error("Cannot deliver work before full payment.");
     }
 
-    booking.status = BookingStatus.WORK_DELIVERED;
+    // Automatically release funds when work is delivered (no user confirmation needed)
+    await this.paymentService.releaseFunds(id, "booking", booking.photographerId.toString());
+
+    booking.status = BookingStatus.COMPLETED;
     return await booking.save();
   }
 
@@ -560,3 +561,4 @@ export class BookingService implements IBookingService {
     return await booking.save();
   }
 }
+

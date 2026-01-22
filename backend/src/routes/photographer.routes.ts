@@ -106,3 +106,4 @@ router.get("/profile", verifyAccessToken, (req, res, next) =>
 );
 
 export default router;
+

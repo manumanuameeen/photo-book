@@ -24,3 +24,4 @@ export const handleError = (res: Response, error: any) => {
     message: "An unexpected error occurred",
   });
 };
+

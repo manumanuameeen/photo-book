@@ -67,3 +67,4 @@ export const verifyAccessToken = async (req: AuthRequest, res: Response, next: N
     });
   }
 };
+

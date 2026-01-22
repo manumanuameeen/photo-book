@@ -122,3 +122,4 @@ export class PortfolioController implements IPortfolioController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
+

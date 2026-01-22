@@ -41,3 +41,4 @@ export class PhotographerResponseDto {
   };
   portfolioImages!: string[];
 }
+

@@ -130,3 +130,4 @@ export class WalletController implements IWalletController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
+

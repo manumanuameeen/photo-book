@@ -26,3 +26,4 @@ router.post(ROUTES.V1.AUTH.FORGOT_PASSWORD, AuthRateLimiter, authController.forg
 router.post(ROUTES.V1.AUTH.VERIFY_RESET_OTP, authController.verifyResetOtp);
 
 export default router;
+

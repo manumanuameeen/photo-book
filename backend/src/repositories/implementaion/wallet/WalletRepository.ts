@@ -87,3 +87,4 @@ export class WalletRepository extends BaseRepository<IWallet> implements IWallet
     return { transactions: [], total: 0 };
   }
 }
+

@@ -20,7 +20,8 @@ export const ROUTES = {
     RENTAL_MANAGEMENT_DETAILS: "/admin/rental-management/$id",
     RENTAL_ORDERS: "/admin/rental-orders",
     RENTAL_ORDER_DETAILS: "/admin/rental-orders/$id",
-    PACKAGES: "/admin/packages"
+    PACKAGES: "/admin/packages",
+    WALLET: "/admin/wallet"
   },
   USER: {
     HOME: "/main/home",

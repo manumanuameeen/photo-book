@@ -7,3 +7,4 @@ export const mailTransport = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 });
+

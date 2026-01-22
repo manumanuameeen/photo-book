@@ -91,3 +91,4 @@ export class AdminController implements IAdminController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
+

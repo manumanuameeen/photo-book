@@ -26,3 +26,4 @@ export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction)
   console.log(" admin verified successfully");
   next();
 };
+

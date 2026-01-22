@@ -25,3 +25,4 @@ export const PortfolioSectionModel: Model<IPortfolioSection> = mongoose.model<IP
   "PortfolioSection",
   PortfolioSectionSchema,
 );
+

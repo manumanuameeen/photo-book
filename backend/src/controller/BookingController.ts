@@ -234,3 +234,4 @@ export class BookingController implements IBookingController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
+

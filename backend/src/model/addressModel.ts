@@ -19,3 +19,4 @@ const AddressSchema: Schema = new Schema(
 );
 
 export const AddressModel: Model<IAddress> = mongoose.model<IAddress>("Address", AddressSchema);
+

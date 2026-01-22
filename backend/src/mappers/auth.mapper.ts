@@ -19,3 +19,4 @@ export class AuthMapper {
     return email.toLowerCase().trim();
   }
 }
+

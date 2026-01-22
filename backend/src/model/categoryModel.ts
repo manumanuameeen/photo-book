@@ -48,3 +48,4 @@ export const CategoryModel: Model<ICategory> = mongoose.model<ICategory>(
   "Category",
   CategorySchema,
 );
+

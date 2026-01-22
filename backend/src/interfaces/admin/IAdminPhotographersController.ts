@@ -11,3 +11,4 @@ export interface IAdminPhotographerController {
   rejectApplication(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
   getStatistics(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
 }
+

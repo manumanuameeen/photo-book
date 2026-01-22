@@ -188,3 +188,4 @@ export class AdminPhotographerController implements IAdminPhotographerController
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
+

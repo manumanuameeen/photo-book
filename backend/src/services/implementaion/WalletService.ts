@@ -190,3 +190,4 @@ export class WalletService implements IWalletService {
     return (await this.walletRepository.updateTransactionStatus(targetId, refId, "COMPLETED"))!;
   }
 }
+

@@ -44,3 +44,4 @@ export const BookingPackageModel: Model<IBookingPackage> = mongoose.model<IBooki
   "BookingPackage",
   BookingPackageSchema,
 );
+

@@ -23,3 +23,4 @@ export interface SetAvailabilityDto {
   }>;
   isFullDayAvailable?: boolean;
 }
+

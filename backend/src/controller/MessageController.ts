@@ -93,3 +93,4 @@ export class MessageController implements IMessageController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
+
