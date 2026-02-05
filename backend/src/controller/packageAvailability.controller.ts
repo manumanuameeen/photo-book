@@ -66,7 +66,12 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
 
-      const result = await this._packageService.getPhotographerPackages(userId);
+      const { page, limit } = req.query;
+      const result = await this._packageService.getPackagesByUserId(
+        userId,
+        page ? parseInt(page as string) : 1,
+        limit ? parseInt(limit as string) : 10,
+      );
       ApiResponse.success(res, result, Messages.PACKAGES_FETCHED);
     } catch (error) {
       this._handleError(res, error);
@@ -79,7 +84,12 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       if (!photographerId)
         throw new AppError(Messages.PHOTOGRAPHER_ID_REQUIRED, HttpStatus.BAD_REQUEST);
 
-      const result = await this._packageService.getPhotographerPackages(photographerId);
+      const { page, limit } = req.query;
+      const result = await this._packageService.getPackagesByPhotographerId(
+        photographerId,
+        page ? parseInt(page as string) : 1,
+        limit ? parseInt(limit as string) : 10,
+      );
       ApiResponse.success(res, result, Messages.PACKAGES_FETCHED);
     } catch (error) {
       this._handleError(res, error);
@@ -182,19 +192,19 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
         throw new AppError(Messages.DATE_RANGE_REQUIRED, HttpStatus.BAD_REQUEST);
       }
 
-      // Dynamic import to avoid potential circular dependencies if any
+
       const { PhotographerModel } = await import("../model/photographerModel");
       const mongoose = (await import("mongoose")).default;
 
       let targetUserId = "";
 
       if (mongoose.Types.ObjectId.isValid(id)) {
-        // Try to find if it's a Photographer Profile ID or a User ID linked to a photographer
+
         const photographer = await PhotographerModel.findOne({
           $or: [
             { _id: new mongoose.Types.ObjectId(id) },
-            { userId: new mongoose.Types.ObjectId(id) }
-          ]
+            { userId: new mongoose.Types.ObjectId(id) },
+          ],
         });
 
         if (photographer) {
@@ -237,6 +247,23 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
+  unblockRange = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.userId;
+      const { startDate, endDate } = req.body;
+      if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+
+      if (!startDate || !endDate) {
+        throw new AppError(Messages.DATE_RANGE_REQUIRED, HttpStatus.BAD_REQUEST);
+      }
+
+      await (this._availabilityService as any).unblockRange(userId, new Date(startDate), new Date(endDate));
+      ApiResponse.success(res, null, "Range unblocked successfully", HttpStatus.OK);
+    } catch (error) {
+      this._handleError(res, error);
+    }
+  };
+
   deleteAvailability = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.userId;
@@ -262,5 +289,16 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
-}
 
+  toggleLike = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+      const { id } = req.params;
+      const pkg = await this._packageService.toggleLike(id, userId);
+      ApiResponse.success(res, pkg, "Like status toggled");
+    } catch (error) {
+      this._handleError(res, error);
+    }
+  };
+}

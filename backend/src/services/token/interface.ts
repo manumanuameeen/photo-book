@@ -3,4 +3,3 @@ export interface ITokenBlackListService {
   isBlackListed(token: string): Promise<boolean>;
   removeFromBlacklist(token: string): Promise<void>;
 }
-

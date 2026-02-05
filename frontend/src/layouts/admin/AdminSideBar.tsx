@@ -8,7 +8,10 @@ import {
   Package,
   FileCheck,
   ShoppingBag,
-  ListOrdered
+  ListOrdered,
+  Wallet,
+  AlertTriangle,
+  BookOpen
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../modules/auth/store/useAuthStore.ts";
@@ -26,6 +29,9 @@ const navItems = [
   { id: 6, name: "Applications", icon: <FileCheck size={20} />, path: ROUTES.ADMIN.APPLICATIONS },
   { id: 7, name: "Rentals", icon: <ShoppingBag size={20} />, path: ROUTES.ADMIN.RENTAL_MANAGEMENT },
   { id: 8, name: "Rental Orders", icon: <ListOrdered size={20} />, path: ROUTES.ADMIN.RENTAL_ORDERS },
+  { id: 9, name: "Wallet", icon: <Wallet size={20} />, path: ROUTES.ADMIN.WALLET },
+  { id: 10, name: "Reports", icon: <AlertTriangle size={20} />, path: ROUTES.ADMIN.REPORTS },
+  { id: 11, name: "Rules & Policies", icon: <BookOpen size={20} />, path: ROUTES.ADMIN.RULES },
 ];
 
 const AdminSidebar: React.FC = () => {

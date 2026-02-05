@@ -5,21 +5,19 @@ import { AppError } from "../utils/AppError.ts";
 import { Messages } from "../constants/messages.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { ApiResponse } from "../utils/response.ts";
-
 import { IWalletController } from "../interfaces/controllers/IWalletController.ts";
-
 import { IBookingRepository } from "../interfaces/repositories/IBookingRepository.ts";
 import { IRentalRepository } from "../interfaces/repositories/IRentalRepository.ts";
 
 export class WalletController implements IWalletController {
   private readonly walletService: IWalletService;
-  private readonly bookingRepository: IBookingRepository; // Injected
-  private readonly rentalRepository: IRentalRepository;   // Injected
+  private readonly bookingRepository: IBookingRepository;
+  private readonly rentalRepository: IRentalRepository;
 
   constructor(
     walletService: IWalletService,
     bookingRepository: IBookingRepository,
-    rentalRepository: IRentalRepository
+    rentalRepository: IRentalRepository,
   ) {
     this.walletService = walletService;
     this.bookingRepository = bookingRepository;
@@ -49,13 +47,16 @@ export class WalletController implements IWalletController {
       const page = Number.parseInt(req.query.page as string) || 1;
       const limit = Number.parseInt(req.query.limit as string) || 10;
       const type = req.query.type as string;
+      const status = req.query.status as string;
 
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      const result = await this.walletService.getWalletTransactions(userId, page, limit, type);
-      console.log(`[WalletController] getTransactions for ${userId}: Balance=${result.balance}, Total=${result.total}`);
+      const result = await this.walletService.getWalletTransactions(userId, page, limit, type, status);
+      console.log(
+        `[WalletController] getTransactions for ${userId}: Balance=${result.balance}, Total=${result.total}`,
+      );
       ApiResponse.success(res, result, Messages.WALLET_FETCHED);
     } catch (error) {
       this._handleError(res, error);
@@ -130,4 +131,3 @@ export class WalletController implements IWalletController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
-

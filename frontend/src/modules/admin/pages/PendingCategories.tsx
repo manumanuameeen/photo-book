@@ -24,7 +24,7 @@ const PendingCategories = () => {
                 setCategories(data.categories);
                 setTotalPages(data.totalPages || 0);
             }
-        } catch (_) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        } catch (_) { 
             toast.error("Failed to load suggestions");
         } finally {
             setIsLoading(false);
@@ -47,7 +47,7 @@ const PendingCategories = () => {
             toast.success(`Category "${cat.name}" approved and active!`);
             fetchPendingCategories();
             setSelectedCategory(null);
-        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        } catch (error: any) { 
             toast.error(error.response?.data?.message || "Failed to approve category");
         }
     };
@@ -59,7 +59,7 @@ const PendingCategories = () => {
             toast.success("Suggestion discarded");
             fetchPendingCategories();
             setSelectedCategory(null);
-        } catch (_) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        } catch (_) { 
             toast.error("Failed to discard suggestion");
         }
     };
@@ -77,7 +77,7 @@ const PendingCategories = () => {
             setRejectionReason("");
             setSelectedCategory(null);
             fetchPendingCategories();
-        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        } catch (error: any) { 
             toast.error(error.response?.data?.message || "Failed to block category");
         }
     };
@@ -288,7 +288,7 @@ const PendingCategories = () => {
                 )}
             </AnimatePresence>
 
-            {/* Reject/Block Modal */}
+            {}
             <AnimatePresence>
                 {isRejectModalOpen && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">

@@ -6,6 +6,8 @@ export interface PhotographerFilter {
     location?: string;
     lat?: number;
     lng?: number;
+    page?: number;
+    limit?: number;
 }
 
 export const userPhotographerApi = {

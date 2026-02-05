@@ -11,10 +11,11 @@ import { PhotographerService } from "../services/photographer/photograher.servic
 import { AdminPhotographerService } from "../services/admin/AdminPhotographerService.ts";
 import { S3FileService } from "../services/external/S3FileService.ts";
 import { AuthController } from "../controller/auth.controller.ts";
-import { AdminController } from "../controller/adminUser.controller.ts";
+import { AdminController } from "../controller/admin/adminUser.controller.ts";
 import { UserController } from "../controller/user.controller.ts";
 import { PhotographerController } from "../controller/photographer.controller.ts";
-import { AdminPhotographerController } from "../controller/adminPhotographer.controller.ts";
+
+import { AdminPhotographerController } from "../controller/admin/adminPhotographer.controller.ts";
 import { PackageRepository } from "../repositories/implementaion/PackageRepository.ts";
 import { AvailabilityRepository } from "../repositories/implementaion/AvailabilityRepository.ts";
 import { PackageService } from "../services/photographer/package.service.ts";
@@ -44,9 +45,30 @@ import { WalletController } from "../controller/WalletController.ts";
 import { PaymentController } from "../controller/PaymentController.ts";
 import { PaymentService } from "../services/implementaion/PaymentService.ts";
 import { RentalRepository } from "../repositories/implementaion/rental/RentalRepository.ts";
-import { RentalService } from "../services/implementaion/RentalService.ts";
-import { RentalController } from "../controller/RentalController.ts";
 import { PdfService } from "../services/implementaion/PdfService.ts";
+import { BookingPaymentService } from "../services/booking/BookingPaymentService.ts";
+
+import { RentalItemRepository } from "../repositories/rental/RentalItemRepository.ts";
+import { RentalOrderRepository } from "../repositories/rental/RentalOrderRepository.ts";
+import { RentalItemService } from "../services/rental/RentalItemService.ts";
+import { RentalOrderService } from "../services/rental/RentalOrderService.ts";
+import { RentalPaymentService } from "../services/rental/RentalPaymentService.ts";
+import { RentalAvailabilityService } from "../services/rental/RentalAvailabilityService.ts";
+import { RentalFinanceService } from "../services/rental/RentalFinanceService.ts";
+import { RentalService } from "../services/implementaion/RentalService.ts";
+import { AdminRentalService } from "../services/rental/AdminRentalService.ts";
+import { AdminRentalController } from "../controller/admin/AdminRentalController.ts";
+import { RentalController } from "../controller/RentalController.ts";
+import { ReviewRepository } from "../repositories/implementaion/ReviewRepository.ts";
+import { ReviewService } from "../services/implementaion/ReviewService.ts";
+import { ReviewController } from "../controller/ReviewController.ts";
+import { IReviewController } from "../interfaces/controllers/IReviewController.ts";
+import { IEmailService } from "../interfaces/services/IEmailService.ts";
+import { ReportService } from "../services/implementaion/ReportService.ts";
+import { ReportController } from "../controller/ReportController.ts";
+import { RuleRepository } from "../repositories/implementaion/admin/RuleRepository.ts";
+import { RuleService } from "../services/implementaion/admin/RuleService.ts";
+import { RuleController } from "../controller/ruleController.ts";
 
 class DIContainer {
   private _userRepository?: UserRepository;
@@ -60,8 +82,15 @@ class DIContainer {
   private _bookingRepository?: BookingRepository;
   private _walletRepository?: WalletRepository;
   private _rentalRepository?: RentalRepository;
-  private _pdfService?: PdfService;
+  private _rentalService?: RentalService;
+  private _rentalAvailabilityService?: RentalAvailabilityService;
+  private _rentalFinanceService?: RentalFinanceService;
 
+  private _rentalItemRepository?: RentalItemRepository;
+  private _rentalOrderRepository?: RentalOrderRepository;
+  private _ruleRepository?: RuleRepository;
+
+  private _pdfService?: PdfService;
   private _emailService?: NodeMailerService;
   private _otpService?: OtpService;
   private _tokenBlacklistService?: TokenBlacklistService;
@@ -80,8 +109,15 @@ class DIContainer {
   private _walletService?: WalletService;
   private _bookingQueueService?: BookingQueueService;
   private _stripeService?: StripeService;
+  private _bookingPaymentService?: BookingPaymentService;
   private _paymentService?: PaymentService;
-  private _rentalService?: RentalService;
+
+
+  private _rentalItemService?: RentalItemService;
+  private _rentalOrderService?: RentalOrderService;
+  private _rentalPaymentService?: RentalPaymentService;
+  private _adminRentalService?: AdminRentalService;
+  private _ruleService?: RuleService;
 
   private _authController?: AuthController;
   private _adminController?: AdminController;
@@ -90,12 +126,24 @@ class DIContainer {
   private _adminPhotographerController?: AdminPhotographerController;
   private _packageAvailabilityController?: PackageAvailabilityController;
   private _portfolioController?: IPortfolioController;
-  private _categoryController?: ICategoryController;
+  private _scheduleService?: any;
+  private _scheduleController?: any;
+  private _reviewRepository?: any;
+  private _reviewService?: any;
+  private _reviewController?: IReviewController;
   private _bookingController?: IBookingController;
   private _messageController?: IMessageController;
   private _walletController?: WalletController;
   private _paymentController?: PaymentController;
+  private _categoryController?: ICategoryController;
+
+
   private _rentalController?: RentalController;
+  private _adminRentalController?: AdminRentalController;
+
+  private _reportService?: ReportService;
+  private _reportController?: ReportController;
+  private _ruleController?: RuleController;
 
   get bookingQueueService(): BookingQueueService {
     this._bookingQueueService ??= new BookingQueueService();
@@ -157,12 +205,22 @@ class DIContainer {
     return this._rentalRepository;
   }
 
+  get rentalItemRepository(): RentalItemRepository {
+    this._rentalItemRepository ??= new RentalItemRepository();
+    return this._rentalItemRepository;
+  }
+
+  get rentalOrderRepository(): RentalOrderRepository {
+    this._rentalOrderRepository ??= new RentalOrderRepository();
+    return this._rentalOrderRepository;
+  }
+
   get pdfService(): PdfService {
     this._pdfService ??= new PdfService();
     return this._pdfService;
   }
 
-  get emailService(): NodeMailerService {
+  get emailService(): IEmailService {
     this._emailService ??= new NodeMailerService();
     return this._emailService;
   }
@@ -221,7 +279,10 @@ class DIContainer {
   }
 
   get packageService(): PackageService {
-    this._packageService ??= new PackageService(this.packageRepository);
+    this._packageService ??= new PackageService(
+      this.packageRepository,
+      this.photographerRepository,
+    );
     return this._packageService;
   }
 
@@ -231,7 +292,10 @@ class DIContainer {
   }
 
   get portfolioService(): PortfolioService {
-    this._portfolioService ??= new PortfolioService(this.portfolioRepository);
+    this._portfolioService ??= new PortfolioService(
+      this.portfolioRepository,
+      this.photographerRepository,
+    );
     return this._portfolioService;
   }
 
@@ -250,29 +314,65 @@ class DIContainer {
     return this._walletService;
   }
 
-  get rentalService(): RentalService {
-    this._rentalService ??= new RentalService(
-      this.rentalRepository,
-      this.pdfService,
-      this.emailService,
-      this.stripeService, // Injected
-      this.walletService, // Injected
-      this.paymentService, // Injected
-      this.userRepository, // New injection
+  get rentalItemService(): RentalItemService {
+    this._rentalItemService ??= new RentalItemService(
+      this.rentalItemRepository,
+      this.rentalOrderRepository,
     );
-    return this._rentalService;
+    return this._rentalItemService;
+  }
+
+  get rentalPaymentService(): RentalPaymentService {
+    this._rentalPaymentService ??= new RentalPaymentService(
+      this.rentalOrderRepository,
+      this.paymentService,
+      this.walletService,
+      this.stripeService,
+      this.emailService,
+      this.pdfService,
+    );
+    return this._rentalPaymentService;
+  }
+
+  get rentalOrderService(): RentalOrderService {
+    this._rentalOrderService ??= new RentalOrderService(
+      this.rentalOrderRepository,
+      this.rentalItemRepository,
+      this.rentalItemService,
+      this.rentalPaymentService,
+      this.userRepository,
+      this.stripeService,
+    );
+    return this._rentalOrderService;
+  }
+
+  get adminRentalService(): AdminRentalService {
+    this._adminRentalService ??= new AdminRentalService(
+      this.rentalItemRepository,
+      this.rentalOrderRepository,
+    );
+    return this._adminRentalService;
+  }
+
+  get bookingPaymentService(): BookingPaymentService {
+    this._bookingPaymentService ??= new BookingPaymentService(
+      this.bookingRepository,
+      this.stripeService,
+      this.paymentService,
+      this.walletService,
+      this.emailService,
+    );
+    return this._bookingPaymentService;
   }
 
   get bookingService(): BookingService {
     this._bookingService ??= new BookingService(
       this.bookingRepository,
-      this.walletService,
       this.bookingQueueService,
       this.emailService,
       this.messageService,
       this.availabilityService,
-      this.stripeService, // Injected
-      this.paymentService, // Injected
+      this.bookingPaymentService,
     );
     return this._bookingService;
   }
@@ -345,7 +445,7 @@ class DIContainer {
     this._walletController ??= new WalletController(
       this.walletService,
       this.bookingRepository,
-      this.rentalRepository
+      this.rentalRepository,
     );
     return this._walletController;
   }
@@ -355,9 +455,45 @@ class DIContainer {
     return this._paymentController;
   }
 
+  get rentalAvailabilityService(): RentalAvailabilityService {
+    this._rentalAvailabilityService ??= new RentalAvailabilityService(this.rentalRepository);
+    return this._rentalAvailabilityService;
+  }
+
+  get rentalFinanceService(): RentalFinanceService {
+    this._rentalFinanceService ??= new RentalFinanceService(
+      this.rentalRepository,
+      this.stripeService,
+      this.walletService,
+      this.paymentService,
+      this.emailService,
+      this.pdfService,
+      this.rentalAvailabilityService,
+    );
+    return this._rentalFinanceService;
+  }
+
+  get rentalService(): RentalService {
+    this._rentalService ??= new RentalService(
+      this.rentalRepository,
+      this.userRepository,
+      this.rentalAvailabilityService,
+      this.rentalFinanceService,
+    );
+    return this._rentalService;
+  }
+
   get rentalController(): RentalController {
-    this._rentalController ??= new RentalController(this.rentalService, this.fileService);
+    this._rentalController ??= new RentalController(
+      this.rentalService,
+      this.fileService,
+    );
     return this._rentalController;
+  }
+
+  get adminRentalController(): AdminRentalController {
+    this._adminRentalController ??= new AdminRentalController(this.adminRentalService);
+    return this._adminRentalController;
   }
 
   get paymentService(): PaymentService {
@@ -371,7 +507,45 @@ class DIContainer {
     );
     return this._paymentService;
   }
+
+  get reviewRepository(): ReviewRepository {
+    this._reviewRepository ??= new ReviewRepository();
+    return this._reviewRepository;
+  }
+
+  get reviewService(): ReviewService {
+    this._reviewService ??= new ReviewService(this.reviewRepository);
+    return this._reviewService;
+  }
+
+  get reviewController(): IReviewController {
+    this._reviewController ??= new ReviewController(this.reviewService);
+    return this._reviewController;
+  }
+
+  get reportService(): ReportService {
+    this._reportService ??= new ReportService();
+    return this._reportService;
+  }
+
+  get reportController(): ReportController {
+    return this._reportController;
+  }
+
+  get ruleRepository(): RuleRepository {
+    this._ruleRepository ??= new RuleRepository();
+    return this._ruleRepository;
+  }
+
+  get ruleService(): RuleService {
+    this._ruleService ??= new RuleService(this.ruleRepository);
+    return this._ruleService;
+  }
+
+  get ruleController(): RuleController {
+    this._ruleController ??= new RuleController(this.ruleService);
+    return this._ruleController;
+  }
 }
 
 export const container = new DIContainer();
-

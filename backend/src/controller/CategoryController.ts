@@ -156,4 +156,3 @@ export class CategoryController implements ICategoryController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
-

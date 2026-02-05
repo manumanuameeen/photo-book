@@ -59,6 +59,11 @@ export const usePhotographerDashboard = () => {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingApi } from '../../../services/api/bookingApi';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
+
+interface APIError {
+    message: string;
+}
 
 export const useBookingActions = () => {
     const queryClient = useQueryClient();
@@ -70,7 +75,7 @@ export const useBookingActions = () => {
             queryClient.invalidateQueries({ queryKey: ["photographerDashboard"] });
             queryClient.invalidateQueries({ queryKey: ["photographerBookings"] });
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<APIError>) => {
             toast.error(error.response?.data?.message || "Failed to accept booking");
         }
     });
@@ -82,7 +87,7 @@ export const useBookingActions = () => {
             queryClient.invalidateQueries({ queryKey: ["photographerDashboard"] });
             queryClient.invalidateQueries({ queryKey: ["photographerBookings"] });
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<APIError>) => {
             toast.error(error.response?.data?.message || "Failed to reject booking");
         }
     });
@@ -93,7 +98,7 @@ export const useBookingActions = () => {
             queryClient.invalidateQueries({ queryKey: ['photographerDashboard'] });
             toast.success("Work started!");
         },
-        onError: (err: any) => toast.error(err.response?.data?.message || "Failed to start work")
+        onError: (err: AxiosError<APIError>) => toast.error(err.response?.data?.message || "Failed to start work")
     });
 
     const endWork = useMutation({
@@ -102,17 +107,27 @@ export const useBookingActions = () => {
             queryClient.invalidateQueries({ queryKey: ['photographerDashboard'] });
             toast.success("Work ended. Awaiting user confirmation.");
         },
-        onError: (err: any) => toast.error(err.response?.data?.message || "Failed to end work")
+        onError: (err: AxiosError<APIError>) => toast.error(err.response?.data?.message || "Failed to end work")
     });
 
     const deliverWork = useMutation({
-        mutationFn: ({ id }: { id: string }) => bookingApi.deliverWork(id),
+        mutationFn: ({ id, deliveryLink }: { id: string; deliveryLink: string }) => bookingApi.deliverWork(id, deliveryLink),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['photographerDashboard'] });
             toast.success("Work delivered!");
         },
-        onError: (err: any) => toast.error(err.response?.data?.message || "Failed to deliver work")
+        onError: (err: AxiosError<APIError>) => toast.error(err.response?.data?.message || "Failed to deliver work")
     });
 
-    return { acceptBooking, rejectBooking, startWork, endWork, deliverWork };
+    const respondToReschedule = useMutation({
+        mutationFn: ({ id, decision }: { id: string; decision: 'accepted' | 'rejected' }) => bookingApi.respondToReschedule(id, decision),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['booking'] });
+            queryClient.invalidateQueries({ queryKey: ['photographerDashboard'] });
+            toast.success(`Reschedule request ${variables.decision}`);
+        },
+        onError: (err: AxiosError<APIError>) => toast.error(err.response?.data?.message || "Failed to respond to reschedule request")
+    });
+
+    return { acceptBooking, rejectBooking, startWork, endWork, deliverWork, respondToReschedule };
 };

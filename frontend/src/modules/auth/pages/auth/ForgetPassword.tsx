@@ -6,7 +6,7 @@ import { useForgetPassword } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 
-import { getErrorMessage } from '../../../../utils/errorhandler';
+
 import { ROUTES } from '../../../../constants/routes';
 
 const Colors = {
@@ -53,8 +53,6 @@ const ForgotPassword: React.FC = () => {
         },
         onError: (error: unknown) => {
           console.error(" Forget password error:", error);
-          const errorMessage = getErrorMessage(error)
-          toast.error(errorMessage);
         },
       }
     );

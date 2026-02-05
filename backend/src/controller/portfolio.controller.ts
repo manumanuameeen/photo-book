@@ -37,7 +37,7 @@ export class PortfolioController implements IPortfolioController {
       const userId = authReq.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
 
-      const result = await this._service.getSections(userId);
+      const result = await this._service.getSectionsByUserId(userId);
       ApiResponse.success(res, result, Messages.SECTIONS_FETCHED);
     } catch (error) {
       this._handleError(res, error);
@@ -121,5 +121,17 @@ export class PortfolioController implements IPortfolioController {
     }
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
-}
 
+  toggleLike = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.userId;
+      if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+      const { id } = req.params;
+      const section = await this._service.toggleLike(userId, id);
+      ApiResponse.success(res, section, "Like status toggled");
+    } catch (error) {
+      this._handleError(res, error);
+    }
+  };
+}

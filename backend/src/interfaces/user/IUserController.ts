@@ -20,4 +20,3 @@ export interface IUserController {
     next: express.NextFunction,
   ): Promise<void>;
 }
-

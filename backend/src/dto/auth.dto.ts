@@ -1,4 +1,4 @@
-import { string, z } from "zod";
+import { z } from "zod";
 import { Messages } from "../constants/messages.ts";
 
 export const SignupDto = z.object({
@@ -38,7 +38,7 @@ export const VerifyResetOtpDto = z.object({
 export const ResetPasswordDto = z
   .object({
     email: z.string().email().toLowerCase(),
-    newPassword: string().min(8),
+    newPassword: z.string().min(8),
     confirmPassword: z.string().min(8),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -54,4 +54,3 @@ export type RefreshTokenDtoType = z.infer<typeof RefreshTokenDto>;
 export type ForgetPasswordDtoType = z.infer<typeof ForgetPasswordDto>;
 export type VerifyResetOtpDtoType = z.infer<typeof VerifyResetOtpDto>;
 export type ResetPasswordDtoType = z.infer<typeof ResetPasswordDto>;
-

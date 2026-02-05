@@ -42,3 +42,10 @@ export class PhotographerResponseDto {
   portfolioImages!: string[];
 }
 
+export interface IPaginatedPhotographerResponse {
+  photographers: any[]; 
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

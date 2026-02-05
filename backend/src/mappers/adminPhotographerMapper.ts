@@ -24,4 +24,3 @@ export class AdminPhotographerMapper {
     return photographers.map((p) => this.toResponse(p));
   }
 }
-

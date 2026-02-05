@@ -6,4 +6,3 @@ export interface IAdminController {
   blockUser(req: Request, res: Response): Promise<void>;
   unblockUser(req: Request, res: Response): Promise<void>;
 }
-

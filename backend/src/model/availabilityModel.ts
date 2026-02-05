@@ -41,4 +41,3 @@ export const AvailabilityModel: Model<IAvailability> = mongoose.model<IAvailabil
   "Availability",
   AvailabilitySchema,
 );
-

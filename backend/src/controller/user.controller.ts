@@ -2,6 +2,7 @@ import type { Response, NextFunction } from "express";
 import type { AuthRequest } from "../middleware/authMiddleware.ts";
 import type { IUserController } from "../interfaces/user/IUserController.ts";
 import type { IUserService } from "../interfaces/services/IUserService.ts";
+import { UpdateProfileDtoType, ChangePasswordDtoType } from "../dto/user.dto.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { Messages } from "../constants/messages.ts";
@@ -35,7 +36,7 @@ export class UserController implements IUserController {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      const updatedUser = await this._userService.updateProfile(userId, req.body);
+      const updatedUser = await this._userService.updateProfile(userId, req.body as UpdateProfileDtoType);
       ApiResponse.success(res, updatedUser, Messages.PROFILE_UPDATED);
     } catch (error: unknown) {
       this._handleError(res, error);
@@ -49,7 +50,7 @@ export class UserController implements IUserController {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      await this._userService.changePassword(userId, req.body);
+      await this._userService.changePassword(userId, req.body as ChangePasswordDtoType);
       ApiResponse.success(res, null, Messages.PASSWORD_CHANGED);
     } catch (error: unknown) {
       this._handleError(res, error);
@@ -129,4 +130,3 @@ export class UserController implements IUserController {
     }
   };
 }
-

@@ -29,6 +29,7 @@ export interface IPhotographer extends Document {
   status: "PENDING" | "APPROVED" | "REJECTED";
   rejectionReason?: string;
   approvalMessage?: string;
+  likes: mongoose.Types.ObjectId[];
   createdAt: Date;
 }
 const PhotographerSchema: Schema = new Schema(
@@ -57,6 +58,7 @@ const PhotographerSchema: Schema = new Schema(
       professionalTitle: { type: String, required: true },
       businessBio: { type: String, required: true, minlength: 50 },
     },
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     isBlock: { type: Boolean, default: false },
     status: { type: String, enum: ["PENDING", "APPROVED", "REJECTED"], default: "PENDING" },
     rejectionReason: { type: String },
@@ -65,4 +67,3 @@ const PhotographerSchema: Schema = new Schema(
   { timestamps: true },
 );
 export const PhotographerModel = mongoose.model<IPhotographer>("Photographer", PhotographerSchema);
-

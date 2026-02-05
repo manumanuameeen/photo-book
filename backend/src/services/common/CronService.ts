@@ -1,6 +1,6 @@
 import { BookingModel, BookingStatus } from "../../model/bookingModel.ts";
 import { RentalStatus } from "../../model/rentalOrderModel.ts";
-// import { container } from "../../di/container.ts";
+
 import { IBookingService } from "../../interfaces/services/IBookingService.ts";
 
 export class CronService {
@@ -15,7 +15,7 @@ export class CronService {
       try {
         const now = new Date();
 
-        // Cancel expired bookings
+        
         const expiredBookings = await BookingModel.find({
           status: BookingStatus.WAITING_FOR_DEPOSIT,
           paymentDeadline: { $lt: now },
@@ -23,7 +23,7 @@ export class CronService {
 
         if (expiredBookings.length > 0) {
           console.log(`Found ${expiredBookings.length} expired bookings.`);
-          // const bookingService = container.bookingService; // Removed
+          
           for (const booking of expiredBookings) {
             try {
               await CronService.bookingService.cancelBooking(
@@ -36,13 +36,13 @@ export class CronService {
           }
         }
 
-        // Cancel expired rental orders (2 hours check)
-        // Assuming status changedAt timestamp exists or using updatedAt if status change updates it
-        // We need to check orders in WAITING_FOR_DEPOSIT where updatedAt < now - 2 hours
+        
+        
+        
 
         const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
-        const { RentalOrderModel } = await import("../../model/rentalOrderModel.ts"); // Dynamic import to avoid circular dep if any
+        const { RentalOrderModel } = await import("../../model/rentalOrderModel.ts"); 
 
         const expiredRentals = await RentalOrderModel.find({
           status: RentalStatus.WAITING_FOR_DEPOSIT,
@@ -71,4 +71,3 @@ export class CronService {
     console.log("CronService initialized: Payment expiry check scheduled every 5 minutes.");
   }
 }
-

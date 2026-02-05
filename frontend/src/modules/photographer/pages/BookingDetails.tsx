@@ -26,9 +26,9 @@ interface BookingDetailsPageProps {
 const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
     const navigate = useNavigate();
     const search: { source?: string } = useSearch({ strict: false });
-    const { acceptBooking, rejectBooking, startWork, endWork, deliverWork } = useBookingActions();
+    const { acceptBooking, rejectBooking, startWork, endWork, deliverWork, respondToReschedule } = useBookingActions();
 
-    const [actionConfig, setActionConfig] = React.useState<{ isOpen: boolean; type: 'accept' | 'reject' | null, bookingId: string | null }>({
+    const [actionConfig, setActionConfig] = React.useState<{ isOpen: boolean; type: 'accept' | 'reject' | 'deliver' | null, bookingId: string | null }>({
         isOpen: false,
         type: null,
         bookingId: null
@@ -38,7 +38,8 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
     const { data: booking, isLoading, error } = useQuery({
         queryKey: ['booking', bookingId],
         queryFn: () => bookingApi.getBookingDetails(bookingId),
-        enabled: !!bookingId && bookingId !== 'undefined'
+        enabled: !!bookingId && bookingId !== 'undefined',
+        refetchInterval: 5000
     });
 
     const handleBack = () => {
@@ -49,7 +50,7 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
         }
     };
 
-    const openActionModal = (type: 'accept' | 'reject', id: string) => {
+    const openActionModal = (type: 'accept' | 'reject' | 'deliver', id: string) => {
         setActionConfig({ isOpen: true, type, bookingId: id });
         setCustomMessage('');
     };
@@ -101,6 +102,10 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
             acceptBooking.mutate(actionPayload as any, {
                 onSuccess: () => setActionConfig({ isOpen: false, type: null, bookingId: null })
             });
+        } else if (actionConfig.type === 'deliver') {
+            deliverWork.mutate({ id: actionConfig.bookingId, deliveryLink: customMessage }, {
+                onSuccess: () => setActionConfig({ isOpen: false, type: null, bookingId: null })
+            });
         } else {
             rejectBooking.mutate(actionPayload as any, {
                 onSuccess: () => setActionConfig({ isOpen: false, type: null, bookingId: null })
@@ -133,6 +138,36 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                                 <p className="text-xs text-green-700 mt-2 italic border-l-2 border-green-500 pl-2">
                                     "{booking.photographerMessage}"
                                 </p>
+                            )}
+
+                            {}
+                            {booking.rescheduleRequest?.requestedDate && booking.rescheduleRequest.status === 'pending' && (
+                                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                    <h4 className="flex items-center gap-2 text-sm font-bold text-yellow-800 mb-2">
+                                        <Clock size={16} /> Reschedule Requested
+                                    </h4>
+                                    <div className="text-sm space-y-1 mb-3">
+                                        <p><span className="text-gray-600">New Date:</span> <strong>{new Date(booking.rescheduleRequest.requestedDate).toLocaleDateString()}</strong></p>
+                                        <p><span className="text-gray-600">New Time:</span> <strong>{booking.rescheduleRequest.requestedStartTime}</strong></p>
+                                        <p><span className="text-gray-600">Reason:</span> <span className="italic">"{booking.rescheduleRequest.reason}"</span></p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => respondToReschedule.mutate({ id: booking._id, decision: 'accepted' })}
+                                            className="px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded flex items-center gap-1 hover:bg-green-700"
+                                            disabled={respondToReschedule.isPending}
+                                        >
+                                            <CheckCircle size={12} /> Accept
+                                        </button>
+                                        <button
+                                            onClick={() => respondToReschedule.mutate({ id: booking._id, decision: 'rejected' })}
+                                            className="px-3 py-1.5 bg-white border border-red-200 text-red-600 text-xs font-bold rounded flex items-center gap-1 hover:bg-red-50"
+                                            disabled={respondToReschedule.isPending}
+                                        >
+                                            <XCircle size={12} /> Reject
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
@@ -187,7 +222,7 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                             )}
                             {booking.status === 'work_ended' && booking.paymentStatus === 'full_paid' && (
                                 <button
-                                    onClick={() => deliverWork.mutate({ id: booking._id })}
+                                    onClick={() => openActionModal('deliver', booking._id)}
                                     disabled={deliverWork.isPending}
                                     className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-md disabled:opacity-50 transition-all"
                                 >
@@ -332,21 +367,36 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                         <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
                             <h3 className="text-xl font-bold text-gray-900 mb-4 capitalize">
-                                {actionConfig.type === 'accept' ? 'Accept Request' : 'Reject Booking'}
+                                {actionConfig.type === 'accept' ? 'Accept Request' :
+                                    actionConfig.type === 'reject' ? 'Reject Booking' :
+                                        actionConfig.type === 'deliver' ? 'Deliver Work' : ''}
                             </h3>
                             <p className="text-sm text-gray-500 mb-4">
                                 {actionConfig.type === 'accept'
                                     ? 'You are about to accept this booking. You can add a personal note to the client.'
-                                    : 'Are you sure you want to reject/cancel this booking? Please provide a reason.'}
+                                    : actionConfig.type === 'reject'
+                                        ? 'Are you sure you want to reject/cancel this booking? Please provide a reason.'
+                                        : 'Please provide the Google Drive (or other) link to the completed photos/videos.'}
                             </p>
 
-                            <textarea
-                                value={customMessage}
-                                onChange={(e) => setCustomMessage(e.target.value)}
-                                placeholder={actionConfig.type === 'accept' ? "Optional welcome message..." : "Reason for rejection..."}
-                                className="w-full p-3 border border-gray-200 rounded-lg text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-green-500 h-24"
-                                autoFocus
-                            />
+                            {actionConfig.type === 'deliver' ? (
+                                <input
+                                    type="text"
+                                    value={customMessage}
+                                    onChange={(e) => setCustomMessage(e.target.value)}
+                                    placeholder="https://drive.google.com/..."
+                                    className="w-full p-3 border border-gray-200 rounded-lg text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    autoFocus
+                                />
+                            ) : (
+                                <textarea
+                                    value={customMessage}
+                                    onChange={(e) => setCustomMessage(e.target.value)}
+                                    placeholder={actionConfig.type === 'accept' ? "Optional welcome message..." : "Reason for rejection..."}
+                                    className="w-full p-3 border border-gray-200 rounded-lg text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-green-500 h-24"
+                                    autoFocus
+                                />
+                            )}
 
                             <div className="flex justify-end gap-3">
                                 <button
@@ -358,10 +408,10 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                                 <button
                                     onClick={handleConfirmAction}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium text-white shadow-sm
-                                        ${actionConfig.type === 'accept' ? 'bg-[#2E7D46] hover:bg-green-800' : 'bg-red-600 hover:bg-red-700'}
+                                        ${actionConfig.type === 'accept' || actionConfig.type === 'deliver' ? 'bg-[#2E7D46] hover:bg-green-800' : 'bg-red-600 hover:bg-red-700'}
                                     `}
                                 >
-                                    Confirm {actionConfig.type === 'accept' ? 'Accept' : 'Reject'}
+                                    Confirm {actionConfig.type === 'accept' ? 'Accept' : actionConfig.type === 'reject' ? 'Reject' : 'Delivery'}
                                 </button>
                             </div>
                         </div>

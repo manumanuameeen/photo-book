@@ -32,19 +32,23 @@ export const ROUTES = {
       PORTFOLIO_SECTION: "/portfolio/section",
       PORTFOLIO_SECTIONS: "/portfolio/sections",
       PORTFOLIO_SECTION_BY_ID: "/portfolio/section/:id",
+      PORTFOLIO_SECTION_TOGGLE_LIKE: "/portfolio/section/:id/like",
       PORTFOLIO_SECTION_IMAGE: "/portfolio/section/:id/image",
 
       PACKAGES: "/packages",
       PACKAGE_BY_ID: "/packages/:id",
+      PACKAGE_TOGGLE_LIKE: "/packages/:id/like",
       PUBLIC_PACKAGES: "/:photographerId/packages",
 
       AVAILABILITY: "/availability",
       BLOCK_RANGE: "/availability/block-range",
+      UNBLOCK_RANGE: "/availability/unblock-range",
       DELETE_AVAILABILITY: "/availability/:date",
 
       PUBLIC_AVAILABILITY: "/public/photographers/:id/availability",
       PUBLIC_LIST: "/public/photographers",
       PUBLIC_DETAILS: "/public/photographers/:id",
+      TOGGLE_LIKE: "/public/photographers/:id/like",
       ADD_REVIEW: "/public/photographers/:id/review",
 
       CATEGORIES: "/categories",
@@ -97,6 +101,8 @@ export const ROUTES = {
       DELIVER_WORK: "/:id/deliver-work",
       CONFIRM_DELIVERY: "/:id/confirm-delivery",
       COMPLETE: "/:id/complete",
+      RESCHEDULE_REQUEST: "/:id/reschedule-request",
+      RESCHEDULE_RESPONSE: "/:id/reschedule-response",
     },
     MESSAGE: {
       BASE: "/api/v1/message",
@@ -144,8 +150,18 @@ export const ROUTES = {
       GET_UNAVAILABLE: "/items/:id/unavailable",
       BLOCK_ITEM: "/items/:id/block",
       UNBLOCK_ITEM: "/items/:id/unblock",
+      TOGGLE_LIKE: "/items/:id/like",
+      CANCEL_ORDER: "/orders/:id/cancel",
       STATS: "/stats",
+    },
+    REVIEWS: {
+      BASE: "/api/v1/reviews",
+    },
+    REPORT: {
+      BASE: "/api/v1/report",
+      CREATE: "/",
+      GET_ALL: "/",
+      UPDATE_STATUS: "/:id/status",
     },
   },
 } as const;
-

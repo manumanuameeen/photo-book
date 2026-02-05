@@ -1,4 +1,6 @@
 export const Messages = {
+  EMAIL_NOT_FOUND: "Email not found",
+
   SUCCESS: "Success",
   OTP_SENT: "OTP sent to email",
   OTP_VERIFIED: "OTP verified successfully",
@@ -118,5 +120,5 @@ export const Messages = {
   USER_RENTAL_ORDERS_FETCHED: "User rental orders fetched",
   USER_ITEMS_FETCHED: "User items fetched successfully",
   ITEM_STATUS_UPDATED: "Item status updated successfully",
+  RENTAL_ORDER_NOT_FOUND: "Rental order not found",
 } as const;
-

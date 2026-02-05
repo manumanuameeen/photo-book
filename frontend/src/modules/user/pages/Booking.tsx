@@ -6,6 +6,7 @@ import { bookingApi } from '../../../services/api/bookingApi';
 import { userPhotographerApi } from '../../../services/api/userPhotographerApi';
 import { CheckAvailabilityModal } from '../components/CheckAvailabilityModal';
 import { SmallLocationPicker } from '../../../components/MapLocationPicker';
+import { TimePicker } from '../../../components/common/TimePicker';
 import {
     Check,
     Package as PackageIcon,
@@ -46,6 +47,7 @@ function BookingWizard() {
     const [loading, setLoading] = useState(true);
     const [packages, setPackages] = useState<PackageData[]>([]);
     const [photographerName, setPhotographerName] = useState("");
+    const [submissionPhotographerId, setSubmissionPhotographerId] = useState("");
     const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
 
     const [formData, setFormData] = useState<BookingFormData>({
@@ -70,6 +72,7 @@ function BookingWizard() {
             const photog = await userPhotographerApi.getPhotographerById(id);
 
             setPhotographerName(photog.name);
+            setSubmissionPhotographerId(photog.userId);
 
             const loadedPackages = photog.packages || [];
             setPackages(loadedPackages);
@@ -153,6 +156,7 @@ function BookingWizard() {
 
             await bookingApi.createBooking({
                 ...formData,
+                photographerId: submissionPhotographerId || formData.photographerId,
                 date: formData.date?.toISOString(),
                 packageName: selectedPackage.name,
                 packagePrice: selectedPackage.price,
@@ -327,22 +331,15 @@ function BookingWizard() {
                                         {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Start Time * <span className="text-xs text-gray-400 font-normal">(AM/PM)</span>
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type="time"
-                                                value={formData.startTime}
-                                                onChange={(e) => {
-                                                    setFormData({ ...formData, startTime: e.target.value });
-                                                    setErrors({ ...errors, startTime: '' });
-                                                }}
-                                                className={`w-full pl-4 pr-10 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.startTime ? 'border-red-500' : 'border-gray-200'}`}
-                                            />
-                                            <Clock className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                        </div>
-                                        {errors.startTime && <p className="text-red-500 text-xs mt-1">{errors.startTime}</p>}
+                                        <TimePicker
+                                            label="Start Time *"
+                                            value={formData.startTime}
+                                            onChange={(time) => {
+                                                setFormData({ ...formData, startTime: time });
+                                                setErrors({ ...errors, startTime: '' });
+                                            }}
+                                            error={errors.startTime}
+                                        />
                                     </div>
                                 </div>
 

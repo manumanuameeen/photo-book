@@ -80,9 +80,9 @@ export const walletApi = {
         });
         return response.data.data;
     },
-    getWalletTransactions: async (page: number, limit: number, type: string) => {
+    getWalletTransactions: async (page: number, limit: number, type: string, status?: string) => {
         const response = await apiClient.get('/wallet/transactions', {
-            params: { page, limit, type }
+            params: { page, limit, type, status }
         });
         return response.data.data;
     }

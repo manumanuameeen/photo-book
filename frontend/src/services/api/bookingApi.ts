@@ -7,18 +7,28 @@ export interface BookingDetails {
         name: string;
         email: string;
         profileImage?: string;
+        phoneNumber?: string;
     };
     photographerId: {
         _id: string;
         name: string;
+        email: string;
+        profileImage?: string;
+        username?: string;
     };
     packageId: {
         _id: string;
         name: string;
         price: number;
+        features?: string[];
     };
     eventDate: string;
     startTime: string;
+    endTime?: string;
+    duration?: number;
+    clientName?: string;
+    clientEmail?: string;
+    clientPhone?: string;
     status: 'pending' | 'accepted' | 'waiting_for_deposit' | 'deposit_paid' | 'work_started' | 'work_ended_pending' | 'work_ended' | 'work_delivered' | 'rejected' | 'cancelled' | 'completed';
     paymentStatus?: 'pending' | 'deposit_paid' | 'full_paid' | 'refunded';
     totalAmount: number;
@@ -28,6 +38,14 @@ export interface BookingDetails {
     location: string;
     eventType: string;
     createdAt: string;
+    rescheduleRequest?: {
+        requestedDate: string;
+        requestedStartTime: string;
+        reason: string;
+        status: 'pending' | 'rejected' | 'expired';
+        createdAt: string;
+    };
+    deliveryWorkLink?: string;
 }
 
 export const bookingApi = {
@@ -65,8 +83,8 @@ export const bookingApi = {
         return response.data.data;
     },
 
-    cancelBooking: async (bookingId: string): Promise<BookingDetails> => {
-        const response = await apiClient.patch(`/booking/${bookingId}/cancel`);
+    cancelBooking: async (bookingId: string, reason?: string, isEmergency?: boolean): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/cancel`, { reason, isEmergency });
         return response.data.data;
     },
 
@@ -75,7 +93,7 @@ export const bookingApi = {
         return response.data.data;
     },
 
-    createBooking: async (data: any): Promise<BookingDetails> => {
+    createBooking: async (data: Partial<BookingDetails>): Promise<BookingDetails> => {
         const response = await apiClient.post('/booking/', data);
         return response.data.data;
     },
@@ -95,11 +113,11 @@ export const bookingApi = {
         return response.data.data;
     },
 
-    deliverWork: async (bookingId: string): Promise<BookingDetails> => {
-        const response = await apiClient.patch(`/booking/${bookingId}/deliver-work`);
+    deliverWork: async (bookingId: string, deliveryLink: string): Promise<BookingDetails> => {
+        const response = await apiClient.patch(`/booking/${bookingId}/deliver-work`, { deliveryLink });
         console.log(response)
         console.log(response.data)
-        
+
         console.log(response.data.data)
         return response.data.data;
     },
@@ -111,6 +129,16 @@ export const bookingApi = {
 
     confirmDelivery: async (bookingId: string): Promise<BookingDetails> => {
         const response = await apiClient.patch(`/booking/${bookingId}/confirm-delivery`);
+        return response.data.data;
+    },
+
+    requestReschedule: async (bookingId: string, data: { newDate: Date; newStartTime: string; reason: string }): Promise<BookingDetails> => {
+        const response = await apiClient.post(`/booking/${bookingId}/reschedule-request`, data);
+        return response.data.data;
+    },
+
+    respondToReschedule: async (bookingId: string, decision: 'accepted' | 'rejected'): Promise<BookingDetails> => {
+        const response = await apiClient.post(`/booking/${bookingId}/reschedule-response`, { decision });
         return response.data.data;
     }
 };

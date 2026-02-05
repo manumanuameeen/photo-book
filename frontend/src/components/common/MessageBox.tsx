@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { messageApi } from '../../services/api/messageApi';
 import type { SystemMessage } from '../../services/api/messageApi';
-import { Check, CheckCheck, Trash2, Mail, Send, X } from 'lucide-react';
+import { Check, CheckCheck, Trash2, Mail, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MessageBoxProps {
@@ -12,27 +12,34 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<'inbox' | 'sent'>('inbox');
     const [messages, setMessages] = useState<SystemMessage[]>([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const limit = 5;
 
-    const fetchMessages = async () => {
+    const fetchMessages = useCallback(async () => {
         setLoading(true);
         try {
-            if (activeTab === 'inbox') {
-                const data = await messageApi.getMessages();
-                setMessages(data);
-            } else {
-                const data = await messageApi.getSentMessages();
-                setMessages(data);
-            }
-        } catch (error) {
-            console.error("Failed to load messages", error);
+            const data = activeTab === 'inbox'
+                ? await messageApi.getMessages(page, limit)
+                : await messageApi.getSentMessages(page, limit);
+
+            setMessages(data.messages);
+            setTotalPages(Math.ceil(data.total / limit));
+        } catch (err) {
+            console.error("Failed to load messages", err);
+            setMessages([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, page]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [activeTab]);
 
     useEffect(() => {
         fetchMessages();
-    }, [activeTab]);
+    }, [activeTab, page]);
 
     const handleMarkAsRead = async (id: string, isRead: boolean) => {
         if (isRead) return;
@@ -49,6 +56,12 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
             await messageApi.deleteMessage(id);
             setMessages(prev => prev.filter(m => m.id !== id));
             toast.success("Message deleted");
+            // Refresh if empty to show previous page or "No messages"
+            if (messages.length === 1 && page > 1) {
+                setPage(prev => prev - 1);
+            } else if (messages.length === 1) {
+                fetchMessages();
+            }
         } catch (error) {
             toast.error("Failed to delete message");
         }
@@ -56,7 +69,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
 
     return (
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-[500px] flex flex-col border border-gray-200">
-            {}
+            { }
             <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
                 <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                     <Mail size={20} />
@@ -69,7 +82,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
                 )}
             </div>
 
-            {}
+            { }
             <div className="flex border-b">
                 <button
                     onClick={() => setActiveTab('inbox')}
@@ -91,7 +104,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
                 </button>
             </div>
 
-            {}
+            { }
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
                 {loading ? (
                     <div className="text-center py-10 text-gray-400">Loading...</div>
@@ -141,6 +154,31 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
                         </div>
                     ))
                 )}
+            </div>
+
+            { }
+            <div className="p-3 border-t bg-gray-50 flex items-center justify-between gap-2">
+                <button
+                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    disabled={page === 1 || loading}
+                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    title="Previous Page"
+                >
+                    <ChevronLeft size={16} />
+                </button>
+
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                    Page {page} of {totalPages || 1}
+                </span>
+
+                <button
+                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={page === totalPages || loading}
+                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    title="Next Page"
+                >
+                    <ChevronRight size={16} />
+                </button>
             </div>
         </div>
     );

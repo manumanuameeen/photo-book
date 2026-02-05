@@ -203,29 +203,28 @@ const Bookings = () => {
                             ))
                         )}
 
-                        {data?.pagination && data.pagination.totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-2 mt-6">
-                                <button
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <span className="text-xs font-bold text-gray-600">
-                                    Page {page} of {data.pagination.totalPages}
-                                </span>
-                                <button
-                                    onClick={() => setPage(p => Math.min(data.pagination.totalPages, p + 1))}
-                                    disabled={page === data.pagination.totalPages}
-                                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        )}
+                        <div className="flex justify-center items-center gap-2 mt-6">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            <span className="text-xs font-bold text-gray-600">
+                                Page {page} of {data?.pagination?.totalPages || 1}
+                            </span>
+                            <button
+                                onClick={() => setPage(p => Math.min(data?.pagination?.totalPages || 1, p + 1))}
+                                disabled={page === (data?.pagination?.totalPages || 1)}
+                                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
                     </div>
                 )}
+
             </div>
         </div>
     );

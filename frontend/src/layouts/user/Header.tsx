@@ -9,11 +9,12 @@ import {
   Camera,
   Calendar,
   ToolCase,
-  Bell
+  MessageCircle
 } from "lucide-react";
 import photoBookLogo from "../../assets/photoBook-icon.png"
 import { toast } from "sonner";
 import { ROUTES } from "../../constants/routes";
+import NotificationDropdown from "../../components/common/NotificationDropdown";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -78,6 +79,18 @@ const Header: React.FC = () => {
             <ToolCase size={16} />
             <span>Equipment</span>
           </div>
+          {user && (
+            <div
+              role="button"
+              tabIndex={0}
+              className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none"
+              onClick={() => navigate({ to: '/chat' })}
+              onKeyDown={(e) => e.key === 'Enter' && navigate({ to: '/chat' })}
+            >
+              <MessageCircle size={16} />
+              <span>Messages</span>
+            </div>
+          )}
 
 
           {role === "photographer" ? (
@@ -122,13 +135,7 @@ const Header: React.FC = () => {
 
         <div className="flex items-center space-x-4 relative">
           {user && (
-            <div
-              className="p-2 text-gray-500 hover:text-gray-900 cursor-pointer relative transition-colors"
-              onClick={() => navigate({ to: ROUTES.USER.DASHBOARD as any, search: { tab: 'notifications' } as any })}
-            >
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-            </div>
+            <NotificationDropdown />
           )}
 
           {!user ? (
@@ -174,6 +181,16 @@ const Header: React.FC = () => {
                   >
                     <LayoutDashboard size={16} className="mr-2" />
                     Dashboard
+                  </button>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50"
+                    onClick={() => {
+                      navigate({ to: '/chat' });
+                      setProfileOpen(false);
+                    }}
+                  >
+                    <MessageCircle size={16} className="mr-2" />
+                    Messages
                   </button>
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:opacity-80 hover:bg-gray-50"

@@ -219,7 +219,7 @@ export class NodeMailerService implements IEmailService {
             <li>🤝 Share memories with friends and family</li>
           </ul>
           <p style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}" 
+            <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}"
                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                       color: white; 
                       padding: 12px 30px; 
@@ -326,7 +326,7 @@ export class NodeMailerService implements IEmailService {
             </ul>
             
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/photographer/dashboard" class="cta-button">
+              <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}" class="cta-button">
                 Go to Dashboard →
               </a>
             </div>
@@ -439,7 +439,7 @@ export class NodeMailerService implements IEmailService {
             </div>
             
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}/photographer/apply" class="cta-button">
+              <a href="${process.env.FRONTEND_URL || "http://localhost:5173"}" class="cta-button">
                 Reapply →
               </a>
             </div>
@@ -507,7 +507,13 @@ export class NodeMailerService implements IEmailService {
     `;
   }
 
-  async sendMail(to: string, subject: string, text: string, html: string, attachments?: any[]): Promise<void> {
+  async sendMail(
+    to: string,
+    subject: string,
+    text: string,
+    html: string,
+    attachments?: any[],
+  ): Promise<void> {
     try {
       const mailOptions = {
         from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
@@ -521,8 +527,7 @@ export class NodeMailerService implements IEmailService {
       console.log(`Generic email sent to ${to}`);
     } catch (error: any) {
       console.error(`Failed to send email to ${to}:`, error.message);
-      // We don't throw here to prevent blocking the main flow if email fails
+
     }
   }
 }
-

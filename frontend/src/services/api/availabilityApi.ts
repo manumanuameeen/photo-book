@@ -21,6 +21,14 @@ export const availabilityApi = {
         return response.data.data;
     },
 
+    unblockRange: async (startDate: string, endDate: string) => {
+        const response = await apiClient.post("/photographer/availability/unblock-range", {
+            startDate,
+            endDate
+        });
+        return response.data.data;
+    },
+
     updateSettings: async (settings: { noticeInterval?: string, bufferTime?: string }) => {
         const response = await apiClient.put("/photographer/profile", {
             professionalDetails: settings

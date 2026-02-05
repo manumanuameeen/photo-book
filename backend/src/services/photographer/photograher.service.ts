@@ -187,7 +187,9 @@ export class PhotographerService implements IPhotographerService {
     location?: string;
     lat?: number;
     lng?: number;
-  }): Promise<any[]> {
+    page: number;
+    limit: number;
+  }): Promise<{ photographers: any[]; total: number; page: number; limit: number; totalPages: number }> {
     return await this._repository.getPublicPhotographers(filters);
   }
 
@@ -279,6 +281,7 @@ export class PhotographerService implements IPhotographerService {
     return {
       bookings: bookings.map((b: any) => ({
         _id: b._id.toString(),
+        userId: b.userId?._id?.toString(),
         clientName: b.userId?.name || "Unknown Client",
         clientImage: b.userId?.profileImage,
         clientEmail: b.userId?.email,
@@ -307,10 +310,16 @@ export class PhotographerService implements IPhotographerService {
     }
 
     const updateData: any = {};
-    if (data.personalInfo) updateData.personalInfo = { ...photographer.personalInfo, ...data.personalInfo };
-    if (data.professionalDetails) updateData.professionalDetails = { ...photographer.professionalDetails, ...data.professionalDetails };
+    if (data.personalInfo)
+      updateData.personalInfo = { ...photographer.personalInfo, ...data.personalInfo };
+    if (data.professionalDetails)
+      updateData.professionalDetails = {
+        ...photographer.professionalDetails,
+        ...data.professionalDetails,
+      };
     if (data.portfolio) updateData.portfolio = { ...photographer.portfolio, ...data.portfolio };
-    if (data.businessInfo) updateData.businessInfo = { ...photographer.businessInfo, ...data.businessInfo };
+    if (data.businessInfo)
+      updateData.businessInfo = { ...photographer.businessInfo, ...data.businessInfo };
 
     const updated = await this._repository.update(photographer.id, updateData);
     if (!updated) {
@@ -327,5 +336,12 @@ export class PhotographerService implements IPhotographerService {
     }
     return PhotographerMapper.toResponse(photographer);
   }
-}
 
+  async toggleLike(id: string, userId: string): Promise<any> {
+    const photographer = await this._repository.toggleLike(id, userId);
+    if (!photographer) {
+      throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+    return photographer;
+  }
+}

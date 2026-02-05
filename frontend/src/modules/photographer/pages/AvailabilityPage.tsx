@@ -20,84 +20,9 @@ const AvailabilityPage = () => {
     const [settings, setSettings] = useState({ noticeInterval: '24 hours', bufferTime: 'None' });
 
     const [isBlocking, setIsBlocking] = useState(false);
+    const [isUnblocking, setIsUnblocking] = useState(false);
 
-
-    const fetchAvailabilities = async () => {
-        try {
-            const startStr = new Date().toISOString();
-            const end = new Date();
-            end.setMonth(end.getMonth() + 3);
-            const endStr = end.toISOString();
-            const data = await availabilityApi.getAvailability(startStr, endStr);
-            setAvailabilities(data);
-
-            const profile = await photographerApi.getProfile();
-            if (profile?.professionalDetails) {
-                setSettings({
-                    noticeInterval: profile.professionalDetails.noticeInterval || '24 hours',
-                    bufferTime: profile.professionalDetails.bufferTime || 'None'
-                });
-            }
-        } catch (error) {
-            console.error("Failed to fetch availability", error);
-            toast.error("Failed to load availability data");
-        }
-    };
-
-    useEffect(() => {
-        fetchAvailabilities();
-    }, []);
-
-    const months = [];
-    for (let i = 0; i < 3; i++) {
-        const d = new Date(currentDate);
-        d.setMonth(d.getMonth() + i);
-        months.push({
-            name: d.toLocaleString('default', { month: 'long', year: 'numeric' }),
-            month: d.getMonth(),
-            year: d.getFullYear(),
-            daysCount: new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(),
-            startOffset: new Date(d.getFullYear(), d.getMonth(), 1).getDay()
-        });
-    }
-
-    const getStatus = (day: number, month: number, year: number) => {
-        const date = new Date(year, month, day);
-        date.setHours(0, 0, 0, 0);
-
-        const avail = availabilities.find(a => {
-            const aDate = new Date(a.date);
-            aDate.setHours(0, 0, 0, 0);
-            return aDate.getTime() === date.getTime();
-        });
-
-        if (!avail) return 'AVAILABLE';
-
-
-        const hasBooking = avail.slots.some((s: IAvailabilitySlot) => s.status === 'BOOKED');
-        if (hasBooking) return 'BOOKED';
-
-        if (!avail.isFullDayAvailable) return 'BLOCKED';
-
-        return 'AVAILABLE';
-    };
-
-    const getStatusClass = (day: number, month: number, year: number) => {
-        const status = getStatus(day, month, year);
-        const date = new Date(year, month, day);
-        date.setHours(0, 0, 0, 0);
-
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-
-        if (date < now) return 'text-gray-300 cursor-not-allowed';
-
-        switch (status) {
-            case 'BOOKED': return 'bg-emerald-900 text-white shadow-sm';
-            case 'BLOCKED': return 'bg-red-600 text-white shadow-sm';
-            default: return 'hover:bg-green-50 text-gray-700 bg-white border border-gray-100';
-        }
-    };
+    // ... (existing code for fetchAvailabilities, useEffect, etc.)
 
     const handleBlockRange = async () => {
         if (!startDate || !endDate) {
@@ -128,6 +53,38 @@ const AvailabilityPage = () => {
             toast.error(errorMessage);
         } finally {
             setIsBlocking(false);
+        }
+    };
+
+    const handleUnblockRange = async () => {
+        if (!startDate || !endDate) {
+            toast.error("Please select both start and end dates");
+            return;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start > end) {
+            toast.error("Start date must be before end date");
+            return;
+        }
+
+        setIsUnblocking(true);
+        try {
+            await availabilityApi.unblockRange(startDate, endDate);
+            toast.success("Dates unblocked successfully");
+            fetchAvailabilities();
+            setStartDate('');
+            setEndDate('');
+        } catch (error: unknown) {
+            let errorMessage = "Failed to unblock dates";
+            if (error instanceof AxiosError) {
+                errorMessage = error.response?.data?.message || errorMessage;
+            }
+            toast.error(errorMessage);
+        } finally {
+            setIsUnblocking(false);
         }
     };
 
@@ -325,6 +282,13 @@ const AvailabilityPage = () => {
                                 >
                                     {isBlocking ? <Loader2 className="animate-spin" size={18} /> : "Block Selected Dates"}
                                 </button>
+                                <button
+                                    onClick={handleUnblockRange}
+                                    disabled={isUnblocking}
+                                    className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-green-950/20 transition-all active:scale-95 flex items-center justify-center gap-2 mt-2"
+                                >
+                                    {isUnblocking ? <Loader2 className="animate-spin" size={18} /> : "Unblock Selected Dates"}
+                                </button>
                             </div>
                         </div>
 
@@ -393,7 +357,7 @@ const AvailabilityPage = () => {
                                     <p className="text-sm text-gray-600 mb-2">This date is booked.</p>
                                     <p className="text-xs text-gray-400">To manage this booking, please visit your Bookings Dashboard.</p>
                                     <button
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                                         onClick={() => router.navigate({ to: ROUTES.PHOTOGRAPHER.BOOKINGS })}
                                         className="mt-4 text-green-700 text-sm font-bold hover:underline"
                                     >

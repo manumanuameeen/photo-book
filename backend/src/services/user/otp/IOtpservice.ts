@@ -3,4 +3,3 @@ export interface IOtpService {
   getOtpExpire(): Date;
   isOtpValidate(sotredOtp: string, providedOtp: string, expiryDate: Date | undefined): boolean;
 }
-

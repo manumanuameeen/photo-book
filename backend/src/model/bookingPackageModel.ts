@@ -13,6 +13,7 @@ export interface IBookingPackage extends Document {
   isActive: boolean;
   categoryId: mongoose.Types.ObjectId;
   status: "PENDING" | "APPROVED" | "REJECTED" | "ACTIVE" | "DELETED";
+  likes: mongoose.Types.ObjectId[];
   rejectionReason?: string;
   createdAt: Date;
 }
@@ -30,6 +31,7 @@ const BookingPackageSchema: Schema = new Schema(
     deliveryTime: { type: String },
     isActive: { type: Boolean, default: true },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     status: {
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED", "ACTIVE", "DELETED"],
@@ -44,4 +46,3 @@ export const BookingPackageModel: Model<IBookingPackage> = mongoose.model<IBooki
   "BookingPackage",
   BookingPackageSchema,
 );
-

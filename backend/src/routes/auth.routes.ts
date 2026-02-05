@@ -6,6 +6,7 @@ import { container } from "../di/container.ts";
 import { verifyAccessToken } from "../middleware/authMiddleware.ts";
 
 const router = Router();
+
 const authController = container.authController;
 
 router.post(ROUTES.V1.AUTH.SIGNUP, AuthRateLimiter, authController.signup);
@@ -26,4 +27,3 @@ router.post(ROUTES.V1.AUTH.FORGOT_PASSWORD, AuthRateLimiter, authController.forg
 router.post(ROUTES.V1.AUTH.VERIFY_RESET_OTP, authController.verifyResetOtp);
 
 export default router;
-

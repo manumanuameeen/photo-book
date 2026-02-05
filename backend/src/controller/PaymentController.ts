@@ -6,16 +6,17 @@ import { AppError } from "../utils/AppError.ts";
 import { StripeService } from "../services/implementaion/StripeService.ts";
 import { IWalletService } from "../interfaces/services/IWalletService.ts";
 import { IPaymentController } from "../interfaces/controllers/IPaymentController.ts";
+import { CreatePaymentIntentDTO, ConfirmPaymentDTO } from "../dto/payment.dto.ts";
 
 export class PaymentController implements IPaymentController {
   constructor(
     private stripeService: StripeService,
     private walletService: IWalletService,
-  ) {}
+  ) { }
 
   createPaymentIntent = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { amount, currency } = req.body;
+      const { amount, currency } = req.body as CreatePaymentIntentDTO;
       const clientSecret = await this.stripeService.createPaymentIntent(amount, currency);
       ApiResponse.success(res, { clientSecret }, Messages.PAYMENT_INTENT_CREATED);
     } catch (error) {
@@ -25,7 +26,7 @@ export class PaymentController implements IPaymentController {
 
   confirmPayment = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { paymentIntentId, userId, amount, description } = req.body;
+      const { paymentIntentId, userId, amount, description } = req.body as ConfirmPaymentDTO;
 
       const paymentIntent = await this.stripeService.retrievePaymentIntent(paymentIntentId);
 
@@ -57,4 +58,3 @@ export class PaymentController implements IPaymentController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
-

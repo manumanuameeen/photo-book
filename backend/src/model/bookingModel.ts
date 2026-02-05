@@ -56,6 +56,21 @@ export interface IBooking extends Document {
   netPayout?: number;
   fundsReleased: boolean;
   createdAt: Date;
+  rescheduleRequest?: {
+    requestedDate: Date;
+    requestedStartTime: string;
+    reason: string;
+    status: "pending" | "rejected" | "expired" | "accepted";
+    createdAt: Date;
+  };
+  cancellationReason?: string;
+  cancelledBy?: string;
+  cancellationDate?: Date;
+  refundAmount?: number;
+  penaltyAmount?: number;
+  platformFeeRetained?: boolean;
+  isEmergency?: boolean;
+  deliveryWorkLink?: string;
 }
 
 const BookingSchema: Schema = new Schema(
@@ -107,11 +122,29 @@ const BookingSchema: Schema = new Schema(
       phone: { type: String, required: true },
     },
     paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
-    transactionId: { type: String }, // Stripe Payment Intent ID for Deposit
-    balanceTransactionId: { type: String }, // Stripe Payment Intent ID for Balance
+    transactionId: { type: String },
+    balanceTransactionId: { type: String },
+    rescheduleRequest: {
+      requestedDate: { type: Date },
+      requestedStartTime: { type: String },
+      reason: { type: String },
+      status: {
+        type: String,
+        enum: ["pending", "rejected", "expired", "accepted"],
+        default: "pending",
+      },
+      createdAt: { type: Date, default: Date.now },
+    },
+    cancellationReason: { type: String },
+    cancelledBy: { type: String },
+    cancellationDate: { type: Date },
+    refundAmount: { type: Number },
+    penaltyAmount: { type: Number },
+    platformFeeRetained: { type: Boolean },
+    isEmergency: { type: Boolean },
+    deliveryWorkLink: { type: String },
   },
   { timestamps: true },
 );
 
 export const BookingModel: Model<IBooking> = mongoose.model<IBooking>("Booking", BookingSchema);
-

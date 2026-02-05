@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../auth/store/useAuthStore";
-import { Wallet, Plus, History, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { Wallet, Plus, History, ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { StripeWrapper } from "../../../components/payment/StripeWrapper";
 import { toast } from "sonner";
 import { walletApi, type WalletTransaction } from "../../../services/api/walletApi";
@@ -10,38 +10,42 @@ export function WalletPage() {
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
     const [showAddFunds, setShowAddFunds] = useState(false);
-    const [amountToAdd, setAmountToAdd] = useState(100); 
+    const [amountToAdd, setAmountToAdd] = useState(100);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [isLoadingTxs, setIsLoadingTxs] = useState(false);
 
     useEffect(() => {
         fetchWalletDetails();
     }, []);
 
+    useEffect(() => {
+        fetchTransactions();
+    }, [page]);
+
     const fetchWalletDetails = async () => {
         try {
             const data = await walletApi.getWalletDetails();
             setBalance(data.balance || 0);
-            
-            const sortedTx = (data.transactions || []).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            setTransactions(sortedTx);
         } catch (error) {
             console.error("Failed to fetch wallet details", error);
             toast.error("Failed to load wallet details");
         }
     };
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
+    const fetchTransactions = async () => {
+        setIsLoadingTxs(true);
+        try {
+            const data = await walletApi.getWalletTransactions(page, 5, 'ALL');
+            setTransactions(data.transactions || []);
+            setTotalPages(Math.ceil((data.total || 0) / 5) || 1);
+        } catch (error) {
+            console.error("Failed to fetch transactions", error);
+            toast.error("Failed to load transactions");
+        } finally {
+            setIsLoadingTxs(false);
+        }
+    };
 
     return (
         <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -50,7 +54,6 @@ export function WalletPage() {
             </h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {}
                 <div className="bg-gradient-to-br from-green-500 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
                     <div className="text-green-100 text-sm font-medium mb-1">Total Balance</div>
                     <div className="text-4xl font-bold mb-6">${balance.toFixed(2)}</div>
@@ -62,16 +65,18 @@ export function WalletPage() {
                     </button>
                 </div>
 
-                {}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 max-h-[400px] overflow-y-auto custom-scrollbar">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 min-h-[400px] flex flex-col relative">
                     <div className="text-gray-500 text-sm font-medium mb-4 flex items-center gap-2 sticky top-0 bg-white pb-2 z-10">
                         <History size={16} /> Recent Activity
                     </div>
-                    <div className="space-y-3">
-                        {transactions && transactions.length > 0 ? (
+                    <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
+                        {isLoadingTxs ? (
+                            <div className="text-center py-8 text-gray-400 text-sm">Loading transactions...</div>
+                        ) : transactions && transactions.length > 0 ? (
                             transactions.map((tx, idx) => (
-                                <div key={idx} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 px-2 rounded-lg transition-colors">
-                                    <div className="flex items-center gap-3">
+                                <div key={idx} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 px-2 rounded-lg transition-colors relative overflow-hidden">
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${tx.type === 'CREDIT' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                    <div className="flex items-center gap-3 pl-2">
                                         <div className={`p-2 rounded-full flex-shrink-0 ${tx.type === 'CREDIT' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                                             {tx.type === 'CREDIT' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                                         </div>
@@ -89,10 +94,31 @@ export function WalletPage() {
                             <div className="text-center py-8 text-gray-400 text-sm">No recent transactions found</div>
                         )}
                     </div>
+
+                    {totalPages > 1 && (
+                        <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="p-1.5 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <span className="text-xs font-medium text-gray-500">
+                                Page {page} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                                className="p-1.5 rounded-lg border hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {}
             {showAddFunds && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-xl p-6 w-full max-w-md relative">
@@ -122,6 +148,7 @@ export function WalletPage() {
                                 toast.success("Wallet credited successfully!");
                                 setShowAddFunds(false);
                                 fetchWalletDetails();
+                                fetchTransactions();
                             }}
                         />
                     </div>

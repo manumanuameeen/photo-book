@@ -11,4 +11,3 @@ export interface IAuthController {
   verifyResetOtp(req: express.Request, res: express.Response): Promise<void>;
   resetPassword(req: express.Request, res: express.Response): Promise<void>;
 }
-

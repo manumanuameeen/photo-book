@@ -40,4 +40,3 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     message: "Something went wrong",
   });
 };
-

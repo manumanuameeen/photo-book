@@ -26,7 +26,7 @@ export class StripeService implements IStripeService {
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100),
         currency,
-        metadata,
+        metadata: this._stringifyMetadata(metadata),
         automatic_payment_methods: {
           enabled: true,
         },
@@ -71,7 +71,7 @@ export class StripeService implements IStripeService {
             price_data: {
               currency,
               product_data: {
-                name: metadata.type === "booking_deposit" ? "Booking Deposit" : "Rental Balance",
+                name: metadata.type === "booking_deposit" ? "Booking Deposit" : metadata.type === "rental_initial_payment" ? "Rental Deposit" : "Rental Balance",
                 description: `Payment for ${metadata.bookingId || metadata.orderId}`,
               },
               unit_amount: Math.round(amount * 100),
@@ -80,7 +80,7 @@ export class StripeService implements IStripeService {
           },
         ],
         mode: "payment",
-        metadata,
+        metadata: this._stringifyMetadata(metadata),
         success_url: successUrl,
         cancel_url: cancelUrl,
         customer_email: customerEmail,
@@ -98,5 +98,16 @@ export class StripeService implements IStripeService {
   async retrieveCheckoutSession(id: string): Promise<Stripe.Checkout.Session> {
     return await this.stripe.checkout.sessions.retrieve(id);
   }
-}
 
+  private _stringifyMetadata(metadata: any): Record<string, string> {
+    const stringified: Record<string, string> = {};
+    for (const key in metadata) {
+      if (Object.prototype.hasOwnProperty.call(metadata, key)) {
+        const value = metadata[key];
+        stringified[key] =
+          typeof value === "string" ? value : value?.toString ? value.toString() : String(value);
+      }
+    }
+    return stringified;
+  }
+}

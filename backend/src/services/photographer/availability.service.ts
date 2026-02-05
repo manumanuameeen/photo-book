@@ -209,8 +209,8 @@ export class AvailabilityService implements IAvailabilityService {
 
     const existing = await this._repository.findByPhotographerAndDate(photographerId, d);
     if (existing) {
-      // Check for bookings before deleting?
-      // "Cannot change availability for a date with an existing booking" logic applies here too.
+
+
       const booking = await BookingModel.findOne({
         photographerId: new mongoose.Types.ObjectId(photographerId),
         eventDate: {
@@ -230,5 +230,49 @@ export class AvailabilityService implements IAvailabilityService {
       await this._repository.delete(existing.id);
     }
   }
-}
+  async unblockRange(photographerId: string, startDate: Date, endDate: Date): Promise<void> {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
 
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    if (start < now) {
+      throw new AppError("Start date cannot be in the past", HttpStatus.BAD_REQUEST);
+    }
+
+    if (start > end) {
+      throw new AppError("Start date cannot be after end date", HttpStatus.BAD_REQUEST);
+    }
+
+    // Check for bookings in the range
+    const booking = await BookingModel.findOne({
+      photographerId: new mongoose.Types.ObjectId(photographerId),
+      eventDate: { $gte: start, $lte: end },
+      status: { $in: ["CONFIRMED", "PENDING", "ACCEPTED", "WAITING_FOR_DEPOSIT", "PAID"] },
+    });
+
+    if (booking) {
+      throw new AppError(
+        "Cannot unblock range that strictly contains dates with existing bookings",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const current = new Date(start);
+    while (current <= end) {
+      // "Unblocking" in this context essentially means removing the explicit "Blocked" (isFullDayAvailable: false) override.
+      // If we delete the record, it reverts to default (which might be unavailable or available depending on logic).
+      // Based on `deleteAvailability`, it just deletes the record. So we will do that.
+      const d = new Date(current);
+      d.setHours(0, 0, 0, 0);
+      const existing = await this._repository.findByPhotographerAndDate(photographerId, d);
+      if (existing) {
+        await this._repository.delete(existing.id);
+      }
+      current.setDate(current.getDate() + 1);
+    }
+  }
+}

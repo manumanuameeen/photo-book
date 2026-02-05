@@ -51,4 +51,3 @@ export class CategoryRepository extends BaseRepository<ICategory> implements ICa
     };
   }
 }
-

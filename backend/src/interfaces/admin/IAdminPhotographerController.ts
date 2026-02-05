@@ -14,8 +14,8 @@ export interface IAdminPhotographerController {
 
   getPackages(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
   approvePackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
-  rejectPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
-  blockPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
-  unblockPackage(req: AuthRequest, res: Response, next: NextFunction): Promise<void>;
+  rejectPackage(req: AuthRequest, res: Response): Promise<void>;
+  blockPackage(req: AuthRequest, res: Response): Promise<void>;
+  unblockPackage(req: AuthRequest, res: Response): Promise<void>;
+  fixLegacyData(req: AuthRequest, res: Response): Promise<void>;
 }
-

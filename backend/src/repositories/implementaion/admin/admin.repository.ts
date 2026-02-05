@@ -8,6 +8,7 @@ import type {
 } from "../../../interfaces/admin/IAdminUser.interface.ts";
 import { AdminMapper } from "../../../mappers/admin.mapper.ts";
 
+
 export class AdminRepository extends BaseRepository<IUser> implements IAdminRepository {
   constructor() {
     super(User);
@@ -93,4 +94,3 @@ export class AdminRepository extends BaseRepository<IUser> implements IAdminRepo
     };
   }
 }
-

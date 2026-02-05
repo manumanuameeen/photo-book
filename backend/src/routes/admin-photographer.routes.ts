@@ -82,5 +82,11 @@ router.post(
   container.adminPhotographerController.rejectPackage,
 );
 
-export default router;
+router.post(
+  "/fix-legacy-data",
+  verifyAccessToken,
+  verifyAdmin,
+  container.adminPhotographerController.fixLegacyData,
+);
 
+export default router;

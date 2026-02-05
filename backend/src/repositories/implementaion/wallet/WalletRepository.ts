@@ -26,7 +26,9 @@ export class WalletRepository extends BaseRepository<IWallet> implements IWallet
       { $inc: { balance: amount } },
       { new: true },
     );
-    console.log(`[WalletRepo] updateBalance for ${userId} by ${amount}: New Balance=${updated?.balance}`);
+    console.log(
+      `[WalletRepo] updateBalance for ${userId} by ${amount}: New Balance=${updated?.balance}`,
+    );
     return updated;
   }
 
@@ -55,6 +57,7 @@ export class WalletRepository extends BaseRepository<IWallet> implements IWallet
     page: number = 1,
     limit: number = 10,
     type?: string,
+    status?: string,
   ): Promise<{ transactions: ITransaction[]; total: number }> {
     const skip = (page - 1) * limit;
 
@@ -66,6 +69,10 @@ export class WalletRepository extends BaseRepository<IWallet> implements IWallet
 
     if (type && type !== "ALL") {
       pipeline.push({ $match: { "transaction.type": type } });
+    }
+
+    if (status && status !== "ALL") {
+      pipeline.push({ $match: { "transaction.status": status } });
     }
 
     pipeline.push({
@@ -87,4 +94,3 @@ export class WalletRepository extends BaseRepository<IWallet> implements IWallet
     return { transactions: [], total: 0 };
   }
 }
-

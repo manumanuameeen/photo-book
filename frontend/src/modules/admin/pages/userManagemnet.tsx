@@ -133,7 +133,7 @@ const UserManagement: React.FC = () => {
             alt={user.name}
             className="w-10 h-10 rounded-full border-2 border-gray-200"
             onError={(e) => {
-              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              e.currentTarget.src = `https:
                 user.name
               )}&background=random`;
             }}

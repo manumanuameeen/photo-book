@@ -55,4 +55,3 @@ export type CreateCategoryDto = z.infer<typeof CreateCategorySchema>;
 export type UpdateCategoryDto = z.infer<typeof UpdateCategorySchema>;
 export type SuggestCategoryDto = z.infer<typeof SuggestCategorySchema>;
 export type GetCategoriesQueryDtoType = z.infer<typeof GetCategoriesQueryDto>;
-

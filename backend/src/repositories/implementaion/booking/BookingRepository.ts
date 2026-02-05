@@ -95,10 +95,10 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
   ): Promise<{ bookings: IBooking[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    // Money is held if paid but not released (released = COMPLETED)
+    
     const query: any = {
       paymentStatus: { $in: ["DEPOSIT_PAID", "FULL_PAID"] },
-      status: { $nin: ["COMPLETED", "CANCELLED", "REJECTED"] }
+      status: { $nin: ["COMPLETED", "CANCELLED", "REJECTED"] },
     };
 
     if (search) {
@@ -121,7 +121,12 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
 
     return { bookings, total };
   }
-  async getAdminStats(): Promise<{ revenue: number; volume: number; escrow: number; payouts: number }> {
+  async getAdminStats(): Promise<{
+    revenue: number;
+    volume: number;
+    escrow: number;
+    payouts: number;
+  }> {
     const stats = await this._model.aggregate([
       {
         $facet: {
@@ -130,22 +135,22 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
             { $group: { _id: null, total: { $sum: "$totalAmount" } } },
           ],
           revenue: [
-            { $match: { status: "completed" } }, // Lowercase "completed" as per enum default/schema
-            // If adminFee is stored, use it. If not, calc 13%
+            { $match: { status: "completed" } }, 
+            
             { $group: { _id: null, total: { $sum: { $multiply: ["$totalAmount", 0.13] } } } },
           ],
           escrow: [
             {
               $match: {
                 paymentStatus: { $in: ["DEPOSIT_PAID", "FULL_PAID"] },
-                status: { $nin: ["completed", "cancelled", "rejected"] }, // Use lowercase if enum is lowercase
+                status: { $nin: ["completed", "cancelled", "rejected"] }, 
               },
             },
             { $group: { _id: null, total: { $sum: "$totalAmount" } } },
           ],
           payouts: [
             { $match: { status: "completed" } },
-            { $group: { _id: null, total: { $sum: { $multiply: ["$totalAmount", 0.87] } } } }, // 100% - 13% = 87%
+            { $group: { _id: null, total: { $sum: { $multiply: ["$totalAmount", 0.87] } } } }, 
           ],
         },
       },
@@ -160,4 +165,3 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
     };
   }
 }
-

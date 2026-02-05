@@ -10,7 +10,7 @@ interface StripeWrapperProps {
     amount: number;
     userId: string;
     currency?: string;
-    clientSecret?: string; // New prop
+    clientSecret?: string; 
     onSuccess?: () => void;
     onConfirmPayment?: (paymentIntentId: string) => Promise<void>;
 }

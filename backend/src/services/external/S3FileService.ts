@@ -1,11 +1,12 @@
 import type { IFileService } from "../../interfaces/services/IFileService.ts";
-import AWS from "aws-sdk";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { Messages } from "../../constants/messages.ts";
 
 export class S3FileService implements IFileService {
-  private _s3: AWS.S3;
+  private _s3Client: S3Client;
   private _bucketName: string;
 
   constructor() {
@@ -19,10 +20,12 @@ export class S3FileService implements IFileService {
       throw new Error("S3 bucket name is not configured");
     }
 
-    this._s3 = new AWS.S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    this._s3Client = new S3Client({
       region: process.env.AWS_REGION || "ap-south-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
     });
     this._bucketName = process.env.BUCKET_NAME;
 
@@ -51,36 +54,38 @@ export class S3FileService implements IFileService {
       mimetype: file.mimetype,
     });
 
-    const params = {
-      Bucket: this._bucketName,
-      Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    };
-
     try {
-      const data = await (this._s3.upload(params) as any).promise();
-      console.log("✅ File uploaded successfully:", data.Location);
-      return data.Location;
+      const upload = new Upload({
+        client: this._s3Client,
+        params: {
+          Bucket: this._bucketName,
+          Key: key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        },
+      });
+
+      const result = await upload.done();
+      console.log("✅ File uploaded successfully:", result.Location);
+      return result.Location as string;
     } catch (error: any) {
       console.error("❌ S3 upload error:", {
         message: error.message,
-        code: error.code,
-        statusCode: error.statusCode,
+        code: error.name || error.code,
         bucket: this._bucketName,
         key: key,
       });
 
-      if (error.code === "NoSuchBucket") {
+      if (error.name === "NoSuchBucket") {
         throw new AppError(
           `S3 bucket '${this._bucketName}' does not exist`,
           HttpStatus.BAD_REQUEST,
         );
-      } else if (error.code === "InvalidAccessKeyId") {
+      } else if (error.name === "InvalidAccessKeyId") {
         throw new AppError("Invalid AWS credentials", HttpStatus.BAD_REQUEST);
-      } else if (error.code === "SignatureDoesNotMatch") {
+      } else if (error.name === "SignatureDoesNotMatch") {
         throw new AppError("AWS credential signature mismatch", HttpStatus.BAD_REQUEST);
-      } else if (error.code === "AccessDenied") {
+      } else if (error.name === "AccessDenied") {
         throw new AppError("Access denied to S3 bucket", HttpStatus.BAD_REQUEST);
       }
 
@@ -107,13 +112,13 @@ export class S3FileService implements IFileService {
   }
 
   async deleteFile(fileKey: string): Promise<void> {
-    const params = {
-      Bucket: this._bucketName,
-      Key: fileKey,
-    };
-
     try {
-      await ((this._s3 as any).deleteObject(params) as any).promise();
+      await this._s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: this._bucketName,
+          Key: fileKey,
+        }),
+      );
       console.log("✅ File deleted successfully:", fileKey);
     } catch (error: any) {
       console.error("❌ S3 delete error:", error);
@@ -121,4 +126,3 @@ export class S3FileService implements IFileService {
     }
   }
 }
-

@@ -7,7 +7,8 @@ import {
     MapPin,
     Star,
     AlertCircle,
-    Navigation
+    Navigation,
+    MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../auth/store/useAuthStore';
@@ -52,7 +53,13 @@ const PhotographerSearch = () => {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [isLocating, setIsLocating] = useState(false);
 
-    const fetchPhotographers = useCallback(async (forcedLocation?: { lat: number; lng: number } | null) => {
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const ITEMS_PER_PAGE = 8;
+    const [totalItems, setTotalItems] = useState(0);
+
+    const fetchPhotographers = useCallback(async (forcedLocation?: { lat: number; lng: number } | null, page: number = 1) => {
         try {
             setIsLoading(true);
             setError(null);
@@ -60,7 +67,10 @@ const PhotographerSearch = () => {
 
             const locToUse = forcedLocation !== undefined ? forcedLocation : userLocation;
 
-            const filters: PhotographerFilter = {};
+            const filters: PhotographerFilter = {
+                page,
+                limit: ITEMS_PER_PAGE
+            };
             if (category !== 'All Categories') filters.category = category;
             if (priceRange !== 'All Prices') filters.priceRange = priceRange;
 
@@ -72,11 +82,14 @@ const PhotographerSearch = () => {
                 filters.location = location;
             }
 
-            const data = await userPhotographerApi.getPhotographers(filters);
-            setPhotographers(data);
-        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+            const response = await userPhotographerApi.getPhotographers(filters);
+            setPhotographers(response.photographers || []);
+            setTotalPages(response.totalPages || 1);
+            setTotalItems(response.total || 0);
+            setCurrentPage(page);
+        } catch (err: unknown) {
             console.error("Failed to fetch photographers:", err);
-            const errorMessage = err.response?.data?.message || err.message || "Failed to load photographers. Please try again later.";
+            const errorMessage = (err as any).response?.data?.message || (err as any).message || "Failed to load photographers. Please try again later.";
             setError(errorMessage);
         } finally {
             setIsLoading(false);
@@ -114,10 +127,11 @@ const PhotographerSearch = () => {
         if (location !== 'All Locations') {
             setUserLocation(null);
         }
+        setCurrentPage(1);
     }, [location]);
 
     useEffect(() => {
-        fetchPhotographers();
+        fetchPhotographers(undefined, 1);
     }, [fetchPhotographers]);
 
 
@@ -286,7 +300,7 @@ const PhotographerSearch = () => {
                         <h3 className="text-lg font-medium text-gray-900">Ooops! Something went wrong</h3>
                         <p className="mt-2 text-sm text-gray-500">{error}</p>
                         <button
-                            onClick={fetchPhotographers}
+                            onClick={() => fetchPhotographers()}
                             className="mt-6 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                         >
                             Try Again
@@ -301,83 +315,129 @@ const PhotographerSearch = () => {
                         </p>
                     </div>
                 ) : (
-                    /* Grid */
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-                        {filteredPhotographers.map((photographer) => (
-                            <div key={photographer.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100 hover:translate-y-[-4px]">
-                                <div className="relative h-64 bg-gray-100 overflow-hidden">
-                                    <img
-                                        src={photographer.image || "https://via.placeholder.com/400x300?text=No+Image"}
-                                        alt={photographer.name}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                </div>
+                    <>
+                        <div className="mb-6 text-gray-600 font-medium">
+                            Found {totalItems} photographers
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+                            {filteredPhotographers.map((photographer) => (
+                                <div key={photographer.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100 hover:translate-y-[-4px]">
+                                    <div className="relative h-64 bg-gray-100 overflow-hidden">
+                                        <img
+                                            src={photographer.image || "https://via.placeholder.com/400x300?text=No+Image"}
+                                            alt={photographer.name}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    </div>
 
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h3 className="text-xl font-bold text-gray-900 mb-1">{photographer.name}</h3>
-                                            <div className="flex items-center text-gray-500 text-sm">
-                                                <MapPin size={14} className="mr-1" />
-                                                {photographer.location || "Location Unavailable"}
+                                    <div className="p-6 flex flex-col flex-grow">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h3 className="text-xl font-bold text-gray-900 mb-1">{photographer.name}</h3>
+                                                <div className="flex items-center text-gray-500 text-sm">
+                                                    <MapPin size={14} className="mr-1" />
+                                                    {photographer.location || "Location Unavailable"}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center bg-green-50 px-2 py-1 rounded-lg">
+                                                <Star size={16} className="text-yellow-500 mr-1 fill-yellow-500" />
+                                                <span className="font-bold text-gray-700">{photographer.rating}</span>
+                                                <span className="text-gray-400 text-xs ml-1">({photographer.reviews})</span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center bg-green-50 px-2 py-1 rounded-lg">
-                                            <Star size={16} className="text-yellow-500 mr-1 fill-yellow-500" />
-                                            <span className="font-bold text-gray-700">{photographer.rating}</span>
-                                            <span className="text-gray-400 text-xs ml-1">({photographer.reviews})</span>
-                                        </div>
-                                    </div>
 
-                                    <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-gray-100">
-                                        <div className="text-center border-r border-gray-100">
-                                            <div className="text-sm text-gray-400 mb-1">Starting at</div>
-                                            <div className="font-bold text-green-700 text-lg">{photographer.price}</div>
+                                        <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-gray-100">
+                                            <div className="text-center border-r border-gray-100">
+                                                <div className="text-sm text-gray-400 mb-1">Starting at</div>
+                                                <div className="font-bold text-green-700 text-lg">{photographer.price}</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-sm text-gray-400 mb-1">Experience</div>
+                                                <div className="font-bold text-gray-700">{photographer.experience}</div>
+                                            </div>
                                         </div>
-                                        <div className="text-center">
-                                            <div className="text-sm text-gray-400 mb-1">Experience</div>
-                                            <div className="font-bold text-gray-700">{photographer.experience}</div>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex flex-wrap gap-2 mb-6">
-                                        {Array.isArray(photographer.tags) && photographer.tags.length > 0 ? (
-                                            photographer.tags.slice(0, 3).map((tag, index) => (
-                                                <span key={`${photographer.id}-tag-${index}`} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                                                    {tag}
+                                        <div className="flex flex-wrap gap-2 mb-6">
+                                            {Array.isArray(photographer.tags) && photographer.tags.length > 0 ? (
+                                                photographer.tags.slice(0, 3).map((tag, index) => (
+                                                    <span key={`${photographer.id}-tag-${index}`} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                                        {tag}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                                    General
                                                 </span>
-                                            ))
-                                        ) : (
-                                            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                                                General
-                                            </span>
-                                        )}
-                                    </div>
+                                            )}
+                                        </div>
 
-                                    <div className="flex gap-3 mt-auto">
-                                        <button
-                                            onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: photographer.id } })}
-                                            className={`px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm ${!isPhotographerClient ? 'flex-1' : 'w-full'}`}
-                                        >
-                                            View Profile
-                                        </button>
-                                        {!isPhotographerClient && (
+                                        <div className="flex gap-3 mt-auto">
                                             <button
-                                                onClick={() => toast.success(`Booking ${photographer.name}`)}
-                                                className="flex-1 px-4 py-2 bg-[#1E5631] text-white font-medium rounded-lg hover:bg-[#164024] transition-colors text-sm"
+                                                onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: photographer.id } })}
+                                                className={`px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm ${!isPhotographerClient ? 'flex-1' : 'w-full'}`}
                                             >
-                                                Book Now
+                                                View Profile
                                             </button>
-                                        )}
+                                            {!isPhotographerClient && (
+                                                <>
+                                                    <button
+                                                        onClick={() => navigate({ to: '/chat', search: { userId: photographer.userId } })}
+                                                        className="px-3 py-2 border border-gray-200 text-green-700 font-medium rounded-lg hover:bg-green-50 transition-colors text-sm"
+                                                        title="Chat"
+                                                    >
+                                                        <MessageCircle size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => toast.success(`Booking ${photographer.name}`)}
+                                                        className="flex-1 px-4 py-2 bg-[#1E5631] text-white font-medium rounded-lg hover:bg-[#164024] transition-colors text-sm"
+                                                    >
+                                                        Book Now
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <div className="flex justify-center items-center gap-2 mb-20">
+                            <button
+                                onClick={() => fetchPhotographers(undefined, currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronDown className="transform rotate-90" size={20} />
+                            </button>
+
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    onClick={() => fetchPhotographers(undefined, page)}
+                                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${currentPage === page
+                                        ? 'bg-[#2E7D46] text-white'
+                                        : 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={() => fetchPhotographers(undefined, currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronDown className="transform -rotate-90" size={20} />
+                            </button>
+                        </div>
+
+                    </>
                 )}
             </div>
-        </div >
+        </div>
     );
 };
 

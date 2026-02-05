@@ -30,7 +30,7 @@ export class WalletService implements IWalletService {
       const adminWallet = await this.walletRepository.findByRole("admin");
       if (adminWallet) return adminWallet.userId.toString();
 
-      // Fallback: search for admin user if wallet not found by role
+
       const { User } = await import("../../model/userModel.ts");
       const adminUser = (await User.findOne({ role: "admin" })) as any;
       if (adminUser) {
@@ -46,6 +46,7 @@ export class WalletService implements IWalletService {
     page: number = 1,
     limit: number = 10,
     type?: string,
+    status?: string,
   ): Promise<{ transactions: any[]; total: number; balance: number }> {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
@@ -54,6 +55,7 @@ export class WalletService implements IWalletService {
       page,
       limit,
       type,
+      status,
     );
 
     return {
@@ -72,7 +74,7 @@ export class WalletService implements IWalletService {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
 
-    // Idempotency Check
+
     if (
       wallet.transaction &&
       wallet.transaction.some(
@@ -98,8 +100,8 @@ export class WalletService implements IWalletService {
   }
 
   async ensureWalletExists(userId: string, role: string): Promise<IWallet> {
-    // If userId is "admin", resolver already handled it to return ObjectId string
-    // But we still need to check if passed the literal "admin"
+
+
     if (userId === "admin") {
       const targetId = await this._resolveUserId("admin");
       return this.ensureWalletExists(targetId, "admin");
@@ -119,11 +121,13 @@ export class WalletService implements IWalletService {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
 
-    if (!wallet || wallet.balance < amount) {
-      throw new AppError(Messages.INSUFFICIENT_WALLET_BALANCE, HttpStatus.BAD_REQUEST);
+    // We allow negative balance for penalties, so we removed the insufficient funds check.
+    if (!wallet) {
+      // Should not happen as ensureWalletExists is called
+      throw new AppError("Wallet not found", HttpStatus.NOT_FOUND);
     }
 
-    // Idempotency Check
+
     if (
       wallet.transaction &&
       wallet.transaction.some((t: any) => t.referenceId === refId && t.type === "DEBIT")
@@ -155,7 +159,7 @@ export class WalletService implements IWalletService {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
 
-    // Idempotency Check
+
     if (
       wallet.transaction &&
       wallet.transaction.some((t: any) => t.referenceId === refId && t.status === "PENDING")
@@ -190,4 +194,3 @@ export class WalletService implements IWalletService {
     return (await this.walletRepository.updateTransactionStatus(targetId, refId, "COMPLETED"))!;
   }
 }
-

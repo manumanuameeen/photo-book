@@ -220,5 +220,37 @@ export class AdminPhotographerService implements IAdminPhotographerService {
       );
     }
   }
-}
 
+  async fixLegacyData(): Promise<any> {
+    const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
+    const { PortfolioSectionModel } = await import("../../model/portfolioSectionModel.ts");
+    const { PhotographerModel } = await import("../../model/photographerModel.ts");
+
+    const photographers = await PhotographerModel.find({});
+    let updatedPackages = 0;
+    let updatedPortfolios = 0;
+
+    for (const photographer of photographers) {
+      
+      const pkgResult = await BookingPackageModel.updateMany(
+        { photographer: photographer.userId },
+        { photographer: photographer._id }
+      );
+      updatedPackages += pkgResult.modifiedCount;
+
+      
+      const portfolioResult = await PortfolioSectionModel.updateMany(
+        { photographerId: photographer.userId },
+        { photographerId: photographer._id }
+      );
+      updatedPortfolios += portfolioResult.modifiedCount;
+    }
+
+    return {
+      message: "Legacy data migration completed",
+      photographersScanned: photographers.length,
+      updatedPackages,
+      updatedPortfolios,
+    };
+  }
+}

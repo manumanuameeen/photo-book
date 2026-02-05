@@ -68,3 +68,13 @@ export const verifyAccessToken = async (req: AuthRequest, res: Response, next: N
   }
 };
 
+export const verifyAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.role !== 'admin') {
+    return res.status(HttpStatus.FORBIDDEN).json({
+      success: false,
+      message: "Access denied. Admin privileges required.",
+      code: "ACCESS_DENIED"
+    });
+  }
+  next();
+};

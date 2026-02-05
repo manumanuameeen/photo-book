@@ -58,5 +58,12 @@ router.patch(ROUTES.V1.BOOKING.CONFIRM_DELIVERY, verifyAccessToken, (req, res) =
   bookingController.confirmWorkDelivery(req, res),
 );
 
-export default router;
+router.post(ROUTES.V1.BOOKING.RESCHEDULE_REQUEST, verifyAccessToken, (req, res) =>
+  bookingController.requestReschedule(req, res),
+);
 
+router.post(ROUTES.V1.BOOKING.RESCHEDULE_RESPONSE, verifyAccessToken, (req, res) =>
+  bookingController.respondToReschedule(req, res),
+);
+
+export default router;

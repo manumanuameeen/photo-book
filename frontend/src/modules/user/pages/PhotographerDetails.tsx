@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import {
     MapPin,
-    Star,
     Clock,
     Award,
 
     ChevronLeft,
     ChevronRight,
     Search,
-    X
+    X,
+    User,
+    MessageCircle
 } from 'lucide-react';
 
 
@@ -19,6 +20,10 @@ import { userPhotographerApi } from '../../../services/api/userPhotographerApi';
 import { ROUTES } from '../../../constants/routes';
 import Loader from '../../../components/Loader';
 import { useAuthStore } from '../../auth/store/useAuthStore';
+import ReviewForm from '../../shared/components/reviews/ReviewForm';
+import ReviewList from '../../shared/components/reviews/ReviewList';
+import ReviewStatsSummary from '../../shared/components/reviews/ReviewStatsSummary';
+import LikeButton from '../../shared/components/interactions/LikeButton';
 
 interface PhotographerDetail {
     id: string;
@@ -46,12 +51,15 @@ interface PhotographerDetail {
         name: string;
         price: number;
         features: string[];
+        likes: string[];
     }[];
     portfolioSections: {
         id: string;
         title: string;
         images: string[];
+        likes: string[];
     }[];
+    likes: string[];
 }
 
 interface PortfolioItem {
@@ -60,16 +68,9 @@ interface PortfolioItem {
     sectionTitle: string;
 }
 
-const shuffleArray = <T,>(array: T[]): T[] => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-};
 
 
+import { ReportModal } from '../../../components/common/ReportModal';
 import { CheckAvailabilityModal } from '../components/CheckAvailabilityModal';
 
 const PhotographerDetails = () => {
@@ -77,24 +78,37 @@ const PhotographerDetails = () => {
     const { user, role } = useAuthStore();
     const [selectedImage, setSelectedImage] = useState<PortfolioItem | null>(null);
     const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 3;
 
 
-    const { id } = useParams({ strict: false });
-
+    const [reviewTarget, setReviewTarget] = useState<{ id: string; type: 'photographer' | 'package' }>({ id: '', type: 'photographer' });
+    const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
     const [photographer, setPhotographer] = useState<PhotographerDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const [portfolioImages, setPortfolioImages] = useState<PortfolioItem[]>([]);
     const [activeSection, setActiveSection] = useState<{ id: string; title: string; images: string[] } | null>(null);
 
 
-    const [isReviewOpen, setIsReviewOpen] = useState(false);
-    const [reviewRating, setReviewRating] = useState(5);
-    const [reviewComment, setReviewComment] = useState("");
-    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    useEffect(() => {
+        if (selectedPackage) {
+            toast.info("Package selected. You can now view its reviews.");
+        }
+    }, [selectedPackage]);
+
+    const { id } = useParams({ strict: false });
+
+    useEffect(() => {
+        if (id) {
+            setReviewTarget(prev => ({ ...prev, id, type: 'photographer' }));
+        }
+    }, [id]);
+
+
+
+
+
 
     useEffect(() => {
         const fetchPhotographer = async () => {
@@ -118,15 +132,8 @@ const PhotographerDetails = () => {
                             });
                         });
                     });
-                    setPortfolioImages(shuffleArray(flattened));
                 } else if (data.portfolio && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
 
-                    const flattened: PortfolioItem[] = data.portfolio.map((img: string, idx: number) => ({
-                        id: `legacy-${idx}`,
-                        image: img,
-                        sectionTitle: 'General'
-                    }));
-                    setPortfolioImages(shuffleArray(flattened));
                 }
 
 
@@ -141,39 +148,12 @@ const PhotographerDetails = () => {
         fetchPhotographer();
     }, [id]);
 
-    const handleSubmitReview = async () => {
-        if (!id) return;
-        if (!reviewComment.trim()) {
-            toast.error("Please provide a comment");
-            return;
-        }
 
-        try {
-            setIsSubmittingReview(true);
-            await userPhotographerApi.addReview(id, {
-                rating: reviewRating,
-                comment: reviewComment
-            });
-            toast.success("Review submitted successfully!");
-            setIsReviewOpen(false);
-            setReviewComment("");
-            setReviewRating(5);
-
-
-            const data = await userPhotographerApi.getPhotographerById(id);
-            setPhotographer(data);
-        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-            console.error("Failed to submit review:", error);
-            toast.error(error.response?.data?.message || "Failed to submit review");
-        } finally {
-            setIsSubmittingReview(false);
-        }
-    };
 
 
 
     const handleBack = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         navigate({ to: ROUTES.USER.PHOTOGRAPHER as any });
     };
 
@@ -184,7 +164,7 @@ const PhotographerDetails = () => {
         pkg.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Filtered portfolio images logic removed as it was unused and causing lint errors
+
 
     const totalPages = Math.ceil(filteredPackages.length / ITEMS_PER_PAGE);
     const paginatedPackages = filteredPackages.slice(
@@ -235,15 +215,18 @@ const PhotographerDetails = () => {
                             </div>
 
                             <div className="flex-grow">
-                                <h1 className="text-2xl font-bold text-gray-900">{photographer.name}</h1>
+                                <div className="flex justify-between items-start">
+                                    <h1 className="text-2xl font-bold text-gray-900">{photographer.name}</h1>
+                                    <LikeButton
+                                        targetId={id!}
+                                        targetType="photographer"
+                                        initialLikes={photographer.likes}
+                                    />
+                                </div>
                                 <p className="text-green-600 font-medium mb-2">{photographer.category}</p>
 
                                 <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
-                                    <div className="flex items-center">
-                                        <Star size={16} className="text-yellow-400 fill-yellow-400 mr-1" />
-                                        <span className="font-bold text-gray-700 mr-1">{photographer.rating}</span>
-                                        <span>({photographer.reviewsCount} reviews)</span>
-                                    </div>
+                                    <ReviewStatsSummary targetId={id!} />
                                     <div className="flex items-center">
                                         <MapPin size={16} className="mr-1" />
                                         {photographer.location}
@@ -312,13 +295,22 @@ const PhotographerDetails = () => {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <h3 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">
-                                                        {section.title}
-                                                    </h3>
-                                                    <p className="text-xs text-gray-500">
-                                                        {section.images.length} images
-                                                    </p>
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h3 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                                                            {section.title}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500">
+                                                            {section.images.length} images
+                                                        </p>
+                                                    </div>
+                                                    <LikeButton
+                                                        targetId={section.id}
+                                                        targetType="portfolio"
+                                                        initialLikes={section.likes}
+                                                        showCount={true}
+                                                        className="mt-1"
+                                                    />
                                                 </div>
                                             </div>
                                         ))
@@ -419,7 +411,15 @@ const PhotographerDetails = () => {
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedPackage(pkg.id); }}
                                             >
                                                 <div className="flex justify-between items-center mb-3">
-                                                    <h3 className="font-bold text-gray-900">{pkg.name}</h3>
+                                                    <div className="flex items-center gap-3">
+                                                        <h3 className="font-bold text-gray-900">{pkg.name}</h3>
+                                                        <LikeButton
+                                                            targetId={pkg.id}
+                                                            targetType="package"
+                                                            initialLikes={pkg.likes}
+                                                            className="scale-90"
+                                                        />
+                                                    </div>
                                                     <span className="text-lg font-bold text-gray-900">${pkg.price}</span>
                                                 </div>
                                                 <ul className="space-y-2">
@@ -469,103 +469,72 @@ const PhotographerDetails = () => {
                         { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-lg font-bold text-gray-900">Client Reviews</h2>
-                                {user?._id !== photographer.userId && (
+                                <div className="flex gap-4">
                                     <button
-                                        onClick={() => setIsReviewOpen(!isReviewOpen)}
-                                        className="text-sm font-medium text-green-700 hover:text-green-800 hover:underline"
+                                        onClick={() => setReviewTarget({ id: id!, type: 'photographer' })}
+                                        className={`text-lg font-bold pb-1 border-b-2 transition-colors ${reviewTarget.type === 'photographer'
+                                            ? 'text-gray-900 border-green-600'
+                                            : 'text-gray-400 border-transparent hover:text-gray-600'
+                                            }`}
                                     >
-                                        Write a Review
+                                        Photographer Reviews
                                     </button>
+                                    <button
+                                        onClick={() => {
+                                            if (selectedPackage) {
+                                                setReviewTarget({ id: selectedPackage, type: 'package' });
+                                            } else {
+                                                toast.error("Please select a package first to view its reviews");
+                                            }
+                                        }}
+                                        className={`text-lg font-bold pb-1 border-b-2 transition-colors ${reviewTarget.type === 'package'
+                                            ? 'text-gray-900 border-green-600'
+                                            : 'text-gray-400 border-transparent hover:text-gray-600'
+                                            }`}
+                                    >
+                                        Package Reviews
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                {reviewTarget.type === 'package' && !selectedPackage && (
+                                    <p className="text-sm text-gray-500 italic">Select a package above to see its reviews.</p>
+                                )}
+                                {reviewTarget.type === 'package' && selectedPackage && (
+                                    <div className="bg-green-50 p-3 rounded-lg flex items-center justify-between gap-2 mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <Award size={16} className="text-green-700" />
+                                            <span className="text-sm font-medium text-green-800">
+                                                Showing reviews for: {photographer.packages.find(p => p.id === selectedPackage)?.name}
+                                            </span>
+                                        </div>
+                                        <ReviewStatsSummary targetId={selectedPackage} />
+                                    </div>
                                 )}
                             </div>
 
-                            {isReviewOpen && (
-                                <div className="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <h3 className="font-bold text-gray-900 mb-3">Share your experience</h3>
-
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <button
-                                                    key={star}
-                                                    type="button"
-                                                    onClick={() => setReviewRating(star)}
-                                                    className="focus:outline-none transition-transform active:scale-95"
-                                                >
-                                                    <Star
-                                                        size={24}
-                                                        className={`${star <= reviewRating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
-                                                    />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <label htmlFor="review-comment" className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
-                                        <textarea
-                                            id="review-comment"
-                                            value={reviewComment}
-                                            onChange={(e) => setReviewComment(e.target.value)}
-                                            placeholder="Tell us about your experience..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                            rows={3}
+                            { }
+                            {user?._id !== photographer.userId && (
+                                (reviewTarget.type === 'photographer' || (reviewTarget.type === 'package' && selectedPackage)) && (
+                                    <div className="mb-8">
+                                        <ReviewForm
+                                            key={reviewTarget.id}
+                                            targetId={reviewTarget.id}
+                                            type={reviewTarget.type}
                                         />
                                     </div>
-
-                                    <div className="flex justify-end gap-3">
-                                        <button
-                                            onClick={() => setIsReviewOpen(false)}
-                                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleSubmitReview}
-                                            disabled={isSubmittingReview}
-                                            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
-                                        >
-                                            {isSubmittingReview ? "Submitting..." : "Submit Review"}
-                                        </button>
-                                    </div>
-                                </div>
+                                )
                             )}
 
-                            <div className="space-y-6">
-                                {photographer.reviews && photographer.reviews.length > 0 ? (
-                                    photographer.reviews.map((review) => (
-                                        <div key={review.id} className="border-b border-gray-50 last:border-0 pb-6 last:pb-0">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    {review.userImage ? (
-                                                        <img src={review.userImage} alt={review.userName} className="w-8 h-8 rounded-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs">
-                                                            {review.userName.charAt(0)}
-                                                        </div>
-                                                    )}
-                                                    <h3 className="font-bold text-gray-900">{review.userName}</h3>
-                                                </div>
-                                                <span className="text-xs text-gray-400">{new Date(review.date).toLocaleDateString()}</span>
-                                            </div>
-                                            <div className="flex mb-2 ml-10">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} size={14} className={`${i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200"}`} />
-                                                ))}
-                                            </div>
-                                            <p className="text-gray-600 text-sm leading-relaxed ml-10">
-                                                "{review.comment}"
-                                            </p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-8 text-gray-500 text-sm">
-                                        No reviews yet. Be the first to share your experience!
-                                    </div>
-                                )}
-                            </div>
+                            { }
+                            {(reviewTarget.type === 'photographer' || (reviewTarget.type === 'package' && selectedPackage)) && (
+                                <ReviewList
+                                    key={`list-${reviewTarget.id}`}
+                                    targetId={reviewTarget.id}
+                                    isOwner={user?._id === photographer.userId}
+                                />
+                            )}
                         </div>
 
                     </div>
@@ -591,14 +560,14 @@ const PhotographerDetails = () => {
                                 <button
                                     className="w-full bg-[#FFC107] hover:bg-[#FFB300] text-gray-900 font-bold py-3 rounded-lg shadow-sm transition-all active:scale-95 mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={!selectedPackage}
+
                                     onClick={() => navigate({
-                                        to: ROUTES.USER.BOOKING,
+                                        to: ROUTES.USER.BOOKING as any,
                                         search: {
                                             photographerId: photographer.id,
                                             packageId: selectedPackage
-                                        }
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    } as any)}
+                                        } as any
+                                    })}
                                 >
                                     Book Now
                                 </button>
@@ -610,9 +579,20 @@ const PhotographerDetails = () => {
                                     Check Availability
                                 </button>
 
-                                <div className="mt-6 text-center">
+                                <div className="mt-6 text-center flex flex-col gap-2 items-center">
                                     <p className="text-xs text-green-600 mb-1">Need something custom?</p>
-                                    <button className="text-xs text-gray-500 underline hover:text-green-700">Contact Photographer</button>
+                                    <button
+                                        onClick={() => navigate({ to: '/chat', search: { userId: photographer.userId } })}
+                                        className="text-xs text-green-700 hover:text-green-800 underline flex items-center justify-center gap-1"
+                                    >
+                                        <MessageCircle size={14} /> Send a Message
+                                    </button>
+                                    <button
+                                        onClick={() => setIsReportModalOpen(true)}
+                                        className="text-xs text-gray-400 hover:text-red-500 flex items-center justify-center gap-1 transition-colors"
+                                    >
+                                        <Award size={14} className="rotate-180" /> Report Profile
+                                    </button>
                                 </div>
                             </div>
                         ) : (
@@ -635,36 +615,46 @@ const PhotographerDetails = () => {
             </div>
 
             { }
-            {selectedImage && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 transition-all duration-300"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setSelectedImage(null)}
-                    onKeyDown={(e) => { if (e.key === 'Escape') setSelectedImage(null); }}
-                >
-                    <button
-                        className="absolute top-4 right-4 text-white hover:text-gray-300 focus:outline-none bg-black/50 rounded-full p-2"
-                        onClick={() => setSelectedImage(null)}
-                    >
-                        <X size={32} />
-                    </button>
+            {
+                selectedImage && (
                     <div
-                        className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center"
-                        onClick={(e) => e.stopPropagation()}
-                        role="presentation"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 transition-all duration-300"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedImage(null)}
+                        onKeyDown={(e) => { if (e.key === 'Escape') setSelectedImage(null); }}
                     >
-                        <img
-                            src={selectedImage.image}
-                            alt={selectedImage.sectionTitle}
-                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-                        />
-                        <div className="absolute bottom-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-md">
-                            {selectedImage.sectionTitle}
+                        <button
+                            className="absolute top-4 right-4 text-white hover:text-gray-300 focus:outline-none bg-black/50 rounded-full p-2"
+                            onClick={() => setSelectedImage(null)}
+                        >
+                            <X size={32} />
+                        </button>
+                        <div
+                            className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center"
+                            onClick={(e) => e.stopPropagation()}
+                            role="presentation"
+                        >
+                            <img
+                                src={selectedImage.image}
+                                alt={selectedImage.sectionTitle}
+                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                            />
+                            <div className="absolute bottom-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-md">
+                                {selectedImage.sectionTitle}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
+
+            <ReportModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                targetId={photographer.id}
+                targetType="photographer"
+                targetName={photographer.name}
+            />
 
             <CheckAvailabilityModal
                 isOpen={isAvailabilityModalOpen}
@@ -674,9 +664,9 @@ const PhotographerDetails = () => {
 
                 onBook={(date: Date) => {
                     setIsAvailabilityModalOpen(false);
+
                     navigate({
-                        to: ROUTES.USER.BOOKING,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        to: ROUTES.USER.BOOKING as any,
                         search: {
                             photographerId: photographer.id,
                             packageId: selectedPackage || undefined,

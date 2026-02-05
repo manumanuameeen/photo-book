@@ -38,4 +38,3 @@ const PaymentSchema: Schema = new Schema(
 );
 
 export const PaymentModel: Model<IPayment> = mongoose.model<IPayment>("Payment", PaymentSchema);
-

@@ -7,15 +7,20 @@ import { Messages } from "../../constants/messages.ts";
 export class CloudinaryService implements IFileService {
   async uploadFile(file: Express.Multer.File): Promise<string> {
     return new Promise((res, rej) => {
+      // Determine resource type: audio is treated as video in Cloudinary
+      let resourceType: "auto" | "image" | "video" | "raw" = "auto";
+      if (file.mimetype.startsWith('image/')) resourceType = "image";
+      else if (file.mimetype.startsWith('video/') || file.mimetype.startsWith('audio/')) resourceType = "video";
+
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: "photobook_portfolio",
-          resource_type: "auto",
+          resource_type: resourceType,
         },
         (error, result) => {
           if (error) {
-            console.log("Cloudinary upload Error", error);
-            return rej(new AppError(Messages.IMAGE_UPLOAD_FAILED, HttpStatus.BAD_REQUEST));
+            console.log("Cloudinary upload Error DETAILS:", JSON.stringify(error, null, 2));
+            return rej(new AppError(`${Messages.IMAGE_UPLOAD_FAILED}: ${error.message}`, HttpStatus.BAD_REQUEST));
           }
 
           if (!result) {
@@ -50,4 +55,3 @@ export class CloudinaryService implements IFileService {
     }
   }
 }
-

@@ -29,5 +29,24 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
     const result = await this._model.findByIdAndDelete(id).exec();
     return !!result;
   }
-}
 
+  async toggleLike(id: string, userId: string): Promise<T | null> {
+    const doc = await this._model.findById(id);
+    if (!doc) return null;
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    
+    const likes = (doc as any).likes || [];
+    const index = likes.findIndex((id: any) => id.toString() === userId.toString());
+
+    if (index === -1) {
+      likes.push(userObjectId);
+    } else {
+      likes.splice(index, 1);
+    }
+
+    
+    (doc as any).likes = likes;
+    return await doc.save();
+  }
+}

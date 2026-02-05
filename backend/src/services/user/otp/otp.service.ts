@@ -20,4 +20,3 @@ export class OtpService implements IOtpService {
     return true;
   }
 }
-

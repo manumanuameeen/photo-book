@@ -55,4 +55,3 @@ export const PhotographerDashboardStatsSchema = z.object({
 });
 
 export type PhotographerDashboardStatsDto = z.infer<typeof PhotographerDashboardStatsSchema>;
-

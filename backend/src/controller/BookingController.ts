@@ -6,6 +6,7 @@ import { AuthRequest } from "../middleware/authMiddleware.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { AppError } from "../utils/AppError.ts";
 import { Messages } from "../constants/messages.ts";
+import { CreateBookingDTO, BookingRescheduleRequestDTO, BookingRescheduleResponseDTO } from "../dto/booking.dto.ts";
 
 export class BookingController implements IBookingController {
   private _bookingService: IBookingService;
@@ -16,7 +17,7 @@ export class BookingController implements IBookingController {
   createBooking = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
-      const bookingData = req.body;
+      const bookingData = req.body as CreateBookingDTO;
 
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -148,6 +149,7 @@ export class BookingController implements IBookingController {
   cancelBooking = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      const { reason, isEmergency } = req.body;
       const authReq = req as AuthRequest;
       const userId = authReq.user?.userId;
 
@@ -155,7 +157,7 @@ export class BookingController implements IBookingController {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      const booking = await this._bookingService.cancelBooking(id, userId);
+      const booking = await this._bookingService.cancelBooking(id, userId, reason, isEmergency);
       ApiResponse.success(res, booking, Messages.BOOKING_CANCELLED);
     } catch (error) {
       this._handleError(res, error);
@@ -205,9 +207,14 @@ export class BookingController implements IBookingController {
   deliverWork = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const booking = await this._bookingService.deliverWork(id);
+      const { deliveryLink } = req.body;
+      console.log(`[BookingController] deliverWork called for ID: ${id} with link: ${deliveryLink}`);
+
+      const booking = await this._bookingService.deliverWork(id, deliveryLink);
+      console.log(`[BookingController] deliverWork success for ID: ${id}`);
       ApiResponse.success(res, booking, "Work delivered successfully");
     } catch (error) {
+      console.error(`[BookingController] deliverWork Error for ID: ${req.params.id}:`, error);
       this._handleError(res, error);
     }
   };
@@ -215,8 +222,52 @@ export class BookingController implements IBookingController {
   confirmWorkDelivery = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
+      console.log(`[BookingController] confirmWorkDelivery called for ID: ${id}`);
       const booking = await this._bookingService.confirmWorkDelivery(id);
       ApiResponse.success(res, booking, "Work delivery confirmed and booking completed");
+    } catch (error) {
+      console.error(`[BookingController] confirmWorkDelivery Error for ID: ${req.params.id}:`, error);
+      this._handleError(res, error);
+    }
+  };
+
+
+
+  requestReschedule = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { newDate, newStartTime, reason } = req.body;
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.userId;
+
+      if (!userId) {
+        throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+      }
+
+      const booking = await this._bookingService.requestReschedule(
+        id,
+        { newDate, newStartTime, reason } as BookingRescheduleRequestDTO,
+        userId,
+      );
+      ApiResponse.success(res, booking, "Reschedule request submitted successfully");
+    } catch (error) {
+      this._handleError(res, error);
+    }
+  };
+
+  respondToReschedule = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { decision } = req.body;
+      const authReq = req as AuthRequest;
+      const userId = authReq.user?.userId;
+
+      if (!userId) {
+        throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+      }
+
+      const booking = await this._bookingService.respondToReschedule(id, { decision } as BookingRescheduleResponseDTO, userId);
+      ApiResponse.success(res, booking, `Reschedule request ${decision}`);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -234,4 +285,3 @@ export class BookingController implements IBookingController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }
-

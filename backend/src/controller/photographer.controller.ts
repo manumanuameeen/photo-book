@@ -11,6 +11,7 @@ import { z } from "zod";
 import { ApplyPhtographerDto } from "../dto/photographer.dto.ts";
 
 export class PhotographerController implements IPhtogrpherController {
+
   private readonly _photographerService: IPhotographerService;
   private readonly _fileService: IFileService;
 
@@ -135,17 +136,20 @@ export class PhotographerController implements IPhtogrpherController {
 
   getPhotographers = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { category, priceRange, location, lat, lng } = req.query;
+      const { category, priceRange, location, lat, lng, page, limit } = req.query;
 
-      const photographers = await this._photographerService.getPhotographers({
+      const result = await this._photographerService.getPhotographers({
         category: category as string,
         priceRange: priceRange as string,
         location: location as string,
         lat: lat ? parseFloat(lat as string) : undefined,
         lng: lng ? parseFloat(lng as string) : undefined,
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 10,
+       
       });
 
-      ApiResponse.success(res, photographers, Messages.PHOTOGRAPHERS_FETCHED);
+      ApiResponse.success(res, result, Messages.PHOTOGRAPHERS_FETCHED);
     } catch (error: unknown) {
       this._handleError(res, error);
     }
@@ -212,5 +216,18 @@ export class PhotographerController implements IPhtogrpherController {
       this._handleError(res, error);
     }
   };
-}
 
+  toggleLike = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
+      }
+      const { id } = req.params;
+      const photographer = await this._photographerService.toggleLike(id, userId);
+      ApiResponse.success(res, photographer, "Like status toggled");
+    } catch (error: unknown) {
+      this._handleError(res, error);
+    }
+  };
+}

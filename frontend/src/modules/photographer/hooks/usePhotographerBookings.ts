@@ -3,6 +3,7 @@ import apiClient from '../../../services/apiClient';
 
 export interface Booking {
     _id: string;
+    userId: string;
     clientName: string;
     clientImage?: string;
     clientEmail?: string;

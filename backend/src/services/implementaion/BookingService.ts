@@ -3,57 +3,51 @@ import { IBookingService } from "../../interfaces/services/IBookingService.ts";
 import { IEmailService } from "../../interfaces/services/IEmailService.ts";
 import { IMessageService } from "../../interfaces/services/IMessageService.ts";
 import { IAvailabilityService } from "../../interfaces/services/IPackageAvailabilityService.ts";
-import { IWalletService } from "../../interfaces/services/IWalletService.ts";
+import { IBookingPaymentService } from "../../interfaces/services/booking/IBookingPaymentService.ts";
 import { BookingStatus, IBooking, PaymentStatus } from "../../model/bookingModel.ts";
 import { BookingQueueService } from "../common/BookingQueueService.ts";
-import { IStripeService } from "../../interfaces/services/IStripeService.ts";
-import { IPaymentService } from "../../interfaces/services/IPaymentService.ts";
 import mongoose from "mongoose";
+import { CreateBookingDTO, BookingRescheduleRequestDTO, BookingRescheduleResponseDTO } from "../../dto/booking.dto.ts";
+import { SetAvailabilityDto } from "../../dto/package-availability.dto.ts";
 
 export class BookingService implements IBookingService {
   private readonly bookingRepository: IBookingRepository;
-  private readonly walletService: IWalletService;
   private readonly bookingQueueService: BookingQueueService;
   private readonly emailService: IEmailService;
   private readonly messageService: IMessageService;
   private readonly availabilityService: IAvailabilityService;
-  private readonly stripeService: IStripeService;
-  private readonly paymentService: IPaymentService;
+  private readonly bookingPaymentService: IBookingPaymentService;
 
   private readonly ADMIN_COMMISSION_PERCENT = 0.13;
   private readonly CANCELLATION_THRESHOLD_HOURS = 48;
 
   constructor(
     bookingRepository: IBookingRepository,
-    walletService: IWalletService,
     bookingQueueService: BookingQueueService,
     emailService: IEmailService,
     messageService: IMessageService,
     availabilityService: IAvailabilityService,
-    stripeService: IStripeService,
-    paymentService: IPaymentService,
+    bookingPaymentService: IBookingPaymentService,
   ) {
     this.bookingRepository = bookingRepository;
-    this.walletService = walletService;
     this.bookingQueueService = bookingQueueService;
     this.emailService = emailService;
     this.messageService = messageService;
     this.availabilityService = availabilityService;
-    this.stripeService = stripeService;
-    this.paymentService = paymentService;
+    this.bookingPaymentService = bookingPaymentService;
   }
 
-  async createBookingRequest(userId: string, data: any): Promise<IBooking> {
+  async createBookingRequest(userId: string, data: CreateBookingDTO): Promise<IBooking> {
     const price = Number(data.packagePrice);
     if (Number.isNaN(price)) {
       throw new Error("Invalid package price");
     }
 
-    // 1. Enforce 1-Day Advance Booking Rule
+
     const eventDate = new Date(data.date);
     const now = new Date();
-    // Reset times to compare dates only, or use 24h difference
-    // Using 24h difference for strictness
+
+
     const diffHours = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
     if (diffHours < 24) {
@@ -166,168 +160,31 @@ export class BookingService implements IBookingService {
     if (message) {
       booking.photographerMessage = message;
     }
-    return await booking.save();
+    const savedBooking = await booking.save();
+
+    try {
+      const photographerId = (booking.photographerId as any)._id
+        ? (booking.photographerId as any)._id.toString()
+        : booking.photographerId.toString();
+
+      // Attempt to free up the date.
+      // deleteAvailability will check if there are OTHER active bookings before deleting.
+      await this.availabilityService.deleteAvailability(photographerId, booking.eventDate);
+    } catch (error) {
+      // It's possible there was no availability record or another booking exists.
+      // We log but don't fail the rejection.
+      console.warn(`[BookingService] Failed to clear availability for rejected booking ${id}:`, error);
+    }
+
+    return savedBooking;
   }
 
-  async createBookingPaymentIntent(bookingId: string): Promise<any> {
-    const booking = await this.bookingRepository.findById(bookingId);
-    if (!booking) throw new Error("Booking not found");
-
-    console.log(
-      `[CreateCheckout] Booking ${bookingId} status: ${booking.status}, deposit: ${booking.depositeRequired}`,
-    );
-
-    let amount = 0;
-    let paymentType = "booking_deposit";
-
-    if (booking.status === BookingStatus.WAITING_FOR_DEPOSIT) {
-      amount = booking.depositeRequired;
-
-      if (!amount || Number.isNaN(amount) || amount <= 0) {
-        if (booking.totalAmount && !Number.isNaN(booking.totalAmount)) {
-          amount = booking.totalAmount * 0.2;
-        } else {
-          throw new Error("Invalid booking amount data");
-        }
-      }
-    } else if (booking.status === BookingStatus.WORK_ENDED) {
-      paymentType = "booking_balance";
-      amount = booking.totalAmount - booking.depositeRequired;
-      if (amount < 0) amount = 0;
-    } else {
-      throw new Error(
-        `Booking status is ${booking.status}, expected WAITING_FOR_DEPOSIT or WORK_ENDED for payment`,
-      );
-    }
-
-    if (amount < 1) {
-      throw new Error("Payment amount too small");
-    }
-
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    const successUrl = `${frontendUrl}/main/dashboard?tab=bookings&payment=success&bookingId=${bookingId}&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${frontendUrl}/main/dashboard?tab=bookings&payment=cancel`;
-
-    const userEmail = (booking.userId as any).email;
-
-    const session = await this.stripeService.createCheckoutSession(
-      amount,
-      "usd",
-      {
-        bookingId,
-        type: paymentType,
-      },
-      successUrl,
-      cancelUrl,
-      userEmail,
-    );
-
-    return { url: session.url, sessionId: session.id };
+  async createBookingPaymentIntent(bookingId: string): Promise<{ url: string } | null> {
+    return await this.bookingPaymentService.createPaymentIntent(bookingId);
   }
 
   async confirmPayment(id: string, paymentIntentId: string): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
-    if (!booking) throw new Error("Booking not found");
-
-    // Idempotency check: If already paid/accepted, return success immediately
-    if (
-      (booking.status === BookingStatus.ACCEPTED &&
-        booking.paymentStatus === PaymentStatus.DEPOSIT_PAID) ||
-      booking.paymentStatus === PaymentStatus.FULL_PAID
-    ) {
-      console.log(
-        `[BookingService] Payment already processed for ${id}. Returning idempotent success.`,
-      );
-      return booking;
-    }
-
-    if (
-      booking.status !== BookingStatus.WAITING_FOR_DEPOSIT &&
-      booking.status !== BookingStatus.WORK_ENDED &&
-      booking.status !== BookingStatus.COMPLETED
-    ) {
-      console.error(`[BookingService] Invalid status for payment: ${booking.status}`);
-      throw new Error(`Booking is not waiting for payment (Status: ${booking.status})`);
-    }
-
-    let actualPaymentIntentId = paymentIntentId;
-
-    // Handle Checkout Session ID (starts with cs_)
-    if (paymentIntentId.startsWith("cs_")) {
-      const session = await this.stripeService.retrieveCheckoutSession(paymentIntentId);
-      if (session.payment_status !== "paid") {
-        throw new Error("Payment not paid in session");
-      }
-      actualPaymentIntentId = session.payment_intent as string;
-    }
-
-    const paymentIntent = await this.stripeService.retrievePaymentIntent(actualPaymentIntentId);
-    if (paymentIntent.status !== "succeeded") {
-      console.error(
-        `[BookingService] Payment Intent status expected 'succeeded' but got '${paymentIntent.status}'`,
-      );
-      throw new Error(`Payment verification failed. Status: ${paymentIntent.status}`);
-    }
-
-    const amountPaid = paymentIntent.amount / 100;
-
-    if (booking.status === BookingStatus.WAITING_FOR_DEPOSIT) {
-      // --- Deposit Handling ---
-      booking.status = BookingStatus.ACCEPTED;
-      booking.paymentStatus = PaymentStatus.DEPOSIT_PAID;
-      booking.paymentDeadline = undefined;
-
-      booking.transactionId = actualPaymentIntentId;
-
-      await this.paymentService.processDepositPayment(
-        id,
-        "booking",
-        actualPaymentIntentId,
-        amountPaid,
-      );
-
-      if (booking.photographerId) {
-        const photographerEmail = (booking.photographerId as any).email;
-        const photographerName = (booking.photographerId as any).name;
-
-        if (photographerEmail) {
-          try {
-            await this.emailService.sendBookingConfirmation(
-              photographerEmail,
-              photographerName || "Photographer",
-              {
-                packageName: booking.packageDetails.name,
-                date: new Date(booking.eventDate).toDateString(),
-                clientName: (booking.userId as any).name || "Client",
-                amount: booking.depositeRequired,
-              },
-            );
-          } catch (emailError) {
-            console.error("Failed to send booking confirmation email to photographer:", emailError);
-          }
-        }
-      }
-    } else if (booking.status === BookingStatus.WORK_ENDED) {
-      // --- Balance Handling ---
-      booking.paymentStatus = PaymentStatus.FULL_PAID;
-      booking.balanceTransactionId = actualPaymentIntentId;
-
-      // Delegate Financials to PaymentService (Balance)
-      await this.paymentService.processBalancePayment(
-        id,
-        "booking",
-        actualPaymentIntentId,
-        amountPaid,
-      );
-
-      // If already COMPLETED (e.g. manual trigger earlier), trigger fund release now
-      if (booking.status === (BookingStatus.COMPLETED as string)) {
-        await this.paymentService.releaseFunds(id, "booking");
-      }
-    }
-
-    await booking.save();
-    return booking;
+    return await this.bookingPaymentService.confirmPayment(id, paymentIntentId);
   }
 
   async completeBooking(id: string): Promise<IBooking | null> {
@@ -338,20 +195,25 @@ export class BookingService implements IBookingService {
       throw new Error("Booking is already completed");
     }
 
-    // Release Pending Funds to Photographer
+
     if (booking.photographerId) {
       const photographerUserId = (booking.photographerId as any)._id
         ? (booking.photographerId as any)._id.toString()
         : booking.photographerId.toString();
 
-      await this.paymentService.releaseFunds(id, "booking", photographerUserId);
+      await this.bookingPaymentService.releaseFunds(id, photographerUserId);
     }
 
     booking.status = BookingStatus.COMPLETED;
     return await booking.save();
   }
 
-  async cancelBooking(id: string, userId: string): Promise<IBooking | null> {
+  async cancelBooking(
+    id: string,
+    userId: string,
+    reason?: string,
+    isEmergency?: boolean,
+  ): Promise<IBooking | null> {
     const booking = await this.bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
@@ -359,113 +221,48 @@ export class BookingService implements IBookingService {
       throw new Error("Cannot cancel completed or already cancelled booking");
     }
 
-    if (userId === "system-auto-expiry") {
-      const refundAmount = booking.depositeRequired || 0;
-      if (
-        booking.paymentStatus === PaymentStatus.DEPOSIT_PAID ||
-        booking.paymentStatus === PaymentStatus.FULL_PAID
-      ) {
-        await this.walletService.creditWallet(
-          booking.userId.toString(),
-          refundAmount,
-          "Booking Expired Refund",
-          booking._id as string,
-        );
-        booking.paymentStatus = PaymentStatus.REFUNDED;
+    if (userId !== "system-auto-expiry") {
+      let isUser = false;
+      let isPhotographer = false;
+
+      if (booking.userId) {
+        isUser = (booking.userId as any)._id
+          ? (booking.userId as any)._id.toString() === userId.toString()
+          : booking.userId.toString() === userId.toString();
       }
-      booking.status = BookingStatus.CANCELLED;
-      return await booking.save();
-    }
 
-    let isUser = false;
-    let isPhotographer = false;
+      if (booking.photographerId) {
+        isPhotographer = (booking.photographerId as any)._id
+          ? (booking.photographerId as any)._id.toString() === userId.toString()
+          : booking.photographerId.toString() === userId.toString();
+      }
 
-    if (booking.userId) {
-      isUser = (booking.userId as any)._id
-        ? (booking.userId as any)._id.toString() === userId.toString()
-        : booking.userId.toString() === userId.toString();
-    }
-
-    if (booking.photographerId) {
-      isPhotographer = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString() === userId.toString()
-        : booking.photographerId.toString() === userId.toString();
-    }
-
-    if (!isUser && !isPhotographer) {
-      throw new Error("Unauthorized to cancel this booking");
-    }
-
-    const now = new Date();
-    const eventDate = new Date(booking.eventDate);
-    const hoursDiff = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    if (
-      booking.paymentStatus === PaymentStatus.DEPOSIT_PAID ||
-      booking.paymentStatus === PaymentStatus.FULL_PAID
-    ) {
-      const depositAmount = booking.depositeRequired;
-
-      if (hoursDiff > this.CANCELLATION_THRESHOLD_HOURS) {
-        await this.walletService.creditWallet(
-          booking.userId.toString(),
-          depositAmount,
-          "Booking Cancellation Check Refund",
-          booking._id as string,
-        );
-        booking.paymentStatus = PaymentStatus.REFUNDED;
-      } else {
-        // Late Cancellation (< 48h)
-        // User Policy: 90% Refund, 10% Penalty (3% Admin, 7% Photographer)
-
-        // "from the deopite the 10 percetage of deposite amoutne wil go to the admin paltform wllaater and give the resr to the user return and 3 percetage keep in the admin walllet and giv ethe 7 percetage to the phtogrpaher wallet"
-
-        // Note: The prompt says "10 percentage of deposit amount will go to admin platform wallet... and give the rest to the user return".
-        // BUT then says "3 percentage keep in admin wallet and give 7 percentage to photographer".
-        // This implies the 10% penalty is split 3% to Admin, 7% to Photographer.
-        // And the Rent (User) gets 90%.
-
-        const penaltyAmount = depositAmount * 0.1; // 10%
-        const refundAmount = depositAmount - penaltyAmount; // 90%
-
-        // Split Penalty
-        const adminShare = depositAmount * 0.03; // 3%
-        const photographerShare = depositAmount * 0.07; // 7%
-
-        // 1. Refund User (90%)
-        await this.walletService.creditWallet(
-          booking.userId.toString(),
-          refundAmount,
-          "Booking Cancellation Refund (90% of Deposit)",
-          booking._id as string,
-        );
-
-        // 2. Credit Admin (3%)
-        await this.walletService.creditWallet(
-          "admin",
-          adminShare,
-          "Booking Cancellation Fee (3% of Deposit)",
-          booking._id as string,
-        );
-
-        // 3. Credit Photographer (7%)
-        await this.walletService.creditWallet(
-          booking.photographerId.toString(),
-          photographerShare,
-          "Booking Cancellation Payout (7% of Deposit)",
-          booking._id as string,
-        );
-
-        console.log(
-          `Cancellation Processed: User +${refundAmount}, Admin +${adminShare}, Photog +${photographerShare}`,
-        );
-
-        booking.paymentStatus = PaymentStatus.PARTIAL_REFUNDED;
+      if (!isUser && !isPhotographer) {
+        throw new Error("Unauthorized to cancel this booking");
       }
     }
+
+    await this.bookingPaymentService.processCancellation(
+      booking,
+      userId,
+      reason,
+      isEmergency,
+    );
 
     booking.status = BookingStatus.CANCELLED;
-    return await booking.save();
+    const savedBooking = await booking.save();
+
+    try {
+      const photographerId = (booking.photographerId as any)._id
+        ? (booking.photographerId as any)._id.toString()
+        : booking.photographerId.toString();
+
+      await this.availabilityService.deleteAvailability(photographerId, booking.eventDate);
+    } catch (error) {
+      console.warn(`[BookingService] Failed to clear availability for cancelled booking ${id}:`, error);
+    }
+
+    return savedBooking;
   }
   async startWork(id: string): Promise<IBooking | null> {
     const booking = await this.bookingRepository.findById(id);
@@ -475,7 +272,7 @@ export class BookingService implements IBookingService {
       booking.status !== BookingStatus.ACCEPTED &&
       booking.status !== BookingStatus.WAITING_FOR_DEPOSIT
     ) {
-      // Allowing start if accepted (deposit paid)
+
       if (
         booking.paymentStatus !== PaymentStatus.DEPOSIT_PAID &&
         booking.paymentStatus !== PaymentStatus.FULL_PAID
@@ -498,10 +295,10 @@ export class BookingService implements IBookingService {
     }
 
     booking.status = BookingStatus.WORK_ENDED_PENDING;
-    // We might want to store who initiated this to know who needs to confirm,
-    // but for now, we assume the UI handles the view logic or we check generic "pending".
-    // Ideally, we add a field `workEndedBy: 'user' | 'photographer'`.
-    // For MVP, if we don't have that field, we rely on the status.
+
+
+
+
 
     return await booking.save();
   }
@@ -519,46 +316,286 @@ export class BookingService implements IBookingService {
     return await booking.save();
   }
 
-  async deliverWork(id: string): Promise<IBooking | null> {
+  async deliverWork(id: string, deliveryLink: string): Promise<IBooking | null> {
+    console.log(`[BookingService] deliverWork called for ${id}`);
     const booking = await this.bookingRepository.findById(id);
-    if (!booking) throw new Error("Booking not found");
+    if (!booking) {
+      console.error(`[BookingService] Booking not found: ${id}`);
+      throw new Error("Booking not found");
+    }
+
+    console.log(`[BookingService] Booking found: ${booking._id}, Status: ${booking.status}, PayStatus: ${booking.paymentStatus}`);
 
     if (!booking.photographerId) {
+      console.error(`[BookingService] Photographer info missing for ${id}`);
       throw new Error("Photographer information is missing");
     }
 
     if (booking.status !== BookingStatus.WORK_ENDED) {
+      console.error(`[BookingService] Invalid status: ${booking.status}`);
       throw new Error("Work must be ended before delivery");
     }
 
     if (booking.paymentStatus !== PaymentStatus.FULL_PAID) {
+      console.error(`[BookingService] Invalid payment status: ${booking.paymentStatus}`);
       throw new Error("Cannot deliver work before full payment.");
     }
 
-    // Automatically release funds when work is delivered (no user confirmation needed)
-    await this.paymentService.releaseFunds(id, "booking", booking.photographerId.toString());
+    if (!deliveryLink) {
+      throw new Error("Delivery link is required");
+    }
 
-    booking.status = BookingStatus.COMPLETED;
-    return await booking.save();
+
+    booking.status = BookingStatus.WORK_DELIVERED;
+    booking.deliveryWorkLink = deliveryLink;
+    const saved = await booking.save();
+    console.log(`[BookingService] deliverWork saved successfully`);
+    return saved;
   }
 
   async confirmWorkDelivery(id: string): Promise<IBooking | null> {
+    console.log(`[BookingService] confirmWorkDelivery called for ${id}`);
     const booking = await this.bookingRepository.findById(id);
-    if (!booking) throw new Error("Booking not found");
+    if (!booking) {
+      console.error(`[BookingService] Booking not found: ${id}`);
+      throw new Error("Booking not found");
+    }
 
     if (booking.status !== BookingStatus.WORK_DELIVERED) {
+      console.error(`[BookingService] Invalid status for confirmDelivery: ${booking.status}`);
       throw new Error("Work has not been delivered yet");
     }
 
     if (booking.paymentStatus !== PaymentStatus.FULL_PAID) {
+      console.error(`[BookingService] Invalid payment status for confirmDelivery: ${booking.paymentStatus}`);
       throw new Error("Full payment required before completing booking");
     }
 
-    // Release funds to photographer (87%) and admin (13%)
-    await this.paymentService.releaseFunds(id, "booking", booking.photographerId.toString());
+    const photographerId = (booking.photographerId as any)._id
+      ? (booking.photographerId as any)._id.toString()
+      : booking.photographerId?.toString();
+
+    if (!photographerId) {
+      console.error(`[BookingService] Photographer ID missing or invalid for booking ${id}`);
+      throw new Error("Photographer information is missing");
+    }
+
+    console.log(`[BookingService] Releasing funds for booking ${id} to photographer ${photographerId}`);
+    await this.bookingPaymentService.releaseFunds(id, photographerId);
 
     booking.status = BookingStatus.COMPLETED;
-    return await booking.save();
+    const saved = await booking.save();
+    console.log(`[BookingService] confirmWorkDelivery success for ${id}`);
+    return saved;
+  }
+
+  async requestReschedule(
+    bookingId: string,
+    data: BookingRescheduleRequestDTO,
+    userId: string,
+  ): Promise<IBooking | null> {
+    console.log(`[BookingService] requestReschedule called for booking ${bookingId}`);
+    console.log(`[BookingService] Data received:`, { newDate: data.newDate, newStartTime: data.newStartTime, reason: data.reason });
+
+    const booking = await this.bookingRepository.findById(bookingId);
+    if (!booking) throw new Error("Booking not found");
+
+    console.log(`[BookingService] Booking found. Current eventDate: ${booking.eventDate}`);
+    console.log(`[BookingService] Existing reschedule request:`, booking.rescheduleRequest);
+
+    const bookerId = (booking.userId as any)._id
+      ? (booking.userId as any)._id.toString()
+      : booking.userId.toString();
+
+    if (bookerId !== userId.toString()) {
+      throw new Error("Unauthorized: Only the booker can request rescheduling");
+    }
+
+    // Check if updating existing pending request
+    const isUpdatingExistingRequest = booking.rescheduleRequest?.status === "pending";
+    if (isUpdatingExistingRequest) {
+      console.log("[BookingService] Updating existing pending reschedule request");
+    } else {
+      console.log("[BookingService] Creating new reschedule request");
+    }
+
+    const eventDate = new Date(booking.eventDate);
+    const now = new Date();
+    const diffHours = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    console.log(`[BookingService] Time check - Event: ${eventDate}, Now: ${now}, Diff hours: ${diffHours}`);
+
+    if (diffHours < 24) {
+      console.log(`[BookingService] FAILED: Cannot reschedule within 24 hours`);
+      throw new Error("Cannot reschedule within 24 hours of the event.");
+    }
+
+    // Check if trying to reschedule to the same date
+    const requestedDate = new Date(data.newDate);
+    const currentEventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    const requestedDateOnly = new Date(requestedDate.getFullYear(), requestedDate.getMonth(), requestedDate.getDate());
+
+    if (currentEventDateOnly.getTime() === requestedDateOnly.getTime()) {
+      console.log(`[BookingService] FAILED: Cannot reschedule to the same date`);
+      throw new Error("Cannot reschedule to the same date. Please select a different date.");
+    }
+
+    const photographerId = (booking.photographerId as any)._id
+      ? (booking.photographerId as any)._id.toString()
+      : (booking.photographerId as any).toString();
+
+    console.log(`[BookingService] Checking availability for photographer ${photographerId} on ${data.newDate}`);
+
+    const availability = await this.availabilityService.getAvailability(
+      photographerId,
+      new Date(data.newDate),
+      new Date(data.newDate),
+    );
+
+    console.log(`[BookingService] Availability response:`, availability);
+
+    if (availability.length > 0) {
+      const dayAvail = availability[0];
+
+      if (!dayAvail.isFullDayAvailable && dayAvail.slots.length === 0) {
+        console.log(`[BookingService] FAILED: Selected date is not available`);
+        throw new Error("Selected date is not available.");
+      }
+
+      console.log(`[BookingService] Date is available`);
+    }
+
+    booking.rescheduleRequest = {
+      requestedDate: new Date(data.newDate),
+      requestedStartTime: data.newStartTime,
+      reason: data.reason,
+      status: "pending",
+      createdAt: isUpdatingExistingRequest ? booking.rescheduleRequest!.createdAt : new Date(),
+    };
+
+    console.log(`[BookingService] Saving reschedule request...`);
+    await booking.save();
+    console.log(`[BookingService] Reschedule request saved successfully`);
+
+    try {
+      const photographerEmail = (booking.photographerId as any).email;
+      const photographerName = (booking.photographerId as any).name;
+      const clientName = (booking.userId as any).name;
+
+      if (photographerEmail) {
+        await this.emailService.sendMail(
+          photographerEmail,
+          "New Reschedule Request",
+          `Client ${clientName} requested to reschedule.`,
+          `<div style="font-family: Arial, sans-serif; color: #333;">
+             <h2>Reschedule Request</h2>
+             <p>Hello ${photographerName},</p>
+             <p>You have received a new reschedule request from <strong>${clientName}</strong>.</p>
+             <p><strong>New Date:</strong> ${new Date(data.newDate).toDateString()}</p>
+             <p><strong>New Time:</strong> ${data.newStartTime}</p>
+             <p><strong>Reason:</strong> ${data.reason}</p>
+             <p>Please log in to your dashboard to review and respond.</p>
+           </div>`
+        );
+      }
+    } catch (error) {
+      console.error("Failed to send reschedule request email:", error);
+    }
+
+    return booking;
+  }
+
+  async respondToReschedule(
+    bookingId: string,
+    data: BookingRescheduleResponseDTO,
+    userId: string,
+  ): Promise<IBooking | null> {
+    const booking = await this.bookingRepository.findById(bookingId);
+    if (!booking) throw new Error("Booking not found");
+
+    const photographerId = (booking.photographerId as any)._id
+      ? (booking.photographerId as any)._id.toString()
+      : booking.photographerId.toString();
+
+    if (photographerId !== userId.toString()) {
+      throw new Error("Unauthorized: Only the photographer can respond to rescheduling");
+    }
+
+    if (!booking.rescheduleRequest || booking.rescheduleRequest.status !== "pending") {
+      throw new Error("No pending reschedule request");
+    }
+
+    const eventDate = new Date(booking.eventDate);
+    if (new Date() > eventDate) {
+      booking.rescheduleRequest.status = "expired";
+      await booking.save();
+      throw new Error("Request expired");
+    }
+
+    if (data.decision === "rejected") {
+      booking.rescheduleRequest.status = "rejected";
+    } else {
+      const newDate = booking.rescheduleRequest.requestedDate;
+      const newTime = booking.rescheduleRequest.requestedStartTime;
+      const oldDate = new Date(booking.eventDate);
+
+      booking.eventDate = newDate;
+      booking.startTime = newTime;
+      booking.rescheduleRequest.status = "accepted";
+
+      try {
+
+        await this.availabilityService.setAvailability(photographerId, {
+          date: oldDate,
+          isFullDayAvailable: true,
+          slots: []
+        } as SetAvailabilityDto);
+
+
+        await this.availabilityService.markDateAsBooked(photographerId, newDate);
+
+      } catch (error) {
+        console.error("Failed to update availability:", error);
+      }
+    }
+
+    await booking.save();
+
+    try {
+
+      const userEmail = (booking.userId as any).email;
+      const userName = (booking.userId as any).name;
+      const photographerName = (booking.photographerId as any).name;
+      const status = data.decision === "rejected" ? "Rejected" : "Accepted";
+
+      if (userEmail) {
+        await this.emailService.sendMail(
+          userEmail,
+          `Reschedule Request ${status}`,
+          `Your reschedule request has been ${status.toLowerCase()}.`,
+          `<div style="font-family: Arial, sans-serif; color: #333;">
+               <h2>Reschedule Request Update</h2>
+               <p>Hello ${userName},</p>
+               <p>Your reschedule request for booking with <strong>${photographerName}</strong> has been <strong>${status.toUpperCase()}</strong>.</p>
+               ${data.decision === "accepted" ? "<p>The booking has been moved to the new date and time.</p>" : "<p>The original booking date and time remain unchanged.</p>"}
+             </div>`,
+        );
+      }
+
+
+      const bookerId = (booking.userId as any)._id
+        ? (booking.userId as any)._id.toString()
+        : booking.userId.toString();
+
+      await this.messageService.sendSystemMessage(
+        bookerId,
+        `Your reschedule request for ${new Date(booking.eventDate).toDateString()} has been ${data.decision.toUpperCase()}.`,
+        photographerId,
+      );
+    } catch (error) {
+      console.error("Failed to notify user:", error);
+    }
+
+    return booking;
   }
 }
-

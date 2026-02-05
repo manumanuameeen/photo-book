@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Edit2, Trash2, X, Package as PackageIcon, Check, Info, Lightbulb, ChevronDown, Image as ImageIcon, Upload, Search, Power, LayoutGrid, CheckCircle2, XCircle, ShieldAlert, Bell, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, X, Package as PackageIcon, Check, Info, Lightbulb, ChevronDown, Image as ImageIcon, Upload, Search, Power, LayoutGrid, CheckCircle2, XCircle, ShieldAlert, Bell, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { packageApi, type PackageData } from '../../../services/api/packageApi';
 import { messageApi, type SystemMessage } from '../../../services/api/messageApi';
@@ -11,7 +10,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import CropModal from '../../../components/common/CropModal';
 import { CategoryType } from '../../../services/api/adminCategoryApi';
-
+import { useNavigate } from '@tanstack/react-router';
+import { ROUTES } from '../../../constants/routes';
 
 const packageFormSchema = z.object({
     name: z.string().trim().min(3, "Name must be at least 3 characters").max(100, "Name too long"),
@@ -30,17 +30,18 @@ const packageFormSchema = z.object({
 type PackageFormData = z.output<typeof packageFormSchema>;
 type PackageFormInput = z.input<typeof packageFormSchema>;
 
-import { useNavigate } from '@tanstack/react-router';
-import { ROUTES } from '../../../constants/routes';
-
 const Packages = () => {
     const navigate = useNavigate();
     const [packages, setPackages] = useState<PackageData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [totalPackages, setTotalPackages] = useState(0);
+    const [page, setPage] = useState(1);
+    const limit = 8;
+    const totalPages = Math.ceil(totalPackages / limit) || 1;
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
     const [editingPackage, setEditingPackage] = useState<PackageData | null>(null);
-
 
     const [imageSelectionMode, setImageSelectionMode] = useState<'upload' | 'portfolio'>('upload');
     const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
@@ -54,13 +55,10 @@ const Packages = () => {
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [notifications, setNotifications] = useState<SystemMessage[]>([]);
 
-
-    const { register, handleSubmit, reset, setValue, getValues, watch, formState: { errors } } = useForm<PackageFormInput, any, PackageFormData>({
+    const { register, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm<PackageFormInput, Record<string, never>, PackageFormData>({
         resolver: zodResolver(packageFormSchema),
         defaultValues: { features: [] }
     });
-
-
 
     const { register: registerSuggest, handleSubmit: handleSubmitSuggest, reset: resetSuggest, formState: { errors: suggestErrors } } = useForm<{ name: string; type: string; description: string; explanation: string }>({
         defaultValues: { type: CategoryType.OTHER }
@@ -71,17 +69,17 @@ const Packages = () => {
     const [isCategoryListOpen, setIsCategoryListOpen] = useState(false);
 
     useEffect(() => {
-        fetchPackages();
+        fetchPackages(page);
         fetchPortfolioImages();
         fetchNotifications();
-    }, []);
+    }, [page]);
 
     const fetchNotifications = async () => {
         try {
-            const msgs = await messageApi.getSystemMessages();
-            setNotifications(msgs);
-        } catch (error) {
-            console.error("Failed to fetch notifications", error);
+            const data = await messageApi.getSystemMessages(1, 10);
+            setNotifications(data.messages);
+        } catch (err) {
+            console.error("Failed to fetch notifications", err);
         }
     };
 
@@ -102,7 +100,6 @@ const Packages = () => {
         }
     }, [notifications]);
 
-
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             fetchCategories(categorySearch);
@@ -110,31 +107,31 @@ const Packages = () => {
         return () => clearTimeout(timeoutId);
     }, [categorySearch]);
 
-
     const fetchPortfolioImages = async () => {
         try {
             const sections = await portfolioApi.getSections();
-
             const allImages: string[] = [];
             if (Array.isArray(sections)) {
-                sections.forEach((section: any) => {
+                sections.forEach((section: { coverImage?: string; images?: string[] }) => {
                     if (section.coverImage) allImages.push(section.coverImage);
                     if (section.images && Array.isArray(section.images)) {
                         allImages.push(...section.images);
                     }
                 });
             }
-            setPortfolioImages([...new Set(allImages)]); 
-        } catch (error) {
-            console.error("Failed to load portfolio images", error);
+            setPortfolioImages([...new Set(allImages)]);
+        } catch (err) {
+            console.error("Failed to load portfolio images", err);
         }
     };
 
-    const fetchPackages = async () => {
+    const fetchPackages = async (currentPage: number) => {
         try {
-            const data = await packageApi.getPackages();
-            setPackages(data);
-        } catch (error) {
+            setIsLoading(true);
+            const data = await packageApi.getPackages(currentPage, limit);
+            setPackages(data.packages);
+            setTotalPackages(data.total);
+        } catch {
             toast.error("Failed to load packages");
         } finally {
             setIsLoading(false);
@@ -147,8 +144,8 @@ const Packages = () => {
             if (Array.isArray(data)) {
                 setCategories(data);
             }
-        } catch (error) {
-            console.error("Failed to load categories", error);
+        } catch (err) {
+            console.error("Failed to load categories", err);
         }
     };
 
@@ -163,7 +160,6 @@ const Packages = () => {
             formData.append('categoryId', data.categoryId);
             formData.append('isActive', 'true');
 
-            
             let featuresArray: string[] = [];
             if (typeof data.features === 'string') {
                 featuresArray = (data.features as string).split(',').map((f: string) => f.trim()).filter(f => f.length > 0);
@@ -172,7 +168,6 @@ const Packages = () => {
             }
             formData.append('features', JSON.stringify(featuresArray));
 
-            
             if (croppedFile) {
                 formData.append('coverImage', croppedFile);
             } else if (imageSelectionMode === 'portfolio' && selectedPortfolioImage) {
@@ -189,11 +184,11 @@ const Packages = () => {
                 toast.success("Package created successfully");
             }
             setIsModalOpen(false);
-            fetchPackages();
+            fetchPackages(page);
             reset();
             setEditingPackage(null);
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            console.error(err);
             toast.error("Failed to save package");
         }
     };
@@ -204,7 +199,7 @@ const Packages = () => {
             toast.success("Category suggestion sent to admin for review");
             setIsSuggestModalOpen(false);
             resetSuggest();
-        } catch (error: any) {
+        } catch (error: unknown) {
             const message = error.response?.data?.message || "Failed to send suggestion";
             toast.error(message);
         }
@@ -217,7 +212,7 @@ const Packages = () => {
         setValue('price', pkg.price);
         setValue('editedPhoto', pkg.editedPhoto);
         setValue('deliveryTime', pkg.deliveryTime);
-        setValue('features', pkg.features as any);
+        setValue('features', pkg.features);
         setValue('categoryId', pkg.categoryId);
 
         setImageSelectionMode('upload');
@@ -230,8 +225,8 @@ const Packages = () => {
         try {
             await packageApi.deletePackage(id);
             toast.success("Package deleted");
-            fetchPackages();
-        } catch (error) {
+            fetchPackages(page);
+        } catch {
             toast.error("Failed to delete package");
         }
     };
@@ -264,18 +259,14 @@ const Packages = () => {
 
     const getStatusColor = (status: string, isActive: boolean) => {
         if (status === 'REJECTED') return 'bg-red-100 text-red-700';
-        
         if (!isActive) return 'bg-gray-100 text-gray-800';
         return 'bg-green-100 text-green-700';
     };
 
     const filteredPackages = packages.filter(pkg => {
         if (filterStatus === 'ALL') return true;
-
-        
         const isActive = pkg.isActive !== false && String(pkg.isActive) !== 'false';
         const status = pkg.status?.toUpperCase();
-
         const isLive = status === 'APPROVED' || status === 'ACTIVE';
 
         if (filterStatus === 'ACTIVE') return isLive && isActive;
@@ -289,13 +280,11 @@ const Packages = () => {
             const formData = new FormData();
             formData.append('isActive', (!pkg.isActive).toString());
             await packageApi.updatePackage(pkg.id!, formData);
-
             setPackages(prev => prev.map(p =>
                 p.id === pkg.id ? { ...p, isActive: !p.isActive } : p
             ));
-
             toast.success(`Package ${!pkg.isActive ? 'activated' : 'deactivated'}`);
-        } catch (error) {
+        } catch {
             toast.error("Failed to update status");
         }
     };
@@ -308,7 +297,7 @@ const Packages = () => {
                         onClick={() => navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD })}
                         className="self-start flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors"
                     >
-                        <ArrowLeft size={16} /> {}
+                        <ArrowLeft size={16} />
                         <span className="font-medium">Back to Dashboard</span>
                     </button>
                     <div className="flex justify-between items-center">
@@ -397,7 +386,6 @@ const Packages = () => {
                     </div>
                 </div>
 
-                {}
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
                     <div className="inline-flex bg-gray-100/50 p-1.5 rounded-xl gap-1">
                         {[
@@ -408,7 +396,7 @@ const Packages = () => {
                         ].map((item) => (
                             <button
                                 key={item.id}
-                                onClick={() => setFilterStatus(item.id as any)}
+                                onClick={() => setFilterStatus(item.id as 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BLOCKED')}
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${filterStatus === item.id
                                     ? 'bg-white text-green-700 shadow-sm ring-1 ring-black/5'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
@@ -429,107 +417,140 @@ const Packages = () => {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredPackages.map((pkg) => (
-                            <motion.div
-                                key={pkg.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow group relative flex flex-col h-full"
-                            >
-                                <div className="aspect-video bg-gray-200 relative overflow-hidden flex-shrink-0">
-                                    {pkg.coverImage ? (
-                                        <img src={pkg.coverImage} alt={pkg.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                                            <PackageIcon size={40} opacity={0.5} />
-                                        </div>
-                                    )}
-                                    <div className="absolute top-2 left-2">
-                                        <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getStatusColor(pkg.status, pkg.isActive)}`}>
-                                            {pkg.status === 'APPROVED' ? (pkg.isActive ? 'Active' : 'Inactive') : (pkg.status === 'REJECTED' ? 'Blocked' : pkg.status)}
-                                        </span>
-                                    </div>
-                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(pkg)} className="bg-white/90 p-2 rounded-lg text-gray-700 hover:text-green-700 shadow-sm">
-                                            <Edit2 size={16} />
-                                        </button>
-                                        <button onClick={() => pkg.id && handleDelete(pkg.id)} className="bg-white/90 p-2 rounded-lg text-gray-700 hover:text-red-600 shadow-sm">
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="p-4">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-1">{pkg.name}</h3>
-                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{pkg.description}</p>
-
-                                    {pkg.status === 'REJECTED' && pkg.rejectionReason && (
-                                        <div className="mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
-                                            <p className="text-xs font-bold text-red-700 mb-1 flex items-center gap-1">
-                                                <Info size={12} /> Rejection Reason:
-                                            </p>
-                                            <p className="text-xs text-red-600">{pkg.rejectionReason}</p>
-                                        </div>
-                                    )}
-
-                                    <div className="flex flex-wrap gap-2 mb-6">
-                                        {pkg.features?.slice(0, 3).map((feature, idx) => (
-                                            <span key={idx} className="bg-green-50 text-green-700 text-[10px] uppercase font-bold px-2 py-1 rounded-md">
-                                                {feature}
-                                            </span>
-                                        ))}
-                                        {pkg.features?.length > 3 && (
-                                            <span className="bg-gray-50 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-md">
-                                                +{pkg.features.length - 3} more
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
-                                        <div className="flex flex-col">
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Starting at</p>
-                                            <p className="text-lg font-bold text-[#2E7D46]">
-                                                ${pkg.price?.toLocaleString() ?? 0}
-                                            </p>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-1">
-                                            <div className="bg-green-50 px-2 py-0.5 rounded text-[10px] font-bold text-green-700 whitespace-nowrap">
-                                                {pkg.deliveryTime || 'N/A'}
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {filteredPackages.map((pkg) => (
+                                <motion.div
+                                    key={pkg.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow group relative flex flex-col h-full"
+                                >
+                                    <div className="aspect-video bg-gray-200 relative overflow-hidden flex-shrink-0">
+                                        {pkg.coverImage ? (
+                                            <img src={pkg.coverImage} alt={pkg.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                                                <PackageIcon size={40} opacity={0.5} />
                                             </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleToggleActive(pkg);
-                                                }}
-                                                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all border ${pkg.isActive
-                                                    ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                                                    : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                <Power size={10} />
-                                                {pkg.isActive ? 'Active' : 'Inactive'}
+                                        )}
+                                        <div className="absolute top-2 left-2">
+                                            <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${getStatusColor(pkg.status, pkg.isActive)}`}>
+                                                {pkg.status === 'APPROVED' ? (pkg.isActive ? 'Active' : 'Inactive') : (pkg.status === 'REJECTED' ? 'Blocked' : pkg.status)}
+                                            </span>
+                                        </div>
+                                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleEdit(pkg)} className="bg-white/90 p-2 rounded-lg text-gray-700 hover:text-green-700 shadow-sm">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button onClick={() => pkg.id && handleDelete(pkg.id)} className="bg-white/90 p-2 rounded-lg text-gray-700 hover:text-red-600 shadow-sm">
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                    <div className="p-4 flex flex-col flex-1">
+                                        <h3 className="text-lg font-bold text-gray-900 mb-1">{pkg.name}</h3>
+                                        <p className="text-gray-500 text-sm mb-4 line-clamp-2">{pkg.description}</p>
 
-                        {filteredPackages.length === 0 && (
-                            <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-gray-200 border-dashed">
-                                <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <PackageIcon size={32} />
+                                        {pkg.status === 'REJECTED' && pkg.rejectionReason && (
+                                            <div className="mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
+                                                <p className="text-xs font-bold text-red-700 mb-1 flex items-center gap-1">
+                                                    <Info size={12} /> Rejection Reason:
+                                                </p>
+                                                <p className="text-xs text-red-600">{pkg.rejectionReason}</p>
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-wrap gap-2 mb-6">
+                                            {pkg.features?.slice(0, 3).map((feature, idx) => (
+                                                <span key={idx} className="bg-green-50 text-green-700 text-[10px] uppercase font-bold px-2 py-1 rounded-md">
+                                                    {feature}
+                                                </span>
+                                            ))}
+                                            {pkg.features?.length > 3 && (
+                                                <span className="bg-gray-50 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-md">
+                                                    +{pkg.features.length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                                            <div className="flex flex-col">
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Starting at</p>
+                                                <p className="text-lg font-bold text-[#2E7D46]">
+                                                    ${pkg.price?.toLocaleString() ?? 0}
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <div className="bg-green-50 px-2 py-0.5 rounded text-[10px] font-bold text-green-700 whitespace-nowrap">
+                                                    {pkg.deliveryTime || 'N/A'}
+                                                </div>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleToggleActive(pkg);
+                                                    }}
+                                                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all border ${pkg.isActive
+                                                        ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                                                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    <Power size={10} />
+                                                    {pkg.isActive ? 'Active' : 'Inactive'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {filteredPackages.length === 0 && (
+                                <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-gray-200 border-dashed">
+                                    <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <PackageIcon size={32} />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-1">No Packages Yet</h3>
+                                    <p className="text-gray-500 mb-6 max-w-sm mx-auto">Create your first photography package to start accepting bookings.</p>
+                                    <button onClick={openCreateModal} className="text-[#2E7D46] font-bold hover:underline">
+                                        Create a Package
+                                    </button>
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">No Packages Yet</h3>
-                                <p className="text-gray-500 mb-6 max-w-sm mx-auto">Create your first photography package to start accepting bookings.</p>
-                                <button onClick={openCreateModal} className="text-[#2E7D46] font-bold hover:underline">
-                                    Create a Package
-                                </button>
+                            )}
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                            <button
+                                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                disabled={page === 1}
+                                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                <ChevronLeft size={16} /> Previous
+                            </button>
+                            <div className="flex items-center gap-2">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPage(p)}
+                                        className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${page === p
+                                            ? 'bg-[#2E7D46] text-white shadow-md shadow-green-900/10'
+                                            : 'text-gray-500 hover:bg-gray-100'
+                                            }`}
+                                    >
+                                        {p}
+                                    </button>
+                                ))}
                             </div>
-                        )}
+                            <button
+                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={page === totalPages}
+                                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                Next <ChevronRight size={16} />
+                            </button>
+                        </div>
                     </div>
                 )}
-
 
                 <AnimatePresence>
                     {isModalOpen && (

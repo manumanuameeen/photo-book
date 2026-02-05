@@ -11,4 +11,3 @@ export class BookingQueueService {
     console.log(`[Mock] Removed timers for booking ${bookingId} (handled by Cron)`);
   }
 }
-

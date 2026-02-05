@@ -9,7 +9,7 @@ export interface PackageData {
     editedPhoto: number;
     features: string[];
     deliveryTime: string;
-    categoryId: string; 
+    categoryId: string;
     coverImage?: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     rejectionReason?: string;
@@ -24,13 +24,17 @@ export const packageApi = {
         return response.data.data;
     },
 
-    getPackages: async (): Promise<PackageData[]> => {
-        const response = await apiClient.get('/photographer/packages');
-        return response.data.data.map((pkg: any) => ({
-            ...pkg,
-            id: pkg._id,
-            price: pkg.baseprice || pkg.price 
-        }));
+    getPackages: async (page = 1, limit = 10): Promise<{ packages: PackageData[]; total: number }> => {
+        const response = await apiClient.get('/photographer/packages', { params: { page, limit } });
+        const { packages, total } = response.data.data;
+        return {
+            packages: packages.map((pkg: any) => ({
+                ...pkg,
+                id: pkg._id,
+                price: pkg.baseprice || pkg.price
+            })),
+            total
+        };
     },
 
     updatePackage: async (id: string, data: FormData | Partial<PackageData>): Promise<PackageData> => {
@@ -44,13 +48,17 @@ export const packageApi = {
         await apiClient.delete(`/photographer/packages/${id}`);
     },
 
-    getPublicPackages: async (photographerId: string): Promise<PackageData[]> => {
-        const response = await apiClient.get(`/photographer/${photographerId}/packages`);
-        return Array.isArray(response.data.data) ? response.data.data.map((pkg: any) => ({
-            ...pkg,
-            id: pkg._id,
-            price: pkg.baseprice || pkg.price 
-        })) : [];
+    getPublicPackages: async (photographerId: string, page = 1, limit = 10): Promise<{ packages: PackageData[]; total: number }> => {
+        const response = await apiClient.get(`/photographer/${photographerId}/packages`, { params: { page, limit } });
+        const { packages, total } = response.data.data;
+        return {
+            packages: (Array.isArray(packages) ? packages.map((pkg: any) => ({
+                ...pkg,
+                id: pkg._id,
+                price: pkg.baseprice || pkg.price
+            })) : []),
+            total: total || 0
+        };
     },
 
     getCategories: async (search?: string): Promise<{ _id: string; name: string }[]> => {

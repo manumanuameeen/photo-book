@@ -5,6 +5,7 @@ export interface IPortfolioSection extends Document {
   title: string;
   coverImage?: string;
   images: string[];
+  likes: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,6 +16,7 @@ const PortfolioSectionSchema: Schema = new Schema(
     title: { type: String, required: true },
     coverImage: { type: String },
     images: [{ type: String }],
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true },
 );
@@ -25,4 +27,3 @@ export const PortfolioSectionModel: Model<IPortfolioSection> = mongoose.model<IP
   "PortfolioSection",
   PortfolioSectionSchema,
 );
-
