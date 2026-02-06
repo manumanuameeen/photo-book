@@ -124,7 +124,7 @@ export class BookingController implements IBookingController {
       );
 
       if (!paymentIntentId) {
-        throw new AppError("Payment Intent ID is required", HttpStatus.BAD_REQUEST);
+        throw new AppError(Messages.PAYMENT_INTENT_ID_REQUIRED, HttpStatus.BAD_REQUEST);
       }
 
       const booking = await this._bookingService.confirmPayment(id, paymentIntentId);
@@ -178,7 +178,7 @@ export class BookingController implements IBookingController {
     try {
       const { id } = req.params;
       const booking = await this._bookingService.startWork(id);
-      ApiResponse.success(res, booking, "Work started successfully");
+      ApiResponse.success(res, booking, Messages.WORK_STARTED);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -188,7 +188,7 @@ export class BookingController implements IBookingController {
     try {
       const { id } = req.params;
       const booking = await this._bookingService.endWork(id);
-      ApiResponse.success(res, booking, "Work end request sent");
+      ApiResponse.success(res, booking, Messages.WORK_END_REQUESTED);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -198,7 +198,7 @@ export class BookingController implements IBookingController {
     try {
       const { id } = req.params;
       const booking = await this._bookingService.confirmEndWork(id);
-      ApiResponse.success(res, booking, "Work completion confirmed");
+      ApiResponse.success(res, booking, Messages.WORK_COMPLETION_CONFIRMED);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -212,7 +212,7 @@ export class BookingController implements IBookingController {
 
       const booking = await this._bookingService.deliverWork(id, deliveryLink);
       console.log(`[BookingController] deliverWork success for ID: ${id}`);
-      ApiResponse.success(res, booking, "Work delivered successfully");
+      ApiResponse.success(res, booking, Messages.WORK_DELIVERED);
     } catch (error) {
       console.error(`[BookingController] deliverWork Error for ID: ${req.params.id}:`, error);
       this._handleError(res, error);
@@ -224,7 +224,7 @@ export class BookingController implements IBookingController {
       const { id } = req.params;
       console.log(`[BookingController] confirmWorkDelivery called for ID: ${id}`);
       const booking = await this._bookingService.confirmWorkDelivery(id);
-      ApiResponse.success(res, booking, "Work delivery confirmed and booking completed");
+      ApiResponse.success(res, booking, Messages.WORK_DELIVERY_CONFIRMED);
     } catch (error) {
       console.error(`[BookingController] confirmWorkDelivery Error for ID: ${req.params.id}:`, error);
       this._handleError(res, error);
@@ -249,7 +249,7 @@ export class BookingController implements IBookingController {
         { newDate, newStartTime, reason } as BookingRescheduleRequestDTO,
         userId,
       );
-      ApiResponse.success(res, booking, "Reschedule request submitted successfully");
+      ApiResponse.success(res, booking, Messages.RESCHEDULE_REQUEST_SUBMITTED);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -267,7 +267,7 @@ export class BookingController implements IBookingController {
       }
 
       const booking = await this._bookingService.respondToReschedule(id, { decision } as BookingRescheduleResponseDTO, userId);
-      ApiResponse.success(res, booking, `Reschedule request ${decision}`);
+      ApiResponse.success(res, booking, `${Messages.RESCHEDULE_PROCESSED}: ${decision}`);
     } catch (error) {
       this._handleError(res, error);
     }

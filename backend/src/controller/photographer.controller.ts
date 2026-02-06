@@ -46,7 +46,7 @@ export class PhotographerController implements IPhtogrpherController {
           console.log("S3 URLs:", portfolioImages);
         } catch (uploadError) {
           console.error("❌ S3 upload error:", uploadError);
-          throw new AppError("Failed to upload images to S3", HttpStatus.INTERNAL_SERVER_ERROR);
+          throw new AppError(Messages.S3_UPLOAD_FAILED, HttpStatus.INTERNAL_SERVER_ERROR);
         }
       } else {
         console.log("No files to upload");
@@ -146,7 +146,7 @@ export class PhotographerController implements IPhtogrpherController {
         lng: lng ? parseFloat(lng as string) : undefined,
         page: page ? parseInt(page as string) : 1,
         limit: limit ? parseInt(limit as string) : 10,
-       
+
       });
 
       ApiResponse.success(res, result, Messages.PHOTOGRAPHERS_FETCHED);
@@ -197,7 +197,7 @@ export class PhotographerController implements IPhtogrpherController {
       }
 
       const updated = await this._photographerService.updateProfile(userId, req.body);
-      ApiResponse.success(res, updated, "Profile updated successfully");
+      ApiResponse.success(res, updated, Messages.PROFILE_UPDATED);
     } catch (error: unknown) {
       this._handleError(res, error);
     }
@@ -211,7 +211,7 @@ export class PhotographerController implements IPhtogrpherController {
       }
 
       const profile = await this._photographerService.getOwnProfile(userId);
-      ApiResponse.success(res, profile, "Profile fetched successfully");
+      ApiResponse.success(res, profile, Messages.PROFILE_FETCHED);
     } catch (error: unknown) {
       this._handleError(res, error);
     }
@@ -225,7 +225,7 @@ export class PhotographerController implements IPhtogrpherController {
       }
       const { id } = req.params;
       const photographer = await this._photographerService.toggleLike(id, userId);
-      ApiResponse.success(res, photographer, "Like status toggled");
+      ApiResponse.success(res, photographer, Messages.LIKE_TOGGLED);
     } catch (error: unknown) {
       this._handleError(res, error);
     }

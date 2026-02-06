@@ -25,15 +25,18 @@ export class CategoryService implements ICategoryService {
   }
 
   async createCategory(name: string, type: string, description: string): Promise<ICategory> {
-    const normalizedName = name.trim().toLowerCase();
+    const trimmedName = name.trim();
+    // Escape special characters for regex
+    const escapedName = trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    const regex = new RegExp(`^${escapedName}$`, 'i');
 
-    const existingCategory = await this._repository.findOne({ name: normalizedName });
+    const existingCategory = await this._repository.findOne({ name: { $regex: regex } } as any);
     if (existingCategory) {
       throw new AppError(Messages.CATEGORY_ALREADY_EXISTS, HttpStatus.CONFLICT);
     }
 
     return await this._repository.create({
-      name: normalizedName,
+      name: trimmedName.toLowerCase(),
       type,
       description,
       isBlocked: false,
@@ -100,16 +103,19 @@ export class CategoryService implements ICategoryService {
 
   async updateCategory(id: string, data: Partial<ICategory>): Promise<ICategory | null> {
     if (data.name) {
-      const normalizedName = data.name.trim().toLowerCase();
+      const trimmedName = data.name.trim();
+      const escapedName = trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      const regex = new RegExp(`^${escapedName}$`, 'i');
+
       const existingCategory = await this._repository.findOne({
-        name: normalizedName,
+        name: { $regex: regex },
         _id: { $ne: id },
       } as any);
 
       if (existingCategory) {
         throw new AppError(Messages.CATEGORY_ALREADY_EXISTS, HttpStatus.CONFLICT);
       }
-      data.name = normalizedName;
+      data.name = trimmedName.toLowerCase();
     }
     return await this._repository.update(id, data);
   }

@@ -34,7 +34,7 @@ export class PaymentController implements IPaymentController {
         await this.walletService.creditWallet(
           userId,
           amount,
-          description || "Wallet Top-up",
+          description || Messages.WALLET_TOP_UP,
           paymentIntentId,
         );
         ApiResponse.success(res, { success: true }, Messages.PAYMENT_CONFIRMED);

@@ -90,7 +90,7 @@ export class AuthController implements IAuthController {
   googleLogin = async (req: Request, res: Response): Promise<void> => {
     try {
       const { token } = req.body;
-      if (!token) throw new AppError("Google token is required", HttpStatus.BAD_REQUEST);
+      if (!token) throw new AppError(Messages.GOOGLE_TOKEN_REQUIRED, HttpStatus.BAD_REQUEST);
 
       const result = await this._authService.googleLogin(token);
       this._setCookies(res, result.accessToken, result.refreshToken);

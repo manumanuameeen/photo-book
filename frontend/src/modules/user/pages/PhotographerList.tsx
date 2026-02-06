@@ -45,8 +45,6 @@ const PhotographerSearch = () => {
 
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [category, setCategory] = useState('All Categories');
-    const [priceRange, setPriceRange] = useState('All Prices');
     const [location, setLocation] = useState('All Locations');
 
 
@@ -71,8 +69,7 @@ const PhotographerSearch = () => {
                 page,
                 limit: ITEMS_PER_PAGE
             };
-            if (category !== 'All Categories') filters.category = category;
-            if (priceRange !== 'All Prices') filters.priceRange = priceRange;
+
 
 
             if (locToUse) {
@@ -94,7 +91,7 @@ const PhotographerSearch = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [category, priceRange, location, userLocation]);
+    }, [location, userLocation]);
 
     const handleNearMe = () => {
         if (!navigator.geolocation) {
@@ -146,7 +143,6 @@ const PhotographerSearch = () => {
             const query = searchQuery.toLowerCase();
             return (
                 (p.name?.toLowerCase() || '').includes(query) ||
-                (p.category?.toLowerCase() || '').includes(query) ||
                 (p.location?.toLowerCase() || '').includes(query) ||
                 (p.tags?.some(tag => (tag?.toLowerCase() || '').includes(query)))
             );
@@ -185,33 +181,7 @@ const PhotographerSearch = () => {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:w-auto">
-                            <div className="relative group">
-                                <select
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full appearance-none bg-white border border-gray-200 px-4 py-3 pr-10 rounded-lg text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer hover:border-green-300 transition-colors"
-                                >
-                                    <option>All Categories</option>
-                                    <option>Wedding</option>
-                                    <option>Portrait</option>
-                                    <option>Events</option>
-                                    <option>Fashion</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-green-600 transition-colors" size={16} />
-                            </div>
-                            <div className="relative group">
-                                <select
-                                    value={priceRange}
-                                    onChange={(e) => setPriceRange(e.target.value)}
-                                    className="w-full appearance-none bg-white border border-gray-200 px-4 py-3 pr-10 rounded-lg text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer hover:border-green-300 transition-colors"
-                                >
-                                    <option>All Prices</option>
-                                    <option>$0 - $100/hr</option>
-                                    <option>$100 - $200/hr</option>
-                                    <option>$200+/hr</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-green-600 transition-colors" size={16} />
-                            </div>
+
                             <div className="relative group">
                                 <select
                                     value={location}
@@ -242,7 +212,7 @@ const PhotographerSearch = () => {
                             </div>
                         </div>
 
-                        <button
+                        {/* <button
                             onClick={handleNearMe}
                             disabled={isLocating}
                             className={`p-3 rounded-lg flex items-center justify-center transition-all shadow-md active:scale-95 border ${userLocation ? 'bg-green-100 text-green-700 border-green-200' : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'}`}
@@ -250,14 +220,14 @@ const PhotographerSearch = () => {
                         >
                             <Navigation size={20} className={isLocating ? "animate-spin" : ""} />
                             <span className="ml-2 hidden lg:inline">Near Me</span>
-                        </button>
-
+                        </button> */}
+{/* 
                         <button
                             onClick={() => fetchPhotographers()}
                             className="bg-[#2E7D46] hover:bg-[#256639] text-white p-3 rounded-lg flex items-center justify-center transition-all shadow-md active:scale-95"
                         >
                             <Filter size={20} />
-                        </button>
+                        </button> */}
                     </div>
 
 

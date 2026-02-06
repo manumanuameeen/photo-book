@@ -39,7 +39,12 @@ export const ROUTES = {
     PAYMENT_SUCCESS: "/main/payment/success",
     RENTAL_MARKETPLACE: "/main/rentals",
     RENTAL_DETAILS: "/main/rentals/$id",
-    RENT_ITEM: "/main/rent-item"
+    RENT_ITEM: "/main/rent-item",
+    RULES: "/main/rules",
+    MY_LISTINGS: "/main/my-listings"
+  },
+  CHAT: {
+    INDEX: "/chat"
   },
 
   PHOTOGRAPHER: {
