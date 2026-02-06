@@ -14,6 +14,11 @@ export interface IMessage extends Document {
   replyTo?: mongoose.Types.ObjectId | IMessage;
   isDeleted?: boolean;
   isEdited?: boolean;
+  deletedFor?: mongoose.Types.ObjectId[];
+  reactions?: {
+    emoji: string;
+    userId: mongoose.Types.ObjectId;
+  }[];
 }
 
 const MessageSchema: Schema = new Schema(
@@ -30,6 +35,14 @@ const MessageSchema: Schema = new Schema(
     replyTo: { type: Schema.Types.ObjectId, ref: "Message" },
     isDeleted: { type: Boolean, default: false },
     isEdited: { type: Boolean, default: false },
+    deletedFor: { type: [{ type: Schema.Types.ObjectId, ref: "User" }], default: [] },
+    reactions: {
+      type: [{
+        emoji: { type: String, required: true },
+        userId: { type: Schema.Types.ObjectId, ref: "User", required: true }
+      }],
+      default: []
+    },
   },
   { timestamps: true },
 );

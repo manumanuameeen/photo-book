@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { adminDashboardApi } from '../../services/api/adminDashboardApi';
 import {
   LayoutDashboard,
   Users,
@@ -39,8 +41,13 @@ const AdminSidebar: React.FC = () => {
   const { logout } = useAuthStore()
   const [active, setActive] = useState<number>(1);
 
-
-
+  // Fetch admin stats for notifications (shared query key with dashboard)
+  const { data: stats } = useQuery({
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: adminDashboardApi.getStats,
+    refetchInterval: 30000,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
 
   const handleNavClick = (id: number, path: string) => {
     setActive(id);
@@ -95,6 +102,11 @@ const AdminSidebar: React.FC = () => {
               >
                 {item.icon}
                 <span className="text-sm font-medium">{item.name}</span>
+                {item.name === "Reports" && (stats?.pendingReportsCount || 0) > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {stats?.pendingReportsCount}
+                  </span>
+                )}
               </button>
             </li>
           ))}

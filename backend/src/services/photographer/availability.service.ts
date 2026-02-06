@@ -247,7 +247,7 @@ export class AvailabilityService implements IAvailabilityService {
       throw new AppError("Start date cannot be after end date", HttpStatus.BAD_REQUEST);
     }
 
-    // Check for bookings in the range
+    
     const booking = await BookingModel.findOne({
       photographerId: new mongoose.Types.ObjectId(photographerId),
       eventDate: { $gte: start, $lte: end },
@@ -263,9 +263,9 @@ export class AvailabilityService implements IAvailabilityService {
 
     const current = new Date(start);
     while (current <= end) {
-      // "Unblocking" in this context essentially means removing the explicit "Blocked" (isFullDayAvailable: false) override.
-      // If we delete the record, it reverts to default (which might be unavailable or available depending on logic).
-      // Based on `deleteAvailability`, it just deletes the record. So we will do that.
+      
+      
+      
       const d = new Date(current);
       d.setHours(0, 0, 0, 0);
       const existing = await this._repository.findByPhotographerAndDate(photographerId, d);

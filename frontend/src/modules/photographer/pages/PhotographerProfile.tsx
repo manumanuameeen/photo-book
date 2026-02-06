@@ -170,7 +170,7 @@ const PhotographerProfile = () => {
                                     value={`$${profile.professionalDetails?.standardRate || 0}/Hour`}
                                     icon={DollarSign}
                                 />
-                                {/* Self-view, no message button needed here. */}
+                                {}
                             </div>
                             <button
                                 onClick={() => setIsSuggestModalOpen(true)}

@@ -121,9 +121,9 @@ export class WalletService implements IWalletService {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
 
-    // We allow negative balance for penalties, so we removed the insufficient funds check.
+    
     if (!wallet) {
-      // Should not happen as ensureWalletExists is called
+      
       throw new AppError("Wallet not found", HttpStatus.NOT_FOUND);
     }
 

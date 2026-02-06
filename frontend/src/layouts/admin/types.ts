@@ -1,7 +1,7 @@
 export interface NavItem {
   id: number;
   name: string;
-  icon: string; 
+  icon: string;
   active: boolean;
 }
 
@@ -9,9 +9,9 @@ export interface MetricData {
   title: string;
   value: string;
   trend: string;
-  trendColor: 'positive' | 'negative';
+  trendColor: 'positive' | 'negative' | 'neutral';
   icon: string;
-  iconBgColor: 'blue' | 'purple' | 'green' | 'orange';
+  iconBgColor: string;
   isSmall?: boolean;
 }
 

@@ -110,6 +110,8 @@ export const ROUTES = {
       GET_SENT: "/sent",
       MARK_READ: "/:id/read",
       DELETE: "/:id",
+      DELETE_FOR_EVERYONE: "/:id/everyone",
+      CLEAR_CHAT: "/clear/:partnerId",
       SEND: "/",
     },
     PAYMENT: {
@@ -162,6 +164,7 @@ export const ROUTES = {
       CREATE: "/",
       GET_ALL: "/",
       UPDATE_STATUS: "/:id/status",
+      FORWARD_CHAT: "/:id/forward-chat",
     },
   },
 } as const;

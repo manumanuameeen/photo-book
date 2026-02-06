@@ -15,13 +15,13 @@ export default function App() {
     rehydrateUser();
   }, [rehydrateUser]);
 
-  // Global Socket Connection & Notification Listener
+  
   useEffect(() => {
     if (user?._id) {
       socketService.connect();
 
       const handleNewMessage = (data: any) => {
-        // Only show toast if NOT on the chat page
+        
         if (!window.location.href.includes('/chat')) {
           const senderName = data.senderId?.name || 'Someone';
           toast.success(`New message from ${senderName}`, {

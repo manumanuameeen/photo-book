@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { MessageModel, IMessage } from "../../model/messageModel.ts";
 import { BaseRepository } from "../base/BaseRepository.ts";
 import { IMessageRepository } from "../../interfaces/repositories/IMessageRepository.ts";
@@ -11,7 +12,7 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
     const skip = (page - 1) * limit;
     const [messages, total] = await Promise.all([
       this._model
-        .find({ receiverId })
+        .find({ receiverId, deletedFor: { $ne: receiverId } })
         .populate("senderId", "name role profileImage")
         .populate("receiverId", "name role profileImage")
         .populate({
@@ -23,7 +24,7 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
         .skip(skip)
         .limit(limit)
         .exec(),
-      this._model.countDocuments({ receiverId })
+      this._model.countDocuments({ receiverId, deletedFor: { $ne: receiverId } })
     ]);
     return { messages, total };
   }
@@ -32,7 +33,7 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
     const skip = (page - 1) * limit;
     const [messages, total] = await Promise.all([
       this._model
-        .find({ senderId })
+        .find({ senderId, deletedFor: { $ne: senderId } })
         .populate("senderId", "name role profileImage")
         .populate("receiverId", "name role profileImage")
         .populate({
@@ -43,7 +44,7 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
         .skip(skip)
         .limit(limit)
         .exec(),
-      this._model.countDocuments({ senderId })
+      this._model.countDocuments({ senderId, deletedFor: { $ne: senderId } })
     ]);
     return { messages, total };
   }
@@ -54,5 +55,58 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
 
   async markAsRead(messageId: string): Promise<IMessage | null> {
     return await this._model.findByIdAndUpdate(messageId, { isRead: true }, { new: true });
+  }
+
+  async clearChat(userId: string, partnerId: string): Promise<void> {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+    await this._model.updateMany(
+      {
+        $or: [
+          { senderId: userId, receiverId: partnerId },
+          { senderId: partnerId, receiverId: userId }
+        ],
+        deletedFor: { $ne: userObjId }
+      },
+      { $addToSet: { deletedFor: userObjId } }
+    );
+  }
+
+  async deleteForMe(messageId: string, userId: string): Promise<void> {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+    await this._model.findByIdAndUpdate(messageId, {
+      $addToSet: { deletedFor: userObjId }
+    });
+  }
+
+  async toggleReaction(messageId: string, userId: string, emoji: string): Promise<IMessage | null> {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+    const message = await this._model.findById(messageId);
+
+    if (!message) return null;
+
+    const existingReactionIndex = message.reactions?.findIndex(
+      r => r.userId.toString() === userId
+    ) ?? -1;
+
+    if (existingReactionIndex >= 0) {
+      
+      if (message.reactions![existingReactionIndex].emoji === emoji) {
+        
+        message.reactions!.splice(existingReactionIndex, 1);
+      } else {
+        
+        message.reactions![existingReactionIndex].emoji = emoji;
+      }
+    } else {
+      
+      if (!message.reactions) message.reactions = [];
+      message.reactions.push({ emoji, userId: userObjId });
+    }
+
+    await message.save();
+    return await this._model.findById(messageId)
+      .populate("senderId", "name role profileImage")
+      .populate("receiverId", "name role profileImage")
+      .exec();
   }
 }

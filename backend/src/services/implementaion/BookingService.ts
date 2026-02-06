@@ -73,8 +73,8 @@ export class BookingService implements IBookingService {
       startTime: data.startTime,
       location: data.location,
       locationCoordinates: {
-        lat: data.lat,
-        lng: data.lng,
+        lat: data.lat || 0,
+        lng: data.lng || 0,
       },
       eventType: data.eventType,
       contactDetails: {
@@ -88,7 +88,20 @@ export class BookingService implements IBookingService {
       depositeRequired: depositAmount,
     };
 
-    return await this.bookingRepository.create(bookingData);
+    const savedBooking = await this.bookingRepository.create(bookingData);
+
+    
+    try {
+      await this.messageService.sendMessage(
+        userId,
+        data.photographerId,
+        `I've sent a booking request for your package "${data.packageName}" on ${new Date(data.date).toDateString()}.`
+      );
+    } catch (error) {
+      console.error("[BookingService] Failed to send initial booking message:", error);
+    }
+
+    return savedBooking;
   }
 
   async getBookingDetails(id: string): Promise<IBooking | null> {
@@ -139,6 +152,24 @@ export class BookingService implements IBookingService {
     await booking.save();
     await this.bookingQueueService.addPaymentTimer(id);
 
+    
+    try {
+      const photographerId = (booking.photographerId as any)._id
+        ? (booking.photographerId as any)._id.toString()
+        : booking.photographerId.toString();
+      const userId = (booking.userId as any)._id
+        ? (booking.userId as any)._id.toString()
+        : booking.userId.toString();
+
+      await this.messageService.sendMessage(
+        photographerId,
+        userId,
+        `I've accepted your booking request for ${new Date(booking.eventDate).toDateString()}. Please complete the payment to confirm.`
+      );
+    } catch (error) {
+      console.error("[BookingService] Failed to send acceptance message:", error);
+    }
+
     try {
       const photographerId = (booking.photographerId as any)._id
         ? (booking.photographerId as any)._id.toString()
@@ -162,17 +193,35 @@ export class BookingService implements IBookingService {
     }
     const savedBooking = await booking.save();
 
+    
+    try {
+      const photographerId = (booking.photographerId as any)._id
+        ? (booking.photographerId as any)._id.toString()
+        : booking.photographerId.toString();
+      const userId = (booking.userId as any)._id
+        ? (booking.userId as any)._id.toString()
+        : booking.userId.toString();
+
+      await this.messageService.sendMessage(
+        photographerId,
+        userId,
+        `I'm sorry, I cannot accept your booking request for ${new Date(booking.eventDate).toDateString()}. ${message || ""}`
+      );
+    } catch (error) {
+      console.error("[BookingService] Failed to send rejection message:", error);
+    }
+
     try {
       const photographerId = (booking.photographerId as any)._id
         ? (booking.photographerId as any)._id.toString()
         : booking.photographerId.toString();
 
-      // Attempt to free up the date.
-      // deleteAvailability will check if there are OTHER active bookings before deleting.
+      
+      
       await this.availabilityService.deleteAvailability(photographerId, booking.eventDate);
     } catch (error) {
-      // It's possible there was no availability record or another booking exists.
-      // We log but don't fail the rejection.
+      
+      
       console.warn(`[BookingService] Failed to clear availability for rejected booking ${id}:`, error);
     }
 
@@ -245,12 +294,29 @@ export class BookingService implements IBookingService {
     await this.bookingPaymentService.processCancellation(
       booking,
       userId,
-      reason,
-      isEmergency,
     );
-
     booking.status = BookingStatus.CANCELLED;
     const savedBooking = await booking.save();
+
+    
+    try {
+      const cancellingUserId = userId.toString();
+      const isPhotographer = (booking.photographerId as any)._id
+        ? (booking.photographerId as any)._id.toString() === cancellingUserId
+        : booking.photographerId.toString() === cancellingUserId;
+
+      const recipientId = isPhotographer
+        ? ((booking.userId as any)._id ? (booking.userId as any)._id.toString() : booking.userId.toString())
+        : ((booking.photographerId as any)._id ? (booking.photographerId as any)._id.toString() : booking.photographerId.toString());
+
+      await this.messageService.sendMessage(
+        cancellingUserId,
+        recipientId,
+        `The booking for ${new Date(booking.eventDate).toDateString()} has been cancelled. Reason: ${reason || "Not specified"}`
+      );
+    } catch (error) {
+      console.error("[BookingService] Failed to send cancellation message:", error);
+    }
 
     try {
       const photographerId = (booking.photographerId as any)._id
@@ -411,7 +477,7 @@ export class BookingService implements IBookingService {
       throw new Error("Unauthorized: Only the booker can request rescheduling");
     }
 
-    // Check if updating existing pending request
+    
     const isUpdatingExistingRequest = booking.rescheduleRequest?.status === "pending";
     if (isUpdatingExistingRequest) {
       console.log("[BookingService] Updating existing pending reschedule request");
@@ -430,7 +496,7 @@ export class BookingService implements IBookingService {
       throw new Error("Cannot reschedule within 24 hours of the event.");
     }
 
-    // Check if trying to reschedule to the same date
+    
     const requestedDate = new Date(data.newDate);
     const currentEventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
     const requestedDateOnly = new Date(requestedDate.getFullYear(), requestedDate.getMonth(), requestedDate.getDate());

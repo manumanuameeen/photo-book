@@ -79,18 +79,11 @@ export class UserService implements IUserService {
     const user = await this._userRespository.findById(userId);
     if (!user) throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
 
-    const otpService = new OtpService();
-    if (!data.otp || !otpService.isOtpValidate(user.otp || "", data.otp, user.otpExpiry)) {
-      throw new AppError(Messages.INVALID_OTP, HttpStatus.BAD_REQUEST);
-    }
-
     const isMatch = await bcrypt.compare(data.currentPassword, user.password || "");
     if (!isMatch) throw new AppError(Messages.CURRENT_PASSWORD_INCORRECT, HttpStatus.BAD_REQUEST);
 
     const hashedPasswod = await bcrypt.hash(data.newPassword, 10);
     user.password = hashedPasswod;
-    user.otp = undefined;
-    user.otpExpiry = undefined;
 
     await this._userRespository.update(userId, user);
   }

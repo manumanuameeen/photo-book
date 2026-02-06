@@ -518,7 +518,7 @@ const Packages = () => {
                             )}
                         </div>
 
-                        {/* Pagination Controls */}
+                        {}
                         <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                             <button
                                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}

@@ -1,4 +1,4 @@
-import { Model, Document } from "mongoose";
+import mongoose, { Model, Document } from "mongoose";
 import { IBaseRepository } from "../../interfaces/repositories/IBaseRepository.ts";
 
 export abstract class BaseRepository<T extends Document> implements IBaseRepository<T> {
@@ -35,7 +35,7 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
     if (!doc) return null;
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
-    
+
     const likes = (doc as any).likes || [];
     const index = likes.findIndex((id: any) => id.toString() === userId.toString());
 
@@ -45,7 +45,7 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
       likes.splice(index, 1);
     }
 
-    
+
     (doc as any).likes = likes;
     return await doc.save();
   }

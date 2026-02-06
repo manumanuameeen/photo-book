@@ -7,7 +7,7 @@ import { Messages } from "../../constants/messages.ts";
 export class CloudinaryService implements IFileService {
   async uploadFile(file: Express.Multer.File): Promise<string> {
     return new Promise((res, rej) => {
-      // Determine resource type: audio is treated as video in Cloudinary
+      
       let resourceType: "auto" | "image" | "video" | "raw" = "auto";
       if (file.mimetype.startsWith('image/')) resourceType = "image";
       else if (file.mimetype.startsWith('video/') || file.mimetype.startsWith('audio/')) resourceType = "video";

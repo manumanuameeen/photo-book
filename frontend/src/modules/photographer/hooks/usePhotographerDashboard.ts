@@ -44,6 +44,14 @@ export interface DashboardStats {
         message: string;
         time: string;
     }>;
+    revenueTrend: Array<{
+        month: string;
+        amount: number;
+    }>;
+    sessionTypes: Array<{
+        type: string;
+        count: number;
+    }>;
 }
 
 export const usePhotographerDashboard = () => {

@@ -52,6 +52,18 @@ export const PhotographerDashboardStatsSchema = z.object({
       fullDate: z.date().optional(),
     }),
   ),
+  revenueTrend: z.array(
+    z.object({
+      month: z.string(),
+      amount: z.number(),
+    }),
+  ),
+  sessionTypes: z.array(
+    z.object({
+      type: z.string(),
+      count: z.number(),
+    }),
+  ),
 });
 
 export type PhotographerDashboardStatsDto = z.infer<typeof PhotographerDashboardStatsSchema>;

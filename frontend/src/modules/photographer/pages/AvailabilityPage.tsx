@@ -22,7 +22,7 @@ const AvailabilityPage = () => {
     const [isBlocking, setIsBlocking] = useState(false);
     const [isUnblocking, setIsUnblocking] = useState(false);
 
-    // ... (existing code for fetchAvailabilities, useEffect, etc.)
+    
 
     const handleBlockRange = async () => {
         if (!startDate || !endDate) {

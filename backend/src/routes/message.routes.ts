@@ -24,7 +24,17 @@ router.put(
 router.delete(
   ROUTES.V1.MESSAGE.DELETE,
   authMiddleware,
-  messageController.deleteMessage.bind(messageController),
+  messageController.deleteMessageForMe.bind(messageController),
+);
+router.delete(
+  ROUTES.V1.MESSAGE.DELETE_FOR_EVERYONE,
+  authMiddleware,
+  messageController.deleteMessageForEveryone.bind(messageController),
+);
+router.delete(
+  ROUTES.V1.MESSAGE.CLEAR_CHAT,
+  authMiddleware,
+  messageController.clearChat.bind(messageController),
 );
 router.post(
   ROUTES.V1.MESSAGE.SEND,
@@ -32,10 +42,9 @@ router.post(
   messageController.sendMessage.bind(messageController),
 );
 
-// Import multer middleware (assuming it's available or we create inline)
-import { storage } from "../config/cloudinary.ts";
+
 import multer from "multer";
-const upload = multer({ storage: multer.memoryStorage() }); // using memory storage for CloudinaryService which expects buffer
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post(
   "/upload",
@@ -48,6 +57,12 @@ router.put(
   "/:id",
   authMiddleware,
   messageController.editMessage.bind(messageController)
+);
+
+router.patch(
+  "/:id/reaction",
+  authMiddleware,
+  messageController.toggleReaction.bind(messageController)
 );
 
 export default router;

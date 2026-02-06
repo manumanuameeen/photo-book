@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { UserCircle, ChevronDown, Bell, Mail, LogOut } from "lucide-react";
+import { UserCircle, ChevronDown, LogOut } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useAuthStore } from "../../modules/auth/store/useAuthStore.ts";
 import { confirm } from "../../components/ConfirmToaster.tsx";
-import {ROUTES} from "../../constants/routes.ts"
+import { ROUTES } from "../../constants/routes.ts"
 
 
 const AdminHeader: React.FC = () => {
@@ -56,15 +56,7 @@ const AdminHeader: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <Mail className="w-5 h-5 text-gray-600" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-[#00693E] rounded-full"></span>
-        </button>
 
-        <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <Bell className="w-5 h-5 text-gray-600" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
 
         <div className="relative">
           <button
@@ -109,14 +101,6 @@ const AdminHeader: React.FC = () => {
                 <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                   <UserCircle className="w-4 h-4" />
                   My Profile
-                </button>
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                  <Mail className="w-4 h-4" />
-                  Messages
-                </button>
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                  <Bell className="w-4 h-4" />
-                  Notifications
                 </button>
 
                 <hr className="my-1" />

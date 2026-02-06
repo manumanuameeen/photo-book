@@ -99,7 +99,7 @@ import { SocketService } from "./services/messaging/SocketService.ts";
 console.log("➡️ Starting Server...");
 const httpServer = createServer(app);
 
-// Initialize Socket.IO
+
 SocketService.getInstance().init(httpServer);
 
 httpServer.listen(PORT, async () => {

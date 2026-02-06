@@ -26,6 +26,14 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user: IUser) => {
         console.log("🔐 Setting user in store:", user);
+
+        
+        const cache: CacheData = {
+          user,
+          expires: Date.now() + 5 * 60 * 1000, 
+        };
+        sessionStorage.setItem("auth-cache", JSON.stringify(cache));
+
         set({
           user,
           isAuthenticated: true,

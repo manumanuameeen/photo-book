@@ -60,15 +60,38 @@ export class MessageController implements IMessageController {
     }
   };
 
-  deleteMessage = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  deleteMessageForMe = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
-      if (!userId) {
-        throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
-      }
-      await this._service.deleteMessage(id, userId);
-      ApiResponse.success(res, null, Messages.MESSAGE_DELETED);
+      if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
+      await this._service.deleteMessageForMe(id, userId);
+      ApiResponse.success(res, null, "Message deleted for you");
+    } catch (error) {
+      this._handleError(res, error);
+    }
+  };
+
+  deleteMessageForEveryone = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const userId = req.user?.userId;
+      if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
+      await this._service.deleteMessageForEveryone(id, userId);
+      ApiResponse.success(res, null, "Message deleted for everyone");
+    } catch (error) {
+      this._handleError(res, error);
+    }
+  };
+
+  clearChat = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const { partnerId } = req.params;
+      const userId = req.user?.userId;
+      if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
+      if (!partnerId) throw new AppError("Partner ID is required", HttpStatus.BAD_REQUEST);
+      await this._service.clearChat(userId, partnerId);
+      ApiResponse.success(res, null, "Chat cleared successfully");
     } catch (error) {
       this._handleError(res, error);
     }
@@ -105,6 +128,24 @@ export class MessageController implements IMessageController {
     }
   };
 
+  toggleReaction = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { emoji } = req.body;
+      const userId = req.user?.userId;
+
+      console.log("Toggle Reaction Request:", { id, emoji, userId, body: req.body });
+
+      if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
+      if (!emoji) throw new AppError("Emoji is required", HttpStatus.BAD_REQUEST);
+
+      const message = await this._service.toggleReaction(id, userId, emoji);
+      ApiResponse.success(res, message, "Reaction toggled successfully");
+    } catch (error) {
+      this._handleError(res, error);
+    }
+  };
+
   uploadAttachment = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     try {
       console.log("Upload request received. File:", req.file ? "Present" : "Missing");
@@ -117,9 +158,9 @@ export class MessageController implements IMessageController {
       }
       if (!req.file) throw new AppError("No file uploaded", HttpStatus.BAD_REQUEST);
 
-      // Dynamic import or usage of CloudinaryService
-      // Ideally this should be injected, but for speed we instantiated it here or use a static helper if available.
-      // CloudinaryService is a class implementing IFileService.
+      
+      
+      
       const { CloudinaryService } = await import("../services/external/CloudinaryService.ts");
       const fileService = new CloudinaryService();
 

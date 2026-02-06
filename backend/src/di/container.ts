@@ -58,6 +58,8 @@ import { RentalFinanceService } from "../services/rental/RentalFinanceService.ts
 import { RentalService } from "../services/implementaion/RentalService.ts";
 import { AdminRentalService } from "../services/rental/AdminRentalService.ts";
 import { AdminRentalController } from "../controller/admin/AdminRentalController.ts";
+import { AdminDashboardService } from "../services/admin/AdminDashboardService.ts";
+import { AdminDashboardController } from "../controller/admin/AdminDashboardController.ts";
 import { RentalController } from "../controller/RentalController.ts";
 import { ReviewRepository } from "../repositories/implementaion/ReviewRepository.ts";
 import { ReviewService } from "../services/implementaion/ReviewService.ts";
@@ -144,6 +146,8 @@ class DIContainer {
   private _reportService?: ReportService;
   private _reportController?: ReportController;
   private _ruleController?: RuleController;
+  private _adminDashboardService?: AdminDashboardService;
+  private _adminDashboardController?: AdminDashboardController;
 
   get bookingQueueService(): BookingQueueService {
     this._bookingQueueService ??= new BookingQueueService();
@@ -479,6 +483,7 @@ class DIContainer {
       this.userRepository,
       this.rentalAvailabilityService,
       this.rentalFinanceService,
+      this.messageService,
     );
     return this._rentalService;
   }
@@ -524,11 +529,12 @@ class DIContainer {
   }
 
   get reportService(): ReportService {
-    this._reportService ??= new ReportService();
+    this._reportService ??= new ReportService(this.messageService);
     return this._reportService;
   }
 
   get reportController(): ReportController {
+    this._reportController ??= new ReportController(this.reportService);
     return this._reportController;
   }
 
@@ -545,6 +551,16 @@ class DIContainer {
   get ruleController(): RuleController {
     this._ruleController ??= new RuleController(this.ruleService);
     return this._ruleController;
+  }
+
+  get adminDashboardService(): AdminDashboardService {
+    this._adminDashboardService ??= new AdminDashboardService();
+    return this._adminDashboardService;
+  }
+
+  get adminDashboardController(): AdminDashboardController {
+    this._adminDashboardController ??= new AdminDashboardController(this.adminDashboardService);
+    return this._adminDashboardController;
   }
 }
 

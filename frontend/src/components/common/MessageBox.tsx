@@ -56,7 +56,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
             await messageApi.deleteMessage(id);
             setMessages(prev => prev.filter(m => m.id !== id));
             toast.success("Message deleted");
-            // Refresh if empty to show previous page or "No messages"
+            
             if (messages.length === 1 && page > 1) {
                 setPage(prev => prev - 1);
             } else if (messages.length === 1) {

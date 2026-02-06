@@ -102,47 +102,82 @@ export class PhotographerService implements IPhotographerService {
     let totalSessions = 0;
     let pendingPayouts = 0;
     let newRequests = 0;
+    let monthlyEarnings = 0;
 
     const upcomingBookingsList: any[] = [];
     const pendingRequestsList: any[] = [];
+    const revenueTrendMap = new Map<string, number>();
+    const sessionTypeMap = new Map<string, number>();
 
     const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(currentYear, currentMonth - i, 1);
+      const key = d.toLocaleString("default", { month: "short" });
+      revenueTrendMap.set(key, 0);
+    }
 
     bookings.forEach((booking: any) => {
       const clientName = booking.userId?.name || "Unknown Client";
-      if (booking.status === "COMPLETED") {
+      const bookingDate = new Date(booking.eventDate || booking.createdAt);
+      const monthKey = bookingDate.toLocaleString("default", { month: "short" });
+
+      if (booking.status === "COMPLETED" || booking.paymentStatus === "paid") {
+        const amount = booking.totalAmount || 0;
+        totalEarnings += amount;
         totalSessions++;
-        totalEarnings += booking.totalAmount || 0;
-      } else if (booking.status === "pending") {
+
+        if (bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear) {
+          monthlyEarnings += amount;
+        }
+
+        if (revenueTrendMap.has(monthKey)) {
+          revenueTrendMap.set(monthKey, (revenueTrendMap.get(monthKey) || 0) + amount);
+        }
+
+        const type = booking.eventType || "Other";
+        sessionTypeMap.set(type, (sessionTypeMap.get(type) || 0) + 1);
+      }
+
+      if (booking.status === "pending") {
         pendingPayouts += booking.depositeRequired || 0;
         pendingRequestsList.push({
           _id: (booking._id as mongoose.Types.ObjectId).toString(),
           clientName: clientName,
           eventType: booking.eventType,
-          date:
-            booking.eventDate instanceof Date
-              ? booking.eventDate.toDateString()
-              : new Date(booking.eventDate).toDateString(),
+          date: bookingDate.toDateString(),
           status: booking.status,
         });
 
         if (new Date(booking.createdAt) > oneWeekAgo) {
           newRequests++;
         }
-      } else if (booking.status === "accepted" || booking.status === "confirmed") {
+      } else if (["accepted", "confirmed", "work_started", "work_ended"].includes(booking.status)) {
         upcomingBookingsList.push({
           _id: (booking._id as mongoose.Types.ObjectId).toString(),
           clientName: clientName,
-          date:
-            booking.eventDate instanceof Date
-              ? booking.eventDate.toDateString()
-              : new Date(booking.eventDate).toDateString(),
+          date: bookingDate.toDateString(),
           location: booking.location,
           status: booking.status,
         });
       }
     });
+
+    const reviews = await ReviewModel.find({ targetId: photographer._id })
+      .populate("reviewerId", "name")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const totalReviews = await ReviewModel.countDocuments({ targetId: photographer._id });
+    const allReviews = await ReviewModel.find({ targetId: photographer._id });
+    const averageRating =
+      totalReviews > 0
+        ? allReviews.reduce((acc, rev) => acc + rev.rating, 0) / totalReviews
+        : 0;
 
     const recentMessages = await this._messageService.getMessages(photographer.userId.toString());
 
@@ -152,7 +187,7 @@ export class PhotographerService implements IPhotographerService {
     return {
       earnings: {
         total: totalEarnings,
-        monthly: 0,
+        monthly: monthlyEarnings,
         growth: 0,
         pendingPayouts: pendingPayouts,
       },
@@ -161,13 +196,19 @@ export class PhotographerService implements IPhotographerService {
         newRequests: newRequests,
       },
       reviews: {
-        averageRating: 0,
-        totalReviews: 0,
-        latest: [],
+        averageRating: Number.parseFloat(averageRating.toFixed(1)),
+        totalReviews: totalReviews,
+        latest: reviews.map((r: any) => ({
+          _id: r._id.toString(),
+          clientName: r.reviewerId?.name || "Anonymous",
+          comment: r.comment,
+          rating: r.rating,
+          createdAt: r.createdAt,
+        })),
       },
       pendingRequests: pendingRequestsList,
       upcomingBookings: upcomingBookingsList,
-      recentMessages: recentMessages.map((msg) => ({
+      recentMessages: recentMessages.messages.map((msg: any) => ({
         _id: (msg as any)._id.toString(),
         clientName: (msg.senderId as any)?.name || "System",
         senderRole: (msg.senderId as any)?.role || "system",
@@ -177,6 +218,14 @@ export class PhotographerService implements IPhotographerService {
             ? msg.createdAt.toLocaleTimeString()
             : new Date(msg.createdAt).toLocaleTimeString(),
         fullDate: msg.createdAt,
+      })),
+      revenueTrend: Array.from(revenueTrendMap.entries()).map(([month, amount]) => ({
+        month,
+        amount,
+      })),
+      sessionTypes: Array.from(sessionTypeMap.entries()).map(([type, count]) => ({
+        type,
+        count,
       })),
     };
   }

@@ -53,7 +53,7 @@ const PhotographerSearch = () => {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [isLocating, setIsLocating] = useState(false);
 
-    // Pagination state
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const ITEMS_PER_PAGE = 8;
@@ -260,11 +260,19 @@ const PhotographerSearch = () => {
                         </button>
                     </div>
 
-                    <div className="flex justify-between items-center">
+
+                    <div className="flex justify-between items-center w-full">
                         <button className="flex items-center text-xs text-gray-500 hover:text-green-700 font-medium transition-colors">
                             Advanced Filters <ChevronDown size={14} className="ml-1" />
                         </button>
+                        <button
+                            onClick={() => navigate({ to: '/main/rules' } as any)}
+                            className="flex items-center text-xs text-gray-500 hover:text-blue-600 font-medium transition-colors"
+                        >
+                            <span className="mr-1">⚠️</span> Platform Rules
+                        </button>
                     </div>
+
                 </div>
 
                 { }
