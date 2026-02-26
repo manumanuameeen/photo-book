@@ -28,10 +28,13 @@ import walletRoute from "./routes/wallet.routes.ts";
 import rentalRoute from "./routes/rental.routes.ts";
 import reviewRoute from "./routes/review.routes.ts";
 import reportRoute from "./routes/report.routes.ts";
-import { ruleRouter } from "./routes/rule.routes.ts";
+import reportCategoryRoute from "./routes/reportCategory.routes.ts";
+import { helpRoutes } from "./routes/help.routes.ts";
+import { helpRequestRoutes } from "./routes/helpTopicRequest.routes.ts";
+import { ruleRoutes } from "./routes/rule.routes.ts";
+import { container } from "./di/container.ts";
 import { errorHandler } from "./middleware/errorMiddleware.ts";
 import { ROUTES } from "./constants/routes.ts";
-
 
 const app = express();
 const PORT = 5000;
@@ -41,7 +44,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: true,
     credentials: true,
   }),
 );
@@ -69,15 +72,15 @@ app.use(ROUTES.V1.MESSAGE.BASE, messageRoute);
 app.use(ROUTES.V1.RENTAL.BASE, rentalRoute);
 app.use(ROUTES.V1.REVIEWS.BASE, reviewRoute);
 app.use(ROUTES.V1.REPORT.BASE, reportRoute);
-app.use("/api/v1/rules", ruleRouter);
-app.use("/api/v1/wallet", walletRoute);
+app.use(ROUTES.V1.REPORT_CATEGORY.BASE, reportCategoryRoute);
+app.use(ROUTES.V1.HELP.BASE, helpRoutes(container.helpController));
+app.use(ROUTES.V1.HELP_TOPIC_REQUEST.BASE, helpRequestRoutes(container.helpTopicRequestController));
+app.use(ROUTES.V1.RULE.BASE, ruleRoutes(container.ruleController));
+app.use(ROUTES.V1.WALLET.BASE, walletRoute);
 console.log("✅ Routes mounted.");
 
 console.log("➡️ Initializing CronService...");
 import { CronService } from "./services/common/CronService.ts";
-
-
-
 
 try {
   const { container } = await import("./di/container.ts");
@@ -98,7 +101,6 @@ import { SocketService } from "./services/messaging/SocketService.ts";
 
 console.log("➡️ Starting Server...");
 const httpServer = createServer(app);
-
 
 SocketService.getInstance().init(httpServer);
 

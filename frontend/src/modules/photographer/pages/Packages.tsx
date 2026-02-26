@@ -12,6 +12,7 @@ import CropModal from '../../../components/common/CropModal';
 import { CategoryType } from '../../../services/api/adminCategoryApi';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from '../../../constants/routes';
+import { AxiosError } from 'axios';
 
 const packageFormSchema = z.object({
     name: z.string().trim().min(3, "Name must be at least 3 characters").max(100, "Name too long"),
@@ -24,7 +25,7 @@ const packageFormSchema = z.object({
         z.string().transform(str => str.split(',').map(s => s.trim()).filter(s => s.length > 0)),
         z.array(z.string())
     ]),
-    coverImage: z.any().optional(),
+    coverImage: z.custom<FileList | string | File | null>().optional(),
 });
 
 type PackageFormData = z.output<typeof packageFormSchema>;
@@ -200,7 +201,10 @@ const Packages = () => {
             setIsSuggestModalOpen(false);
             resetSuggest();
         } catch (error: unknown) {
-            const message = error.response?.data?.message || "Failed to send suggestion";
+            let message = "Failed to send suggestion";
+            if (error instanceof AxiosError) {
+                message = error.response?.data?.message || message;
+            }
             toast.error(message);
         }
     };
@@ -518,7 +522,6 @@ const Packages = () => {
                             )}
                         </div>
 
-                        {}
                         <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                             <button
                                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}

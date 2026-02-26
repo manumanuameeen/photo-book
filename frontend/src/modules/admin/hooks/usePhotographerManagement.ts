@@ -2,8 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminPhotographerApi } from "../../../services/api/adminPhotographerApi";
 import type {
-    GetPhotographersParams,
-    Photographer
+    GetPhotographersParams
 } from "../types/photographer.types";
 import { toast } from "sonner";
 
@@ -23,7 +22,7 @@ export const usePhotographerManagement = () => {
             placeholderData: (previousData) => previousData,
         });
     };
-   
+
     const usePhotographerById = (id: string | null) => {
         return useQuery({
             queryKey: ['photographer', id],
@@ -35,7 +34,6 @@ export const usePhotographerManagement = () => {
         });
     };
 
-   
     const blockPhotographerMutation = useMutation({
         mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
             await adminPhotographerApi.blockPhotographer(id, reason);
@@ -45,8 +43,9 @@ export const usePhotographerManagement = () => {
             queryClient.invalidateQueries({ queryKey: ['photographers'] });
             queryClient.invalidateQueries({ queryKey: ['photographer'] });
         },
-        onError: (err: any) => {
-            const errorMessage = err?.response?.data?.message || "Failed to block photographer";
+        onError: (err: unknown) => {
+            const error = err as { response?: { data?: { message?: string } } };
+            const errorMessage = error?.response?.data?.message || "Failed to block photographer";
             toast.error(errorMessage);
         }
     });
@@ -60,8 +59,9 @@ export const usePhotographerManagement = () => {
             queryClient.invalidateQueries({ queryKey: ['photographers'] });
             queryClient.invalidateQueries({ queryKey: ['photographer'] });
         },
-        onError: (err: any) => {
-            const errorMessage = err?.response?.data?.message || "Failed to unblock photographer";
+        onError: (err: unknown) => {
+            const error = err as { response?: { data?: { message?: string } } };
+            const errorMessage = error?.response?.data?.message || "Failed to unblock photographer";
             toast.error(errorMessage);
         }
     });

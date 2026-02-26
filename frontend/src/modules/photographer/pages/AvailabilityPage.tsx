@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, Info, AlertCircle, Loader2, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, Info, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { availabilityApi } from '../../../services/api/availabilityApi';
-import { photographerApi } from '../../../services/api/photographerApi';
 import { AxiosError } from 'axios';
 
-import type { IAvailability, IAvailabilitySlot } from '../../../types/availability';
+import type { IAvailability } from '../../../types/availability';
 
 import { ROUTES } from '../../../constants/routes';
 
@@ -22,7 +21,64 @@ const AvailabilityPage = () => {
     const [isBlocking, setIsBlocking] = useState(false);
     const [isUnblocking, setIsUnblocking] = useState(false);
 
-    
+    const fetchAvailabilities = useCallback(async () => {
+        try {
+            const start = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+            const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0);
+            const data = await availabilityApi.getAvailability(start.toISOString(), end.toISOString());
+            setAvailabilities(data || []);
+        } catch (error) {
+            console.error("Failed to fetch availabilities:", error);
+        }
+    }, [currentDate]);
+
+    useEffect(() => {
+        fetchAvailabilities();
+    }, [fetchAvailabilities]);
+
+    const getStatus = (day: number, month: number, year: number) => {
+        const date = new Date(year, month, day);
+        date.setHours(0, 0, 0, 0);
+
+        const avail = availabilities.find(a => {
+            const aDate = new Date(a.date);
+            aDate.setHours(0, 0, 0, 0);
+            return aDate.getTime() === date.getTime();
+        });
+
+        if (avail) {
+            return avail.isFullDayAvailable ? 'AVAILABLE' : 'BLOCKED';
+        }
+        return 'UNASSIGNED';
+    };
+
+    const getStatusClass = (day: number, month: number, year: number) => {
+        const status = getStatus(day, month, year);
+        switch (status as string) {
+            case 'BOOKED': return 'bg-emerald-900 text-white border-emerald-900';
+            case 'BLOCKED': return 'bg-red-600 text-white border-red-600 hover:bg-red-700';
+            case 'AVAILABLE': return 'bg-green-50 border-green-300 text-green-800 hover:border-green-600 shadow-sm';
+            case 'UNASSIGNED': return 'bg-white border-gray-100 text-gray-400 hover:bg-gray-50';
+            default: return 'bg-white border-gray-100 text-gray-400';
+        }
+    };
+
+    const months = [
+        {
+            name: currentDate.toLocaleString('default', { month: 'long', year: 'numeric' }),
+            month: currentDate.getMonth(),
+            year: currentDate.getFullYear(),
+            daysCount: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate(),
+            startOffset: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
+        },
+        {
+            name: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1).toLocaleString('default', { month: 'long', year: 'numeric' }),
+            month: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1).getMonth(),
+            year: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1).getFullYear(),
+            daysCount: new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0).getDate(),
+            startOffset: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1).getDay()
+        }
+    ];
 
     const handleBlockRange = async () => {
         if (!startDate || !endDate) {
@@ -88,7 +144,6 @@ const AvailabilityPage = () => {
         }
     };
 
-
     const [selectedDateInfo, setSelectedDateInfo] = useState<{ date: Date, status: string, availability?: IAvailability } | null>(null);
 
     const handleDateClick = (day: number, month: number, year: number) => {
@@ -117,7 +172,7 @@ const AvailabilityPage = () => {
         try {
             await availabilityApi.setAvailability({
                 date: selectedDateInfo.date.toISOString(),
-                slots: [],
+                slots: [] as unknown[],
                 isFullDayAvailable: newStatus === 'AVAILABLE'
             });
             toast.success("Availability updated", { id: toastId });
@@ -191,22 +246,26 @@ const AvailabilityPage = () => {
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    { }
+
                     <div className="lg:col-span-8 space-y-8">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                             <div className="flex items-center justify-between mb-8">
                                 <h2 className="text-xl font-bold text-gray-800">Calendar Overview</h2>
-                                <div className="flex gap-4 text-xs font-medium">
+                                <div className="flex flex-wrap gap-4 text-xs font-medium">
                                     <div className="flex items-center gap-1.5">
-                                        <div className="w-3 h-3 rounded-full border border-green-200 bg-white"></div>
+                                        <div className="w-3 h-3 rounded-full border border-gray-200 bg-white"></div>
+                                        <span>Unassigned</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-3 h-3 rounded-full border border-green-300 bg-green-50"></div>
                                         <span>Available</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <div className="w-3 h-3 rounded-full bg-emerald-900"></div>
+                                        <div className="w-3 h-3 rounded-full bg-emerald-900 border-emerald-900"></div>
                                         <span>Booked</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <div className="w-3 h-3 rounded-full bg-red-600"></div>
+                                        <div className="w-3 h-3 rounded-full bg-red-600 border-red-600"></div>
                                         <span>Blocked</span>
                                     </div>
                                 </div>
@@ -220,7 +279,7 @@ const AvailabilityPage = () => {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="grid grid-cols-1 md:grid-cols-2 gap-10"
                                 >
-                                    {months.map((m, idx) => (
+                                    {months.map((m, idx: number) => (
                                         <div key={m.name} className={`space-y-4 ${idx > 1 ? 'hidden md:block' : ''}`}>
                                             <h3 className="font-bold text-gray-700 text-lg border-b border-gray-50 pb-2">{m.name}</h3>
                                             <div className="grid grid-cols-7 gap-1 text-center text-[10px] uppercase font-bold text-green-700 opacity-60 mb-2">
@@ -247,9 +306,8 @@ const AvailabilityPage = () => {
                         </div>
                     </div>
 
-                    { }
                     <div className="lg:col-span-4 space-y-6">
-                        { }
+
                         <div className="bg-[#1B3C2D] rounded-2xl p-6 text-white shadow-xl shadow-green-900/10">
                             <div className="flex items-center gap-3 mb-6">
                                 <Clock className="text-green-400" size={24} />
@@ -292,7 +350,6 @@ const AvailabilityPage = () => {
                             </div>
                         </div>
 
-                        { }
                         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                             <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <Info className="text-green-700" size={20} />
@@ -335,7 +392,6 @@ const AvailabilityPage = () => {
                     </div>
                 </div>
 
-                { }
                 {selectedDateInfo && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedDateInfo(null)}>
                         <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl" onClick={e => e.stopPropagation()}>
@@ -376,15 +432,33 @@ const AvailabilityPage = () => {
                                                 Mark as Available
                                             </button>
                                         </>
-                                    ) : (
+                                    ) : selectedDateInfo.status === 'AVAILABLE' ? (
                                         <>
-                                            <p className="text-sm text-gray-500 text-center mb-4">This date is available for bookings.</p>
+                                            <p className="text-sm text-gray-500 text-center mb-4">This date is explicitly available for bookings.</p>
                                             <button
                                                 onClick={() => handleUpdateStatus('BLOCKED')}
                                                 className="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors"
                                             >
                                                 Block Date
                                             </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="text-sm text-gray-500 text-center mb-4">You have not explicitly set availability for this date.</p>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => handleUpdateStatus('AVAILABLE')}
+                                                    className="flex-1 py-3 bg-green-50 border border-green-600 text-green-800 rounded-xl font-bold hover:bg-green-100 transition-colors"
+                                                >
+                                                    Available
+                                                </button>
+                                                <button
+                                                    onClick={() => handleUpdateStatus('BLOCKED')}
+                                                    className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors"
+                                                >
+                                                    Block Date
+                                                </button>
+                                            </div>
                                         </>
                                     )}
                                 </div>
@@ -400,8 +474,6 @@ const AvailabilityPage = () => {
                     </div>
                 )}
 
-
-                { }
                 <footer className="bg-orange-50/50 border border-orange-100 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
                     <div className="flex items-center gap-3 text-orange-800">
                         <AlertCircle size={24} />

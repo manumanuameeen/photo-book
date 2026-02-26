@@ -89,10 +89,7 @@ const ApplicationFormWrapper = () => {
         );
     };
 
-
     const showSteps = currentStep !== 6;
-
-
 
     if (applicationStatus === 'pending' && currentStep !== 6) {
         return (
@@ -117,7 +114,6 @@ const ApplicationFormWrapper = () => {
             </MotionWrapper>
         );
     }
-
 
     if (applicationStatus === 'approved') {
         return (

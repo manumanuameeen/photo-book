@@ -44,7 +44,7 @@ export interface GetPhotographersParams {
     limit?: number;
     search?: string;
     status?: "PENDING" | "APPROVED" | "REJECTED" | "ALL";
-    isBlocked?: "true" | "false" | "all";  
+    isBlocked?: "true" | "false" | "all";
 }
 
 export interface PhotographerStats {
@@ -53,4 +53,31 @@ export interface PhotographerStats {
     pending: number;
     rejected: number;
     blocked: number;
+}
+
+export interface IAdminPackage {
+    _id: string;
+    photographer: {
+        _id: string;
+        personalInfo: {
+            name: string;
+            email: string;
+        };
+    };
+    name: string;
+    description: string;
+    price: number;
+    baseprice?: number;
+    editedPhoto: number;
+    features: string[];
+    deliveryTime: string;
+    coverImage?: string;
+    isActive: boolean;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    rejectionReason?: string;
+    categoryId: {
+        _id: string;
+        name: string;
+    };
+    createdAt: string;
 }

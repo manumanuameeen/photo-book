@@ -10,7 +10,6 @@ const Colors = {
   darkGreen: "#2e4a2d",
 };
 
-
 interface ResetPasswordError {
   response?: {
     data?: {
@@ -73,7 +72,7 @@ const ResetPassword: React.FC = () => {
           toast.success(response.message || "Password reset successful!");
 
           sessionStorage.removeItem('resetPasswordEmail');
-          navigate({ to:  ROUTES.AUTH.LOGIN });
+          navigate({ to: ROUTES.AUTH.LOGIN });
 
         },
         onError: (error: unknown) => {
@@ -101,7 +100,6 @@ const ResetPassword: React.FC = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
 
-        {}
         <div
           className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
           style={{ backgroundColor: Colors.darkGreen }}
@@ -120,7 +118,6 @@ const ResetPassword: React.FC = () => {
           </div>
         </div>
 
-        {}
         <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
           <div className="flex items-center mb-4">
             <img
@@ -137,7 +134,7 @@ const ResetPassword: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {}
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 New Password
@@ -175,7 +172,6 @@ const ResetPassword: React.FC = () => {
               </div>
             </div>
 
-            {}
             <div>
               <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm New Password
@@ -204,7 +200,7 @@ const ResetPassword: React.FC = () => {
                     className="p-2 text-gray-400 hover:text-gray-600"
                     onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
                   >
-                    {}
+
                   </button>
                 </div>
                 {errors.confirmPassword && (

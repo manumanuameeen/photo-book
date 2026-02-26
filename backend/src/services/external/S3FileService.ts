@@ -68,28 +68,30 @@ export class S3FileService implements IFileService {
       const result = await upload.done();
       console.log("✅ File uploaded successfully:", result.Location);
       return result.Location as string;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ S3 upload error:", {
-        message: error.message,
-        code: error.name || error.code,
+        message: error instanceof Error ? error.message : "Unknown error",
+        code: error instanceof Error ? error.name : (error as { code?: string })?.code || "Unknown",
         bucket: this._bucketName,
         key: key,
       });
 
-      if (error.name === "NoSuchBucket") {
-        throw new AppError(
-          `S3 bucket '${this._bucketName}' does not exist`,
-          HttpStatus.BAD_REQUEST,
-        );
-      } else if (error.name === "InvalidAccessKeyId") {
-        throw new AppError("Invalid AWS credentials", HttpStatus.BAD_REQUEST);
-      } else if (error.name === "SignatureDoesNotMatch") {
-        throw new AppError("AWS credential signature mismatch", HttpStatus.BAD_REQUEST);
-      } else if (error.name === "AccessDenied") {
-        throw new AppError("Access denied to S3 bucket", HttpStatus.BAD_REQUEST);
+      if (error instanceof Error) {
+        if (error.name === "NoSuchBucket") {
+          throw new AppError(
+            `S3 bucket '${this._bucketName}' does not exist`,
+            HttpStatus.BAD_REQUEST,
+          );
+        } else if (error.name === "InvalidAccessKeyId") {
+          throw new AppError("Invalid AWS credentials", HttpStatus.BAD_REQUEST);
+        } else if (error.name === "SignatureDoesNotMatch") {
+          throw new AppError("AWS credential signature mismatch", HttpStatus.BAD_REQUEST);
+        } else if (error.name === "AccessDenied") {
+          throw new AppError("Access denied to S3 bucket", HttpStatus.BAD_REQUEST);
+        }
+        throw new AppError("Image upload failed: " + error.message, HttpStatus.BAD_REQUEST);
       }
-
-      throw new AppError(`Image upload failed: ${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new AppError("Image upload failed: Unknown error", HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -105,7 +107,7 @@ export class S3FileService implements IFileService {
       const results = await Promise.all(uploadPromises);
       console.log(`✅ Successfully uploaded ${results.length} files`);
       return results;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Multiple file upload failed:", error);
       throw error;
     }
@@ -120,7 +122,7 @@ export class S3FileService implements IFileService {
         }),
       );
       console.log("✅ File deleted successfully:", fileKey);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ S3 delete error:", error);
       throw new AppError(Messages.S3_DELETE_ERROR, HttpStatus.BAD_REQUEST);
     }

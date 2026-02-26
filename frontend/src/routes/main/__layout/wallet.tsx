@@ -45,7 +45,7 @@ function WalletPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {}
+          
           <div className="md:col-span-2 bg-gradient-to-br from-[#1E5631] to-[#2a7a44] p-8 rounded-2xl shadow-lg text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
             <div className="relative z-10">
@@ -85,7 +85,6 @@ function WalletPage() {
             </div>
           </div>
 
-          {}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
             <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4">
               <CreditCard size={24} />
@@ -98,7 +97,6 @@ function WalletPage() {
           </div>
         </div>
 
-        {}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100 flex items-center gap-2">
             <History size={18} className="text-gray-400" />

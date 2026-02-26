@@ -8,8 +8,6 @@ import { useNavigate } from '@tanstack/react-router'
 import { useVerifyOtp, useResendOtp } from "../../hooks/useAuth";
 import { ROUTES } from "../../../../constants/routes";
 
-
-
 interface VerifyOtpError {
   response?: {
     data?: {
@@ -18,7 +16,6 @@ interface VerifyOtpError {
   };
   message?: string
 }
-
 
 const OTP_LENGTH = 6;
 const OTP_TIMER_DURATION = 10;
@@ -31,7 +28,6 @@ const VerifyOtp: React.FC = () => {
   const resendOtpMutation = useResendOtp();
 
   const [isVerifying, setIsVerifying] = useState(false);
-
 
   const email = user?.email || "";
 
@@ -73,7 +69,6 @@ const VerifyOtp: React.FC = () => {
       navigate({ to: ROUTES.AUTH.SIGNUP });
       return;
     }
-
 
     setIsVerifying(true);
 

@@ -5,7 +5,8 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { toast } from "sonner";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+type LeafletIconDefault = L.Icon.Default & { _getIconUrl?: string };
+delete (L.Icon.Default.prototype as unknown as LeafletIconDefault)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -147,12 +148,10 @@ export const SmallLocationPicker = ({
         const value = e.target.value;
         setSearchQuery(value);
 
-        
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
 
-        
         searchTimeoutRef.current = setTimeout(() => {
             searchLocation(value);
         }, 500);
@@ -195,7 +194,6 @@ export const SmallLocationPicker = ({
                 </button>
             </div>
 
-            {}
             <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <div className="relative flex items-center">
                     <Search className="absolute left-3 text-gray-400" size={20} />
@@ -218,7 +216,6 @@ export const SmallLocationPicker = ({
                     </button>
                 </div>
 
-                {}
                 {showResults && searchResults.length > 0 && (
                     <div className="absolute z-[1000] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
                         {searchResults.map((result, index) => (
@@ -235,7 +232,6 @@ export const SmallLocationPicker = ({
                 )}
             </div>
 
-            {}
             <div className="h-64 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
                 <MapContainer
                     center={position}
@@ -251,7 +247,6 @@ export const SmallLocationPicker = ({
                     <MapUpdater center={position} />
                 </MapContainer>
             </div>
-
 
             <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-green-200 shadow-sm mt-2">
                 <p className="text-xs font-semibold text-green-800 uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -269,7 +264,6 @@ export const SmallLocationPicker = ({
                 </div>
             </div>
 
-            {}
             <p className="text-xs text-gray-500 italic">
                 💡 Tip: Search for a location or click directly on the map to set your position
             </p>

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { User, IUser } from "../../../model/userModel.ts";
 import { BaseRepository } from "../../base/BaseRepository.ts";
 import type { IAdminRepository } from "../../../interfaces/repositories/IAdminRepository.ts";
@@ -8,7 +9,6 @@ import type {
 } from "../../../interfaces/admin/IAdminUser.interface.ts";
 import { AdminMapper } from "../../../mappers/admin.mapper.ts";
 
-
 export class AdminRepository extends BaseRepository<IUser> implements IAdminRepository {
   constructor() {
     super(User);
@@ -18,9 +18,9 @@ export class AdminRepository extends BaseRepository<IUser> implements IAdminRepo
     const { limit, page, search, sort, isBlocked } = query;
     const skip = (page - 1) * limit;
 
-    const roleFilter = { role: { $nin: ["admin", "photographer"] } };
+    const roleFilter: mongoose.FilterQuery<IUser> = { role: { $nin: ["admin", "photographer"] } };
 
-    const filterQuery: any = { ...roleFilter };
+    const filterQuery: mongoose.FilterQuery<IUser> = { ...roleFilter };
 
     if (search) {
       filterQuery.name = { $regex: search, $options: "i" };

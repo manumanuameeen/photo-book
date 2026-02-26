@@ -18,7 +18,6 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?: unknown) => void }> = [];
 
-
 apiClient.interceptors.request.use(
     async (config) => {
         const authState = useAuthStore.getState();

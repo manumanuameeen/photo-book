@@ -1,4 +1,4 @@
-import type { Response, NextFunction } from "express";
+import type { Response, NextFunction, Request } from "express";
 import type { AuthRequest } from "../middleware/authMiddleware.ts";
 import type { IPhtogrpherController } from "../interfaces/user/IPhotographyController.ts";
 import type { IPhotographerService } from "../interfaces/services/IPhotographerService.ts";
@@ -11,7 +11,6 @@ import { z } from "zod";
 import { ApplyPhtographerDto } from "../dto/photographer.dto.ts";
 
 export class PhotographerController implements IPhtogrpherController {
-
   private readonly _photographerService: IPhotographerService;
   private readonly _fileService: IFileService;
 
@@ -24,7 +23,7 @@ export class PhotographerController implements IPhtogrpherController {
     return schema.parse(data);
   }
 
-  apply = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  apply = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -97,7 +96,7 @@ export class PhotographerController implements IPhtogrpherController {
   getDashboardStats = async (
     req: AuthRequest,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ): Promise<void> => {
     try {
       const userId = req.user?.userId;
@@ -112,7 +111,7 @@ export class PhotographerController implements IPhtogrpherController {
     }
   };
 
-  getBookings = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  getBookings = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -134,7 +133,7 @@ export class PhotographerController implements IPhtogrpherController {
     }
   };
 
-  getPhotographers = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  getPhotographers = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const { category, priceRange, location, lat, lng, page, limit } = req.query;
 
@@ -146,7 +145,6 @@ export class PhotographerController implements IPhtogrpherController {
         lng: lng ? parseFloat(lng as string) : undefined,
         page: page ? parseInt(page as string) : 1,
         limit: limit ? parseInt(limit as string) : 10,
-
       });
 
       ApiResponse.success(res, result, Messages.PHOTOGRAPHERS_FETCHED);
@@ -158,7 +156,7 @@ export class PhotographerController implements IPhtogrpherController {
   getPhotographerById = async (
     req: AuthRequest,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ): Promise<void> => {
     try {
       const { id } = req.params;
@@ -169,7 +167,7 @@ export class PhotographerController implements IPhtogrpherController {
     }
   };
 
-  addReview = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  addReview = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -189,7 +187,7 @@ export class PhotographerController implements IPhtogrpherController {
     }
   };
 
-  updateProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  updateProfile = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -203,7 +201,7 @@ export class PhotographerController implements IPhtogrpherController {
     }
   };
 
-  getProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  getProfile = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -217,7 +215,7 @@ export class PhotographerController implements IPhtogrpherController {
     }
   };
 
-  toggleLike = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  toggleLike = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {

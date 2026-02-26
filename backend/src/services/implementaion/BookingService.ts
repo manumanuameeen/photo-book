@@ -7,19 +7,25 @@ import { IBookingPaymentService } from "../../interfaces/services/booking/IBooki
 import { BookingStatus, IBooking, PaymentStatus } from "../../model/bookingModel.ts";
 import { BookingQueueService } from "../common/BookingQueueService.ts";
 import mongoose from "mongoose";
-import { CreateBookingDTO, BookingRescheduleRequestDTO, BookingRescheduleResponseDTO } from "../../dto/booking.dto.ts";
+import {
+  CreateBookingDTO,
+  BookingRescheduleRequestDTO,
+  BookingRescheduleResponseDTO,
+} from "../../dto/booking.dto.ts";
 import { SetAvailabilityDto } from "../../dto/package-availability.dto.ts";
 
-export class BookingService implements IBookingService {
-  private readonly bookingRepository: IBookingRepository;
-  private readonly bookingQueueService: BookingQueueService;
-  private readonly emailService: IEmailService;
-  private readonly messageService: IMessageService;
-  private readonly availabilityService: IAvailabilityService;
-  private readonly bookingPaymentService: IBookingPaymentService;
+type MongoReference = string | mongoose.Types.ObjectId | { _id: string | mongoose.Types.ObjectId };
 
-  private readonly ADMIN_COMMISSION_PERCENT = 0.13;
-  private readonly CANCELLATION_THRESHOLD_HOURS = 48;
+export class BookingService implements IBookingService {
+  private readonly _bookingRepository: IBookingRepository;
+  private readonly _bookingQueueService: BookingQueueService;
+  private readonly _emailService: IEmailService;
+  private readonly _messageService: IMessageService;
+  private readonly _availabilityService: IAvailabilityService;
+  private readonly _bookingPaymentService: IBookingPaymentService;
+
+  private readonly _ADMIN_COMMISSION_PERCENT = 0.13;
+  private readonly _CANCELLATION_THRESHOLD_HOURS = 48;
 
   constructor(
     bookingRepository: IBookingRepository,
@@ -29,24 +35,22 @@ export class BookingService implements IBookingService {
     availabilityService: IAvailabilityService,
     bookingPaymentService: IBookingPaymentService,
   ) {
-    this.bookingRepository = bookingRepository;
-    this.bookingQueueService = bookingQueueService;
-    this.emailService = emailService;
-    this.messageService = messageService;
-    this.availabilityService = availabilityService;
-    this.bookingPaymentService = bookingPaymentService;
+    this._bookingRepository = bookingRepository;
+    this._bookingQueueService = bookingQueueService;
+    this._emailService = emailService;
+    this._messageService = messageService;
+    this._availabilityService = availabilityService;
+    this._bookingPaymentService = bookingPaymentService;
   }
 
   async createBookingRequest(userId: string, data: CreateBookingDTO): Promise<IBooking> {
     const price = Number(data.packagePrice);
     if (Number.isNaN(price)) {
-      throw new Error("Invalid package price");
+      throw new TypeError("Invalid package price");
     }
-
 
     const eventDate = new Date(data.date);
     const now = new Date();
-
 
     const diffHours = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
@@ -88,16 +92,15 @@ export class BookingService implements IBookingService {
       depositeRequired: depositAmount,
     };
 
-    const savedBooking = await this.bookingRepository.create(bookingData);
+    const savedBooking = await this._bookingRepository.create(bookingData);
 
-    
     try {
-      await this.messageService.sendMessage(
+      await this._messageService.sendMessage(
         userId,
         data.photographerId,
-        `I've sent a booking request for your package "${data.packageName}" on ${new Date(data.date).toDateString()}.`
+        `I've sent a booking request for your package "${data.packageName}" on ${new Date(data.date).toDateString()}.`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[BookingService] Failed to send initial booking message:", error);
     }
 
@@ -105,7 +108,11 @@ export class BookingService implements IBookingService {
   }
 
   async getBookingDetails(id: string): Promise<IBooking | null> {
-    return await this.bookingRepository.findById(id);
+    return await this._bookingRepository.findById(id);
+  }
+
+  async getBookingByBookingId(bookingId: string): Promise<IBooking | null> {
+    return await this._bookingRepository.findByBookingId(bookingId);
   }
 
   async getUserBookings(
@@ -115,7 +122,7 @@ export class BookingService implements IBookingService {
     search?: string,
     status?: string,
   ): Promise<{ bookings: IBooking[]; total: number }> {
-    return await this.bookingRepository.findByUser(userId, page, limit, search, status);
+    return await this._bookingRepository.findByUser(userId, page, limit, search, status);
   }
 
   async getPhotographerBookings(
@@ -125,7 +132,7 @@ export class BookingService implements IBookingService {
     search?: string,
     status?: string,
   ): Promise<{ bookings: IBooking[]; total: number }> {
-    return await this.bookingRepository.findByPhotographer(
+    return await this._bookingRepository.findByPhotographer(
       photographerId,
       page,
       limit,
@@ -134,8 +141,24 @@ export class BookingService implements IBookingService {
     );
   }
 
+  private _getUserId(user: MongoReference | unknown): string {
+    if (!user) return "";
+    if (typeof user === "string") return user;
+    if (user instanceof mongoose.Types.ObjectId) return user.toString();
+    if (typeof user === "object" && "_id" in user) {
+      return (user as { _id: string | mongoose.Types.ObjectId })._id.toString();
+    }
+    return "";
+  }
+
+  private _isPopulatedUser(
+    user: unknown,
+  ): user is { email: string; name: string; _id: mongoose.Types.ObjectId | string } {
+    return typeof user === "object" && user !== null && "email" in user && "name" in user;
+  }
+
   async acceptBooking(id: string, message?: string): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
     if (booking.status !== BookingStatus.PENDING) {
       throw new Error("Booking is not in pending state");
@@ -150,33 +173,25 @@ export class BookingService implements IBookingService {
     }
 
     await booking.save();
-    await this.bookingQueueService.addPaymentTimer(id);
+    await this._bookingQueueService.addPaymentTimer(id);
 
-    
     try {
-      const photographerId = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString()
-        : booking.photographerId.toString();
-      const userId = (booking.userId as any)._id
-        ? (booking.userId as any)._id.toString()
-        : booking.userId.toString();
+      const photographerId = this._getUserId(booking.photographerId);
+      const userId = this._getUserId(booking.userId);
 
-      await this.messageService.sendMessage(
+      await this._messageService.sendMessage(
         photographerId,
         userId,
-        `I've accepted your booking request for ${new Date(booking.eventDate).toDateString()}. Please complete the payment to confirm.`
+        `I've accepted your booking request for ${new Date(booking.eventDate).toDateString()}. Please complete the payment to confirm.`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[BookingService] Failed to send acceptance message:", error);
     }
 
     try {
-      const photographerId = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString()
-        : booking.photographerId.toString();
-
-      await this.availabilityService.markDateAsBooked(photographerId, booking.eventDate);
-    } catch (error) {
+      const photographerId = this._getUserId(booking.photographerId);
+      await this._availabilityService.markDateAsBooked(photographerId, booking.eventDate);
+    } catch (error: unknown) {
       console.error("Failed to mark date as booked:", error);
     }
 
@@ -184,7 +199,7 @@ export class BookingService implements IBookingService {
   }
 
   async rejectBooking(id: string, message?: string): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
     booking.status = BookingStatus.REJECTED;
@@ -193,64 +208,55 @@ export class BookingService implements IBookingService {
     }
     const savedBooking = await booking.save();
 
-    
     try {
-      const photographerId = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString()
-        : booking.photographerId.toString();
-      const userId = (booking.userId as any)._id
-        ? (booking.userId as any)._id.toString()
-        : booking.userId.toString();
+      const photographerId = this._getUserId(booking.photographerId);
+      const userId = this._getUserId(booking.userId);
 
-      await this.messageService.sendMessage(
+      await this._messageService.sendMessage(
         photographerId,
         userId,
-        `I'm sorry, I cannot accept your booking request for ${new Date(booking.eventDate).toDateString()}. ${message || ""}`
+        `I'm sorry, I cannot accept your booking request for ${new Date(booking.eventDate).toDateString()}. ${message || ""}`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[BookingService] Failed to send rejection message:", error);
     }
 
     try {
-      const photographerId = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString()
-        : booking.photographerId.toString();
-
-      
-      
-      await this.availabilityService.deleteAvailability(photographerId, booking.eventDate);
-    } catch (error) {
-      
-      
-      console.warn(`[BookingService] Failed to clear availability for rejected booking ${id}:`, error);
+      const photographerId = this._getUserId(booking.photographerId);
+      await this._availabilityService.setAvailability(photographerId, {
+        date: booking.eventDate,
+        isFullDayAvailable: true,
+        slots: []
+      } as SetAvailabilityDto);
+    } catch (error: unknown) {
+      console.warn(
+        `[BookingService] Failed to reset availability for rejected booking ${id}:`,
+        error,
+      );
     }
 
     return savedBooking;
   }
 
   async createBookingPaymentIntent(bookingId: string): Promise<{ url: string } | null> {
-    return await this.bookingPaymentService.createPaymentIntent(bookingId);
+    return await this._bookingPaymentService.createPaymentIntent(bookingId);
   }
 
   async confirmPayment(id: string, paymentIntentId: string): Promise<IBooking | null> {
-    return await this.bookingPaymentService.confirmPayment(id, paymentIntentId);
+    return await this._bookingPaymentService.confirmPayment(id, paymentIntentId);
   }
 
   async completeBooking(id: string): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
     if (booking.status === BookingStatus.COMPLETED) {
       throw new Error("Booking is already completed");
     }
 
-
     if (booking.photographerId) {
-      const photographerUserId = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString()
-        : booking.photographerId.toString();
-
-      await this.bookingPaymentService.releaseFunds(id, photographerUserId);
+      const photographerUserId = this._getUserId(booking.photographerId);
+      await this._bookingPaymentService.releaseFunds(id, photographerUserId);
     }
 
     booking.status = BookingStatus.COMPLETED;
@@ -261,9 +267,9 @@ export class BookingService implements IBookingService {
     id: string,
     userId: string,
     reason?: string,
-    isEmergency?: boolean,
+    _isEmergency?: boolean,
   ): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
     if (booking.status === BookingStatus.CANCELLED || booking.status === BookingStatus.COMPLETED) {
@@ -275,15 +281,11 @@ export class BookingService implements IBookingService {
       let isPhotographer = false;
 
       if (booking.userId) {
-        isUser = (booking.userId as any)._id
-          ? (booking.userId as any)._id.toString() === userId.toString()
-          : booking.userId.toString() === userId.toString();
+        isUser = this._getUserId(booking.userId) === userId.toString();
       }
 
       if (booking.photographerId) {
-        isPhotographer = (booking.photographerId as any)._id
-          ? (booking.photographerId as any)._id.toString() === userId.toString()
-          : booking.photographerId.toString() === userId.toString();
+        isPhotographer = this._getUserId(booking.photographerId) === userId.toString();
       }
 
       if (!isUser && !isPhotographer) {
@@ -291,54 +293,51 @@ export class BookingService implements IBookingService {
       }
     }
 
-    await this.bookingPaymentService.processCancellation(
-      booking,
-      userId,
-    );
+    await this._bookingPaymentService.processCancellation(booking, userId);
     booking.status = BookingStatus.CANCELLED;
     const savedBooking = await booking.save();
 
-    
     try {
       const cancellingUserId = userId.toString();
-      const isPhotographer = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString() === cancellingUserId
-        : booking.photographerId.toString() === cancellingUserId;
+      const isPhotographer = this._getUserId(booking.photographerId) === cancellingUserId;
 
       const recipientId = isPhotographer
-        ? ((booking.userId as any)._id ? (booking.userId as any)._id.toString() : booking.userId.toString())
-        : ((booking.photographerId as any)._id ? (booking.photographerId as any)._id.toString() : booking.photographerId.toString());
+        ? this._getUserId(booking.userId)
+        : this._getUserId(booking.photographerId);
 
-      await this.messageService.sendMessage(
+      await this._messageService.sendMessage(
         cancellingUserId,
         recipientId,
-        `The booking for ${new Date(booking.eventDate).toDateString()} has been cancelled. Reason: ${reason || "Not specified"}`
+        `The booking for ${new Date(booking.eventDate).toDateString()} has been cancelled. Reason: ${reason || "Not specified"}`,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[BookingService] Failed to send cancellation message:", error);
     }
 
     try {
-      const photographerId = (booking.photographerId as any)._id
-        ? (booking.photographerId as any)._id.toString()
-        : booking.photographerId.toString();
-
-      await this.availabilityService.deleteAvailability(photographerId, booking.eventDate);
-    } catch (error) {
-      console.warn(`[BookingService] Failed to clear availability for cancelled booking ${id}:`, error);
+      const photographerId = this._getUserId(booking.photographerId);
+      await this._availabilityService.setAvailability(photographerId, {
+        date: booking.eventDate,
+        isFullDayAvailable: true,
+        slots: []
+      } as SetAvailabilityDto);
+    } catch (error: unknown) {
+      console.warn(
+        `[BookingService] Failed to reset availability for cancelled booking ${id}:`,
+        error,
+      );
     }
 
     return savedBooking;
   }
   async startWork(id: string): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
     if (
       booking.status !== BookingStatus.ACCEPTED &&
       booking.status !== BookingStatus.WAITING_FOR_DEPOSIT
     ) {
-
       if (
         booking.paymentStatus !== PaymentStatus.DEPOSIT_PAID &&
         booking.paymentStatus !== PaymentStatus.FULL_PAID
@@ -353,7 +352,7 @@ export class BookingService implements IBookingService {
   }
 
   async endWork(id: string): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
     if (booking.status !== BookingStatus.WORK_STARTED) {
@@ -362,15 +361,11 @@ export class BookingService implements IBookingService {
 
     booking.status = BookingStatus.WORK_ENDED_PENDING;
 
-
-
-
-
     return await booking.save();
   }
 
   async confirmEndWork(id: string): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) throw new Error("Booking not found");
 
     if (booking.status !== BookingStatus.WORK_ENDED_PENDING) {
@@ -384,13 +379,15 @@ export class BookingService implements IBookingService {
 
   async deliverWork(id: string, deliveryLink: string): Promise<IBooking | null> {
     console.log(`[BookingService] deliverWork called for ${id}`);
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) {
       console.error(`[BookingService] Booking not found: ${id}`);
       throw new Error("Booking not found");
     }
 
-    console.log(`[BookingService] Booking found: ${booking._id}, Status: ${booking.status}, PayStatus: ${booking.paymentStatus}`);
+    console.log(
+      `[BookingService] Booking found: ${booking._id}, Status: ${booking.status}, PayStatus: ${booking.paymentStatus}`,
+    );
 
     if (!booking.photographerId) {
       console.error(`[BookingService] Photographer info missing for ${id}`);
@@ -411,17 +408,16 @@ export class BookingService implements IBookingService {
       throw new Error("Delivery link is required");
     }
 
-
     booking.status = BookingStatus.WORK_DELIVERED;
     booking.deliveryWorkLink = deliveryLink;
     const saved = await booking.save();
-    console.log(`[BookingService] deliverWork saved successfully`);
+    console.log("[BookingService] deliverWork saved successfully");
     return saved;
   }
 
   async confirmWorkDelivery(id: string): Promise<IBooking | null> {
     console.log(`[BookingService] confirmWorkDelivery called for ${id}`);
-    const booking = await this.bookingRepository.findById(id);
+    const booking = await this._bookingRepository.findById(id);
     if (!booking) {
       console.error(`[BookingService] Booking not found: ${id}`);
       throw new Error("Booking not found");
@@ -433,21 +429,23 @@ export class BookingService implements IBookingService {
     }
 
     if (booking.paymentStatus !== PaymentStatus.FULL_PAID) {
-      console.error(`[BookingService] Invalid payment status for confirmDelivery: ${booking.paymentStatus}`);
+      console.error(
+        `[BookingService] Invalid payment status for confirmDelivery: ${booking.paymentStatus}`,
+      );
       throw new Error("Full payment required before completing booking");
     }
 
-    const photographerId = (booking.photographerId as any)._id
-      ? (booking.photographerId as any)._id.toString()
-      : booking.photographerId?.toString();
+    const photographerId = booking.photographerId ? this._getUserId(booking.photographerId) : null;
 
     if (!photographerId) {
       console.error(`[BookingService] Photographer ID missing or invalid for booking ${id}`);
       throw new Error("Photographer information is missing");
     }
 
-    console.log(`[BookingService] Releasing funds for booking ${id} to photographer ${photographerId}`);
-    await this.bookingPaymentService.releaseFunds(id, photographerId);
+    console.log(
+      `[BookingService] Releasing funds for booking ${id} to photographer ${photographerId}`,
+    );
+    await this._bookingPaymentService.releaseFunds(id, photographerId);
 
     booking.status = BookingStatus.COMPLETED;
     const saved = await booking.save();
@@ -461,23 +459,24 @@ export class BookingService implements IBookingService {
     userId: string,
   ): Promise<IBooking | null> {
     console.log(`[BookingService] requestReschedule called for booking ${bookingId}`);
-    console.log(`[BookingService] Data received:`, { newDate: data.newDate, newStartTime: data.newStartTime, reason: data.reason });
+    console.log("[BookingService] Data received:", {
+      newDate: data.newDate,
+      newStartTime: data.newStartTime,
+      reason: data.reason,
+    });
 
-    const booking = await this.bookingRepository.findById(bookingId);
+    const booking = await this._bookingRepository.findById(bookingId);
     if (!booking) throw new Error("Booking not found");
 
     console.log(`[BookingService] Booking found. Current eventDate: ${booking.eventDate}`);
-    console.log(`[BookingService] Existing reschedule request:`, booking.rescheduleRequest);
+    console.log("[BookingService] Existing reschedule request:", booking.rescheduleRequest);
 
-    const bookerId = (booking.userId as any)._id
-      ? (booking.userId as any)._id.toString()
-      : booking.userId.toString();
+    const bookerId = this._getUserId(booking.userId);
 
     if (bookerId !== userId.toString()) {
       throw new Error("Unauthorized: Only the booker can request rescheduling");
     }
 
-    
     const isUpdatingExistingRequest = booking.rescheduleRequest?.status === "pending";
     if (isUpdatingExistingRequest) {
       console.log("[BookingService] Updating existing pending reschedule request");
@@ -489,46 +488,55 @@ export class BookingService implements IBookingService {
     const now = new Date();
     const diffHours = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-    console.log(`[BookingService] Time check - Event: ${eventDate}, Now: ${now}, Diff hours: ${diffHours}`);
+    console.log(
+      `[BookingService] Time check - Event: ${eventDate}, Now: ${now}, Diff hours: ${diffHours}`,
+    );
 
     if (diffHours < 24) {
-      console.log(`[BookingService] FAILED: Cannot reschedule within 24 hours`);
+      console.log("[BookingService] FAILED: Cannot reschedule within 24 hours");
       throw new Error("Cannot reschedule within 24 hours of the event.");
     }
 
-    
     const requestedDate = new Date(data.newDate);
-    const currentEventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-    const requestedDateOnly = new Date(requestedDate.getFullYear(), requestedDate.getMonth(), requestedDate.getDate());
+    const currentEventDateOnly = new Date(
+      eventDate.getFullYear(),
+      eventDate.getMonth(),
+      eventDate.getDate(),
+    );
+    const requestedDateOnly = new Date(
+      requestedDate.getFullYear(),
+      requestedDate.getMonth(),
+      requestedDate.getDate(),
+    );
 
     if (currentEventDateOnly.getTime() === requestedDateOnly.getTime()) {
-      console.log(`[BookingService] FAILED: Cannot reschedule to the same date`);
+      console.log("[BookingService] FAILED: Cannot reschedule to the same date");
       throw new Error("Cannot reschedule to the same date. Please select a different date.");
     }
 
-    const photographerId = (booking.photographerId as any)._id
-      ? (booking.photographerId as any)._id.toString()
-      : (booking.photographerId as any).toString();
+    const photographerId = this._getUserId(booking.photographerId);
 
-    console.log(`[BookingService] Checking availability for photographer ${photographerId} on ${data.newDate}`);
+    console.log(
+      `[BookingService] Checking availability for photographer ${photographerId} on ${data.newDate}`,
+    );
 
-    const availability = await this.availabilityService.getAvailability(
+    const availability = await this._availabilityService.getAvailability(
       photographerId,
       new Date(data.newDate),
       new Date(data.newDate),
     );
 
-    console.log(`[BookingService] Availability response:`, availability);
+    console.log("[BookingService] Availability response:", availability);
 
     if (availability.length > 0) {
       const dayAvail = availability[0];
 
       if (!dayAvail.isFullDayAvailable && dayAvail.slots.length === 0) {
-        console.log(`[BookingService] FAILED: Selected date is not available`);
+        console.log("[BookingService] FAILED: Selected date is not available");
         throw new Error("Selected date is not available.");
       }
 
-      console.log(`[BookingService] Date is available`);
+      console.log("[BookingService] Date is available");
     }
 
     booking.rescheduleRequest = {
@@ -539,17 +547,29 @@ export class BookingService implements IBookingService {
       createdAt: isUpdatingExistingRequest ? booking.rescheduleRequest!.createdAt : new Date(),
     };
 
-    console.log(`[BookingService] Saving reschedule request...`);
+    console.log("[BookingService] Saving reschedule request...");
     await booking.save();
-    console.log(`[BookingService] Reschedule request saved successfully`);
+    console.log("[BookingService] Reschedule request saved successfully");
 
     try {
-      const photographerEmail = (booking.photographerId as any).email;
-      const photographerName = (booking.photographerId as any).name;
-      const clientName = (booking.userId as any).name;
+      const photographer = booking.photographerId as unknown;
+      const user = booking.userId as unknown;
+
+      let photographerEmail = "";
+      let photographerName = "";
+      let clientName = "";
+
+      if (this._isPopulatedUser(photographer)) {
+        photographerEmail = photographer.email;
+        photographerName = photographer.name;
+      }
+
+      if (this._isPopulatedUser(user)) {
+        clientName = user.name;
+      }
 
       if (photographerEmail) {
-        await this.emailService.sendMail(
+        await this._emailService.sendMail(
           photographerEmail,
           "New Reschedule Request",
           `Client ${clientName} requested to reschedule.`,
@@ -561,10 +581,10 @@ export class BookingService implements IBookingService {
              <p><strong>New Time:</strong> ${data.newStartTime}</p>
              <p><strong>Reason:</strong> ${data.reason}</p>
              <p>Please log in to your dashboard to review and respond.</p>
-           </div>`
+           </div>`,
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to send reschedule request email:", error);
     }
 
@@ -576,24 +596,24 @@ export class BookingService implements IBookingService {
     data: BookingRescheduleResponseDTO,
     userId: string,
   ): Promise<IBooking | null> {
-    const booking = await this.bookingRepository.findById(bookingId);
+    const booking = await this._bookingRepository.findById(bookingId);
     if (!booking) throw new Error("Booking not found");
 
-    const photographerId = (booking.photographerId as any)._id
-      ? (booking.photographerId as any)._id.toString()
-      : booking.photographerId.toString();
+    const photographerId = this._getUserId(booking.photographerId);
 
     if (photographerId !== userId.toString()) {
       throw new Error("Unauthorized: Only the photographer can respond to rescheduling");
     }
 
-    if (!booking.rescheduleRequest || booking.rescheduleRequest.status !== "pending") {
+    if (booking.rescheduleRequest?.status !== "pending") {
       throw new Error("No pending reschedule request");
     }
 
     const eventDate = new Date(booking.eventDate);
     if (new Date() > eventDate) {
-      booking.rescheduleRequest.status = "expired";
+      if (booking.rescheduleRequest) {
+        booking.rescheduleRequest.status = "expired";
+      }
       await booking.save();
       throw new Error("Request expired");
     }
@@ -610,17 +630,14 @@ export class BookingService implements IBookingService {
       booking.rescheduleRequest.status = "accepted";
 
       try {
-
-        await this.availabilityService.setAvailability(photographerId, {
+        await this._availabilityService.setAvailability(photographerId, {
           date: oldDate,
           isFullDayAvailable: true,
-          slots: []
+          slots: [],
         } as SetAvailabilityDto);
 
-
-        await this.availabilityService.markDateAsBooked(photographerId, newDate);
-
-      } catch (error) {
+        await this._availabilityService.markDateAsBooked(photographerId, newDate);
+      } catch (error: unknown) {
         console.error("Failed to update availability:", error);
       }
     }
@@ -628,14 +645,26 @@ export class BookingService implements IBookingService {
     await booking.save();
 
     try {
+      const user = booking.userId as unknown;
+      const photographer = booking.photographerId as unknown;
 
-      const userEmail = (booking.userId as any).email;
-      const userName = (booking.userId as any).name;
-      const photographerName = (booking.photographerId as any).name;
+      let userEmail = "";
+      let userName = "";
+      let photographerName = "";
+
+      if (this._isPopulatedUser(user)) {
+        userEmail = user.email;
+        userName = user.name;
+      }
+
+      if (this._isPopulatedUser(photographer)) {
+        photographerName = photographer.name;
+      }
+
       const status = data.decision === "rejected" ? "Rejected" : "Accepted";
 
       if (userEmail) {
-        await this.emailService.sendMail(
+        await this._emailService.sendMail(
           userEmail,
           `Reschedule Request ${status}`,
           `Your reschedule request has been ${status.toLowerCase()}.`,
@@ -648,17 +677,14 @@ export class BookingService implements IBookingService {
         );
       }
 
+      const bookerId = this._getUserId(booking.userId);
 
-      const bookerId = (booking.userId as any)._id
-        ? (booking.userId as any)._id.toString()
-        : booking.userId.toString();
-
-      await this.messageService.sendSystemMessage(
+      await this._messageService.sendSystemMessage(
         bookerId,
         `Your reschedule request for ${new Date(booking.eventDate).toDateString()} has been ${data.decision.toUpperCase()}.`,
         photographerId,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to notify user:", error);
     }
 

@@ -45,7 +45,6 @@ const PhotographerManagement: React.FC = () => {
 
     const photographers = data?.photographers || [];
 
-
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchTerm);
@@ -60,7 +59,7 @@ const PhotographerManagement: React.FC = () => {
             try {
                 await blockPhotographer({ id });
                 toast.success("Photographer blocked successfully");
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error("Failed to block photographer:", error);
                 toast.error("Failed to block photographer");
             }
@@ -72,7 +71,7 @@ const PhotographerManagement: React.FC = () => {
             try {
                 await unblockPhotographer(id);
                 toast.success("Photographer unblocked successfully");
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error("Failed to unblock photographer:", error);
                 toast.error("Failed to unblock photographer");
             }

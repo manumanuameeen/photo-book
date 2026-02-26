@@ -1,5 +1,6 @@
 import apiClient from "../apiClient";
 import type { IUser } from "../../interfaces/user/Iuser";
+import { API_ROUTES } from "../../constants/apiRoutes";
 
 export interface UpdateProfileData {
     name?: string;
@@ -18,23 +19,23 @@ export interface ChangePasswordData {
 
 export const userApi = {
     getProfile: async (): Promise<IUser> => {
-        const response = await apiClient.get('/user/profile');
+        const response = await apiClient.get(API_ROUTES.USER.PROFILE);
         return response.data.data;
     },
 
     updateProfile: async (data: UpdateProfileData): Promise<IUser> => {
-        const response = await apiClient.post('/user/profile', data);
+        const response = await apiClient.post(API_ROUTES.USER.PROFILE, data);
         return response.data.data;
     },
 
     changePassword: async (data: ChangePasswordData): Promise<void> => {
-        await apiClient.post('/user/change-password', data);
+        await apiClient.post(API_ROUTES.USER.CHANGE_PASSWORD, data);
     },
 
     uploadProfileImage: async (file: File): Promise<{ imageUrl: string }> => {
         const formData = new FormData();
         formData.append("image", file);
-        const response = await apiClient.post('/user/profile-image', formData, {
+        const response = await apiClient.post(API_ROUTES.USER.PROFILE_IMAGE, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
@@ -43,7 +44,7 @@ export const userApi = {
     },
 
     verifyOtp: async (otp: string): Promise<boolean> => {
-        const response = await apiClient.post('/user/verify-otp', { otp });
+        const response = await apiClient.post(API_ROUTES.USER.VERIFY_OTP, { otp });
         return response.data.success;
     }
 };

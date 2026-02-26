@@ -1,10 +1,9 @@
 
 
-import React, { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Info, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, ChevronLeft, ChevronRight, Info, Loader2, Calendar } from 'lucide-react';
 import { userPhotographerApi } from '../../../services/api/userPhotographerApi';
 import { toast } from 'sonner';
-
 
 interface CheckAvailabilityModalProps {
     isOpen: boolean;
@@ -17,7 +16,7 @@ interface CheckAvailabilityModalProps {
 interface AvailabilitySlot {
     date: string;
     isFullDayAvailable: boolean;
-    slots: any[];
+    slots: { startTime: string; endTime: string; isAvailable: boolean }[];
 }
 
 export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
@@ -32,13 +31,10 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
     const [availability, setAvailability] = useState<AvailabilitySlot[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        if (isOpen && photographerId) {
-            fetchAvailability();
+    const fetchAvailability = useCallback(async () => {
+        if (!isOpen || !photographerId) {
+            return;
         }
-    }, [isOpen, currentDate, photographerId]);
-
-    const fetchAvailability = async () => {
         setIsLoading(true);
         try {
             const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -49,14 +45,21 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
                 start.toISOString(),
                 end.toISOString()
             );
+
             setAvailability(data);
         } catch (error) {
-            console.error("Failed to fetch availability", error);
-            toast.error("Could not load availability.");
+            console.error(error);
+            toast.error("Failed to load availability");
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [currentDate, photographerId, isOpen]);
+
+    useEffect(() => {
+        if (isOpen && photographerId) {
+            fetchAvailability();
+        }
+    }, [fetchAvailability, isOpen, photographerId]);
 
     const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -73,7 +76,6 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
         const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
         const dateStr = checkDate.toISOString().split('T')[0];
 
-        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         if (checkDate <= today) return 'unavailable';
@@ -92,7 +94,6 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
 
-                {}
                 <div className="p-6 md:p-8 flex-1 border-r border-gray-100 overflow-y-auto">
                     <button onClick={onClose} className="md:hidden mb-4 text-gray-500"><X /></button>
 
@@ -152,7 +153,6 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
                     </div>
                 </div>
 
-                {}
                 <div className="w-full md:w-80 bg-white p-6 md:p-8 flex flex-col h-full overflow-y-auto">
                     <div className="flex justify-between items-start mb-6">
                         <div>
@@ -212,9 +212,18 @@ export const CheckAvailabilityModal: React.FC<CheckAvailabilityModalProps> = ({
                         <button className="w-full text-xs text-green-700 underline hover:text-green-800 text-center">
                             Need a custom time? Contact Photographer
                         </button>
+
+                        <div className="pt-4 border-t border-gray-100">
+                            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest text-center mb-2">Automated Booking</p>
+                            <button
+                                onClick={() => window.open('https://www.picktime.com/YOUR_PICKTIME_ID', '_blank')}
+                                className="w-full bg-blue-50 text-blue-700 font-bold py-2 rounded-lg hover:bg-blue-100 transition-all text-sm flex items-center justify-center gap-2">
+                                <Calendar size={16} />
+                                Schedule via Picktime
+                            </button>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );

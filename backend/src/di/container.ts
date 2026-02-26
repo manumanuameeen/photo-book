@@ -9,6 +9,7 @@ import { TokenBlacklistService } from "../services/token/tokenBalcklist.service.
 import { UserService } from "../services/user/user.service/user.service.ts";
 import { PhotographerService } from "../services/photographer/photograher.service.ts";
 import { AdminPhotographerService } from "../services/admin/AdminPhotographerService.ts";
+import { IAdminPhotographerService } from "../interfaces/services/IAdminPhotographerService.ts";
 import { S3FileService } from "../services/external/S3FileService.ts";
 import { AuthController } from "../controller/auth.controller.ts";
 import { AdminController } from "../controller/admin/adminUser.controller.ts";
@@ -61,16 +62,36 @@ import { AdminRentalController } from "../controller/admin/AdminRentalController
 import { AdminDashboardService } from "../services/admin/AdminDashboardService.ts";
 import { AdminDashboardController } from "../controller/admin/AdminDashboardController.ts";
 import { RentalController } from "../controller/RentalController.ts";
+import { IReviewRepository } from "../interfaces/repositories/IReviewRepository.ts";
+import { IReviewService } from "../interfaces/services/IReviewService.ts";
+import { IHelpRepository } from "../interfaces/repositories/IHelpRepository.ts";
+import { IHelpService } from "../interfaces/services/IHelpService.ts";
 import { ReviewRepository } from "../repositories/implementaion/ReviewRepository.ts";
 import { ReviewService } from "../services/implementaion/ReviewService.ts";
 import { ReviewController } from "../controller/ReviewController.ts";
 import { IReviewController } from "../interfaces/controllers/IReviewController.ts";
+import { HelpRepository } from "../repositories/implementaion/HelpRepository.ts";
+import { HelpService } from "../services/implementaion/HelpService.ts";
+import { HelpController } from "../controller/HelpController.ts";
+import { IHelpController } from "../interfaces/controllers/IHelpController.ts";
 import { IEmailService } from "../interfaces/services/IEmailService.ts";
 import { ReportService } from "../services/implementaion/ReportService.ts";
 import { ReportController } from "../controller/ReportController.ts";
+import { ReportRepository } from "../repositories/implementaion/ReportRepository.ts";
+import { ReportCategoryRepository } from "../repositories/implementaion/ReportCategoryRepository.ts";
+import { ReportCategoryService } from "../services/implementaion/ReportCategoryService.ts";
+import { ReportCategoryController } from "../controller/ReportCategoryController.ts";
 import { RuleRepository } from "../repositories/implementaion/admin/RuleRepository.ts";
 import { RuleService } from "../services/implementaion/admin/RuleService.ts";
 import { RuleController } from "../controller/ruleController.ts";
+import { IRentalAvailabilityService } from "../interfaces/services/rental/IRentalAvailabilityService.ts";
+import { IRentalFinanceService } from "../interfaces/services/rental/IRentalFinanceService.ts";
+import { HelpTopicRequestRepository } from "../repositories/implementaion/HelpTopicRequestRepository.ts";
+import { HelpTopicRequestService } from "../services/implementaion/HelpTopicRequestService.ts";
+import { HelpTopicRequestController } from "../controller/HelpTopicRequestController.ts";
+import { IHelpTopicRequestRepository } from "../interfaces/repositories/IHelpTopicRequestRepository.ts";
+import { IHelpTopicRequestService } from "../interfaces/services/IHelpTopicRequestService.ts";
+import { IHelpTopicRequestController } from "../interfaces/controllers/IHelpTopicRequestController.ts";
 
 class DIContainer {
   private _userRepository?: UserRepository;
@@ -85,12 +106,13 @@ class DIContainer {
   private _walletRepository?: WalletRepository;
   private _rentalRepository?: RentalRepository;
   private _rentalService?: RentalService;
-  private _rentalAvailabilityService?: RentalAvailabilityService;
-  private _rentalFinanceService?: RentalFinanceService;
+  private _rentalAvailabilityService?: IRentalAvailabilityService;
+  private _rentalFinanceService?: IRentalFinanceService;
 
   private _rentalItemRepository?: RentalItemRepository;
   private _rentalOrderRepository?: RentalOrderRepository;
   private _ruleRepository?: RuleRepository;
+  private _helpTopicRequestRepository?: IHelpTopicRequestRepository;
 
   private _pdfService?: PdfService;
   private _emailService?: NodeMailerService;
@@ -114,12 +136,12 @@ class DIContainer {
   private _bookingPaymentService?: BookingPaymentService;
   private _paymentService?: PaymentService;
 
-
   private _rentalItemService?: RentalItemService;
   private _rentalOrderService?: RentalOrderService;
   private _rentalPaymentService?: RentalPaymentService;
   private _adminRentalService?: AdminRentalService;
   private _ruleService?: RuleService;
+  private _helpTopicRequestService?: IHelpTopicRequestService;
 
   private _authController?: AuthController;
   private _adminController?: AdminController;
@@ -128,10 +150,11 @@ class DIContainer {
   private _adminPhotographerController?: AdminPhotographerController;
   private _packageAvailabilityController?: PackageAvailabilityController;
   private _portfolioController?: IPortfolioController;
-  private _scheduleService?: any;
-  private _scheduleController?: any;
-  private _reviewRepository?: any;
-  private _reviewService?: any;
+  private _helpRepository?: IHelpRepository;
+  private _helpService?: IHelpService;
+  private _helpController?: IHelpController;
+  private _reviewRepository?: IReviewRepository;
+  private _reviewService?: IReviewService;
   private _reviewController?: IReviewController;
   private _bookingController?: IBookingController;
   private _messageController?: IMessageController;
@@ -139,15 +162,19 @@ class DIContainer {
   private _paymentController?: PaymentController;
   private _categoryController?: ICategoryController;
 
-
   private _rentalController?: RentalController;
   private _adminRentalController?: AdminRentalController;
 
+  private _reportRepository?: ReportRepository;
   private _reportService?: ReportService;
   private _reportController?: ReportController;
+  private _reportCategoryRepository?: ReportCategoryRepository;
+  private _reportCategoryService?: ReportCategoryService;
+  private _reportCategoryController?: ReportCategoryController;
   private _ruleController?: RuleController;
   private _adminDashboardService?: AdminDashboardService;
   private _adminDashboardController?: AdminDashboardController;
+  private _helpTopicRequestController?: IHelpTopicRequestController;
 
   get bookingQueueService(): BookingQueueService {
     this._bookingQueueService ??= new BookingQueueService();
@@ -219,6 +246,16 @@ class DIContainer {
     return this._rentalOrderRepository;
   }
 
+  get helpTopicRequestRepository(): IHelpTopicRequestRepository {
+    this._helpTopicRequestRepository ??= new HelpTopicRequestRepository();
+    return this._helpTopicRequestRepository;
+  }
+
+  get helpRepository(): IHelpRepository {
+    this._helpRepository ??= new HelpRepository();
+    return this._helpRepository;
+  }
+
   get pdfService(): PdfService {
     this._pdfService ??= new PdfService();
     return this._pdfService;
@@ -272,7 +309,7 @@ class DIContainer {
     return this._photographerService;
   }
 
-  get adminPhotographerService(): AdminPhotographerService {
+  get adminPhotographerService(): IAdminPhotographerService {
     this._adminPhotographerService ??= new AdminPhotographerService(
       this.photographerRepository,
       this.userRepository,
@@ -356,6 +393,16 @@ class DIContainer {
       this.rentalOrderRepository,
     );
     return this._adminRentalService;
+  }
+
+  get helpService(): IHelpService {
+    this._helpService ??= new HelpService(this.helpRepository);
+    return this._helpService;
+  }
+
+  get helpTopicRequestService(): IHelpTopicRequestService {
+    this._helpTopicRequestService ??= new HelpTopicRequestService(this.helpTopicRequestRepository);
+    return this._helpTopicRequestService;
   }
 
   get bookingPaymentService(): BookingPaymentService {
@@ -459,12 +506,12 @@ class DIContainer {
     return this._paymentController;
   }
 
-  get rentalAvailabilityService(): RentalAvailabilityService {
+  get rentalAvailabilityService(): IRentalAvailabilityService {
     this._rentalAvailabilityService ??= new RentalAvailabilityService(this.rentalRepository);
     return this._rentalAvailabilityService;
   }
 
-  get rentalFinanceService(): RentalFinanceService {
+  get rentalFinanceService(): IRentalFinanceService {
     this._rentalFinanceService ??= new RentalFinanceService(
       this.rentalRepository,
       this.stripeService,
@@ -489,10 +536,7 @@ class DIContainer {
   }
 
   get rentalController(): RentalController {
-    this._rentalController ??= new RentalController(
-      this.rentalService,
-      this.fileService,
-    );
+    this._rentalController ??= new RentalController(this.rentalService, this.fileService);
     return this._rentalController;
   }
 
@@ -513,12 +557,12 @@ class DIContainer {
     return this._paymentService;
   }
 
-  get reviewRepository(): ReviewRepository {
+  get reviewRepository(): IReviewRepository {
     this._reviewRepository ??= new ReviewRepository();
     return this._reviewRepository;
   }
 
-  get reviewService(): ReviewService {
+  get reviewService(): IReviewService {
     this._reviewService ??= new ReviewService(this.reviewRepository);
     return this._reviewService;
   }
@@ -528,14 +572,47 @@ class DIContainer {
     return this._reviewController;
   }
 
+  get helpController(): IHelpController {
+    this._helpController ??= new HelpController(this.helpService);
+    return this._helpController;
+  }
+
+  get reportRepository(): ReportRepository {
+    this._reportRepository ??= new ReportRepository();
+    return this._reportRepository;
+  }
+
+  get reportCategoryRepository(): ReportCategoryRepository {
+    this._reportCategoryRepository ??= new ReportCategoryRepository();
+    return this._reportCategoryRepository;
+  }
+
   get reportService(): ReportService {
-    this._reportService ??= new ReportService(this.messageService);
+    this._reportService ??= new ReportService(
+      this.messageService,
+      this.reportRepository,
+      this.fileService,
+    );
     return this._reportService;
   }
 
   get reportController(): ReportController {
     this._reportController ??= new ReportController(this.reportService);
     return this._reportController;
+  }
+
+  get reportCategoryService(): ReportCategoryService {
+    this._reportCategoryService ??= new ReportCategoryService(
+      this.reportCategoryRepository,
+    );
+    return this._reportCategoryService;
+  }
+
+  get reportCategoryController(): ReportCategoryController {
+    this._reportCategoryController ??= new ReportCategoryController(
+      this.reportCategoryService,
+    );
+    return this._reportCategoryController;
   }
 
   get ruleRepository(): RuleRepository {
@@ -561,6 +638,11 @@ class DIContainer {
   get adminDashboardController(): AdminDashboardController {
     this._adminDashboardController ??= new AdminDashboardController(this.adminDashboardService);
     return this._adminDashboardController;
+  }
+
+  get helpTopicRequestController(): IHelpTopicRequestController {
+    this._helpTopicRequestController ??= new HelpTopicRequestController(this.helpTopicRequestService);
+    return this._helpTopicRequestController;
   }
 }
 

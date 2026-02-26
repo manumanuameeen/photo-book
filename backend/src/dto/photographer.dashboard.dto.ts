@@ -10,6 +10,13 @@ export const PhotographerDashboardStatsSchema = z.object({
   sessions: z.object({
     total: z.number(),
     newRequests: z.number(),
+    totalCustomers: z.number(),
+    packagePopularity: z.array(
+      z.object({
+        name: z.string(),
+        count: z.number(),
+      })
+    ),
   }),
   reviews: z.object({
     averageRating: z.number(),
@@ -21,7 +28,7 @@ export const PhotographerDashboardStatsSchema = z.object({
         comment: z.string(),
         rating: z.number(),
         createdAt: z.date(),
-      }),
+      })
     ),
   }),
   pendingRequests: z.array(

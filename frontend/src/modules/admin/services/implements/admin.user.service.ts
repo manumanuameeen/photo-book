@@ -8,13 +8,11 @@ import { AdminUserRepository } from "../../repositories/implementation/adminUser
 
  class AdminUserServiceClass implements IAdminUserService{
 
-
     private adminUserRepository: IAdminUserRepo
 
     constructor(adminUserRespo:IAdminUserRepo){
         this.adminUserRepository = adminUserRespo;
     }
-
 
     async getalluser(params: IPagination): Promise<IUserListResponce> {
         return this.adminUserRepository.getAllUsers(params);
@@ -33,6 +31,5 @@ import { AdminUserRepository } from "../../repositories/implementation/adminUser
     }
 
 }
-
 
 export const AdminUserService = new AdminUserServiceClass(AdminUserRepository)

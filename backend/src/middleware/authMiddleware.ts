@@ -5,7 +5,7 @@ import type { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 dotenv.config();
 
-interface JWTPayload {
+export interface JWTPayload {
   userId: string;
   role: string;
   email: string;
@@ -17,7 +17,11 @@ export interface AuthRequest extends Request {
   userId?: string;
 }
 
-export const verifyAccessToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const verifyAccessToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void | Response> => {
   try {
     const token = req.cookies.accessToken;
 
@@ -47,18 +51,19 @@ export const verifyAccessToken = async (req: AuthRequest, res: Response, next: N
       }
     }
 
-    req.user = decoded;
-    req.role = decoded.role;
-    req.userId = decoded.userId;
+    (req as AuthRequest).user = decoded;
+    (req as AuthRequest).role = decoded.role;
+    (req as AuthRequest).userId = decoded.userId;
 
     next();
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     const message =
-      error.name === "TokenExpiredError"
+      err.name === "TokenExpiredError"
         ? "Session expired. Please refresh your token."
         : "Invalid authentication token.";
 
-    console.error(`❌ [Auth Error]: ${message}`, error.message);
+    console.error(`❌ [Auth Error]: ${message}`, err.message);
 
     return res.status(HttpStatus.UNAUTHORIZED).json({
       success: false,
@@ -68,13 +73,33 @@ export const verifyAccessToken = async (req: AuthRequest, res: Response, next: N
   }
 };
 
-export const verifyAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  if (req.role !== 'admin') {
+export const verifyAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  if ((req as AuthRequest).role !== "admin") {
     return res.status(HttpStatus.FORBIDDEN).json({
       success: false,
       message: "Access denied. Admin privileges required.",
-      code: "ACCESS_DENIED"
+      code: "ACCESS_DENIED",
     });
   }
   next();
+};
+
+export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return next();
+    }
+
+    const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
+    (req as AuthRequest).user = decoded;
+    (req as AuthRequest).role = decoded.role;
+    (req as AuthRequest).userId = decoded.userId;
+
+    next();
+  } catch {
+    
+    next();
+  }
 };

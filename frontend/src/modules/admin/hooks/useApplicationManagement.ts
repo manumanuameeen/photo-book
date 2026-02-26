@@ -2,16 +2,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminPhotographerApi } from "../../../services/api/adminPhotographerApi";
 import type {
-    GetPhotographersParams,
-    PaginatedPhotographersResponse,
-    Photographer
+    GetPhotographersParams
 } from "../types/photographer.types";
 import { toast } from "sonner";
+import { getErrorMessage, type ApiError } from "../../../utils/errorhandler";
 
 export const useApplicationManagement = () => {
     const queryClient = useQueryClient();
 
-    
     const useApplications = (params: GetPhotographersParams) => {
         return useQuery({
             queryKey: ['applications', params],
@@ -26,7 +24,6 @@ export const useApplicationManagement = () => {
         });
     };
 
-    
     const useApplicationById = (id: string) => {
         return useQuery({
             queryKey: ['application', id],
@@ -39,7 +36,6 @@ export const useApplicationManagement = () => {
         });
     };
 
-    
     const approveApplicationMutation = useMutation({
         mutationFn: async ({ id, message }: { id: string; message: string }) => {
             await adminPhotographerApi.approveApplication(id, message);
@@ -49,13 +45,11 @@ export const useApplicationManagement = () => {
             queryClient.invalidateQueries({ queryKey: ['applications'] });
             queryClient.invalidateQueries({ queryKey: ['application'] });
         },
-        onError: (err: any) => {
-            const errorMessage = err?.response?.data?.message || "Failed to approve application";
-            toast.error(errorMessage);
+        onError: (err: ApiError) => {
+            toast.error(getErrorMessage(err));
         }
     });
 
-    
     const rejectApplicationMutation = useMutation({
         mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
             await adminPhotographerApi.rejectApplication(id, reason);
@@ -65,9 +59,8 @@ export const useApplicationManagement = () => {
             queryClient.invalidateQueries({ queryKey: ['applications'] });
             queryClient.invalidateQueries({ queryKey: ['application'] });
         },
-        onError: (err: any) => {
-            const errorMessage = err?.response?.data?.message || "Failed to reject application";
-            toast.error(errorMessage);
+        onError: (err: ApiError) => {
+            toast.error(getErrorMessage(err));
         }
     });
 

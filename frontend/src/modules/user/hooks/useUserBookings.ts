@@ -13,7 +13,7 @@ export const useUserBookings = (page: number = 1, limit: number = 10) => {
 export const useCancelBooking = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: bookingApi.cancelBooking,
+        mutationFn: (id: string) => bookingApi.cancelBooking(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["userBookings"] });
         },
@@ -30,8 +30,24 @@ export const useUserActions = () => {
             queryClient.invalidateQueries({ queryKey: ["userBookings"] });
             queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
         },
-        onError: (error: any) => {
-            toast.error(error?.response?.data?.message || "Failed to confirm work completion");
+        onError: (error: unknown) => {
+            console.error("Confirm End Work Error:", error);
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || "Failed to confirm work completion");
+        }
+    });
+
+    const cancelBookingMutation = useMutation({
+        mutationFn: ({ bookingId, reason, isEmergency }: { bookingId: string, reason?: string, isEmergency?: boolean }) =>
+            bookingApi.cancelBooking(bookingId, reason, isEmergency),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["userBookings"] });
+            queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
+        },
+        onError: (error: unknown) => {
+            console.error("Cancel Error:", error);
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || "Failed to cancel booking");
         }
     });
 
@@ -42,10 +58,25 @@ export const useUserActions = () => {
             queryClient.invalidateQueries({ queryKey: ["userBookings"] });
             queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
         },
-        onError: (error: any) => {
-            toast.error(error?.response?.data?.message || "Failed to confirm delivery");
+        onError: (err: unknown) => {
+            const error = err as { response?: { data?: { message?: string } } };
+            toast.error(error.response?.data?.message || "Failed to confirm delivery");
         }
     });
 
-    return { confirmEndWork, confirmDelivery };
+    const rescheduleMutation = useMutation({
+        mutationFn: ({ bookingId, date, time, reason }: { bookingId: string, date: string, time: string, reason: string }) =>
+            bookingApi.requestReschedule(bookingId, { newDate: new Date(date), newStartTime: time, reason }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-bookings'] });
+            toast.success("Reschedule request sent");
+        },
+        onError: (error: unknown) => {
+            console.error("Reschedule Error:", error);
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || "Failed to reschedule");
+        }
+    });
+
+    return { confirmEndWork, confirmDelivery, rescheduleMutation, cancelBookingMutation };
 };

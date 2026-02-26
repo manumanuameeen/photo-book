@@ -5,6 +5,7 @@ import { portfolioApi, type IPortfolioSection } from '../../../services/api/port
 import { toast } from 'sonner';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from '../../../constants/routes';
+import { getErrorMessage } from '../../../utils/errorhandler';
 
 const SectionCard = ({ section, onDelete, onSelect }: { section: IPortfolioSection, onDelete: (id: string) => void, onSelect: (section: IPortfolioSection) => void }) => {
     return (
@@ -151,7 +152,6 @@ const PortfolioManager = () => {
                 }
             }
 
-
             setSelectedSection(currentSectionState);
             setSections(sections.map(s => s._id === currentSectionState._id ? currentSectionState : s));
 
@@ -163,9 +163,9 @@ const PortfolioManager = () => {
                 toast.error("Failed to upload images", { id: toastId });
             }
 
-        } catch (error: any) {
+        } catch (error) {
             console.error(error);
-            toast.error("Error during upload process", { id: toastId });
+            toast.error(getErrorMessage(error), { id: toastId });
         }
     };
 

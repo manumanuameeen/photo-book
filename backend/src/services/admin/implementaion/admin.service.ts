@@ -7,25 +7,25 @@ import type {
 import type { IAdminRepository } from "../../../interfaces/repositories/IAdminRepository.ts";
 
 export class AdminServices implements IAdminService {
-  private readonly adminRepository: IAdminRepository;
+  private readonly _adminRepository: IAdminRepository;
 
   constructor(adminRepository: IAdminRepository) {
-    this.adminRepository = adminRepository;
+    this._adminRepository = adminRepository;
   }
 
   getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers> {
-    return this.adminRepository.getAllUser(query);
+    return this._adminRepository.getAllUser(query);
   }
 
   getUser(userId: string): Promise<IUserResponse | null> {
-    return this.adminRepository.getUser(userId);
+    return this._adminRepository.getUser(userId);
   }
 
   async blockUser(userId: string): Promise<IUserResponse | null> {
-    return this.adminRepository.blockUser(userId);
+    return this._adminRepository.blockUser(userId);
   }
 
   async unblockUser(userId: string): Promise<IUserResponse | null> {
-    return this.adminRepository.unblockUser(userId);
+    return this._adminRepository.unblockUser(userId);
   }
 }

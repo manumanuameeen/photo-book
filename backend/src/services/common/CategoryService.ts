@@ -26,18 +26,19 @@ export class CategoryService implements ICategoryService {
 
   async createCategory(name: string, type: string, description: string): Promise<ICategory> {
     const trimmedName = name.trim();
-    // Escape special characters for regex
-    const escapedName = trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    const regex = new RegExp(`^${escapedName}$`, 'i');
+    const escapedName = trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    const regex = new RegExp(`^${escapedName}$`, "i");
 
-    const existingCategory = await this._repository.findOne({ name: { $regex: regex } } as any);
+    const existingCategory = await this._repository.findOne({
+      name: { $regex: regex },
+    } as Record<string, unknown>);
     if (existingCategory) {
       throw new AppError(Messages.CATEGORY_ALREADY_EXISTS, HttpStatus.CONFLICT);
     }
 
     return await this._repository.create({
       name: trimmedName.toLowerCase(),
-      type,
+      type: type as CategoryType,
       description,
       isBlocked: false,
     });
@@ -52,7 +53,7 @@ export class CategoryService implements ICategoryService {
   ): Promise<ICategory> {
     return await this._repository.create({
       name,
-      type,
+      type: type as CategoryType,
       description,
       explanation,
       isBlocked: true,
@@ -104,13 +105,13 @@ export class CategoryService implements ICategoryService {
   async updateCategory(id: string, data: Partial<ICategory>): Promise<ICategory | null> {
     if (data.name) {
       const trimmedName = data.name.trim();
-      const escapedName = trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-      const regex = new RegExp(`^${escapedName}$`, 'i');
+      const escapedName = trimmedName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+      const regex = new RegExp(`^${escapedName}$`, "i");
 
       const existingCategory = await this._repository.findOne({
         name: { $regex: regex },
         _id: { $ne: id },
-      } as any);
+      } as Record<string, unknown>);
 
       if (existingCategory) {
         throw new AppError(Messages.CATEGORY_ALREADY_EXISTS, HttpStatus.CONFLICT);

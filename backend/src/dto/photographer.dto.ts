@@ -43,9 +43,19 @@ export class PhotographerResponseDto {
 }
 
 export interface IPaginatedPhotographerResponse {
-  photographers: any[]; 
+  photographers: PhotographerResponseDto[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface IPublicPhotographer {
+  id: string;
+  [key: string]: unknown;
+}
+
+export interface IPublicReview {
+  id: string;
+  [key: string]: unknown;
 }

@@ -68,7 +68,6 @@ export const Route = createFileRoute('/admin/__layout')({
         expires: Date.now() + 5 * 60 * 1000,
       };
       sessionStorage.setItem("auth-cache", JSON.stringify(cacheData));
-      
 
       return { user: data.data.user };
     } catch (error) {
@@ -86,12 +85,11 @@ export const Route = createFileRoute('/admin/__layout')({
 
   component: () => (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {}
+      
       <div className="flex-shrink-0 h-full">
         <AdminSidebar />
       </div>
 
-      {}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <AdminHeader />
         <main className="flex-1 overflow-y-auto p-6 scrollbar-hide">

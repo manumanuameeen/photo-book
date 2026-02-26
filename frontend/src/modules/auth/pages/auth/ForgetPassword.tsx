@@ -6,7 +6,6 @@ import { useForgetPassword } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 
-
 import { ROUTES } from '../../../../constants/routes';
 
 const Colors = {
@@ -32,8 +31,6 @@ const ForgotPassword: React.FC = () => {
       toast.error('Invalid email format.');
       return;
     }
-
-
 
     forgetPasswordMutation.mutate(
       { email: email.trim().toLowerCase() },
@@ -63,7 +60,6 @@ const ForgotPassword: React.FC = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
 
-        { }
         <div
           className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
           style={{ backgroundColor: Colors.darkGreen }}
@@ -82,7 +78,6 @@ const ForgotPassword: React.FC = () => {
           </div>
         </div>
 
-        { }
         <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
           <div className="flex items-center mb-4">
             <img

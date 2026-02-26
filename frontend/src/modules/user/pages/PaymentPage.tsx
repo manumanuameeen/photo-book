@@ -8,11 +8,20 @@ import { toast } from "sonner";
 import { ROUTES } from "../../../constants/routes";
 
 export function PaymentPage() {
-    const { id } = useParams({ strict: false });
+    const { id } = useParams({ strict: false }) as { id: string };
     const navigate = useNavigate();
     const { user } = useAuthStore();
 
-    const [booking, setBooking] = useState<any>(null);
+    interface BookingDetails {
+        _id: string;
+        packageDetails?: { name: string };
+        photographerId?: { name: string };
+        totalAmount: number;
+        depositeRequired: number;
+        paymentStatus?: 'pending' | 'deposit_paid' | 'full_paid' | 'refunded';
+    }
+
+    const [booking, setBooking] = useState<BookingDetails | null>(null);
     const [clientSecret, setClientSecret] = useState<string>("");
     const [loading, setLoading] = useState(true);
 
@@ -24,7 +33,7 @@ export function PaymentPage() {
                     bookingApi.getBookingDetails(id),
                     bookingApi.createPaymentIntent(id)
                 ]);
-                setBooking(bookingData);
+                setBooking(bookingData as unknown as BookingDetails);
                 setClientSecret(intentData.clientSecret);
             } catch (error) {
                 console.error("Failed to load booking or payment intent:", error);
@@ -49,7 +58,7 @@ export function PaymentPage() {
     }
 
     const handleSuccess = () => {
-        navigate({ to: ROUTES.USER.PAYMENT_SUCCESS } as any);
+        navigate({ to: ROUTES.USER.PAYMENT_SUCCESS });
     };
 
     return (
@@ -77,7 +86,7 @@ export function PaymentPage() {
                                 <span className="text-green-600">${booking.depositeRequired}</span>
                             </div>
 
-                            {booking.paymentStatus === 'DEPOSIT_PAID' ? (
+                            {booking.paymentStatus === 'deposit_paid' ? (
                                 <div className="text-center text-green-600 font-bold py-4 bg-green-50 rounded-lg">
                                     Deposit Already Paid!
                                 </div>

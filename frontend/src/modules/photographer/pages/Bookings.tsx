@@ -144,7 +144,7 @@ const Bookings = () => {
                                                     to={ROUTES.PHOTOGRAPHER.BOOKING_DETAILS}
                                                     params={{ id: booking._id }}
                                                     search={{ source: 'bookings' }}
-                                                    onClick={(e) => e.stopPropagation()}
+                                                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
                                                     className="text-xs font-bold text-green-700 hover:text-green-800 underline"
                                                 >
                                                     View Details
@@ -159,7 +159,7 @@ const Bookings = () => {
                                                 to={ROUTES.PHOTOGRAPHER.BOOKING_DETAILS}
                                                 params={{ id: booking._id }}
                                                 search={{ source: 'bookings' }}
-                                                onClick={(e) => e.stopPropagation()}
+                                                onClick={(e: React.MouseEvent) => e.stopPropagation()}
                                                 className="px-4 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-md text-xs font-bold hover:bg-gray-50 flex items-center justify-center"
                                             >
                                                 View Details

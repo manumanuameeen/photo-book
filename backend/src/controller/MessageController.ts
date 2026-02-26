@@ -16,15 +16,20 @@ export class MessageController implements IMessageController {
 
   getMessages = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
+      const { partnerId } = req.params;
       const userId = req.user?.userId;
       if (!userId) {
         throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
       }
+      if (!partnerId) {
+        throw new AppError(Messages.PARTNER_ID_REQUIRED, HttpStatus.BAD_REQUEST);
+      }
       const { page, limit } = req.query;
       const result = await this._service.getMessages(
         userId,
+        partnerId,
         page ? parseInt(page as string) : 1,
-        limit ? parseInt(limit as string) : 10,
+        limit ? parseInt(limit as string) : 50,
       );
       ApiResponse.success(res, result, Messages.MESSAGES_FETCHED);
     } catch (error) {
@@ -32,19 +37,14 @@ export class MessageController implements IMessageController {
     }
   };
 
-  getSentMessages = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  getConversations = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
         throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
       }
-      const { page, limit } = req.query;
-      const result = await this._service.getSentMessages(
-        userId,
-        page ? parseInt(page as string) : 1,
-        limit ? parseInt(limit as string) : 10,
-      );
-      ApiResponse.success(res, result, Messages.SENT_MESSAGES_FETCHED);
+      const conversations = await this._service.getConversations(userId);
+      ApiResponse.success(res, conversations, "Conversations fetched successfully");
     } catch (error) {
       this._handleError(res, error);
     }
@@ -60,25 +60,33 @@ export class MessageController implements IMessageController {
     }
   };
 
-  deleteMessageForMe = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  deleteMessageForMe = async (
+    req: AuthRequest,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
       await this._service.deleteMessageForMe(id, userId);
-      ApiResponse.success(res, null, "Message deleted for you");
+      ApiResponse.success(res, null, Messages.MESSAGE_DELETED_FOR_YOU);
     } catch (error) {
       this._handleError(res, error);
     }
   };
 
-  deleteMessageForEveryone = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  deleteMessageForEveryone = async (
+    req: AuthRequest,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
       await this._service.deleteMessageForEveryone(id, userId);
-      ApiResponse.success(res, null, "Message deleted for everyone");
+      ApiResponse.success(res, null, Messages.MESSAGE_DELETED_FOR_EVERYONE);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -89,9 +97,9 @@ export class MessageController implements IMessageController {
       const { partnerId } = req.params;
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
-      if (!partnerId) throw new AppError("Partner ID is required", HttpStatus.BAD_REQUEST);
+      if (!partnerId) throw new AppError(Messages.PARTNER_ID_REQUIRED, HttpStatus.BAD_REQUEST);
       await this._service.clearChat(userId, partnerId);
-      ApiResponse.success(res, null, "Chat cleared successfully");
+      ApiResponse.success(res, null, Messages.CHAT_CLEARED);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -103,10 +111,16 @@ export class MessageController implements IMessageController {
       const senderId = req.user?.userId;
       if (!senderId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
       if (!receiverId || !content)
-        throw new AppError("Receiver and content are required", HttpStatus.BAD_REQUEST);
+        throw new AppError(Messages.RECEIVER_CONTENT_REQUIRED, HttpStatus.BAD_REQUEST);
 
-      const message = await this._service.sendMessage(senderId, receiverId, content, attachment, req.body.replyToId);
-      ApiResponse.success(res, message, "Message sent successfully");
+      const message = await this._service.sendMessage(
+        senderId,
+        receiverId,
+        content,
+        attachment,
+        req.body.replyToId,
+      );
+      ApiResponse.success(res, message, Messages.MESSAGE_SENT);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -119,10 +133,10 @@ export class MessageController implements IMessageController {
       const userId = req.user?.userId;
 
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
-      if (!content) throw new AppError("Content is required", HttpStatus.BAD_REQUEST);
+      if (!content) throw new AppError(Messages.CONTENT_REQUIRED, HttpStatus.BAD_REQUEST);
 
       const message = await this._service.editMessage(id, userId, content);
-      ApiResponse.success(res, message, "Message updated successfully");
+      ApiResponse.success(res, message, Messages.MESSAGE_UPDATED);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -137,10 +151,10 @@ export class MessageController implements IMessageController {
       console.log("Toggle Reaction Request:", { id, emoji, userId, body: req.body });
 
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
-      if (!emoji) throw new AppError("Emoji is required", HttpStatus.BAD_REQUEST);
+      if (!emoji) throw new AppError(Messages.EMOJI_REQUIRED, HttpStatus.BAD_REQUEST);
 
       const message = await this._service.toggleReaction(id, userId, emoji);
-      ApiResponse.success(res, message, "Reaction toggled successfully");
+      ApiResponse.success(res, message, Messages.REACTION_TOGGLED);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -153,19 +167,16 @@ export class MessageController implements IMessageController {
         console.log("File details:", {
           originalname: req.file.originalname,
           mimetype: req.file.mimetype,
-          size: req.file.size
+          size: req.file.size,
         });
       }
-      if (!req.file) throw new AppError("No file uploaded", HttpStatus.BAD_REQUEST);
+      if (!req.file) throw new AppError(Messages.NO_FILE_UPLOADED, HttpStatus.BAD_REQUEST);
 
-      
-      
-      
       const { CloudinaryService } = await import("../services/external/CloudinaryService.ts");
       const fileService = new CloudinaryService();
 
       const url = await fileService.uploadFile(req.file);
-      ApiResponse.success(res, { url }, "File uploaded successfully");
+      ApiResponse.success(res, { url }, Messages.FILE_UPLOADED);
     } catch (error) {
       this._handleError(res, error);
     }

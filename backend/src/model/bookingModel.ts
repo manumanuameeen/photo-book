@@ -1,5 +1,16 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+export interface IPopulatedUser {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  email: string;
+  profileImage?: string;
+  phone?: string;
+  personalInfo?: {
+    name: string;
+  };
+}
+
 export const BookingStatus = {
   PENDING: "pending",
   ACCEPTED: "accepted",
@@ -24,10 +35,12 @@ export const PaymentStatus = {
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
 export interface IBooking extends Document {
+  _id: mongoose.Types.ObjectId;
+  bookingId: string;
   userId: mongoose.Types.ObjectId;
   photographerId: mongoose.Types.ObjectId;
   packageId: mongoose.Types.ObjectId;
-  packageDetails: Record<string, any>;
+  packageDetails: Record<string, unknown>;
   eventDate: Date;
   startTime: string;
   depositeRequired: number;
@@ -143,8 +156,29 @@ const BookingSchema: Schema = new Schema(
     platformFeeRetained: { type: Boolean },
     isEmergency: { type: Boolean },
     deliveryWorkLink: { type: String },
+    bookingId: { type: String, unique: true },
   },
   { timestamps: true },
 );
+
+async function generateBookingId(): Promise<string> {
+  const date = new Date();
+  const dateStr = date.toISOString().slice(0, 10).replaceAll("-", "");
+  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const bookingId = `BK-${dateStr}-${randomStr}`;
+
+  const existing = await mongoose.models.Booking.findOne({ bookingId });
+  if (existing) {
+    return generateBookingId();
+  }
+  return bookingId;
+}
+
+BookingSchema.pre("save", async function (next) {
+  if (!this.bookingId) {
+    this.bookingId = await generateBookingId();
+  }
+  next();
+});
 
 export const BookingModel: Model<IBooking> = mongoose.model<IBooking>("Booking", BookingSchema);

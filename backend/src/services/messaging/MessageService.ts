@@ -14,6 +14,7 @@ export class MessageService implements IMessageService {
     receiverId: string,
     content: string,
     senderId?: string,
+    reportId?: string,
   ): Promise<IMessage> {
     const messageData: Partial<IMessage> = {
       receiverId: new mongoose.Types.ObjectId(receiverId),
@@ -22,34 +23,45 @@ export class MessageService implements IMessageService {
       isRead: false,
     };
 
+    if (reportId) {
+      messageData.reportId = new mongoose.Types.ObjectId(reportId);
+    }
+
     if (senderId) {
       messageData.senderId = new mongoose.Types.ObjectId(senderId);
     }
 
     const savedMessage = await this._repository.create(messageData);
 
-    
     try {
       const populatedMessage = await savedMessage.populate([
         { path: "senderId", select: "name role profileImage" },
-        { path: "receiverId", select: "name role profileImage" }
+        { path: "receiverId", select: "name role profileImage" },
       ]);
       const { SocketService } = await import("./SocketService.ts");
       SocketService.getInstance().emitToUser(receiverId, "new_message", populatedMessage);
       return populatedMessage;
-    } catch (e) {
-      console.error("Socket emit failed for system message", e);
+    } catch (error: unknown) {
+      console.error("Socket emit failed for system message", error);
       return savedMessage;
     }
   }
 
-  async getSentMessages(senderId: string, page = 1, limit = 10): Promise<{ messages: IMessage[]; total: number }> {
-    return await this._repository.findBySenderId(senderId, page, limit);
+  async getMessages(
+    userId: string,
+    partnerId: string,
+    page = 1,
+    limit = 50,
+  ): Promise<{ messages: IMessage[]; total: number }> {
+    return await this._repository.findByPartnerId(userId, partnerId, page, limit);
   }
 
-  async getMessages(receiverId: string, page = 1, limit = 10): Promise<{ messages: IMessage[]; total: number }> {
-    
-    return await this._repository.findByReceiverId(receiverId, page, limit);
+  async getConversations(userId: string): Promise<Record<string, unknown>[]> {
+    return await this._repository.getConversations(userId);
+  }
+
+  async getMessagesByReportId(reportId: string): Promise<IMessage[]> {
+    return await this._repository.findByReportId(reportId);
   }
 
   async markAsRead(messageId: string): Promise<IMessage | null> {
@@ -57,14 +69,23 @@ export class MessageService implements IMessageService {
     if (message && message.senderId) {
       try {
         const { SocketService } = await import("./SocketService.ts");
-        const senderIdRaw = message.senderId;
-        const senderId = typeof senderIdRaw === "object" ? (senderIdRaw as any)._id : senderIdRaw;
-        SocketService.getInstance().emitToUser(senderId.toString(), "message_read", message);
-      } catch (e) {
-        console.error("Socket emit message_read failed", e);
+        const senderId = this._getUserId(message.senderId);
+        SocketService.getInstance().emitToUser(senderId, "message_read", message);
+      } catch (error: unknown) {
+        console.error("Socket emit message_read failed", error);
       }
     }
     return message;
+  }
+
+  private _getUserId(user: unknown): string {
+    if (!user) return "";
+    if (typeof user === "string") return user;
+    if (typeof user === "object" && user !== null && "_id" in user) {
+      return (user as { _id: string | mongoose.Types.ObjectId })._id.toString();
+    }
+    if (user instanceof mongoose.Types.ObjectId) return user.toString();
+    return String(user);
   }
 
   async deleteMessageForMe(messageId: string, userId: string): Promise<boolean> {
@@ -76,12 +97,8 @@ export class MessageService implements IMessageService {
     const message = await this._repository.findById(messageId);
     if (!message) throw new Error("Message not found");
 
-    const senderIdRaw = message.senderId;
-    if (!senderIdRaw) throw new AppError("System messages cannot be deleted for everyone", 400);
-
-    const senderId = typeof senderIdRaw === "object" && senderIdRaw !== null && "_id" in senderIdRaw
-      ? (senderIdRaw as any)._id.toString()
-      : String(senderIdRaw);
+    const senderId = this._getUserId(message.senderId);
+    if (!senderId) throw new AppError("System messages cannot be deleted for everyone", 400);
 
     if (senderId !== userId) {
       throw new AppError("Only the sender can delete this message for everyone", 403);
@@ -99,14 +116,11 @@ export class MessageService implements IMessageService {
 
     try {
       const { SocketService } = await import("./SocketService.ts");
-      const receiverIdRaw = message.receiverId;
-      const receiverId = typeof receiverIdRaw === "object" && receiverIdRaw !== null && "_id" in receiverIdRaw
-        ? (receiverIdRaw as any)._id.toString()
-        : String(receiverIdRaw);
+      const receiverId = this._getUserId(message.receiverId);
       SocketService.getInstance().emitToUser(receiverId, "message_updated", message);
       SocketService.getInstance().emitToUser(senderId, "message_updated", message);
-    } catch (e) {
-      console.error("Socket emit failed", e);
+    } catch (error: unknown) {
+      console.error("Socket emit failed", error);
     }
 
     return true;
@@ -116,21 +130,21 @@ export class MessageService implements IMessageService {
     await this._repository.clearChat(userId, partnerId);
   }
 
-  
   async deleteMessage(messageId: string, userId: string): Promise<boolean> {
     return this.deleteMessageForEveryone(messageId, userId);
   }
 
-  async editMessage(messageId: string, userId: string, newContent: string): Promise<IMessage | null> {
+  async editMessage(
+    messageId: string,
+    userId: string,
+    newContent: string,
+  ): Promise<IMessage | null> {
     const message = await this._repository.findById(messageId);
     if (!message) throw new Error("Message not found");
 
-    const senderIdRaw = message.senderId;
-    if (!senderIdRaw) throw new AppError("System messages cannot be edited", 400);
+    const senderId = this._getUserId(message.senderId);
+    if (!senderId) throw new AppError("System messages cannot be edited", 400);
 
-    const senderId = typeof senderIdRaw === "object" && senderIdRaw !== null && "_id" in senderIdRaw
-      ? (senderIdRaw as any)._id.toString()
-      : String(senderIdRaw);
     if (senderId !== userId) {
       throw new AppError("Only the sender can edit this message", 403);
     }
@@ -141,16 +155,12 @@ export class MessageService implements IMessageService {
     message.isEdited = true;
     await message.save();
 
-    
     try {
       const { SocketService } = await import("./SocketService.ts");
-      const receiverIdRaw = message.receiverId;
-      const receiverId = typeof receiverIdRaw === "object" && receiverIdRaw !== null && "_id" in receiverIdRaw
-        ? (receiverIdRaw as any)._id.toString()
-        : String(receiverIdRaw);
+      const receiverId = this._getUserId(message.receiverId);
       SocketService.getInstance().emitToUser(receiverId, "message_updated", message);
-    } catch (e) {
-      console.error("Socket emit failed", e);
+    } catch (error: unknown) {
+      console.error("Socket emit failed", error);
     }
 
     return message;
@@ -162,7 +172,7 @@ export class MessageService implements IMessageService {
     content: string,
     attachment?: { url: string; type: "image" | "video" | "file" | "audio" },
     replyToId?: string,
-    type: "DIRECT" | "SYSTEM" = "DIRECT"
+    type: "DIRECT" | "SYSTEM" = "DIRECT",
   ): Promise<IMessage> {
     const messageData: Partial<IMessage> = {
       senderId: new mongoose.Types.ObjectId(senderId),
@@ -175,22 +185,26 @@ export class MessageService implements IMessageService {
 
     if (replyToId) {
       messageData.replyTo = new mongoose.Types.ObjectId(replyToId);
+
+      const parentMessage = await this._repository.findById(replyToId);
+      if (parentMessage && parentMessage.reportId) {
+        messageData.reportId = parentMessage.reportId;
+      }
     }
 
     const savedMessage = await this._repository.create(messageData);
 
-    
     try {
       const populatedMessage = await savedMessage.populate([
         { path: "senderId", select: "name role profileImage" },
         { path: "receiverId", select: "name role profileImage" },
-        { path: "replyTo", select: "content senderId attachment" }
+        { path: "replyTo", select: "content senderId attachment" },
       ]);
       const { SocketService } = await import("./SocketService.ts");
       SocketService.getInstance().emitToUser(receiverId, "new_message", populatedMessage);
       return populatedMessage;
-    } catch (e) {
-      console.error("Socket emit failed", e);
+    } catch (error: unknown) {
+      console.error("Socket emit failed", error);
       return savedMessage;
     }
   }
@@ -201,22 +215,15 @@ export class MessageService implements IMessageService {
     if (updatedMessage) {
       try {
         const { SocketService } = await import("./SocketService.ts");
-        const receiverIdRaw = updatedMessage.receiverId;
-        const receiverId = typeof receiverIdRaw === "object" && receiverIdRaw !== null && "_id" in receiverIdRaw
-          ? (receiverIdRaw as any)._id.toString()
-          : String(receiverIdRaw);
-
-        const senderIdRaw = updatedMessage.senderId;
-        const senderId = senderIdRaw && typeof senderIdRaw === "object" && "_id" in senderIdRaw
-          ? (senderIdRaw as any)._id.toString()
-          : String(senderIdRaw);
+        const receiverId = this._getUserId(updatedMessage.receiverId);
+        const senderId = this._getUserId(updatedMessage.senderId);
 
         SocketService.getInstance().emitToUser(receiverId, "message_updated", updatedMessage);
         if (senderId) {
           SocketService.getInstance().emitToUser(senderId, "message_updated", updatedMessage);
         }
-      } catch (e) {
-        console.error("Socket emit failed", e);
+      } catch (error: unknown) {
+        console.error("Socket emit failed", error);
       }
     }
 

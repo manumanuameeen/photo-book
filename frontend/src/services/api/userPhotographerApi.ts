@@ -1,4 +1,5 @@
 import apiClient from "../apiClient";
+import { API_ROUTES } from "../../constants/apiRoutes";
 
 export interface PhotographerFilter {
     category?: string;
@@ -12,22 +13,22 @@ export interface PhotographerFilter {
 
 export const userPhotographerApi = {
     getPhotographers: async (filters: PhotographerFilter) => {
-        const response = await apiClient.get("/photographer/public/photographers", {
+        const response = await apiClient.get(API_ROUTES.PHOTOGRAPHER.PUBLIC.LIST, {
             params: filters
         });
         return response.data.data;
     },
     getPhotographerById: async (id: string) => {
-        const response = await apiClient.get(`/photographer/public/photographers/${id}`);
+        const response = await apiClient.get(API_ROUTES.PHOTOGRAPHER.PUBLIC.DETAILS(id));
         return response.data.data;
     },
 
     addReview: async (id: string, reviewData: { rating: number; comment: string }) => {
-        const response = await apiClient.post(`/photographer/public/photographers/${id}/review`, reviewData);
+        const response = await apiClient.post(API_ROUTES.PHOTOGRAPHER.PUBLIC.REVIEW(id), reviewData);
         return response.data.data;
     },
     getAvailability: async (id: string, startDate: string, endDate: string) => {
-        const response = await apiClient.get(`/photographer/public/photographers/${id}/availability`, {
+        const response = await apiClient.get(API_ROUTES.PHOTOGRAPHER.PUBLIC.AVAILABILITY(id), {
             params: { startDate, endDate }
         });
         return response.data.data;

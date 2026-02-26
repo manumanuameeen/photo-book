@@ -5,6 +5,7 @@ import { IUserRepository } from "../../interfaces/repositories/IUserRepository.t
 import {
   IAdminPhotographerService,
   IGetPhotographersQuery,
+  IGetPackagesQuery,
   IPaginatedPhotographersResponse,
   IPhotographerResponse,
 } from "../../interfaces/services/IAdminPhotographerService.ts";
@@ -12,6 +13,9 @@ import { IEmailService } from "../../interfaces/services/IEmailService.ts";
 import { IMessageService } from "../../interfaces/services/IMessageService.ts";
 import { AdminPhotographerMapper } from "../../mappers/adminPhotographerMapper.ts";
 import { AppError } from "../../utils/AppError.ts";
+import { Populated } from "../../types/common.types.ts";
+import { IBookingPackage } from "../../model/bookingPackageModel.ts";
+import mongoose from "mongoose";
 
 export class AdminPhotographerService implements IAdminPhotographerService {
   private readonly _photographerRepo: IPhotographerRepository;
@@ -63,7 +67,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     return AdminPhotographerMapper.toResponse(photographer);
   }
 
-  async blockPhotographer(photographerId: string, reason?: string): Promise<void> {
+  async blockPhotographer(photographerId: string, _reason?: string): Promise<void> {
     const photographer = await this._photographerRepo.blockById(photographerId);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -117,35 +121,45 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     return await this._photographerRepo.getStatistics();
   }
 
-  async getPackages(query: any): Promise<any> {
+  async getPackages(query: IGetPackagesQuery): Promise<{
+    packages: Populated<IBookingPackage, "photographer" | "categoryId">[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
 
     const page = Number.parseInt(query.page || "1");
     const limit = Number.parseInt(query.limit || "10");
     const skip = (page - 1) * limit;
 
-    const filter: any = {};
+    const filter: mongoose.FilterQuery<IBookingPackage> = {};
 
     if (query.status) {
-      if (query.status === "APPROVED") {
+      const status = query.status as string;
+      if (status === "APPROVED") {
         filter.status = { $in: ["APPROVED", "ACTIVE"] };
         filter.isActive = true;
-      } else if (query.status === "INACTIVE") {
+      } else if (status === "INACTIVE") {
         filter.status = { $in: ["APPROVED", "ACTIVE"] };
         filter.isActive = false;
-      } else if (query.status === "REJECTED") {
+      } else if (status === "REJECTED") {
         filter.status = "REJECTED";
-      } else if (query.status !== "ALL") {
-        filter.status = query.status;
+      } else if (status !== "ALL") {
+        filter.status = status;
       }
     }
 
-    const packages = await BookingPackageModel.find(filter)
+    const packages = (await BookingPackageModel.find(filter)
       .populate("photographer", "personalInfo.name personalInfo.email")
       .populate("categoryId", "name")
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })) as unknown as Populated<
+        IBookingPackage,
+        "photographer" | "categoryId"
+      >[];
 
     const total = await BookingPackageModel.countDocuments(filter);
 
@@ -221,7 +235,12 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     }
   }
 
-  async fixLegacyData(): Promise<any> {
+  async fixLegacyData(): Promise<{
+    message: string;
+    photographersScanned: number;
+    updatedPackages: number;
+    updatedPortfolios: number;
+  }> {
     const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
     const { PortfolioSectionModel } = await import("../../model/portfolioSectionModel.ts");
     const { PhotographerModel } = await import("../../model/photographerModel.ts");
@@ -231,17 +250,15 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     let updatedPortfolios = 0;
 
     for (const photographer of photographers) {
-      
       const pkgResult = await BookingPackageModel.updateMany(
         { photographer: photographer.userId },
-        { photographer: photographer._id }
+        { photographer: photographer._id },
       );
       updatedPackages += pkgResult.modifiedCount;
 
-      
       const portfolioResult = await PortfolioSectionModel.updateMany(
         { photographerId: photographer.userId },
-        { photographerId: photographer._id }
+        { photographerId: photographer._id },
       );
       updatedPortfolios += portfolioResult.modifiedCount;
     }

@@ -11,6 +11,8 @@ export interface DashboardStats {
     sessions: {
         total: number;
         newRequests: number;
+        totalCustomers?: number;
+        packagePopularity?: Array<{ name: string; count: number }>;
     };
     reviews: {
         averageRating: number;

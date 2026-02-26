@@ -11,6 +11,8 @@ export interface IAvailability extends Document {
   date: Date;
   slots: IAvailabilitySlot[];
   isFullDayAvailable: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const AvailabilitySchema: Schema = new Schema(

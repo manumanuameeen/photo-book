@@ -12,7 +12,6 @@ import {
     Package as PackageIcon,
     MapPin,
     Calendar,
-    Clock,
     User,
     Mail,
     Phone,
@@ -64,7 +63,6 @@ function BookingWizard() {
         packageId: search.packageId || null
     });
 
-
     const loadInitialData = useCallback(async (id: string) => {
         try {
             setLoading(true);
@@ -77,9 +75,8 @@ function BookingWizard() {
             const loadedPackages = photog.packages || [];
             setPackages(loadedPackages);
 
-
             if (search.packageId) {
-                const found = loadedPackages.find((p: any) => p.id === search.packageId);
+                const found = loadedPackages.find((p: PackageData) => p.id === search.packageId);
                 if (found) {
                     setStep(2);
                 }
@@ -92,12 +89,11 @@ function BookingWizard() {
         }
     }, [search.packageId]);
 
-
     useEffect(() => {
 
         if (!user) {
             toast.error("Please login to book a session");
-            navigate({ to: ROUTES.AUTH.LOGIN } as any);
+            navigate({ to: ROUTES.AUTH.LOGIN });
             return;
         }
 
@@ -124,7 +120,7 @@ function BookingWizard() {
 
     const handlePrevStep = () => {
         if (step === 1) {
-            navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } } as any);
+            navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } });
         } else {
             setStep(step - 1);
         }
@@ -161,13 +157,14 @@ function BookingWizard() {
                 packageName: selectedPackage.name,
                 packagePrice: selectedPackage.price,
                 packageFeatures: selectedPackage.features
-            } as any);
+            });
 
             toast.success("Booking request sent successfully!");
             setStep(3);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Booking Error:", error);
-            toast.error(error.response?.data?.message || "Failed to submit booking request");
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || "Failed to submit booking request");
         }
     };
 
@@ -189,12 +186,12 @@ function BookingWizard() {
             <div className="max-w-4xl mx-auto mb-10 text-center">
                 <div
                     className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4 cursor-pointer hover:text-green-700 transition"
-                    onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } } as any)}
+                    onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } })}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
-                            navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } } as any);
+                            navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: formData.photographerId } });
                         }
                     }}
                 >
@@ -439,7 +436,6 @@ function BookingWizard() {
                                     </div>
                                 </div>
 
-
                                 <div className="flex gap-4 pt-6">
                                     <button
                                         onClick={handlePrevStep}
@@ -508,7 +504,7 @@ function BookingWizard() {
                                     Back to Home
                                 </button>
                                 <button
-                                    onClick={() => navigate({ to: ROUTES.USER.DASHBOARD as any })}
+                                    onClick={() => navigate({ to: ROUTES.USER.DASHBOARD })}
                                     className="flex-1 py-3 bg-green-700 text-white rounded-xl font-medium hover:bg-green-800"
                                 >
                                     View Dashboard

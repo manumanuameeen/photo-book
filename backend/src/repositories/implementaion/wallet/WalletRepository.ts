@@ -61,7 +61,7 @@ export class WalletRepository extends BaseRepository<IWallet> implements IWallet
   ): Promise<{ transactions: ITransaction[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    const pipeline: any[] = [
+    const pipeline: mongoose.PipelineStage[] = [
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       { $unwind: "$transaction" },
       { $sort: { "transaction.date": -1 } },

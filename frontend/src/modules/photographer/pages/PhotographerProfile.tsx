@@ -74,12 +74,10 @@ const PhotographerProfile = () => {
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
 
-            { }
             <div className="bg-[#1E5631] h-16 w-full shadow-sm"></div>
 
             <div className="max-w-6xl mx-auto px-6 py-8">
 
-                { }
                 <div className="mb-8">
                     <Link to={ROUTES.PHOTOGRAPHER.DASHBOARD} className="flex items-center text-sm text-green-700 font-medium hover:underline mb-4">
                         <ArrowLeft size={16} className="mr-1" />
@@ -98,13 +96,10 @@ const PhotographerProfile = () => {
                     </div>
                 </div>
 
-                { }
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                    { }
                     <div className="space-y-6">
 
-                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Personal Identity</h2>
                             <div className="flex flex-col items-center text-center">
@@ -120,7 +115,6 @@ const PhotographerProfile = () => {
                             </div>
                         </div>
 
-                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Contact Details</h2>
                             <div className="space-y-5">
@@ -143,10 +137,8 @@ const PhotographerProfile = () => {
                         </div>
                     </div>
 
-                    { }
                     <div className="space-y-6">
 
-                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Business & Platform Information</h2>
                             <div className="space-y-5">
@@ -170,7 +162,7 @@ const PhotographerProfile = () => {
                                     value={`$${profile.professionalDetails?.standardRate || 0}/Hour`}
                                     icon={DollarSign}
                                 />
-                                {}
+                                
                             </div>
                             <button
                                 onClick={() => setIsSuggestModalOpen(true)}
@@ -180,7 +172,6 @@ const PhotographerProfile = () => {
                             </button>
                         </div>
 
-                        { }
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                             <h2 className="text-lg font-bold text-gray-700 mb-6">Social Media Links</h2>
                             <div className="space-y-5">
@@ -214,7 +205,7 @@ const PhotographerProfile = () => {
 
                 </div>
             </div>
-            { }
+            
             <AnimatePresence>
                 {isSuggestModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -301,7 +292,6 @@ const PhotographerProfile = () => {
         </div>
     );
 };
-
 
 const InfoField = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string, icon: React.ElementType, isLink?: boolean }) => (
     <div>

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { IUser } from "../types/user.types";
+import { getErrorMessage } from "../../../utils/errorhandler";
 
 interface AuthState {
   user: Partial<IUser> | null;
@@ -17,6 +18,14 @@ interface CacheData {
   expires: number;
 }
 
+interface RefreshResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    user: IUser;
+  };
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -27,10 +36,9 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user: IUser) => {
         console.log("🔐 Setting user in store:", user);
 
-        
         const cache: CacheData = {
           user,
-          expires: Date.now() + 5 * 60 * 1000, 
+          expires: Date.now() + 5 * 60 * 1000,
         };
         sessionStorage.setItem("auth-cache", JSON.stringify(cache));
 
@@ -55,7 +63,6 @@ export const useAuthStore = create<AuthState>()(
         try {
           console.log("🚪 Logout initiated");
 
-
           const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
             method: "POST",
             credentials: "include",
@@ -69,10 +76,9 @@ export const useAuthStore = create<AuthState>()(
           }
 
           console.log("✅ Logout successful");
-        } catch (error) {
-          console.error("❌ Logout error:", error);
+        } catch (error: unknown) {
+          console.error("❌ Logout error:", getErrorMessage(error));
         } finally {
-
           sessionStorage.removeItem("auth-cache");
           set({ user: null, isAuthenticated: false, role: null });
         }
@@ -80,7 +86,6 @@ export const useAuthStore = create<AuthState>()(
 
       rehydrateUser: async () => {
         console.log("🔄 Rehydrating user...");
-
 
         const cached = sessionStorage.getItem("auth-cache");
         if (cached) {
@@ -96,12 +101,11 @@ export const useAuthStore = create<AuthState>()(
               return;
             }
             console.log("⚠️ Cache expired");
-          } catch (err) {
-            console.error("❌ Failed to parse cache:", err);
+          } catch (err: unknown) {
+            console.error("❌ Failed to parse cache:", getErrorMessage(err));
             sessionStorage.removeItem("auth-cache");
           }
         }
-
 
         try {
           console.log("🔄 Attempting token refresh for rehydration...");
@@ -122,11 +126,10 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
 
-          const data = await res.json();
+          const data = (await res.json()) as RefreshResponse;
 
           if (data.success && data.data?.user) {
             console.log("✅ Rehydration successful");
-
 
             const cache: CacheData = {
               user: data.data.user,
@@ -143,8 +146,8 @@ export const useAuthStore = create<AuthState>()(
             console.log("❌ Invalid response structure");
             set({ user: null, isAuthenticated: false, role: null });
           }
-        } catch (err) {
-          console.error("❌ Failed to rehydrate user:", err);
+        } catch (err: unknown) {
+          console.error("❌ Failed to rehydrate user:", getErrorMessage(err));
           sessionStorage.removeItem("auth-cache");
           set({ user: null, isAuthenticated: false, role: null });
         }

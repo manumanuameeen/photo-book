@@ -4,7 +4,7 @@ import { IPhotographerResponse } from "../interfaces/services/IAdminPhotographer
 export class AdminPhotographerMapper {
   static toResponse(photographer: IPhotographer): IPhotographerResponse {
     return {
-      id: (photographer._id as any).toString(),
+      id: String(photographer._id),
       personalInfo: photographer.personalInfo,
       professionalDetails: photographer.professionalDetails,
       portfolio: {

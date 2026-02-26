@@ -1,7 +1,8 @@
 import React, { useState, memo } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import type { ChangeEvent, FormEvent } from "react";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Camera } from "lucide-react";
+import { motion } from "framer-motion";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { getErrorMessage } from "../../../../utils/errorhandler";
 import { useNavigate } from "@tanstack/react-router";
@@ -20,10 +21,36 @@ type ValidationErrors = Partial<Record<keyof LoginFormData, string>>;
 
 const GreenPanel: React.FC = () => (
   <div
-    className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
+    className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none relative overflow-hidden"
     style={{ backgroundColor: "#006039" }}
   >
-    <div>
+    {/* Floating Cameras */}
+    <motion.div
+      initial={{ y: 0, rotate: 0, opacity: 0.2 }}
+      animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }}
+      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute top-10 right-10 z-0 text-white/20"
+    >
+      <Camera size={64} />
+    </motion.div>
+    <motion.div
+      initial={{ y: 0, rotate: 0, opacity: 0.15 }}
+      animate={{ y: [0, 30, 0], rotate: [0, -15, 10, 0] }}
+      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      className="absolute bottom-32 left-8 z-0 text-white/15"
+    >
+      <Camera size={96} />
+    </motion.div>
+    <motion.div
+      initial={{ y: 0, rotate: 0, opacity: 0.1 }}
+      animate={{ y: [0, -40, 0], rotate: [0, 20, -20, 0] }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      className="absolute top-1/2 right-1/4 z-0 text-white/10"
+    >
+      <Camera size={48} />
+    </motion.div>
+
+    <div className="relative z-10">
       <h2 className="text-3xl leading-snug mt-8 mb-2">
         Welcome Back to Your
         <br />
@@ -36,7 +63,7 @@ const GreenPanel: React.FC = () => (
       </p>
     </div>
 
-    <div className="mt-8 hidden lg:block">
+    <div className="mt-8 hidden lg:block relative z-10">
       <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-2">
         Demo Accounts
       </h3>
@@ -109,7 +136,8 @@ interface FormPanelProps {
   loading: boolean;
   googleLoading: boolean;
   navigate: ReturnType<typeof useNavigate>;
-  handleGoogleSuccess: (credentialResponse: any) => void;
+  handleGoogleSuccess: (credentialResponse: { credential?: string }) => void;
+
 }
 
 const FormPanel: React.FC<FormPanelProps> = ({
@@ -131,7 +159,6 @@ const FormPanel: React.FC<FormPanelProps> = ({
         style={{ width: 180, height: 120, marginRight: 20 }}
       />
     </div>
-
 
     <div className="flex border-b mb-6 sm:mb-6 text-sm">
       <div className="px-3 py-2 text-green-700 font-semibold border-b-2 border-green-700">
@@ -185,14 +212,15 @@ const FormPanel: React.FC<FormPanelProps> = ({
         </button>
       </div>
 
-      <button
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={loading}
         className="w-full bg-green-700 text-white font-semibold py-2.5 rounded-md shadow-md hover:bg-green-800 transition duration-200 mt-4 disabled:opacity-70 text-sm"
       >
         {loading ? "Signing In..." : "Sign In"}
-      </button>
-
+      </motion.button>
 
       <div className="text-center pt-2">
         <button
@@ -219,7 +247,6 @@ const LoginPage: React.FC = () => {
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
-
 
   React.useEffect(() => {
     const { user } = useAuthStore.getState();
@@ -270,7 +297,6 @@ const LoginPage: React.FC = () => {
           ? ROUTES.ADMIN.DASHBOARD
           : ROUTES.USER.HOME;
 
-
         navigate({ to: redirectTo });
 
         setFormData({ email: "", password: "" });
@@ -282,7 +308,8 @@ const LoginPage: React.FC = () => {
     });
   };
 
-  const handleGoogleSuccess = (credentialResponse: any) => {
+  const handleGoogleSuccess = (credentialResponse: { credential?: string }) => {
+
     if (credentialResponse.credential) {
       googleLoginMutation.mutate(credentialResponse.credential, {
         onSuccess: (response: IAuthResponse) => {

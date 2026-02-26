@@ -1,21 +1,23 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-
-export const createAccessToken = (userId: string, email: string, role: string) => {
-  if (!process.env.ACCESS_TOKEN_SECRET) {
-    throw new Error("REFRESH_TOKEN_SECRET is not defined");
-  }
-  return jwt.sign({ userId: userId, email: email, role: role }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
-  });
+import { JWTPayload } from "../middleware/authMiddleware.ts";
+export const createAccessToken = (payload: JWTPayload): string => {
+  return jwt.sign(
+    { ...payload },
+    process.env.ACCESS_TOKEN_SECRET as jwt.Secret,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "1d",
+    } as jwt.SignOptions,
+  );
 };
 
-export const createRefreshToken = (userId: string, email: string, role: string) => {
-  if (!process.env.REFRESH_TOKEN_SECRET) {
-    throw new Error("REFRESH_TOKEN_SECRET is not defined");
-  }
-  return jwt.sign({ userId: userId, email: email, role: role }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "7d",
-  });
+export const createRefreshToken = (payload: JWTPayload): string => {
+  return jwt.sign(
+    { ...payload },
+    process.env.REFRESH_TOKEN_SECRET as jwt.Secret,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d",
+    } as jwt.SignOptions,
+  );
 };

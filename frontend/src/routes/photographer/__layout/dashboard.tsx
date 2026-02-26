@@ -4,4 +4,3 @@ export const Route = createFileRoute('/photographer/__layout/dashboard')({
   component: PhotoDashbord,
 })
 
-

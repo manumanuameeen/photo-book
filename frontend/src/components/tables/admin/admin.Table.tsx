@@ -68,7 +68,6 @@ function AdminDataTable<T extends { id: string | number }>({
                 </tbody>
             </table>
 
-
             <div className="flex justify-between items-center pt-4 text-sm">
                 <p className="text-gray-600">
                     Showing {startRange}–{endRange} of {totalItems} {entityName}
@@ -86,8 +85,8 @@ function AdminDataTable<T extends { id: string | number }>({
                             key={i}
                             onClick={() => onPageChange(i + 1)}
                             className={`px-3 py-1 border rounded ${currentPage === i + 1
-                                    ? "bg-green-500 text-white font-semibold"
-                                    : "border-gray-300 text-gray-600 hover:bg-gray-100"
+                                ? "bg-green-500 text-white font-semibold"
+                                : "border-gray-300 text-gray-600 hover:bg-gray-100"
                                 }`}
                         >
                             {i + 1}

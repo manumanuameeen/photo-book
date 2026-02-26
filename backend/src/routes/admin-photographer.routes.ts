@@ -83,7 +83,7 @@ router.post(
 );
 
 router.post(
-  "/fix-legacy-data",
+  ADMIN.FIX_LEGACY_DATA,
   verifyAccessToken,
   verifyAdmin,
   container.adminPhotographerController.fixLegacyData,

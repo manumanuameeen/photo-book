@@ -1,6 +1,7 @@
 import React, { useState, memo } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { Eye, EyeOff, Mail, Phone, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Phone, Lock, User, Camera } from "lucide-react";
+import { motion } from "framer-motion";
 import type { ISignupRequest } from "../../types/auth.types";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { useNavigate } from '@tanstack/react-router'
@@ -9,7 +10,6 @@ import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../../store/useAuthStore";
 import { ROUTES } from "../../../../constants/routes";
 
-
 interface SignupFormData {
   name: string;
   email: string;
@@ -17,8 +17,6 @@ interface SignupFormData {
   password: string;
   confirmPassword: string;
 }
-
-
 
 interface SignupError {
   response?: {
@@ -29,14 +27,40 @@ interface SignupError {
   message?: string
 }
 
-
 type ValidationErrors = Partial<Record<keyof SignupFormData, string>>;
 
 const GreenPanel: React.FC = () => (
   <div
-    className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
+    className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none relative overflow-hidden"
     style={{ backgroundColor: "#006039" }}>
-    <div>
+
+    {/* Floating Cameras */}
+    <motion.div
+      initial={{ y: 0, rotate: 0, opacity: 0.2 }}
+      animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }}
+      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute top-10 right-10 z-0 text-white/20"
+    >
+      <Camera size={64} />
+    </motion.div>
+    <motion.div
+      initial={{ y: 0, rotate: 0, opacity: 0.15 }}
+      animate={{ y: [0, 30, 0], rotate: [0, -15, 10, 0] }}
+      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      className="absolute bottom-32 left-8 z-0 text-white/15"
+    >
+      <Camera size={96} />
+    </motion.div>
+    <motion.div
+      initial={{ y: 0, rotate: 0, opacity: 0.1 }}
+      animate={{ y: [0, -40, 0], rotate: [0, 20, -20, 0] }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      className="absolute top-1/2 right-20 z-0 text-white/10"
+    >
+      <Camera size={48} />
+    </motion.div>
+
+    <div className="relative z-10">
       <h2 className="text-3xl leading-snug mt-8 mb-2">
         Welcome to Your
         <br />
@@ -48,7 +72,7 @@ const GreenPanel: React.FC = () => (
         Connect with photographers and capture your perfect moments.
       </p>
     </div>
-    <div className="mt-8 hidden lg:block">
+    <div className="mt-8 hidden lg:block relative z-10">
       <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-2">
         Latest Logins
       </h3>
@@ -207,13 +231,15 @@ const FormPanel: React.FC<FormPanelProps> = ({
         type="password"
         error={errors.confirmPassword}
       />
-      <button
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={loading}
         className="w-full bg-green-700 text-white font-semibold py-2.5 rounded-md shadow-md hover:bg-green-800 transition duration-200 mt-4 disabled:opacity-70 disabled:cursor-not-allowed text-sm"
       >
         {loading ? "Creating Account..." : "Create Account"}
-      </button>
+      </motion.button>
     </form>
   </div>
 );
@@ -233,7 +259,6 @@ const Signup: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  
   React.useEffect(() => {
     const { user } = useAuthStore.getState();
     if (user) {

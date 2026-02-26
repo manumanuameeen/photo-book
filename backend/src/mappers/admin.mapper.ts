@@ -12,9 +12,9 @@ export class AdminMapper {
     };
   }
 
-  static toUserResponse(user: any) {
+  static toUserResponse(user: import("../model/userModel").IUser) {
     return {
-      _id: user._id.toString(),
+      _id: String(user._id),
       name: user.name,
       email: user.email,
       role: user.role,

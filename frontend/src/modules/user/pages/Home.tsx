@@ -1,11 +1,12 @@
-
-import { useNavigate } from '@tanstack/react-router';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ROUTES } from '../../../constants/routes';
 import { Link } from '@tanstack/react-router';
 import { MouseFollower } from '../../../components/common/MouseFollower';
 import { MagneticButton } from '../../../components/common/MagneticButton';
 import { TiltCard } from '../../../components/common/TiltCard';
+import { HeroParallax } from '../../../components/home/HeroParallax';
+import { userPhotographerApi } from '../../../services/api/userPhotographerApi';
 const categories = [
   {
     icon: 'fas fa-ring',
@@ -33,35 +34,6 @@ const categories = [
   },
 ];
 
-const photographers = [
-  {
-    id: 'sarah-johnson-id',
-    name: 'Sarah Johnson',
-    role: 'Wedding Photographer',
-    rating: 4.9,
-    reviews: 214,
-    topPro: true,
-    image: 'https://randomuser.me/api/portraits/women/44.jpg'
-  },
-  {
-    id: 'michael-chen-id',
-    name: 'Michael Chen',
-    role: 'Portrait Specialist',
-    rating: 4.8,
-    reviews: 305,
-    topPro: true,
-    image: 'https://randomuser.me/api/portraits/men/32.jpg'
-  },
-  {
-    id: 'emma-davis-id',
-    name: 'Emma Davis',
-    role: 'Adventure & Nature',
-    rating: 4.7,
-    reviews: 188,
-    topPro: true,
-    image: 'https://randomuser.me/api/portraits/women/68.jpg'
-  },
-];
 
 const stats = [
   { number: '500+', label: 'Professional Photographers' },
@@ -70,6 +42,21 @@ const stats = [
 ];
 
 const HomePage = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [featuredPhotographers, setFeaturedPhotographers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPhotographers = async () => {
+      try {
+        const responseData = await userPhotographerApi.getPhotographers({ limit: 4 });
+        setFeaturedPhotographers(responseData.photographers || []);
+      } catch (error) {
+        console.error("Failed to fetch featured photographers:", error);
+      }
+    };
+    fetchPhotographers();
+  }, []);
+
   const fadeInUp = {
     initial: { opacity: 0, y: 60 },
     animate: { opacity: 1, y: 0 },
@@ -83,133 +70,36 @@ const HomePage = () => {
       }
     }
   };
-  const navigate = useNavigate();
-  const titleText = "Capture Perfect Moments";
-  const words = titleText.split(" ");
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0a] text-gray-200">
       <MouseFollower />
-      { }
 
-      { }
-      <section className="relative py-24 px-4 overflow-hidden min-h-[500px] flex items-center justify-center">
-        { }
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-gray-900"
-        ></div>
+      <HeroParallax />
 
-        { }
-        <div
-          className="absolute inset-0 bg-green-900/85"
-        ></div>
+      <section className="relative py-24 px-4 text-center overflow-hidden min-h-[500px]">
 
-        { }
-        <motion.div
-          className="relative z-10 bg-white max-w-4xl mx-auto p-8 md:p-12 rounded-xl shadow-2xl text-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <div className="mb-2 text-4xl font-light text-green-900">
-            {words.map((word, i) => (
-              <motion.span
-                key={i}
-                className={`inline-block mr-2 ${word === "Perfect" || word === "Moments" ? "font-bold" : ""}`}
-                style={{ color: (word === "Perfect" || word === "Moments") ? '#d97706' : '#14532d' }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + (i * 0.1) }}
-              >
-                {word}
-              </motion.span>
-            ))}
-          </div>
-          <motion.p
-            className="text-gray-600 mb-8 max-w-2xl mx-auto text-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-          >
-            Connect with professional photographers for weddings, events, and special occasions. Premium quality, luxury service.
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col md:flex-row gap-3 items-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-          >
-            <motion.div className="flex-1 w-full" whileHover={{ scale: 1.02 }}>
-              <select className="p-3 border border-gray-300 rounded-md w-full text-gray-500 text-sm focus:ring-2 focus:ring-yellow-500 transition-all">
-                <option>Event Type...</option>
-              </select>
-            </motion.div>
-
-            <motion.div className="flex-1 w-full" whileHover={{ scale: 1.02 }}>
-              <input
-                type="text"
-                placeholder="Location..."
-                className="p-3 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-yellow-500 transition-all"
-              />
-            </motion.div>
-
-            <motion.div className="flex-1 w-full" whileHover={{ scale: 1.02 }}>
-              <input
-                type="text"
-                placeholder="Date/Time"
-                className="p-3 border border-gray-300 rounded-md w-full text-gray-500 focus:ring-2 focus:ring-yellow-500 transition-all"
-              />
-            </motion.div>
-
-            <MagneticButton
-              onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER })}
-              className="px-6 py-3 font-semibold rounded-md flex-shrink-0 w-full md:w-auto flex items-center justify-center space-x-2 transition duration-200 bg-yellow-500 text-green-900"
-            >
-              <i className="fas fa-search z-10 relative"></i>
-              <span className="z-10 relative">Search</span>
-            </MagneticButton>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      { }
-      <section className="relative py-16 px-4 text-center overflow-hidden min-h-[500px]">
-        { }
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          { }
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: 'url(https://images.pexels.com/photos/2959192/pexels-photo-2959192.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)'
-            }}
-          ></div>
+          <div className="absolute inset-0 bg-[#0a0a0a]"></div>
 
-          { }
-          <div className="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-sm"></div>
+          {/* Noise overlay to match cinematic theme */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.8\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E')" }}></div>
         </div>
 
-        { }
         <div className="relative z-10">
-          <motion.h3
-            className="text-3xl font-bold mb-4 drop-shadow-lg text-green-900"
+          <motion.div
             variants={fadeInUp}
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
+            className="flex flex-col items-center mb-12"
           >
-            Popular Categories
-          </motion.h3>
-          <motion.p
-            className="text-gray-700 text-sm mb-8 max-w-2xl mx-auto drop-shadow-md font-medium"
-            variants={fadeInUp}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            Discover the perfect photography service for your special moments
-          </motion.p>
+            <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">// EXPERTISE //</p>
+            <h3 className="text-4xl font-light mb-4 text-white">
+              Popular <span className="font-bold italic text-gray-400">Categories</span>
+            </h3>
+            <div className="w-12 h-[1px] bg-white/30"></div>
+          </motion.div>
 
           <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto"
@@ -221,10 +111,10 @@ const HomePage = () => {
             {categories.map((cat) => (
               <TiltCard key={cat.title}>
                 <motion.div
-                  className="relative overflow-hidden rounded-xl shadow-2xl border-2 border-white transition-all duration-300 group cursor-pointer h-48"
+                  className="relative overflow-hidden rounded-xl shadow-2xl transition-all duration-300 group cursor-pointer h-48"
                   variants={fadeInUp}
                 >
-                  { }
+
                   <div
                     className="absolute inset-0 bg-cover bg-center"
                     style={{
@@ -232,22 +122,20 @@ const HomePage = () => {
                     }}
                   ></div>
 
-                  { }
                   <div
-                    className="absolute inset-0 bg-green-800/60 from-green-900 via-green-800/80 to-green-700/60 group-hover:from-green-900/90 group-hover:via-green-800/70 transition-all duration-300"
+                    className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent group-hover:from-black/90 transition-all duration-300"
                   ></div>
 
-                  { }
-                  <div className="relative z-10 h-full flex flex-col items-center justify-center p-6">
+                  <div className="relative z-10 h-full flex flex-col items-center justify-end p-6">
                     <div
-                      className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl shadow-lg bg-yellow-500 text-green-900"
+                      className="w-10 h-10 rounded-none mb-3 flex items-center justify-center text-white text-lg border border-white/20 bg-black/50 backdrop-blur-sm"
                     >
                       <i className={cat.icon}></i>
                     </div>
-                    <h4 className="font-bold text-lg mb-1 text-white">
+                    <h4 className="font-mono tracking-widest text-sm mb-1 text-white uppercase">
                       {cat.title}
                     </h4>
-                    <p className="text-white/90 text-sm">{cat.subtitle}</p>
+                    <p className="text-gray-400 text-xs italic">{cat.subtitle}</p>
                   </div>
                 </motion.div>
               </TiltCard>
@@ -256,25 +144,19 @@ const HomePage = () => {
         </div>
       </section>
 
-      { }
-      <section className="py-16 px-4 text-center bg-gray-50">
-        <motion.h3
-          className="text-3xl font-bold mb-4 text-green-900"
+      <section className="py-24 px-4 text-center bg-[#111111] relative border-t border-white/5">
+        <motion.div
+          className="flex flex-col items-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          Featured Photographers
-        </motion.h3>
-        <motion.p
-          className="text-gray-600 text-sm mb-10 max-w-2xl mx-auto"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-        >
-          Meet our top-rated professional photographers
-        </motion.p>
+          <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">// TALENT //</p>
+          <h3 className="text-4xl font-light mb-4 text-white">
+            Featured <span className="font-bold italic text-gray-400">Artists</span>
+          </h3>
+          <div className="w-12 h-[1px] bg-white/30"></div>
+        </motion.div>
 
         <motion.div
           className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto"
@@ -283,47 +165,42 @@ const HomePage = () => {
           whileInView="animate"
           viewport={{ once: true }}
         >
-          {photographers.map((p) => (
+          {featuredPhotographers.map((p) => (
             <motion.div
-              key={p.name}
-              className="bg-white p-6 rounded-lg shadow-md w-72 flex flex-col items-center transition-all duration-300 hover:shadow-xl group"
+              key={p._id}
+              className="bg-[#0a0a0a] p-8 rounded-none border border-white/10 w-72 flex flex-col items-center transition-all duration-500 hover:border-white/30 group relative"
               variants={fadeInUp}
-              whileHover={{ y: -10 }}
+              whileHover={{ y: -5 }}
             >
-              <div className="relative mb-4">
+              <div className="relative mb-6 w-full flex justify-center">
                 <img
-                  src={p.image}
-                  alt={p.name}
-                  className="w-24 h-24 rounded-full object-cover mx-auto transition-transform duration-500 group-hover:scale-110 border-4 border-yellow-500"
+                  src={p.image || `https://ui-avatars.com/api/?name=${p.name?.replace(' ', '+') || 'P'}&size=200&background=111&color=fff`}
+                  alt={p.name || 'Photographer'}
+                  className="w-24 h-24 rounded-full object-cover transition-transform duration-700 group-hover:scale-110"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + p.name.replace(' ', '+') + '&size=200&background=random';
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${p.name?.replace(' ', '+') || 'P'}&size=200&background=111&color=fff`;
                   }}
                 />
-                {p.topPro && (
-                  <span
-                    className="absolute top-0 -right-2 px-3 py-1 text-xs font-bold rounded-full shadow-lg bg-yellow-500 text-green-900"
-                  >
-                    TOP PRO
-                  </span>
-                )}
               </div>
 
-              <h4 className="font-bold text-xl mb-1 text-green-900">
-                {p.name}
+              <h4 className="font-light text-xl mb-1 text-white tracking-wide truncate w-full text-center">
+                {p.name || 'Photographer'}
               </h4>
-              <p className="text-gray-500 text-sm mb-3">{p.role}</p>
-              <div className="flex items-center text-sm font-semibold mb-4 text-green-700">
-                <i className="fas fa-star mr-1"></i> {p.rating} <span className="text-gray-400 ml-1">({p.reviews} reviews)</span>
+              <p className="text-gray-500 text-xs font-mono uppercase tracking-widest mb-4 truncate w-full text-center">{p.category || 'Photography'}</p>
+              <div className="flex items-center text-xs font-mono mb-6 text-gray-400">
+                <i className="fas fa-star mr-2 text-white/40"></i>
+                {p.rating ? p.rating.toFixed(1) : 'New'}
+                <span className="opacity-50 ml-2">({p.reviews || 0})</span>
               </div>
               <Link
                 to={ROUTES.USER.PHOTOGRAPHER_DETAILS}
-                params={{ id: p.id }}
+                params={{ id: p.id || p._id }}
                 className="w-full"
               >
                 <MagneticButton
-                  className="px-8 py-2 font-semibold rounded-md text-white transition-all duration-200 hover:shadow-lg w-full bg-green-700"
+                  className="px-8 py-3 text-xs font-mono tracking-[0.2em] uppercase rounded-none border border-white/20 text-white transition-all duration-300 hover:bg-white hover:text-black w-full flex justify-center items-center"
                 >
-                  <span className="relative z-10">View Profile</span>
+                  <span className="relative z-10 text-center">View Profile</span>
                 </MagneticButton>
               </Link>
             </motion.div>
@@ -331,31 +208,31 @@ const HomePage = () => {
         </motion.div>
       </section>
 
-      { }
-      <section className="py-16 px-4 text-center bg-white">
+      <section className="py-24 px-4 text-center bg-[#0a0a0a] border-t border-white/5 relative overflow-hidden">
+        {/* Abstract background elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/5 blur-[120px] pointer-events-none rounded-full"></div>
+
         <motion.div
-          className="flex flex-wrap justify-center gap-12 md:gap-24 max-w-4xl mx-auto"
-          initial={{ opacity: 0, scale: 0.9 }}
+          className="flex flex-wrap justify-center gap-16 md:gap-32 max-w-5xl mx-auto relative z-10"
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center group cursor-default">
+          {stats.map((stat, i) => (
+            <div key={stat.label} className="flex flex-col items-center group cursor-default relative">
+              <div className="absolute -left-6 top-2 text-[10px] text-gray-700 font-mono">0{i + 1} //</div>
               <motion.div
-                className={`text-5xl font-extrabold mb-2 ${stat.accent ? 'text-green-700' : 'text-green-900'}`}
-                whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
-                transition={{ type: "spring", stiffness: 300 }}
+                className={`text-6xl md:text-7xl font-light mb-4 text-white font-serif tracking-tighter`}
               >
                 {stat.number}
               </motion.div>
-              <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
+              <p className="text-gray-500 text-xs font-mono uppercase tracking-[0.2em]">{stat.label}</p>
             </div>
           ))}
         </motion.div>
       </section>
 
-      { }
     </div>
   );
 };

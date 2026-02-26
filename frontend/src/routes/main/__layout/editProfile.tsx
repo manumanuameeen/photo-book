@@ -5,4 +5,3 @@ export const Route = createFileRoute('/main/__layout/editProfile')({
   component: EditProfilePage,
 })
 
-

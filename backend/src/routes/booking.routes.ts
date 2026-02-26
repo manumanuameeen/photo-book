@@ -15,6 +15,10 @@ router.get(ROUTES.V1.BOOKING.USER_BOOKINGS, verifyAccessToken, (req, res) =>
 router.get(ROUTES.V1.BOOKING.PHOTOGRAPHER_BOOKINGS, verifyAccessToken, (req, res) =>
   bookingController.getPhotographerBookings(req, res),
 );
+router.get(ROUTES.V1.BOOKING.LOOKUP, verifyAccessToken, (req, res) =>
+  bookingController.getBookingByBookingId(req, res),
+);
+
 router.get(ROUTES.V1.BOOKING.DETAILS, verifyAccessToken, (req, res) =>
   bookingController.getBookingDetails(req, res),
 );

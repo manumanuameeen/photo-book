@@ -47,6 +47,7 @@ import { Route as Admin_layoutWalletRouteImport } from './routes/admin/__layout/
 import { Route as Admin_layoutUsermanagementRouteImport } from './routes/admin/__layout/usermanagement'
 import { Route as Admin_layoutRulesRouteImport } from './routes/admin/__layout/rules'
 import { Route as Admin_layoutReportsRouteImport } from './routes/admin/__layout/reports'
+import { Route as Admin_layoutReportCategoriesRouteImport } from './routes/admin/__layout/report-categories'
 import { Route as Admin_layoutRentalOrdersRouteImport } from './routes/admin/__layout/rental-orders'
 import { Route as Admin_layoutRentalManagementRouteImport } from './routes/admin/__layout/rental-management'
 import { Route as Admin_layoutPhotographersRouteImport } from './routes/admin/__layout/photographers'
@@ -70,6 +71,12 @@ const MainRouteImport = createFileRoute('/main')()
 const AuthRouteImport = createFileRoute('/auth')()
 const AdminRouteImport = createFileRoute('/admin')()
 const ChatLazyRouteImport = createFileRoute('/chat')()
+const Main_layoutHowItWorksLazyRouteImport = createFileRoute(
+  '/main/__layout/how-it-works',
+)()
+const Admin_layoutHelpLazyRouteImport = createFileRoute(
+  '/admin/__layout/help',
+)()
 
 const PhotographerRoute = PhotographerRouteImport.update({
   id: '/photographer',
@@ -152,6 +159,21 @@ const Admin_layoutRoute = Admin_layoutRouteImport.update({
   id: '/__layout',
   getParentRoute: () => AdminRoute,
 } as any)
+const Main_layoutHowItWorksLazyRoute =
+  Main_layoutHowItWorksLazyRouteImport.update({
+    id: '/how-it-works',
+    path: '/how-it-works',
+    getParentRoute: () => Main_layoutRoute,
+  } as any).lazy(() =>
+    import('./routes/main/__layout/how-it-works.lazy').then((d) => d.Route),
+  )
+const Admin_layoutHelpLazyRoute = Admin_layoutHelpLazyRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => Admin_layoutRoute,
+} as any).lazy(() =>
+  import('./routes/admin/__layout/help.lazy').then((d) => d.Route),
+)
 const Photographer_layoutPortfolioRoute =
   Photographer_layoutPortfolioRouteImport.update({
     id: '/portfolio',
@@ -280,6 +302,12 @@ const Admin_layoutReportsRoute = Admin_layoutReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => Admin_layoutRoute,
 } as any)
+const Admin_layoutReportCategoriesRoute =
+  Admin_layoutReportCategoriesRouteImport.update({
+    id: '/report-categories',
+    path: '/report-categories',
+    getParentRoute: () => Admin_layoutRoute,
+  } as any)
 const Admin_layoutRentalOrdersRoute =
   Admin_layoutRentalOrdersRouteImport.update({
     id: '/rental-orders',
@@ -398,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/admin/photographers': typeof Admin_layoutPhotographersRoute
   '/admin/rental-management': typeof Admin_layoutRentalManagementRoute
   '/admin/rental-orders': typeof Admin_layoutRentalOrdersRoute
+  '/admin/report-categories': typeof Admin_layoutReportCategoriesRoute
   '/admin/reports': typeof Admin_layoutReportsRoute
   '/admin/rules': typeof Admin_layoutRulesRoute
   '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
@@ -422,6 +451,8 @@ export interface FileRoutesByFullPath {
   '/photographer/edit-profile': typeof Photographer_layoutEditProfileRoute
   '/photographer/packages': typeof Photographer_layoutPackagesRoute
   '/photographer/portfolio': typeof Photographer_layoutPortfolioRoute
+  '/admin/help': typeof Admin_layoutHelpLazyRoute
+  '/main/how-it-works': typeof Main_layoutHowItWorksLazyRoute
   '/admin/applications/$id': typeof Admin_layoutApplicationsIdRoute
   '/admin/categories/pending': typeof Admin_layoutCategoriesPendingRoute
   '/admin/rental-management/$id': typeof Admin_layoutRentalManagementIdRoute
@@ -454,6 +485,7 @@ export interface FileRoutesByTo {
   '/admin/photographers': typeof Admin_layoutPhotographersRoute
   '/admin/rental-management': typeof Admin_layoutRentalManagementRoute
   '/admin/rental-orders': typeof Admin_layoutRentalOrdersRoute
+  '/admin/report-categories': typeof Admin_layoutReportCategoriesRoute
   '/admin/reports': typeof Admin_layoutReportsRoute
   '/admin/rules': typeof Admin_layoutRulesRoute
   '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
@@ -477,6 +509,8 @@ export interface FileRoutesByTo {
   '/photographer/edit-profile': typeof Photographer_layoutEditProfileRoute
   '/photographer/packages': typeof Photographer_layoutPackagesRoute
   '/photographer/portfolio': typeof Photographer_layoutPortfolioRoute
+  '/admin/help': typeof Admin_layoutHelpLazyRoute
+  '/main/how-it-works': typeof Main_layoutHowItWorksLazyRoute
   '/admin/applications/$id': typeof Admin_layoutApplicationsIdRoute
   '/admin/categories/pending': typeof Admin_layoutCategoriesPendingRoute
   '/admin/rental-management/$id': typeof Admin_layoutRentalManagementIdRoute
@@ -514,6 +548,7 @@ export interface FileRoutesById {
   '/admin/__layout/photographers': typeof Admin_layoutPhotographersRoute
   '/admin/__layout/rental-management': typeof Admin_layoutRentalManagementRoute
   '/admin/__layout/rental-orders': typeof Admin_layoutRentalOrdersRoute
+  '/admin/__layout/report-categories': typeof Admin_layoutReportCategoriesRoute
   '/admin/__layout/reports': typeof Admin_layoutReportsRoute
   '/admin/__layout/rules': typeof Admin_layoutRulesRoute
   '/admin/__layout/usermanagement': typeof Admin_layoutUsermanagementRoute
@@ -538,6 +573,8 @@ export interface FileRoutesById {
   '/photographer/__layout/edit-profile': typeof Photographer_layoutEditProfileRoute
   '/photographer/__layout/packages': typeof Photographer_layoutPackagesRoute
   '/photographer/__layout/portfolio': typeof Photographer_layoutPortfolioRoute
+  '/admin/__layout/help': typeof Admin_layoutHelpLazyRoute
+  '/main/__layout/how-it-works': typeof Main_layoutHowItWorksLazyRoute
   '/admin/__layout/applications/$id': typeof Admin_layoutApplicationsIdRoute
   '/admin/__layout/categories/pending': typeof Admin_layoutCategoriesPendingRoute
   '/admin/__layout/rental-management_/$id': typeof Admin_layoutRentalManagementIdRoute
@@ -572,6 +609,7 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/rental-management'
     | '/admin/rental-orders'
+    | '/admin/report-categories'
     | '/admin/reports'
     | '/admin/rules'
     | '/admin/usermanagement'
@@ -596,6 +634,8 @@ export interface FileRouteTypes {
     | '/photographer/edit-profile'
     | '/photographer/packages'
     | '/photographer/portfolio'
+    | '/admin/help'
+    | '/main/how-it-works'
     | '/admin/applications/$id'
     | '/admin/categories/pending'
     | '/admin/rental-management/$id'
@@ -628,6 +668,7 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/rental-management'
     | '/admin/rental-orders'
+    | '/admin/report-categories'
     | '/admin/reports'
     | '/admin/rules'
     | '/admin/usermanagement'
@@ -651,6 +692,8 @@ export interface FileRouteTypes {
     | '/photographer/edit-profile'
     | '/photographer/packages'
     | '/photographer/portfolio'
+    | '/admin/help'
+    | '/main/how-it-works'
     | '/admin/applications/$id'
     | '/admin/categories/pending'
     | '/admin/rental-management/$id'
@@ -687,6 +730,7 @@ export interface FileRouteTypes {
     | '/admin/__layout/photographers'
     | '/admin/__layout/rental-management'
     | '/admin/__layout/rental-orders'
+    | '/admin/__layout/report-categories'
     | '/admin/__layout/reports'
     | '/admin/__layout/rules'
     | '/admin/__layout/usermanagement'
@@ -711,6 +755,8 @@ export interface FileRouteTypes {
     | '/photographer/__layout/edit-profile'
     | '/photographer/__layout/packages'
     | '/photographer/__layout/portfolio'
+    | '/admin/__layout/help'
+    | '/main/__layout/how-it-works'
     | '/admin/__layout/applications/$id'
     | '/admin/__layout/categories/pending'
     | '/admin/__layout/rental-management_/$id'
@@ -853,6 +899,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof Admin_layoutRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/main/__layout/how-it-works': {
+      id: '/main/__layout/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/main/how-it-works'
+      preLoaderRoute: typeof Main_layoutHowItWorksLazyRouteImport
+      parentRoute: typeof Main_layoutRoute
+    }
+    '/admin/__layout/help': {
+      id: '/admin/__layout/help'
+      path: '/help'
+      fullPath: '/admin/help'
+      preLoaderRoute: typeof Admin_layoutHelpLazyRouteImport
+      parentRoute: typeof Admin_layoutRoute
     }
     '/photographer/__layout/portfolio': {
       id: '/photographer/__layout/portfolio'
@@ -1022,6 +1082,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Admin_layoutReportsRouteImport
       parentRoute: typeof Admin_layoutRoute
     }
+    '/admin/__layout/report-categories': {
+      id: '/admin/__layout/report-categories'
+      path: '/report-categories'
+      fullPath: '/admin/report-categories'
+      preLoaderRoute: typeof Admin_layoutReportCategoriesRouteImport
+      parentRoute: typeof Admin_layoutRoute
+    }
     '/admin/__layout/rental-orders': {
       id: '/admin/__layout/rental-orders'
       path: '/rental-orders'
@@ -1165,10 +1232,12 @@ interface Admin_layoutRouteChildren {
   Admin_layoutPhotographersRoute: typeof Admin_layoutPhotographersRoute
   Admin_layoutRentalManagementRoute: typeof Admin_layoutRentalManagementRoute
   Admin_layoutRentalOrdersRoute: typeof Admin_layoutRentalOrdersRoute
+  Admin_layoutReportCategoriesRoute: typeof Admin_layoutReportCategoriesRoute
   Admin_layoutReportsRoute: typeof Admin_layoutReportsRoute
   Admin_layoutRulesRoute: typeof Admin_layoutRulesRoute
   Admin_layoutUsermanagementRoute: typeof Admin_layoutUsermanagementRoute
   Admin_layoutWalletRoute: typeof Admin_layoutWalletRoute
+  Admin_layoutHelpLazyRoute: typeof Admin_layoutHelpLazyRoute
   Admin_layoutApplicationsIdRoute: typeof Admin_layoutApplicationsIdRoute
   Admin_layoutRentalManagementIdRoute: typeof Admin_layoutRentalManagementIdRoute
   Admin_layoutRentalOrdersOrderIdRoute: typeof Admin_layoutRentalOrdersOrderIdRoute
@@ -1182,10 +1251,12 @@ const Admin_layoutRouteChildren: Admin_layoutRouteChildren = {
   Admin_layoutPhotographersRoute: Admin_layoutPhotographersRoute,
   Admin_layoutRentalManagementRoute: Admin_layoutRentalManagementRoute,
   Admin_layoutRentalOrdersRoute: Admin_layoutRentalOrdersRoute,
+  Admin_layoutReportCategoriesRoute: Admin_layoutReportCategoriesRoute,
   Admin_layoutReportsRoute: Admin_layoutReportsRoute,
   Admin_layoutRulesRoute: Admin_layoutRulesRoute,
   Admin_layoutUsermanagementRoute: Admin_layoutUsermanagementRoute,
   Admin_layoutWalletRoute: Admin_layoutWalletRoute,
+  Admin_layoutHelpLazyRoute: Admin_layoutHelpLazyRoute,
   Admin_layoutApplicationsIdRoute: Admin_layoutApplicationsIdRoute,
   Admin_layoutRentalManagementIdRoute: Admin_layoutRentalManagementIdRoute,
   Admin_layoutRentalOrdersOrderIdRoute: Admin_layoutRentalOrdersOrderIdRoute,
@@ -1243,6 +1314,7 @@ interface Main_layoutRouteChildren {
   Main_layoutRentalsRoute: typeof Main_layoutRentalsRoute
   Main_layoutRulesRoute: typeof Main_layoutRulesRoute
   Main_layoutWalletRoute: typeof Main_layoutWalletRoute
+  Main_layoutHowItWorksLazyRoute: typeof Main_layoutHowItWorksLazyRoute
   Main_layoutPaymentIdRoute: typeof Main_layoutPaymentIdRoute
   Main_layoutPaymentSuccessRoute: typeof Main_layoutPaymentSuccessRoute
   Main_layoutPhotographerIdRoute: typeof Main_layoutPhotographerIdRoute
@@ -1262,6 +1334,7 @@ const Main_layoutRouteChildren: Main_layoutRouteChildren = {
   Main_layoutRentalsRoute: Main_layoutRentalsRoute,
   Main_layoutRulesRoute: Main_layoutRulesRoute,
   Main_layoutWalletRoute: Main_layoutWalletRoute,
+  Main_layoutHowItWorksLazyRoute: Main_layoutHowItWorksLazyRoute,
   Main_layoutPaymentIdRoute: Main_layoutPaymentIdRoute,
   Main_layoutPaymentSuccessRoute: Main_layoutPaymentSuccessRoute,
   Main_layoutPhotographerIdRoute: Main_layoutPhotographerIdRoute,

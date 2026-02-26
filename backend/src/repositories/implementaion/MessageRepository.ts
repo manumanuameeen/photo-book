@@ -8,45 +8,132 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
     super(MessageModel);
   }
 
-  async findByReceiverId(receiverId: string, page = 1, limit = 10): Promise<{ messages: IMessage[]; total: number }> {
+  async findByPartnerId(
+    userId: string,
+    partnerId: string,
+    page = 1,
+    limit = 50,
+  ): Promise<{ messages: IMessage[]; total: number }> {
     const skip = (page - 1) * limit;
+    const userObjId = new mongoose.Types.ObjectId(userId);
+    const partnerObjId = new mongoose.Types.ObjectId(partnerId);
+
+    const query = {
+      $or: [
+        { senderId: userObjId, receiverId: partnerObjId },
+        { senderId: partnerObjId, receiverId: userObjId },
+      ],
+      deletedFor: { $ne: userObjId },
+    };
+
     const [messages, total] = await Promise.all([
       this._model
-        .find({ receiverId, deletedFor: { $ne: receiverId } })
+        .find(query)
         .populate("senderId", "name role profileImage")
         .populate("receiverId", "name role profileImage")
         .populate({
           path: "replyTo",
           select: "content senderId attachment",
-          populate: { path: "senderId", select: "name" }
+          populate: { path: "senderId", select: "name" },
         })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .exec(),
-      this._model.countDocuments({ receiverId, deletedFor: { $ne: receiverId } })
+      this._model.countDocuments(query),
     ]);
     return { messages, total };
   }
 
-  async findBySenderId(senderId: string, page = 1, limit = 10): Promise<{ messages: IMessage[]; total: number }> {
-    const skip = (page - 1) * limit;
-    const [messages, total] = await Promise.all([
-      this._model
-        .find({ senderId, deletedFor: { $ne: senderId } })
-        .populate("senderId", "name role profileImage")
-        .populate("receiverId", "name role profileImage")
-        .populate({
-          path: "replyTo",
-          select: "content senderId attachment",
-        })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-      this._model.countDocuments({ senderId, deletedFor: { $ne: senderId } })
-    ]);
-    return { messages, total };
+  async getConversations(userId: string): Promise<Record<string, unknown>[]> {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+
+    const pipeline: mongoose.PipelineStage[] = [
+      {
+        $match: {
+          deletedFor: { $ne: userObjId },
+          $and: [
+            { $or: [{ senderId: userObjId }, { receiverId: userObjId }] },
+            {
+              $or: [
+                { type: "DIRECT" },
+                { type: "SYSTEM", senderId: { $exists: true, $ne: null } }
+              ]
+            }
+          ]
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: {
+            $cond: {
+              if: { $eq: ["$senderId", userObjId] },
+              then: "$receiverId",
+              else: "$senderId",
+            },
+          },
+          lastMessage: { $first: "$$ROOT" },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$receiverId", userObjId] },
+                    { $eq: ["$isRead", false] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "partner",
+        },
+      },
+      {
+        $unwind: { path: "$partner", preserveNullAndEmptyArrays: true },
+      },
+      {
+        $project: {
+          partner: {
+            _id: 1,
+            name: 1,
+            profileImage: 1,
+            role: 1,
+          },
+          lastMessage: 1,
+          unreadCount: 1,
+        },
+      },
+      {
+        $sort: { "lastMessage.createdAt": -1 as -1 | 1 },
+      },
+    ];
+
+    return await this._model.aggregate(pipeline).exec();
+  }
+
+  async findByReportId(reportId: string): Promise<IMessage[]> {
+    return await this._model
+      .find({ reportId })
+      .populate("senderId", "name role profileImage")
+      .populate("receiverId", "name role profileImage")
+      .populate({
+        path: "replyTo",
+        select: "content senderId attachment",
+      })
+      .sort({ createdAt: 1 })
+      .exec();
   }
 
   async getUnreadCount(receiverId: string): Promise<number> {
@@ -63,18 +150,18 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
       {
         $or: [
           { senderId: userId, receiverId: partnerId },
-          { senderId: partnerId, receiverId: userId }
+          { senderId: partnerId, receiverId: userId },
         ],
-        deletedFor: { $ne: userObjId }
+        deletedFor: { $ne: userObjId },
       },
-      { $addToSet: { deletedFor: userObjId } }
+      { $addToSet: { deletedFor: userObjId } },
     );
   }
 
   async deleteForMe(messageId: string, userId: string): Promise<void> {
     const userObjId = new mongoose.Types.ObjectId(userId);
     await this._model.findByIdAndUpdate(messageId, {
-      $addToSet: { deletedFor: userObjId }
+      $addToSet: { deletedFor: userObjId },
     });
   }
 
@@ -84,27 +171,23 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
 
     if (!message) return null;
 
-    const existingReactionIndex = message.reactions?.findIndex(
-      r => r.userId.toString() === userId
-    ) ?? -1;
+    const existingReactionIndex =
+      message.reactions?.findIndex((r) => r.userId.toString() === userId) ?? -1;
 
     if (existingReactionIndex >= 0) {
-      
       if (message.reactions![existingReactionIndex].emoji === emoji) {
-        
         message.reactions!.splice(existingReactionIndex, 1);
       } else {
-        
         message.reactions![existingReactionIndex].emoji = emoji;
       }
     } else {
-      
       if (!message.reactions) message.reactions = [];
       message.reactions.push({ emoji, userId: userObjId });
     }
 
     await message.save();
-    return await this._model.findById(messageId)
+    return await this._model
+      .findById(messageId)
       .populate("senderId", "name role profileImage")
       .populate("receiverId", "name role profileImage")
       .exec();

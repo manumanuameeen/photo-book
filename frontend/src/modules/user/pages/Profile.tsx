@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
-  Mail,
-  Phone,
-  MapPin,
   Briefcase,
   Camera,
   CreditCard,
+  MapPin,
   User,
-  Pencil,
-  CheckCircle,
   Clock,
-  XCircle
-} from 'lucide-react';
+  CheckCircle,
+  XCircle,
+  Pencil,
+  Mail,
+  Phone,
+} from "lucide-react";
 import { useProfile } from "../hooks/useUser";
 import Loader from "../../../components/Loader";
 import { useNavigate } from "@tanstack/react-router";
@@ -19,13 +19,9 @@ import { ROUTES } from "../../../constants/routes";
 import { useApplicationStore } from "../../photographer/store/useApplicationStore";
 import { motion } from "framer-motion";
 import { userApi } from "../../../services/api/userApi";
-import { bookingApi } from "../../../services/api/bookingApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Calendar } from "lucide-react";
-
-
-
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -52,9 +48,11 @@ const Profile = () => {
       await userApi.uploadProfileImage(file);
       toast.success("Profile image updated", { id: toastId });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-    } catch (error: any) {
-      console.error("Upload error:", error);
-      toast.error(error.response?.data?.message || "Failed to upload image", { id: toastId });
+    } catch (error: unknown) {
+      console.error("Profile Error:", error);
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Failed to load profile");
+      navigate({ to: ROUTES.AUTH.LOGIN });
     }
   };
 
@@ -103,7 +101,6 @@ const Profile = () => {
     navigate({ to: ROUTES.USER.BOOKINGS });
   };
 
-
   const StatusBadge = () => {
     if (applicationStatus === 'pending') {
       return (
@@ -137,12 +134,10 @@ const Profile = () => {
       className="min-h-screen bg-gray-50 font-sans text-gray-800"
     >
 
-      {}
       <div className="bg-[#1E5631] h-16 w-full shadow-sm"></div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
 
-        {}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
@@ -154,7 +149,7 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-3">
-              {}
+              
               {(applicationStatus === 'none' || applicationStatus === 'rejected') && (
                 <button
                   onClick={handleApplyNow}
@@ -202,13 +197,10 @@ const Profile = () => {
           </div>
         </div>
 
-        {}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {}
           <div className="space-y-6">
 
-            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Personal Identity</h2>
               <div className="flex flex-col items-center text-center">
@@ -235,7 +227,6 @@ const Profile = () => {
               </div>
             </div>
 
-            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Contact Details</h2>
               <div className="space-y-5">
@@ -258,10 +249,8 @@ const Profile = () => {
             </div>
           </div>
 
-          {}
           <div className="space-y-6">
 
-            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-4">My Bookings</h2>
               <p className="text-gray-500 text-sm mb-6">View and manage all your photography sessions and requests.</p>
@@ -271,7 +260,6 @@ const Profile = () => {
               </button>
             </div>
 
-            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">About Me</h2>
               <p className="text-gray-600 text-sm leading-relaxed">
@@ -279,13 +267,12 @@ const Profile = () => {
               </p>
             </div>
 
-            {}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Account Status</h2>
               <div className="space-y-5">
                 <InfoField
                   label="Wallet Balance"
-                  value={`$${data.walletBalance || 0}`}
+                  value={`$${data.walletBalance || 0} `}
                   icon={CreditCard}
                 />
                 <InfoField
@@ -304,16 +291,15 @@ const Profile = () => {
   );
 };
 
-
-const InfoField = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string | number, icon: any, isLink?: boolean }) => (
+const InfoField = ({ label, value, icon: Icon, isLink = false }: { label: string, value: string | number, icon: React.ElementType, isLink?: boolean }) => (
   <div>
     <label className="block text-xs font-medium text-gray-500 mb-1.5 ml-1">{label}</label>
     <div className={`
-      flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-50
+      flex items - center gap - 3 px - 4 py - 3 rounded - lg border border - gray - 50
       ${isLink ? 'bg-green-50/50 text-green-700' : 'bg-gray-50 text-gray-800'}
-    `}>
+`}>
       <Icon size={18} className={isLink ? 'text-green-600' : 'text-gray-400'} />
-      <span className={`text-sm font-medium ${isLink ? 'hover:underline cursor-pointer' : ''}`}>
+      <span className={`text - sm font - medium ${isLink ? 'hover:underline cursor-pointer' : ''} `}>
         {value}
       </span>
     </div>

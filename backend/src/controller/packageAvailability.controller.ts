@@ -28,7 +28,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     this._fileService = fileService;
   }
 
-  createPackage = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  createPackage = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -61,7 +61,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  getPackages = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getPackages = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -78,7 +78,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  getPublicPackages = async (req: Request, res: Response, next: NextFunction) => {
+  getPublicPackages = async (req: Request, res: Response, _next: NextFunction) => {
     try {
       const { photographerId } = req.params;
       if (!photographerId)
@@ -96,7 +96,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  updatePackage = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  updatePackage = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       const { id } = req.params;
@@ -132,7 +132,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  deletePackage = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  deletePackage = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       const { id } = req.params;
@@ -145,7 +145,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  setAvailability = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  setAvailability = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -157,7 +157,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  getAvailability = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getAvailability = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       const { startDate, endDate } = req.query;
@@ -178,7 +178,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  getPublicAvailability = async (req: Request, res: Response, next: NextFunction) => {
+  getPublicAvailability = async (req: Request, res: Response, _next: NextFunction) => {
     try {
       const { id } = req.params;
       console.log(`🔍 getPublicAvailability hit. ID: ${id}`);
@@ -192,14 +192,12 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
         throw new AppError(Messages.DATE_RANGE_REQUIRED, HttpStatus.BAD_REQUEST);
       }
 
-
       const { PhotographerModel } = await import("../model/photographerModel");
       const mongoose = (await import("mongoose")).default;
 
       let targetUserId = "";
 
       if (mongoose.Types.ObjectId.isValid(id)) {
-
         const photographer = await PhotographerModel.findOne({
           $or: [
             { _id: new mongoose.Types.ObjectId(id) },
@@ -215,7 +213,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
           throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
       } else {
-        throw new AppError("Invalid ID format", HttpStatus.BAD_REQUEST);
+        throw new AppError(Messages.INVALID_ID_FORMAT, HttpStatus.BAD_REQUEST);
       }
 
       const result = await this._availabilityService.getAvailability(
@@ -230,7 +228,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  blockRange = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  blockRange = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       const { startDate, endDate } = req.body;
@@ -247,7 +245,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     }
   };
 
-  unblockRange = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  unblockRange = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       const { startDate, endDate } = req.body;
@@ -257,22 +255,22 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
         throw new AppError(Messages.DATE_RANGE_REQUIRED, HttpStatus.BAD_REQUEST);
       }
 
-      await (this._availabilityService as any).unblockRange(userId, new Date(startDate), new Date(endDate));
-      ApiResponse.success(res, null, "Range unblocked successfully", HttpStatus.OK);
+      await this._availabilityService.unblockRange(userId, new Date(startDate), new Date(endDate));
+      ApiResponse.success(res, null, Messages.RANGE_UNBLOCKED, HttpStatus.OK);
     } catch (error) {
       this._handleError(res, error);
     }
   };
 
-  deleteAvailability = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  deleteAvailability = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       const { date } = req.params;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
-      if (!date) throw new AppError("Date is required", HttpStatus.BAD_REQUEST);
+      if (!date) throw new AppError(Messages.DATE_REQUIRED, HttpStatus.BAD_REQUEST);
 
       await this._availabilityService.deleteAvailability(userId, new Date(date));
-      ApiResponse.success(res, null, "Availability deleted", HttpStatus.OK);
+      ApiResponse.success(res, null, Messages.AVAILABILITY_DELETED, HttpStatus.OK);
     } catch (error) {
       this._handleError(res, error);
     }
@@ -290,13 +288,13 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 
-  toggleLike = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  toggleLike = async (req: AuthRequest, res: Response, _next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       const { id } = req.params;
       const pkg = await this._packageService.toggleLike(id, userId);
-      ApiResponse.success(res, pkg, "Like status toggled");
+      ApiResponse.success(res, pkg, Messages.LIKE_TOGGLED);
     } catch (error) {
       this._handleError(res, error);
     }

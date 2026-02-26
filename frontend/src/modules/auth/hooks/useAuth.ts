@@ -10,7 +10,6 @@ import type {
   IVerifyResetOtp
 } from "../types/auth.types";
 
-
 export function useSignup() {
   return useMutation<IAuthResponse, Error, ISignupRequest>({
     mutationFn: async (data) => {
@@ -21,13 +20,11 @@ export function useSignup() {
   });
 }
 
-
 export function useVerifyOtp() {
   return useMutation<IAuthResponse, Error, IVerifyOtpRequest>({
     mutationFn: (data) => authService.verifyOtp(data),
   });
 }
-
 
 export function useLogin() {
   return useMutation<IAuthResponse, Error, ILoginRequest>({
@@ -39,13 +36,11 @@ export function useLogin() {
   });
 }
 
-
 export function useResendOtp() {
   return useMutation<{ message: string }, Error, string>({
     mutationFn: (email) => authService.resendOtp(email),
   });
 }
-
 
 export function useForgetPassword() {
   return useMutation<{ message: string }, Error, IForgetPassword>({
@@ -53,13 +48,11 @@ export function useForgetPassword() {
   })
 }
 
-
 export function useVerifyResetOtp() {
   return useMutation<{ message: string }, Error, IVerifyResetOtp>({
     mutationFn: (data) => authService.verifyResetOtp(data)
   })
 }
-
 
 export function useResetPassword() {
   return useMutation<{ message: string }, Error, IResetPassword>({

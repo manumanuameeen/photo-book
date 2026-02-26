@@ -2,9 +2,6 @@ import apiClient from "../../../services/apiClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type IChangePassword, type IProfileResponse, type IUpdateProfile, type IPasswordResponse } from "../types/profile.types";
 
-
-
-
 export const useProfile = () => {
     return useQuery({
         queryKey: ["profile"],
@@ -30,7 +27,7 @@ export const useUpdateProfile = () => {
 
 export const useChangePassword = () => {
     return useMutation({
-        mutationFn: async (data: IChangePassword & { otp: string }) => {
+        mutationFn: async (data: IChangePassword) => {
             const res = await apiClient.post<IPasswordResponse>("/user/change-password", data);
             console.log("change passwrod useUser.ts", res)
             return res.data
@@ -55,8 +52,4 @@ export const useVerifyOtp = () => {
         }
     });
 };
-
-
-
-
 

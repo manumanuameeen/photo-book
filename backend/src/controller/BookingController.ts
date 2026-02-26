@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { z } from "zod";
 import { IBookingController } from "../interfaces/controllers/IBookingController.ts";
 import { IBookingService } from "../interfaces/services/IBookingService.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
@@ -6,26 +7,51 @@ import { AuthRequest } from "../middleware/authMiddleware.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { AppError } from "../utils/AppError.ts";
 import { Messages } from "../constants/messages.ts";
-import { CreateBookingDTO, BookingRescheduleRequestDTO, BookingRescheduleResponseDTO } from "../dto/booking.dto.ts";
+import {
+  CreateBookingDTO,
+  BookingRescheduleRequestDTO,
+  BookingRescheduleResponseDTO,
+} from "../dto/booking.dto.ts";
 
 export class BookingController implements IBookingController {
   private _bookingService: IBookingService;
+
   constructor(bookingService: IBookingService) {
     this._bookingService = bookingService;
+  }
+
+  private _handleError(res: Response, error: unknown): void {
+    if (error instanceof z.ZodError) {
+      const errorMessage = error.issues.map((issue) => issue.message).join(", ");
+      ApiResponse.error(res, errorMessage, HttpStatus.BAD_REQUEST);
+      return;
+    }
+    if (error instanceof AppError) {
+      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
+      return;
+    }
+    if (error instanceof Error) {
+      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
+      return;
+    }
+    ApiResponse.error(res, Messages.INTERNAL_ERROR);
+  }
+
+  private _validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
+    return schema.parse(data);
   }
 
   createBooking = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
-      const bookingData = req.body as CreateBookingDTO;
-
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
+      const bookingData = req.body as CreateBookingDTO;
       const booking = await this._bookingService.createBookingRequest(userId, bookingData);
       ApiResponse.success(res, booking, Messages.BOOKING_CREATED, HttpStatus.CREATED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -38,7 +64,20 @@ export class BookingController implements IBookingController {
         throw new AppError(Messages.BOOKING_NOT_FOUND, HttpStatus.NOT_FOUND);
       }
       ApiResponse.success(res, booking, Messages.BOOKING_FETCHED);
-    } catch (error) {
+    } catch (error: unknown) {
+      this._handleError(res, error);
+    }
+  };
+
+  getBookingByBookingId = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { bookingId } = req.params;
+      const booking = await this._bookingService.getBookingByBookingId(bookingId);
+      if (!booking) {
+        throw new AppError(Messages.BOOKING_NOT_FOUND, HttpStatus.NOT_FOUND);
+      }
+      ApiResponse.success(res, booking, Messages.BOOKING_FETCHED);
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -63,7 +102,7 @@ export class BookingController implements IBookingController {
         status,
       );
       ApiResponse.success(res, result, Messages.BOOKINGS_FETCHED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -71,8 +110,8 @@ export class BookingController implements IBookingController {
   getPhotographerBookings = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const photographerId = req.user?.userId;
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const page = Number.parseInt(req.query.page as string) || 1;
+      const limit = Number.parseInt(req.query.limit as string) || 10;
       const search = (req.query.search as string) || "";
       const status = (req.query.status as string) || "";
 
@@ -88,7 +127,7 @@ export class BookingController implements IBookingController {
         status,
       );
       ApiResponse.success(res, result, Messages.BOOKINGS_FETCHED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -99,7 +138,7 @@ export class BookingController implements IBookingController {
       const { message } = req.body;
       const booking = await this._bookingService.acceptBooking(id, message);
       ApiResponse.success(res, booking, Messages.BOOKING_ACCEPTED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -109,7 +148,7 @@ export class BookingController implements IBookingController {
       const { id } = req.params;
       const session = await this._bookingService.createBookingPaymentIntent(id);
       ApiResponse.success(res, session, Messages.PAYMENT_INTENT_CREATED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -129,7 +168,7 @@ export class BookingController implements IBookingController {
 
       const booking = await this._bookingService.confirmPayment(id, paymentIntentId);
       ApiResponse.success(res, booking, Messages.PAYMENT_CONFIRMED);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[BookingController] confirmPayment Error:", error);
       this._handleError(res, error);
     }
@@ -141,17 +180,16 @@ export class BookingController implements IBookingController {
       const { message } = req.body;
       const booking = await this._bookingService.rejectBooking(id, message);
       ApiResponse.success(res, booking, Messages.BOOKING_REJECTED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
 
-  cancelBooking = async (req: Request, res: Response): Promise<void> => {
+  cancelBooking = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { reason, isEmergency } = req.body;
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
 
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -159,7 +197,7 @@ export class BookingController implements IBookingController {
 
       const booking = await this._bookingService.cancelBooking(id, userId, reason, isEmergency);
       ApiResponse.success(res, booking, Messages.BOOKING_CANCELLED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -169,7 +207,7 @@ export class BookingController implements IBookingController {
       const { id } = req.params;
       const booking = await this._bookingService.completeBooking(id);
       ApiResponse.success(res, booking, Messages.BOOKING_COMPLETED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -179,7 +217,7 @@ export class BookingController implements IBookingController {
       const { id } = req.params;
       const booking = await this._bookingService.startWork(id);
       ApiResponse.success(res, booking, Messages.WORK_STARTED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -189,7 +227,7 @@ export class BookingController implements IBookingController {
       const { id } = req.params;
       const booking = await this._bookingService.endWork(id);
       ApiResponse.success(res, booking, Messages.WORK_END_REQUESTED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -199,7 +237,7 @@ export class BookingController implements IBookingController {
       const { id } = req.params;
       const booking = await this._bookingService.confirmEndWork(id);
       ApiResponse.success(res, booking, Messages.WORK_COMPLETION_CONFIRMED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
@@ -208,12 +246,13 @@ export class BookingController implements IBookingController {
     try {
       const { id } = req.params;
       const { deliveryLink } = req.body;
-      console.log(`[BookingController] deliverWork called for ID: ${id} with link: ${deliveryLink}`);
+      console.log(
+        `[BookingController] deliverWork called for ID: ${id} with link: ${deliveryLink}`,
+      );
 
       const booking = await this._bookingService.deliverWork(id, deliveryLink);
-      console.log(`[BookingController] deliverWork success for ID: ${id}`);
       ApiResponse.success(res, booking, Messages.WORK_DELIVERED);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`[BookingController] deliverWork Error for ID: ${req.params.id}:`, error);
       this._handleError(res, error);
     }
@@ -225,20 +264,20 @@ export class BookingController implements IBookingController {
       console.log(`[BookingController] confirmWorkDelivery called for ID: ${id}`);
       const booking = await this._bookingService.confirmWorkDelivery(id);
       ApiResponse.success(res, booking, Messages.WORK_DELIVERY_CONFIRMED);
-    } catch (error) {
-      console.error(`[BookingController] confirmWorkDelivery Error for ID: ${req.params.id}:`, error);
+    } catch (error: unknown) {
+      console.error(
+        `[BookingController] confirmWorkDelivery Error for ID: ${req.params.id}:`,
+        error,
+      );
       this._handleError(res, error);
     }
   };
 
-
-
-  requestReschedule = async (req: Request, res: Response): Promise<void> => {
+  requestReschedule = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { newDate, newStartTime, reason } = req.body;
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
 
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -250,38 +289,29 @@ export class BookingController implements IBookingController {
         userId,
       );
       ApiResponse.success(res, booking, Messages.RESCHEDULE_REQUEST_SUBMITTED);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
 
-  respondToReschedule = async (req: Request, res: Response): Promise<void> => {
+  respondToReschedule = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { decision } = req.body;
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
 
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      const booking = await this._bookingService.respondToReschedule(id, { decision } as BookingRescheduleResponseDTO, userId);
+      const booking = await this._bookingService.respondToReschedule(
+        id,
+        { decision } as BookingRescheduleResponseDTO,
+        userId,
+      );
       ApiResponse.success(res, booking, `${Messages.RESCHEDULE_PROCESSED}: ${decision}`);
-    } catch (error) {
+    } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

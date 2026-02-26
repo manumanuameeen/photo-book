@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,5 +28,68 @@ jobs:
       - name: Install frontend dependencies
         run: npm install --prefix frontend
 
-      - name: Build full project
-        run: npm run build
+      - name: Lint backend
+        run: npm run lint --prefix backend
+        continue-on-error: true
+
+      - name: Lint frontend
+        run: npm run lint --prefix frontend
+        continue-on-error: true
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install backend dependencies
+        run: npm install --prefix backend
+
+      - name: Install frontend dependencies
+        run: npm install --prefix frontend
+
+      - name: Build backend
+        run: npm run build --prefix backend
+
+      - name: Build frontend
+        run: npm run build --prefix frontend
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install backend dependencies
+        run: npm install --prefix backend
+
+      - name: Run backend tests
+        run: npm run test --prefix backend
+        continue-on-error: true
+
+      - name: Install frontend dependencies
+        run: npm install --prefix frontend
+
+      - name: Run frontend tests
+        run: npm run test --prefix frontend
+        continue-on-error: true

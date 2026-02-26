@@ -6,7 +6,6 @@ export interface IInfoRowProps{
     value:string | number;
 }
 
-
 export function InfoRow({  Icon, label, value }:IInfoRowProps) {
   return (
     <div className="flex items-center gap-3 py-2">

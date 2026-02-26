@@ -27,13 +27,11 @@ const ProtfolioStep = () => {
         if (e.target.files && e.target.files.length > 0) {
             const newFiles = Array.from(e.target.files);
 
-          
             if (files.length + newFiles.length > 10) {
                 toast.error("You can upload a maximum of 10 images.");
                 return;
             }
 
-            
             const uniqueFiles = newFiles.filter(newFile =>
                 !files.some(existingFile =>
                     existingFile.name === newFile.name && existingFile.size === newFile.size

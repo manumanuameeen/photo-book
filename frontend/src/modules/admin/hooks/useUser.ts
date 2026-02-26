@@ -3,8 +3,6 @@ import { AdminUserService } from "../services/implements/admin.user.service";
 import type { IPagination } from "../types/IPagination";
 import { useAuthStore } from "../../auth/store/useAuthStore";
 
-
-
 export const useAdminUser = (page = 1, limit = 10, search = "") => {
     const { user } = useAuthStore();
     const params: IPagination = {
@@ -23,7 +21,6 @@ export const useAdminUser = (page = 1, limit = 10, search = "") => {
 
 };
 
-
 export const useAdminById = (id: string) => {
     return useQuery({
         queryKey: ["admin-user", id],
@@ -32,7 +29,6 @@ export const useAdminById = (id: string) => {
     })
 }
 
-
 export const useBlockUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -40,7 +36,6 @@ export const useBlockUser = () => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-user"], exact: false }),
     });
 }
-
 
 export const useUnblockUser = () => {
 

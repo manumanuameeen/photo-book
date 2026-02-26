@@ -64,23 +64,24 @@ export const useApplicationStore = create<ApplicationState>()(
             partialize: (state) => {
                 const { portfolioImages, ...restFormData } = state.formData;
                 console.log("Excluding portfolioImages from localStorage, count:", portfolioImages?.length || 0);
-                
+
                 return {
                     currentStep: state.currentStep,
                     applicationStatus: state.applicationStatus,
                     formData: restFormData,
                 }
             },
-            merge: (persistedState: any, currentState: ApplicationState) => {
+            merge: (persistedState: unknown, currentState: ApplicationState): ApplicationState => {
+                const state = persistedState as Partial<ApplicationState>;
                 return {
                     ...currentState,
-                    ...persistedState,
+                    ...state,
                     formData: {
                         ...currentState.formData,
-                        ...persistedState.formData,
+                        ...(state?.formData || {}),
                         portfolioImages: currentState.formData.portfolioImages || [],
                     }
-                }
+                };
             }
         }
     )

@@ -6,9 +6,9 @@ export class ApiResponse {
     res: Response,
     data: T,
     message: string = "Success",
-    status: HttpStatus = HttpStatus.OK,
-  ) {
-    return res.status(status).json({
+    statusCode: number = 200,
+  ): Response {
+    return res.status(statusCode).json({
       success: true,
       message,
       data,
@@ -19,7 +19,7 @@ export class ApiResponse {
     res: Response,
     message: string,
     status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
-  ) {
+  ): Response {
     return res.status(status).json({
       success: false,
       message,

@@ -10,28 +10,28 @@ import { CreatePaymentIntentDTO, ConfirmPaymentDTO } from "../dto/payment.dto.ts
 
 export class PaymentController implements IPaymentController {
   constructor(
-    private stripeService: StripeService,
-    private walletService: IWalletService,
-  ) { }
+    private readonly _stripeService: StripeService,
+    private readonly _walletService: IWalletService,
+  ) {}
 
-  createPaymentIntent = async (req: Request, res: Response, next: NextFunction) => {
+  createPaymentIntent = async (req: Request, res: Response, _next: NextFunction) => {
     try {
       const { amount, currency } = req.body as CreatePaymentIntentDTO;
-      const clientSecret = await this.stripeService.createPaymentIntent(amount, currency);
+      const clientSecret = await this._stripeService.createPaymentIntent(amount, currency);
       ApiResponse.success(res, { clientSecret }, Messages.PAYMENT_INTENT_CREATED);
     } catch (error) {
       this._handleError(res, error);
     }
   };
 
-  confirmPayment = async (req: Request, res: Response, next: NextFunction) => {
+  confirmPayment = async (req: Request, res: Response, _next: NextFunction) => {
     try {
       const { paymentIntentId, userId, amount, description } = req.body as ConfirmPaymentDTO;
 
-      const paymentIntent = await this.stripeService.retrievePaymentIntent(paymentIntentId);
+      const paymentIntent = await this._stripeService.retrievePaymentIntent(paymentIntentId);
 
       if (paymentIntent.status === "succeeded") {
-        await this.walletService.creditWallet(
+        await this._walletService.creditWallet(
           userId,
           amount,
           description || Messages.WALLET_TOP_UP,

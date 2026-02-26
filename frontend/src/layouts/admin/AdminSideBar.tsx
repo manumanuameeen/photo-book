@@ -13,7 +13,8 @@ import {
   ListOrdered,
   Wallet,
   AlertTriangle,
-  BookOpen
+  BookOpen,
+  HelpCircle
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../modules/auth/store/useAuthStore.ts";
@@ -33,7 +34,9 @@ const navItems = [
   { id: 8, name: "Rental Orders", icon: <ListOrdered size={20} />, path: ROUTES.ADMIN.RENTAL_ORDERS },
   { id: 9, name: "Wallet", icon: <Wallet size={20} />, path: ROUTES.ADMIN.WALLET },
   { id: 10, name: "Reports", icon: <AlertTriangle size={20} />, path: ROUTES.ADMIN.REPORTS },
-  { id: 11, name: "Rules & Policies", icon: <BookOpen size={20} />, path: ROUTES.ADMIN.RULES },
+  { id: 11, name: "Report Categories", icon: <Tag size={20} />, path: ROUTES.ADMIN.REPORT_CATEGORIES },
+  { id: 12, name: "Rules & Policies", icon: <BookOpen size={20} />, path: ROUTES.ADMIN.RULES },
+  { id: 13, name: "Help Center", icon: <HelpCircle size={20} />, path: ROUTES.ADMIN.HELP_MANAGEMENT },
 ];
 
 const AdminSidebar: React.FC = () => {
@@ -41,19 +44,17 @@ const AdminSidebar: React.FC = () => {
   const { logout } = useAuthStore()
   const [active, setActive] = useState<number>(1);
 
-  // Fetch admin stats for notifications (shared query key with dashboard)
   const { data: stats } = useQuery({
     queryKey: ['admin-dashboard-stats'],
-    queryFn: adminDashboardApi.getStats,
+    queryFn: () => adminDashboardApi.getStats(),
     refetchInterval: 30000,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const handleNavClick = (id: number, path: string) => {
     setActive(id);
     navigate({ to: path });
   };
-
 
   const handleLogout = () => {
     confirm(

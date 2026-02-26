@@ -11,6 +11,7 @@ import {
 } from "../dto/category.dto.ts";
 import { ICategoryController } from "../interfaces/controllers/ICategoryController.ts";
 import { ICategoryService } from "../interfaces/services/ICategoryService.ts";
+import { AuthRequest } from "../middleware/authMiddleware.ts";
 import { AppError } from "../utils/AppError.ts";
 import { ApiResponse } from "../utils/response.ts";
 
@@ -27,18 +28,17 @@ export class CategoryController implements ICategoryController {
 
   getCategories = async (req: Request, res: Response) => {
     try {
-      console.log("cat controller:", req.query);
       const queryDto = this._validate(GetCategoriesQueryDto, req.query);
 
       const result = await this._service.getCategories({
         page: queryDto.page,
         limit: queryDto.limit,
         search: queryDto.search,
-        isBlocked: queryDto.isBlocked as any,
-        isActive: queryDto.isActive as any,
-        isSuggested: queryDto.isSuggested as any,
+        isBlocked: queryDto.isBlocked,
+        isActive: queryDto.isActive,
+        isSuggested: queryDto.isSuggested,
       });
-      console.log("result from category controller:", result);
+
       ApiResponse.success(res, result, Messages.CATEGORIES_FETCHED);
     } catch (error) {
       this._handleError(res, error);
@@ -59,7 +59,7 @@ export class CategoryController implements ICategoryController {
     }
   };
 
-  suggestCategory = async (req: any, res: Response) => {
+  suggestCategory = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -80,7 +80,7 @@ export class CategoryController implements ICategoryController {
     }
   };
 
-  approveCategory = async (req: any, res: Response) => {
+  approveCategory = async (req: AuthRequest, res: Response) => {
     try {
       const adminId = req.user?.userId;
       const { id } = req.params;
@@ -95,7 +95,7 @@ export class CategoryController implements ICategoryController {
     }
   };
 
-  rejectCategory = async (req: any, res: Response) => {
+  rejectCategory = async (req: AuthRequest, res: Response) => {
     try {
       const adminId = req.user?.userId;
       const { id } = req.params;

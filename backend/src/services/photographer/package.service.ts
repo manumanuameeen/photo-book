@@ -13,10 +13,7 @@ export class PackageService implements IPackageService {
   private readonly _repository: IPackageRepository;
   private readonly _photographerRepository: IPhotographerRepository;
 
-  constructor(
-    repository: IPackageRepository,
-    photographerRepository: IPhotographerRepository,
-  ) {
+  constructor(repository: IPackageRepository, photographerRepository: IPhotographerRepository) {
     this._repository = repository;
     this._photographerRepository = photographerRepository;
   }
@@ -96,28 +93,47 @@ export class PackageService implements IPackageService {
     return pkg;
   }
 
-  async getPackagesByUserId(userId: string, page = 1, limit = 10): Promise<{ packages: IBookingPackage[]; total: number }> {
+  async getPackagesByUserId(
+    userId: string,
+    page = 1,
+    limit = 10,
+  ): Promise<{ packages: IBookingPackage[]; total: number }> {
     const photographer = await this._photographerRepository.findByUserId(userId);
     if (!photographer) {
       throw new AppError("Photographer profile not found", HttpStatus.NOT_FOUND);
     }
-    const { packages, total } = await this._repository.findByPhotographerId(photographer.id, page, limit);
+    const { packages, total } = await this._repository.findByPhotographerId(
+      photographer.id,
+      page,
+      limit,
+    );
     return {
       packages: packages.filter((p) => p.status !== "DELETED"),
-      total
+      total,
     };
   }
 
-  async getPackagesByPhotographerId(photographerId: string, page = 1, limit = 10): Promise<{ packages: IBookingPackage[]; total: number }> {
-    const { packages, total } = await this._repository.findByPhotographerId(photographerId, page, limit);
+  async getPackagesByPhotographerId(
+    photographerId: string,
+    page = 1,
+    limit = 10,
+  ): Promise<{ packages: IBookingPackage[]; total: number }> {
+    const { packages, total } = await this._repository.findByPhotographerId(
+      photographerId,
+      page,
+      limit,
+    );
     return {
       packages: packages.filter((p) => p.status !== "DELETED"),
-      total
+      total,
     };
   }
 
-
-  async getPhotographerPackages(photographerId: string, page = 1, limit = 10): Promise<{ packages: IBookingPackage[]; total: number }> {
+  async getPhotographerPackages(
+    photographerId: string,
+    page = 1,
+    limit = 10,
+  ): Promise<{ packages: IBookingPackage[]; total: number }> {
     return this.getPackagesByPhotographerId(photographerId, page, limit);
   }
 

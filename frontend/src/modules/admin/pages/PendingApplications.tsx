@@ -15,7 +15,6 @@ interface ApplicationTableData {
 }
 
 const PendingApplications: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [page, setPage] = useState(1);
     const limit = 10;
@@ -24,13 +23,9 @@ const PendingApplications: React.FC = () => {
     const { useApplications } = useApplicationManagement();
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchTerm);
-            setPage(1);
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
+        setDebouncedSearch("");
+        setPage(1);
+    }, []);
 
     const { data, isLoading, error } = useApplications({
         page,

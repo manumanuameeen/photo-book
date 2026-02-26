@@ -1,9 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 
-interface AuthRequest extends Request {
-  role?: string;
-  user?: any;
-}
+import { AuthRequest } from "./authMiddleware.ts";
 
 export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.role) {

@@ -24,7 +24,7 @@ const PendingCategories = () => {
                 setCategories(data.categories);
                 setTotalPages(data.totalPages || 0);
             }
-        } catch (_) { 
+        } catch {
             toast.error("Failed to load suggestions");
         } finally {
             setIsLoading(false);
@@ -47,8 +47,9 @@ const PendingCategories = () => {
             toast.success(`Category "${cat.name}" approved and active!`);
             fetchPendingCategories();
             setSelectedCategory(null);
-        } catch (error: any) { 
-            toast.error(error.response?.data?.message || "Failed to approve category");
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || "Failed to approve category");
         }
     };
 
@@ -59,7 +60,7 @@ const PendingCategories = () => {
             toast.success("Suggestion discarded");
             fetchPendingCategories();
             setSelectedCategory(null);
-        } catch (_) { 
+        } catch {
             toast.error("Failed to discard suggestion");
         }
     };
@@ -77,8 +78,9 @@ const PendingCategories = () => {
             setRejectionReason("");
             setSelectedCategory(null);
             fetchPendingCategories();
-        } catch (error: any) { 
-            toast.error(error.response?.data?.message || "Failed to block category");
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || "Failed to block category");
         }
     };
 
@@ -215,7 +217,6 @@ const PendingCategories = () => {
                 )}
             </div>
 
-
             <AnimatePresence>
                 {selectedCategory && !isRejectModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -288,7 +289,6 @@ const PendingCategories = () => {
                 )}
             </AnimatePresence>
 
-            {}
             <AnimatePresence>
                 {isRejectModalOpen && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">

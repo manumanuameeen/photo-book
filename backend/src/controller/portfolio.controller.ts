@@ -17,10 +17,9 @@ export class PortfolioController implements IPortfolioController {
     this._fileService = fileService;
   }
 
-  createSection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  createSection = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
 
       const { title, coverImage } = req.body;
@@ -31,10 +30,9 @@ export class PortfolioController implements IPortfolioController {
     }
   };
 
-  getSections = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getSections = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
 
       const result = await this._service.getSectionsByUserId(userId);
@@ -44,14 +42,13 @@ export class PortfolioController implements IPortfolioController {
     }
   };
 
-  updateSection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  updateSection = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     ApiResponse.error(res, Messages.NOT_IMPLEMENTED, HttpStatus.NOT_IMPLEMENTED);
   };
 
-  deleteSection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  deleteSection = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
       const { id } = req.params;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
 
@@ -62,10 +59,13 @@ export class PortfolioController implements IPortfolioController {
     }
   };
 
-  addImageToSection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  addImageToSection = async (
+    req: AuthRequest,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
       const { id } = req.params;
 
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -92,13 +92,12 @@ export class PortfolioController implements IPortfolioController {
   };
 
   removeImageFromSection = async (
-    req: Request,
+    req: AuthRequest,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ): Promise<void> => {
     try {
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
       const { id } = req.params;
       const { imageUrl } = req.body;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -122,14 +121,13 @@ export class PortfolioController implements IPortfolioController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 
-  toggleLike = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  toggleLike = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
-      const authReq = req as AuthRequest;
-      const userId = authReq.user?.userId;
+      const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       const { id } = req.params;
       const section = await this._service.toggleLike(userId, id);
-      ApiResponse.success(res, section, "Like status toggled");
+      ApiResponse.success(res, section, Messages.LIKE_TOGGLED);
     } catch (error) {
       this._handleError(res, error);
     }

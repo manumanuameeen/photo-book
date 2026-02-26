@@ -15,7 +15,7 @@ export class UserController implements IUserController {
     this._userService = userService;
   }
 
-  getProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  getProfile = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -29,21 +29,24 @@ export class UserController implements IUserController {
     }
   };
 
-  UpdateProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  UpdateProfile = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      const updatedUser = await this._userService.updateProfile(userId, req.body as UpdateProfileDtoType);
+      const updatedUser = await this._userService.updateProfile(
+        userId,
+        req.body as UpdateProfileDtoType,
+      );
       ApiResponse.success(res, updatedUser, Messages.PROFILE_UPDATED);
     } catch (error: unknown) {
       this._handleError(res, error);
     }
   };
 
-  changePassword = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  changePassword = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -60,7 +63,7 @@ export class UserController implements IUserController {
   initiateChangePassword = async (
     req: AuthRequest,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ): Promise<void> => {
     try {
       const userId = req.user?.userId;
@@ -78,7 +81,7 @@ export class UserController implements IUserController {
   uploadProfileImage = async (
     req: AuthRequest,
     res: Response,
-    next: NextFunction,
+    _next: NextFunction,
   ): Promise<void> => {
     try {
       const userId = req.user?.userId;
@@ -111,7 +114,7 @@ export class UserController implements IUserController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 
-  verifyOtp = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  verifyOtp = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {

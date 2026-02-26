@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { BookingModel, IBooking } from "../../../model/bookingModel.ts";
 import { BaseRepository } from "../../base/BaseRepository.ts";
 import { IBookingRepository } from "../../../interfaces/repositories/IBookingRepository.ts";
@@ -15,6 +16,14 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
       .populate("packageId");
   }
 
+  async findByBookingId(bookingId: string): Promise<IBooking | null> {
+    return await this._model
+      .findOne({ bookingId })
+      .populate("userId", "name email profileImage")
+      .populate("photographerId", "name email profileImage")
+      .populate("packageId");
+  }
+
   async updateStatus(id: string, status: string): Promise<IBooking | null> {
     return await this._model.findByIdAndUpdate(id, { status }, { new: true });
   }
@@ -27,7 +36,7 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
     status?: string,
   ): Promise<{ bookings: IBooking[]; total: number }> {
     const skip = (page - 1) * limit;
-    const query: any = { userId };
+    const query: mongoose.FilterQuery<IBooking> = { userId };
 
     if (status && status !== "ALL") {
       query.status = status;
@@ -62,9 +71,8 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
   ): Promise<{ bookings: IBooking[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    const query: any = { photographerId };
-
-    if (status && status !== "all") {
+    const query: mongoose.FilterQuery<IBooking> = { photographerId };
+    if (status && status !== "ALL") {
       query.status = status;
     }
 
@@ -95,8 +103,7 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
   ): Promise<{ bookings: IBooking[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    
-    const query: any = {
+    const query: mongoose.FilterQuery<IBooking> = {
       paymentStatus: { $in: ["DEPOSIT_PAID", "FULL_PAID"] },
       status: { $nin: ["COMPLETED", "CANCELLED", "REJECTED"] },
     };
@@ -135,22 +142,21 @@ export class BookingRepository extends BaseRepository<IBooking> implements IBook
             { $group: { _id: null, total: { $sum: "$totalAmount" } } },
           ],
           revenue: [
-            { $match: { status: "completed" } }, 
-            
+            { $match: { status: "COMPLETED" } },
             { $group: { _id: null, total: { $sum: { $multiply: ["$totalAmount", 0.13] } } } },
           ],
           escrow: [
             {
               $match: {
                 paymentStatus: { $in: ["DEPOSIT_PAID", "FULL_PAID"] },
-                status: { $nin: ["completed", "cancelled", "rejected"] }, 
+                status: { $nin: ["COMPLETED", "CANCELLED", "REJECTED"] },
               },
             },
             { $group: { _id: null, total: { $sum: "$totalAmount" } } },
           ],
           payouts: [
-            { $match: { status: "completed" } },
-            { $group: { _id: null, total: { $sum: { $multiply: ["$totalAmount", 0.87] } } } }, 
+            { $match: { status: "COMPLETED" } },
+            { $group: { _id: null, total: { $sum: { $multiply: ["$totalAmount", 0.87] } } } },
           ],
         },
       },

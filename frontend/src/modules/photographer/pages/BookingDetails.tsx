@@ -99,7 +99,7 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
         const actionPayload = { id: actionConfig.bookingId, message: customMessage };
 
         if (actionConfig.type === 'accept') {
-            acceptBooking.mutate(actionPayload as any, {
+            acceptBooking.mutate(actionPayload, {
                 onSuccess: () => setActionConfig({ isOpen: false, type: null, bookingId: null })
             });
         } else if (actionConfig.type === 'deliver') {
@@ -107,7 +107,7 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                 onSuccess: () => setActionConfig({ isOpen: false, type: null, bookingId: null })
             });
         } else {
-            rejectBooking.mutate(actionPayload as any, {
+            rejectBooking.mutate(actionPayload, {
                 onSuccess: () => setActionConfig({ isOpen: false, type: null, bookingId: null })
             });
         }
@@ -140,7 +140,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
                                 </p>
                             )}
 
-                            {}
                             {booking.rescheduleRequest?.requestedDate && booking.rescheduleRequest.status === 'pending' && (
                                 <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                                     <h4 className="flex items-center gap-2 text-sm font-bold text-yellow-800 mb-2">

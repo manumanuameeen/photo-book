@@ -1,18 +1,21 @@
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import MetricCard from '../../../layouts/admin/MetricCard';
 import { adminDashboardApi } from '../../../services/api/adminDashboardApi';
-import { LineChart, DoughnutChart, PieChart } from '../components/DashboardCharts';
+import { LineChart, DoughnutChart, PieChart, BarChart } from '../components/DashboardCharts';
 import { TopPhotographersTable, TopRentalOwnersTable } from '../components/TopPerformers';
-import PDFDownloadButton from '../components/PDFDownloadButton';
-import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, Download } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+
   const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['admin-dashboard-stats'],
-    queryFn: adminDashboardApi.getStats,
+    queryKey: ['admin-dashboard-stats', startDate, endDate],
+    queryFn: () => adminDashboardApi.getStats(startDate, endDate),
     refetchInterval: 30000,
   });
 
@@ -33,7 +36,6 @@ const DashboardLayout: React.FC = () => {
     );
   }
 
-  // Chart Data Transformers
   const revenueTrendData = {
     labels: stats.revenueTrend.map(d => d.name),
     datasets: [
@@ -42,6 +44,20 @@ const DashboardLayout: React.FC = () => {
         data: stats.revenueTrend.map(d => d.amount),
         borderColor: '#3b82f6',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true,
+      }
+    ],
+  };
+
+  const bookingsTrendData = {
+    labels: stats.bookingsTrend?.map(d => d.name) || [],
+    datasets: [
+      {
+        label: 'Bookings',
+        data: stats.bookingsTrend?.map(d => d.count) || [],
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
         fill: true,
       }
@@ -66,63 +82,160 @@ const DashboardLayout: React.FC = () => {
     }]
   };
 
+  const topRegionsData = {
+    labels: stats.topRegions?.map(d => d.name) || [],
+    datasets: [
+      {
+        label: 'Bookings',
+        data: stats.topRegions?.map(d => d.value) || [],
+        backgroundColor: '#8b5cf6',
+        borderRadius: 4,
+      }
+    ],
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+  };
+
+  const handleExportCSV = () => {
+    if (!stats) return;
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    csvContent += "=== Metrics ===\n";
+    csvContent += "Title,Value,Trend\n";
+    stats.topMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
+    stats.smallMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
+
+    csvContent += "\n=== Top Photographers ===\n";
+    csvContent += "Name,Rating,Reviews,Bookings\n";
+    if (stats.topPhotographers) {
+      stats.topPhotographers.forEach(p => csvContent += `"${p.name}","${p.rating}","${p.reviews}","${p.bookings}"\n`);
+    }
+
+    csvContent += "\n=== Top Rental Owners ===\n";
+    csvContent += "Name,Orders,Items,Revenue\n";
+    if (stats.topRentalOwners) {
+      stats.topRentalOwners.forEach(r => csvContent += `"${r.name}","${r.orders}","${r.items}","$${r.revenue}"\n`);
+    }
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Admin_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Header */}
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-8"
+    >
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-gray-500 text-sm">Welcome back, here's what's happening today.</p>
         </div>
-        <PDFDownloadButton elementId="admin-dashboard-content" fileName="Admin-Report" />
+
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                if (endDate && e.target.value > endDate) setEndDate(e.target.value);
+              }}
+              className="text-sm px-3 py-1.5 focus:outline-none border-none bg-transparent"
+            />
+            <span className="text-gray-400 self-center px-2">to</span>
+            <input
+              type="date"
+              value={endDate}
+              min={startDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="text-sm px-3 py-1.5 focus:outline-none border-none bg-transparent"
+            />
+          </div>
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-sm"
+          >
+            <Download size={16} />
+            Export Data
+          </button>
+        </div>
       </div>
 
-      <div id="admin-dashboard-content" className="space-y-8 p-1"> {/* p-1 prevents outline clipping in PDF */}
+      <div id="admin-dashboard-content" className="space-y-8 p-1">
 
-        {/* Top Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.topMetrics.map((data, index) => (
             <MetricCard key={index} data={data} />
           ))}
-        </div>
+        </motion.div>
 
-        {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-            <LineChart data={revenueTrendData} title="Revenue Growth" />
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <LineChart data={revenueTrendData} title="Revenue Growth" />
+            </div>
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <LineChart data={bookingsTrendData} title="Bookings Trend" />
+            </div>
           </div>
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
             <PieChart data={revenueSplitData} title="Revenue Split" />
           </div>
-        </div>
+        </motion.div>
 
-        {/* Top Performers Row */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {stats.topPhotographers && <TopPhotographersTable data={stats.topPhotographers} />}
           {stats.topRentalOwners && <TopRentalOwnersTable data={stats.topRentalOwners} />}
-        </div>
+        </motion.div>
 
-        {/* Categories & Small Metrics */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
             <DoughnutChart data={categoryDistData} title="Category Distribution" />
           </div>
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center">
+            <div className="w-full">
+              <BarChart data={topRegionsData} title="Top Regions by Bookings" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-1 gap-4">
             {stats.smallMetrics.map((data, index) => (
               <MetricCard key={index} data={data} />
             ))}
 
-            {/* Alerts Section */}
             <div className="sm:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">System Alerts</h4>
               <div className="space-y-3">
                 {stats.alerts.length > 0 ? (
                   stats.alerts.map((alert, i) => (
                     <div key={i} className={`flex gap-3 p-3 rounded-lg border-l-4 ${alert.type === 'warning' ? 'bg-yellow-50 border-yellow-500' :
-                        alert.type === 'error' ? 'bg-red-50 border-red-500' : 'bg-blue-50 border-blue-500'
+                      alert.type === 'error' ? 'bg-red-50 border-red-500' : 'bg-blue-50 border-blue-500'
                       }`}>
                       <AlertCircle size={20} className={`${alert.type === 'warning' ? 'text-yellow-600' :
-                          alert.type === 'error' ? 'text-red-600' : 'text-blue-600'
+                        alert.type === 'error' ? 'text-red-600' : 'text-blue-600'
                         }`} />
                       <div>
                         <p className="font-medium text-gray-900 text-sm">{alert.title}</p>
@@ -139,10 +252,10 @@ const DashboardLayout: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-      </div>
-    </div>
+      </div >
+    </motion.div >
   );
 };
 

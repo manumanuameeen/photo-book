@@ -28,7 +28,6 @@ import { SmallLocationPicker } from "../../../components/MapLocationPicker";
 import { BaseButton } from "../../../components/BaseButton";
 import { userApi } from "../../../services/api/userApi";
 
-
 const profileSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters").trim(),
     phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
@@ -57,16 +56,13 @@ const EditProfilePage = () => {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
 
-
     const { data: user, isLoading: isUserLoading } = useProfile();
     const updateProfileMutation = useUpdateProfile();
     const changePasswordMutation = useChangePassword();
 
-
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
     });
-
 
     useEffect(() => {
         if (user) {
@@ -85,11 +81,9 @@ const EditProfilePage = () => {
         resolver: zodResolver(passwordSchema),
     });
 
-
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
 
         if (!file.type.startsWith("image/")) {
             toast.error("Please select an image file");
@@ -104,13 +98,13 @@ const EditProfilePage = () => {
 
         try {
 
-
             await userApi.uploadProfileImage(file);
             toast.success("Profile image updated", { id: toastId });
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-        } catch (error: any) {
-            console.error("Upload error:", error);
-            toast.error(error.response?.data?.message || "Failed to upload image", { id: toastId });
+        } catch (error: unknown) {
+            console.error("Update Error:", error);
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || "Failed to update profile", { id: toastId });
         }
     };
 
@@ -120,8 +114,9 @@ const EditProfilePage = () => {
                 toast.success("Profile updated successfully");
                 queryClient.invalidateQueries({ queryKey: ['profile'] });
             },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.message || "Failed to update profile");
+            onError: (error: unknown) => {
+                const err = error as { response?: { data?: { message?: string } } };
+                toast.error(err.response?.data?.message || "Failed to upload image");
             }
         });
     };
@@ -136,8 +131,9 @@ const EditProfilePage = () => {
                 toast.success("Password changed successfully");
                 passwordForm.reset();
             },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.message || "Failed to change password");
+            onError: (error: unknown) => {
+                const err = error as { response?: { data?: { message?: string } } };
+                toast.error(err.response?.data?.message || "Failed to change password");
             }
         });
     };
@@ -167,7 +163,6 @@ const EditProfilePage = () => {
                     <span className="font-medium">Back to Profile</span>
                 </button>
 
-                { }
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -190,7 +185,6 @@ const EditProfilePage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
 
-                    { }
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -219,7 +213,6 @@ const EditProfilePage = () => {
                         </button>
                     </motion.div>
 
-                    { }
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -237,7 +230,7 @@ const EditProfilePage = () => {
                                         className="space-y-6"
                                     >
                                         <div className="flex items-start gap-6 border-b border-gray-100 pb-6 mb-6">
-                                            { }
+                                            
                                             <div className="relative w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-white shadow-md group">
                                                 {user?.profileImage ? (
                                                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
@@ -265,7 +258,7 @@ const EditProfilePage = () => {
                                         </div>
 
                                         <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                                            { }
+                                            
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Full Name</label>
                                                 <div className="relative">
@@ -283,7 +276,6 @@ const EditProfilePage = () => {
                                                 )}
                                             </div>
 
-                                            { }
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Email Address</label>
                                                 <div className="relative opacity-60 cursor-not-allowed">
@@ -297,7 +289,6 @@ const EditProfilePage = () => {
                                                 <p className="text-xs text-gray-400">Email cannot be changed directly.</p>
                                             </div>
 
-                                            { }
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Phone Number</label>
                                                 <div className="relative">
@@ -315,11 +306,9 @@ const EditProfilePage = () => {
                                                 )}
                                             </div>
 
-                                            { }
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Location</label>
 
-                                                { }
                                                 <SmallLocationPicker
                                                     label="Select Your Location"
                                                     initialLat={profileForm.watch('lat') || undefined}
@@ -340,8 +329,6 @@ const EditProfilePage = () => {
                                                 </div>
                                             </div>
 
-
-                                            { }
                                             <div className="grid gap-2">
                                                 <label className="text-sm font-medium text-gray-700">Bio</label>
                                                 <textarea
@@ -386,7 +373,6 @@ const EditProfilePage = () => {
 
                                         <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
 
-                                            {/* Current Password */}
                                             <div className="grid gap-2">
                                                 <div className="flex items-center justify-between">
                                                     <label className="text-sm font-medium text-gray-700">Current Password</label>
@@ -414,7 +400,6 @@ const EditProfilePage = () => {
                                                 )}
                                             </div>
 
-                                            {/* New Password */}
                                             <div className="grid gap-2 mt-4">
                                                 <label className="text-sm font-medium text-gray-700">New Password</label>
                                                 <div className="relative">
@@ -433,7 +418,6 @@ const EditProfilePage = () => {
                                                 )}
                                             </div>
 
-                                            {/* Confirm New Password */}
                                             <div className="grid gap-2 mt-4">
                                                 <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
                                                 <div className="relative">

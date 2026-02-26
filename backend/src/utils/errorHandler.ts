@@ -2,7 +2,7 @@ import { Response } from "express";
 import { AppError } from "./AppError.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 
-export const handleError = (res: Response, error: any) => {
+export const handleError = (res: Response, error: unknown) => {
   console.error("Error detected:", error);
 
   if (error instanceof AppError) {

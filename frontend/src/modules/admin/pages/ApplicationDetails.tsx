@@ -39,8 +39,8 @@ const ApplicationDetails: React.FC = () => {
             }
             setIsActionModalOpen(false);
             navigate({ to: ROUTES.ADMIN.APPLICATIONS });
-        } catch (error) {
-             console.error("Action failed:", error);
+        } catch (error: unknown) {
+            console.error("Action failed:", error);
         }
     };
 
@@ -48,7 +48,6 @@ const ApplicationDetails: React.FC = () => {
         setSelectedImage(imageUrl);
         setIsImageModalOpen(true);
     };
-
 
     const isSubmitting: boolean = isApproving || isRejecting;
 
@@ -134,8 +133,8 @@ const ApplicationDetails: React.FC = () => {
                         <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Portfolio</h2>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {application.portfolio.portfolioImages.map((img, i) => (
-                                <div 
-                                    key={i} 
+                                <div
+                                    key={i}
                                     className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 group relative cursor-pointer"
                                     onClick={() => openImageModal(img)}
                                 >
@@ -242,20 +241,20 @@ const ApplicationDetails: React.FC = () => {
                     </div>
                 </div>
             )}
-            
+
             {isImageModalOpen && (
                 <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4" onClick={() => setIsImageModalOpen(false)}>
                     <div className="relative max-w-5xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                            onClick={() => setIsImageModalOpen(false)} 
+                        <button
+                            onClick={() => setIsImageModalOpen(false)}
                             className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-10"
                             aria-label="Close image viewer"
                         >
                             <X size={24} />
                         </button>
-                        <img 
-                            src={selectedImage} 
-                            alt="Full-size portfolio view" 
+                        <img
+                            src={selectedImage}
+                            alt="Full-size portfolio view"
                             className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         />
                     </div>

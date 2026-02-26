@@ -4,7 +4,6 @@ import type { IAuthService } from "./IAuthsevice";
 
 class AuthService implements IAuthService {
 
-
   async signup(data: ISignupRequest): Promise<IAuthResponse> {
     return authRepository.signup(data);
   }
@@ -36,7 +35,6 @@ class AuthService implements IAuthService {
   async googleLogin(token: string): Promise<IAuthResponse> {
     return authRepository.googleLogin(token);
   }
-
 
   async getCurrentUser(): Promise<IAuthResponse | null> {
     try {

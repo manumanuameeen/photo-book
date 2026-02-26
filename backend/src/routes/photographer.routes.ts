@@ -112,11 +112,11 @@ router.post(ROUTES.V1.PHOTOGRAPHER.SUGGEST_CATEGORY, verifyAccessToken, (req, re
   categoryController.suggestCategory(req, res, next),
 );
 
-router.put("/profile", verifyAccessToken, (req, res, next) =>
+router.put(ROUTES.V1.PHOTOGRAPHER.UPDATE_PROFILE, verifyAccessToken, (req, res, next) =>
   photographerController.updateProfile(req, res, next),
 );
 
-router.get("/profile", verifyAccessToken, (req, res, next) =>
+router.get(ROUTES.V1.PHOTOGRAPHER.GET_PROFILE, verifyAccessToken, (req, res, next) =>
   photographerController.getProfile(req, res, next),
 );
 

@@ -1,7 +1,6 @@
 import {type ReactNode } from "react";
 import { MotionWrapper } from "./MotionWrapper";
 
-
 export interface AppCardProps {
     children: ReactNode;
     className?: string

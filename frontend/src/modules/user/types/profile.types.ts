@@ -13,9 +13,6 @@ export interface IUserResponse {
     createdAt: string;
 }
 
-
-
-
 export interface IProfileResponse {
     success: boolean;
     message: string;
@@ -30,7 +27,6 @@ export interface IUpdateProfile {
     lat?: number | null;
     lng?: number | null;
 }
-
 
 export interface IChangePassword {
     oldPassword: string;

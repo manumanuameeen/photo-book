@@ -9,7 +9,6 @@ import { ROUTES } from "../../../../constants/routes";
 const OTP_LENGTH = 6;
 const OTP_TIMER_DURATION = 30;
 
-
 interface ResetOtpError {
   response?: {
     data?: {
@@ -26,7 +25,6 @@ interface ResendOtpError {
     };
   };
 }
-
 
 const VerifyResetOtp: React.FC = () => {
   const navigate = useNavigate();
@@ -87,7 +85,6 @@ const VerifyResetOtp: React.FC = () => {
         onSuccess: (response) => {
           toast.success(response.message || "OTP verified! Set your new password.");
 
-          
           navigate({ to: ROUTES.AUTH.RESET_PASSWORD });
         },
         onError: (error: unknown) => {

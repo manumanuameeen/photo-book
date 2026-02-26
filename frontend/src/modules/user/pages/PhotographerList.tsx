@@ -1,20 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { motion } from 'framer-motion';
 import {
     Search,
     ChevronDown,
-    Filter,
     MapPin,
     Star,
+    MessageCircle,
     AlertCircle,
-    Navigation,
-    MessageCircle
+    Award
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { userPhotographerApi, type PhotographerFilter } from '../../../services/api/userPhotographerApi';
 import { ROUTES } from '../../../constants/routes';
 import Loader from '../../../components/Loader';
+import { ReportModal } from '../../../components/common/ReportModal';
+import { MagneticButton } from '../../../components/common/MagneticButton';
 
 interface Photographer {
     id: string;
@@ -38,19 +40,16 @@ const PhotographerSearch = () => {
     const [activeTab, setActiveTab] = useState<'individual' | 'groups'>('individual');
     const { user } = useAuthStore();
 
-
     const [photographers, setPhotographers] = useState<Photographer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [reportTarget, setReportTarget] = useState<{ id: string, type: 'photographer' | 'package', name: string } | null>(null);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [location, setLocation] = useState('All Locations');
 
-
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-    const [isLocating, setIsLocating] = useState(false);
-
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -62,15 +61,12 @@ const PhotographerSearch = () => {
             setIsLoading(true);
             setError(null);
 
-
             const locToUse = forcedLocation !== undefined ? forcedLocation : userLocation;
 
             const filters: PhotographerFilter = {
                 page,
                 limit: ITEMS_PER_PAGE
             };
-
-
 
             if (locToUse) {
                 filters.lat = locToUse.lat;
@@ -86,39 +82,13 @@ const PhotographerSearch = () => {
             setCurrentPage(page);
         } catch (err: unknown) {
             console.error("Failed to fetch photographers:", err);
-            const errorMessage = (err as any).response?.data?.message || (err as any).message || "Failed to load photographers. Please try again later.";
+            const error = err as { response?: { data?: { message?: string } }, message?: string };
+            const errorMessage = error.response?.data?.message || error.message || "Failed to load photographers. Please try again later.";
             setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
     }, [location, userLocation]);
-
-    const handleNearMe = () => {
-        if (!navigator.geolocation) {
-            toast.error("Geolocation is not supported by your browser");
-            return;
-        }
-
-        setIsLocating(true);
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                const newLoc = { lat: latitude, lng: longitude };
-                setUserLocation(newLoc);
-                setLocation('All Locations');
-                setIsLocating(false);
-
-                fetchPhotographers(newLoc);
-                toast.success("Found your location!");
-            },
-            (error) => {
-                console.error("Geolocation error:", error);
-                toast.error("Unable to retrieve your location. Please check permissions.");
-                setIsLocating(false);
-            }
-        );
-    };
-
 
     useEffect(() => {
         if (location !== 'All Locations') {
@@ -131,13 +101,9 @@ const PhotographerSearch = () => {
         fetchPhotographers(undefined, 1);
     }, [fetchPhotographers]);
 
-
-
     const filteredPhotographers = photographers.filter(p => {
-
         if (activeTab === 'individual' && p.type !== 'individual') return false;
         if (activeTab === 'groups' && p.type !== 'group') return false;
-
 
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
@@ -152,251 +118,266 @@ const PhotographerSearch = () => {
 
     const isPhotographerClient = user?.role === 'photographer';
 
+    const fadeInUp = {
+        initial: { opacity: 0, y: 30 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.6 }
+    };
+
+    const staggerContainer = {
+        animate: {
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50/50 font-sans text-gray-800">
+        <div className="min-h-screen bg-green-950 font-sans text-gray-200">
+            {/* Cinematic Background Elements */}
+            <div className="fixed inset-0 pointer-events-none opacity-20 mix-blend-overlay z-0" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.8\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E')" }}></div>
 
-
-            <div className="bg-[#2E7D46] px-4 py-16 md:py-24 text-center shadow-md relative overflow-hidden">
-                <h1 className="text-4xl md:text-6xl text-white mb-4 font-serif italic tracking-wide relative z-10">
-                    Find <span className="text-white not-italic font-sans font-bold">Your Perfect</span> <span className="text-yellow-400">Photographer</span>
-                </h1>
-                <p className="text-green-100 text-sm md:text-lg font-light max-w-2xl mx-auto relative z-10">
-                    Browse individual photographers and professional wedding teams for your special occasions.
-                </p>
+            <div className="relative pt-24 pb-12 px-4 text-center overflow-hidden z-10">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+                    <p className="text-yellow-500 font-mono text-xs tracking-[0.3em] mb-4">// EXPERTISE //</p>
+                    <h1 className="text-5xl md:text-7xl font-light text-white mb-6">
+                        Find Your <br />
+                        <span className="font-bold italic text-yellow-400">Photographer</span>
+                    </h1>
+                    <p className="text-gray-400 text-sm md:text-base font-light max-w-2xl mx-auto">
+                        Browse top-tier talent for your special occasions. Cinematic, elegant, and timeless.
+                    </p>
+                </motion.div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
-                { }
-                <div className="bg-white rounded-xl shadow-xl p-4 md:p-6 mb-10 border border-gray-100">
-                    <div className="flex flex-col lg:flex-row gap-4 mb-4">
-                        <div className="flex-grow relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+
+                {/* Glassmorphism Search & Filters */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl md:rounded-full p-2 md:p-3 mb-10 shadow-2xl"
+                >
+                    <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center w-full">
+                        <div className="flex-grow w-full md:w-auto relative flex items-center bg-white/5 rounded-full px-5 py-3">
+                            <Search className="text-gray-400" size={20} />
                             <input
                                 type="text"
-                                placeholder="Search photographers..."
+                                placeholder="Search 'Wedding Photographer'..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm transition-all"
+                                className="w-full pl-4 bg-transparent border-none text-white focus:ring-0 outline-none placeholder-gray-500 text-base"
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:w-auto">
+                        <div className="hidden md:block w-px h-10 bg-white/10 mx-2"></div>
 
-                            <div className="relative group">
-                                <select
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    className="w-full appearance-none bg-white border border-gray-200 px-4 py-3 pr-10 rounded-lg text-sm text-gray-600 focus:outline-none focus:border-green-500 cursor-pointer hover:border-green-300 transition-colors"
-                                >
-                                    <option>All Locations</option>
-                                    <option>Thiruvananthapuram</option>
-                                    <option>Kochi</option>
-                                    <option>Kozhikode</option>
-                                    <option>Thrissur</option>
-                                    <option>Kollam</option>
-                                    <option>Alappuzha</option>
-                                    <option>Kannur</option>
-                                    <option>Kottayam</option>
-                                    <option>Palakkad</option>
-                                    <option>Malappuram</option>
-                                    <option>Waynad</option>
-                                    <option>Idukki</option>
-                                    <option>Pathanamthitta</option>
-                                    <option>Kasargod</option>
-                                    <option>New York</option>
-                                    <option>Los Angeles</option>
-                                    <option>Chicago</option>
-                                    <option>Miami</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-green-600 transition-colors" size={16} />
-                            </div>
+                        <div className="w-full md:w-auto relative group bg-white/5 rounded-full px-5 py-3">
+                            <select
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                className="w-full appearance-none bg-transparent border-none text-gray-300 focus:outline-none focus:ring-0 cursor-pointer pr-8 [&>option]:text-gray-900 text-base"
+                            >
+                                <option value="All Locations">All Locations</option>
+                                <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                                <option value="Kochi">Kochi</option>
+                                <option value="Kozhikode">Kozhikode</option>
+                            </select>
+                            <ChevronDown className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-yellow-500 transition-colors" size={16} />
                         </div>
 
-                        {/* <button
-                            onClick={handleNearMe}
-                            disabled={isLocating}
-                            className={`p-3 rounded-lg flex items-center justify-center transition-all shadow-md active:scale-95 border ${userLocation ? 'bg-green-100 text-green-700 border-green-200' : 'bg-white text-gray-600 border-gray-200 hover:border-green-300'}`}
-                            title="Find near me"
+                        <MagneticButton
+                            className="w-full md:w-auto px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-green-950 font-bold rounded-full transition-all duration-300 shadow-lg shrink-0 mt-2 md:mt-0"
+                            onClick={() => { }}
                         >
-                            <Navigation size={20} className={isLocating ? "animate-spin" : ""} />
-                            <span className="ml-2 hidden lg:inline">Near Me</span>
-                        </button> */}
-{/* 
-                        <button
-                            onClick={() => fetchPhotographers()}
-                            className="bg-[#2E7D46] hover:bg-[#256639] text-white p-3 rounded-lg flex items-center justify-center transition-all shadow-md active:scale-95"
-                        >
-                            <Filter size={20} />
-                        </button> */}
+                            <span className="flex items-center gap-2">Filter Insights</span>
+                        </MagneticButton>
                     </div>
 
-
-                    <div className="flex justify-between items-center w-full">
-                        <button className="flex items-center text-xs text-gray-500 hover:text-green-700 font-medium transition-colors">
-                            Advanced Filters <ChevronDown size={14} className="ml-1" />
+                    <div className="flex justify-between items-center w-full px-6 pt-3 pb-1 md:pb-0">
+                        <button className="flex items-center text-xs text-gray-400 hover:text-yellow-500 font-medium transition-colors">
+                            Advanced Config <ChevronDown size={14} className="ml-1" />
                         </button>
                         <button
-                            onClick={() => navigate({ to: '/main/rules' } as any)}
-                            className="flex items-center text-xs text-gray-500 hover:text-blue-600 font-medium transition-colors"
+                            onClick={() => navigate({ to: '/main/rules' })}
+                            className="flex items-center text-xs text-gray-400 hover:text-white font-medium transition-colors"
                         >
-                            <span className="mr-1">⚠️</span> Platform Rules
+                            <span className="mr-1">⚠️</span> Platform Guidelines
                         </button>
                     </div>
+                </motion.div>
 
-                </div>
-
-                { }
-                <div className="flex gap-8 mb-8 border-b border-gray-200">
+                <div className="flex gap-8 mb-8 border-b border-white/10">
                     <button
                         onClick={() => setActiveTab('individual')}
                         className={`pb-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'individual'
-                            ? 'border-green-600 text-green-800'
-                            : 'border-transparent text-gray-400 hover:text-gray-600'
+                            ? 'border-yellow-500 text-yellow-500'
+                            : 'border-transparent text-gray-500 hover:text-gray-300'
                             }`}
                     >
-                        Individual Photographers ({photographers.filter(p => p.type === 'individual').length})
+                        Pioneers ({photographers.filter(p => p.type === 'individual').length})
                     </button>
                     <button
                         onClick={() => setActiveTab('groups')}
                         className={`pb-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'groups'
-                            ? 'border-green-600 text-green-800'
-                            : 'border-transparent text-gray-400 hover:text-gray-600'
+                            ? 'border-yellow-500 text-yellow-500'
+                            : 'border-transparent text-gray-500 hover:text-gray-300'
                             }`}
                     >
-                        Wedding Groups ({photographers.filter(p => p.type === 'group').length})
+                        Collectives ({photographers.filter(p => p.type === 'group').length})
                     </button>
                 </div>
 
-                { }
                 {isLoading ? (
-                    <div className="flex justify-center items-center py-20">
+                    <div className="flex justify-center items-center py-32">
                         <Loader />
                     </div>
                 ) : error ? (
-                    <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-red-100">
+                    <div className="text-center py-20 bg-white/5 rounded-2xl border border-red-500/20 backdrop-blur-md">
                         <AlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900">Ooops! Something went wrong</h3>
-                        <p className="mt-2 text-sm text-gray-500">{error}</p>
+                        <h3 className="text-lg font-medium text-white">System Error</h3>
+                        <p className="mt-2 text-sm text-gray-400">{error}</p>
                         <button
                             onClick={() => fetchPhotographers()}
-                            className="mt-6 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            className="mt-6 px-6 py-2 bg-yellow-500 text-green-950 font-bold rounded-full hover:bg-yellow-400 transition-colors"
                         >
-                            Try Again
+                            Re-initialize
                         </button>
                     </div>
                 ) : filteredPhotographers.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-                        <Search className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900">No photographers found</h3>
-                        <p className="mt-2 text-sm text-gray-500">
-                            Try adjusting your filters or search terms to find what you're looking for.
+                    <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+                        <Search className="mx-auto h-12 w-12 text-gray-500 mb-4" />
+                        <h3 className="text-lg font-medium text-white">No Profiles Found</h3>
+                        <p className="mt-2 text-sm text-gray-400">
+                            Try adjusting your search criteria or location.
                         </p>
                     </div>
                 ) : (
                     <>
-                        <div className="mb-6 text-gray-600 font-medium">
-                            Found {totalItems} photographers
+                        <div className="mb-6 text-gray-400 font-mono text-xs uppercase tracking-widest">
+                            [ {totalItems} Profiles Indexed ]
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+                        <motion.div
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
+                            variants={staggerContainer}
+                            initial="initial"
+                            animate="animate"
+                        >
                             {filteredPhotographers.map((photographer) => (
-                                <div key={photographer.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full border border-gray-100 hover:translate-y-[-4px]">
-                                    <div className="relative h-64 bg-gray-100 overflow-hidden">
+                                <motion.div
+                                    variants={fadeInUp}
+                                    key={photographer.id}
+                                    className="group bg-[#0a0a0a]/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl flex flex-col h-full border border-white/5 hover:border-yellow-500/30 transition-all duration-300"
+                                >
+                                    <div className="relative h-64 overflow-hidden bg-[#111]">
                                         <img
-                                            src={photographer.image || "https://via.placeholder.com/400x300?text=No+Image"}
+                                            src={photographer.image || `https://ui-avatars.com/api/?name=${photographer.name?.replace(' ', '+') || 'P'}&size=400&background=111&color=fff`}
                                             alt={photographer.name}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                                    <div className="p-6 flex flex-col flex-grow">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div>
-                                                <h3 className="text-xl font-bold text-gray-900 mb-1">{photographer.name}</h3>
-                                                <div className="flex items-center text-gray-500 text-sm">
-                                                    <MapPin size={14} className="mr-1" />
-                                                    {photographer.location || "Location Unavailable"}
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center bg-green-50 px-2 py-1 rounded-lg">
-                                                <Star size={16} className="text-yellow-500 mr-1 fill-yellow-500" />
-                                                <span className="font-bold text-gray-700">{photographer.rating}</span>
-                                                <span className="text-gray-400 text-xs ml-1">({photographer.reviews})</span>
+                                        {!isPhotographerClient && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setReportTarget({ id: photographer.id, type: 'photographer', name: photographer.name });
+                                                }}
+                                                className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-yellow-500 hover:text-green-950 text-white rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all z-10"
+                                                title="Flag Profile"
+                                            >
+                                                <Award size={16} className="rotate-180" />
+                                            </button>
+                                        )}
+
+                                        <div className="absolute bottom-4 left-4 right-4">
+                                            <h3 className="text-xl font-medium text-white mb-1 drop-shadow-md">{photographer.name}</h3>
+                                            <div className="flex items-center text-gray-300 text-xs font-mono">
+                                                <MapPin size={12} className="mr-1 text-yellow-500" />
+                                                {photographer.location || "Location Unavailable"}
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div className="grid grid-cols-2 gap-4 mb-6 py-4 border-y border-gray-100">
-                                            <div className="text-center border-r border-gray-100">
-                                                <div className="text-sm text-gray-400 mb-1">Starting at</div>
-                                                <div className="font-bold text-green-700 text-lg">{photographer.price}</div>
+                                    <div className="p-5 flex flex-col flex-grow relative">
+                                        <div className="absolute -top-6 right-4 flex items-center bg-yellow-500 px-2 py-1 rounded-sm shadow-lg text-green-950">
+                                            <Star size={12} className="mr-1 fill-current" />
+                                            <span className="font-bold text-xs">{photographer.rating ? photographer.rating.toFixed(1) : 'New'}</span>
+                                            <span className="text-xs ml-1 opacity-70">({photographer.reviews || 0})</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 mb-5 pt-3 border-b border-white/5 pb-4">
+                                            <div className="text-left border-r border-white/5">
+                                                <div className="text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-1">Base Rate</div>
+                                                <div className="font-light text-white text-lg">{photographer.price}</div>
                                             </div>
-                                            <div className="text-center">
-                                                <div className="text-sm text-gray-400 mb-1">Experience</div>
-                                                <div className="font-bold text-gray-700">{photographer.experience}</div>
+                                            <div className="text-left pl-2">
+                                                <div className="text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-1">Exp Level</div>
+                                                <div className="font-light text-gray-300">{photographer.experience || 'Pro'}</div>
                                             </div>
                                         </div>
 
                                         <div className="flex flex-wrap gap-2 mb-6">
                                             {Array.isArray(photographer.tags) && photographer.tags.length > 0 ? (
                                                 photographer.tags.slice(0, 3).map((tag, index) => (
-                                                    <span key={`${photographer.id}-tag-${index}`} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                                    <span key={`${photographer.id}-tag-${index}`} className="px-2 py-1 bg-white/5 text-gray-400 rounded-sm text-[10px] font-mono uppercase tracking-wider border border-white/10">
                                                         {tag}
                                                     </span>
                                                 ))
                                             ) : (
-                                                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                                                    General
+                                                <span className="px-2 py-1 bg-white/5 text-gray-400 rounded-sm text-[10px] font-mono uppercase tracking-wider border border-white/10">
+                                                    {photographer.category || 'Event'}
                                                 </span>
                                             )}
                                         </div>
 
-                                        <div className="flex gap-3 mt-auto">
+                                        <div className="flex gap-2 mt-auto">
                                             <button
                                                 onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER_DETAILS, params: { id: photographer.id } })}
-                                                className={`px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm ${!isPhotographerClient ? 'flex-1' : 'w-full'}`}
+                                                className={`px-3 py-2 border border-white/20 text-white text-xs font-mono uppercase rounded-sm hover:bg-white/10 transition-colors ${!isPhotographerClient ? 'flex-1' : 'w-full'}`}
                                             >
-                                                View Profile
+                                                Details
                                             </button>
                                             {!isPhotographerClient && (
                                                 <>
                                                     <button
                                                         onClick={() => navigate({ to: '/chat', search: { userId: photographer.userId } })}
-                                                        className="px-3 py-2 border border-gray-200 text-green-700 font-medium rounded-lg hover:bg-green-50 transition-colors text-sm"
-                                                        title="Chat"
+                                                        className="px-3 py-2 border border-white/20 text-white rounded-sm hover:bg-white/10 transition-colors"
+                                                        title="Transmit Message"
                                                     >
-                                                        <MessageCircle size={18} />
+                                                        <MessageCircle size={16} />
                                                     </button>
                                                     <button
                                                         onClick={() => toast.success(`Booking ${photographer.name}`)}
-                                                        className="flex-1 px-4 py-2 bg-[#1E5631] text-white font-medium rounded-lg hover:bg-[#164024] transition-colors text-sm"
+                                                        className="flex-1 px-3 py-2 bg-yellow-500 text-green-950 font-bold text-xs font-mono uppercase tracking-wider rounded-sm hover:bg-yellow-400 transition-colors"
                                                     >
-                                                        Book Now
+                                                        Request
                                                     </button>
                                                 </>
                                             )}
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
-                        </div>
+                        </motion.div>
 
-                        {/* Pagination Controls */}
-                        <div className="flex justify-center items-center gap-2 mb-20">
+                        <div className="flex justify-center items-center gap-2 mb-20 font-mono">
                             <button
                                 onClick={() => fetchPhotographers(undefined, currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 border border-white/10 rounded-sm hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-white"
                             >
-                                <ChevronDown className="transform rotate-90" size={20} />
+                                <ChevronDown className="transform rotate-90" size={16} />
                             </button>
 
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <button
                                     key={page}
                                     onClick={() => fetchPhotographers(undefined, page)}
-                                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${currentPage === page
-                                        ? 'bg-[#2E7D46] text-white'
-                                        : 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                                    className={`w-8 h-8 rounded-sm text-xs transition-colors ${currentPage === page
+                                        ? 'bg-yellow-500 text-green-950 font-bold'
+                                        : 'border border-white/10 hover:bg-white/5 text-gray-400'
                                         }`}
                                 >
                                     {page}
@@ -406,15 +387,25 @@ const PhotographerSearch = () => {
                             <button
                                 onClick={() => fetchPhotographers(undefined, currentPage + 1)}
                                 disabled={currentPage === totalPages}
-                                className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 border border-white/10 rounded-sm hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-white"
                             >
-                                <ChevronDown className="transform -rotate-90" size={20} />
+                                <ChevronDown className="transform -rotate-90" size={16} />
                             </button>
                         </div>
 
                     </>
                 )}
             </div>
+
+            {reportTarget && (
+                <ReportModal
+                    isOpen={!!reportTarget}
+                    onClose={() => setReportTarget(null)}
+                    targetId={reportTarget.id}
+                    targetType={reportTarget.type}
+                    targetName={reportTarget.name}
+                />
+            )}
         </div>
     );
 };

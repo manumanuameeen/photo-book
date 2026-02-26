@@ -1,5 +1,9 @@
-import type { IEmailService } from "../../../interfaces/services/IEmailService.ts";
-
+import type {
+  BookingEmailDetails,
+  IEmailService,
+} from "../../../interfaces/services/IEmailService.ts";
+import { AppError } from "../../../utils/AppError.ts";
+import { HttpStatus } from "../../../constants/httpStatus.ts";
 import { mailTransport } from "../../../config/email.ts";
 
 export class NodeMailerService implements IEmailService {
@@ -10,15 +14,18 @@ export class NodeMailerService implements IEmailService {
         from: `"photobook app" <${process.env.SMTP_USER}>`,
         to: email,
         subject: "your PHTOT-BOOK verification code",
-        html: this.getotpEmailTemplate(name, otp),
+        html: this._getOtpEmailTemplate(name, otp),
       };
 
       await mailTransport.sendMail(mailOptions);
       console.log(`otp eamil sent successfulyy to ${email}`);
       console.log(`otp ${otp}`);
-    } catch (error: any) {
-      console.log("erron in otp sent");
-      throw new Error("Failed to send verification eamil. Please try again.", error);
+    } catch (error: unknown) {
+      console.error("error in otp sent", error);
+      throw new AppError(
+        "Failed to send verification email. Please try again.",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -28,12 +35,12 @@ export class NodeMailerService implements IEmailService {
         from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
         to: email,
         subject: "Welcome to Photo-Book",
-        html: this.getWelcomeEmailTemplate(name),
+        html: this._getWelcomeEmailTemplate(name),
       };
       await mailTransport.sendMail(mailOptions);
       console.log(` Welcome email sent to ${email}`);
-    } catch (error: any) {
-      console.error(" Failed to send welcome email:", error.message);
+    } catch (error: unknown) {
+      console.error(" Failed to send welcome email:", error);
     }
   }
 
@@ -61,13 +68,16 @@ export class NodeMailerService implements IEmailService {
         from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
         to: email,
         subject: "🎉 Your Photographer Application Has Been Approved!",
-        html: this.getApprovalEmailTemplate(name, message),
+        html: this._getApprovalEmailTemplate(name, message),
       };
       await mailTransport.sendMail(mailOptions);
       console.log(`Approval email sent to ${email}`);
-    } catch (error: any) {
-      console.error("Failed to send approval email:", error.message);
-      throw new Error("Failed to send approval email. Please try again.");
+    } catch (error: unknown) {
+      console.error("Failed to send approval email:", error);
+      throw new AppError(
+        "Failed to send approval email. Please try again.",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -77,17 +87,39 @@ export class NodeMailerService implements IEmailService {
         from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
         to: email,
         subject: "Update on Your Photographer Application",
-        html: this.getRejectionEmailTemplate(name, reason),
+        html: this._getRejectionEmailTemplate(name, reason),
       };
       await mailTransport.sendMail(mailOptions);
       console.log(`Rejection email sent to ${email}`);
-    } catch (error: any) {
-      console.error("Failed to send rejection email:", error.message);
-      throw new Error("Failed to send rejection email. Please try again.");
+    } catch (error: unknown) {
+      console.error("Failed to send rejection email:", error);
+      throw new AppError(
+        "Failed to send rejection email. Please try again.",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  private getotpEmailTemplate(name: string, otp: string): string {
+  async sendBookingConfirmation(
+    email: string,
+    name: string,
+    bookingDetails: BookingEmailDetails,
+  ): Promise<void> {
+    try {
+      const mailOptions = {
+        from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: "New Booking Confirmed! 📸",
+        html: this._getBookingConfirmationTemplate(name, bookingDetails),
+      };
+      await mailTransport.sendMail(mailOptions);
+      console.log(`Booking confirmation email sent to ${email}`);
+    } catch (error: unknown) {
+      console.error("Failed to send booking confirmation email:", error);
+    }
+  }
+
+  private _getOtpEmailTemplate(name: string, otp: string): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -179,7 +211,7 @@ export class NodeMailerService implements IEmailService {
     `;
   }
 
-  private getWelcomeEmailTemplate(name: string): string {
+  private _getWelcomeEmailTemplate(name: string): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -235,7 +267,7 @@ export class NodeMailerService implements IEmailService {
     `;
   }
 
-  private getApprovalEmailTemplate(name: string, message: string): string {
+  private _getApprovalEmailTemplate(name: string, message: string): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -343,7 +375,7 @@ export class NodeMailerService implements IEmailService {
     `;
   }
 
-  private getRejectionEmailTemplate(name: string, reason: string): string {
+  private _getRejectionEmailTemplate(name: string, reason: string): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -455,22 +487,8 @@ export class NodeMailerService implements IEmailService {
       </html>
     `;
   }
-  async sendBookingConfirmation(email: string, name: string, bookingDetails: any): Promise<void> {
-    try {
-      const mailOptions = {
-        from: `"PhotoBook Team" <${process.env.SMTP_USER}>`,
-        to: email,
-        subject: "New Booking Confirmed! 📸",
-        html: this.getBookingConfirmationTemplate(name, bookingDetails),
-      };
-      await mailTransport.sendMail(mailOptions);
-      console.log(`Booking confirmation email sent to ${email}`);
-    } catch (error: any) {
-      console.error("Failed to send booking confirmation email:", error.message);
-    }
-  }
 
-  private getBookingConfirmationTemplate(name: string, details: any): string {
+  private _getBookingConfirmationTemplate(name: string, details: BookingEmailDetails): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -512,7 +530,7 @@ export class NodeMailerService implements IEmailService {
     subject: string,
     text: string,
     html: string,
-    attachments?: any[],
+    attachments?: { filename: string; path?: string; content?: Buffer | string }[],
   ): Promise<void> {
     try {
       const mailOptions = {
@@ -525,9 +543,8 @@ export class NodeMailerService implements IEmailService {
       };
       await mailTransport.sendMail(mailOptions);
       console.log(`Generic email sent to ${to}`);
-    } catch (error: any) {
-      console.error(`Failed to send email to ${to}:`, error.message);
-
+    } catch (error: unknown) {
+      console.error(`Failed to send email to ${to}:`, error);
     }
   }
 }

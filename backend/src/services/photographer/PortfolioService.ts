@@ -5,18 +5,13 @@ import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { Messages } from "../../constants/messages.ts";
 
-import mongoose from "mongoose";
-
 import { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository.ts";
 
 export class PortfolioService implements IPortfolioService {
   private readonly _repository: IPortfolioRepository;
   private readonly _photographerRepository: IPhotographerRepository;
 
-  constructor(
-    repository: IPortfolioRepository,
-    photographerRepository: IPhotographerRepository,
-  ) {
+  constructor(repository: IPortfolioRepository, photographerRepository: IPhotographerRepository) {
     this._repository = repository;
     this._photographerRepository = photographerRepository;
   }
@@ -35,7 +30,7 @@ export class PortfolioService implements IPortfolioService {
       throw new AppError("Section with this title already exists", HttpStatus.BAD_REQUEST);
     }
     return this._repository.create({
-      photographerId: photographer.id, 
+      photographerId: photographer.id,
       title,
       coverImage,
       images: [],
@@ -71,11 +66,7 @@ export class PortfolioService implements IPortfolioService {
     if (!deleted) throw new AppError("Failed to delete section", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  async addImage(
-    userId: string,
-    sectionId: string,
-    imageUrl: string,
-  ): Promise<IPortfolioSection> {
+  async addImage(userId: string, sectionId: string, imageUrl: string): Promise<IPortfolioSection> {
     const section = await this._repository.findById(sectionId);
     if (!section) throw new AppError(Messages.DATA_NOT_FOUND, HttpStatus.NOT_FOUND);
 
@@ -115,10 +106,7 @@ export class PortfolioService implements IPortfolioService {
     return updated;
   }
 
-  async getSectionById(
-    userId: string,
-    sectionId: string,
-  ): Promise<IPortfolioSection | null> {
+  async getSectionById(userId: string, sectionId: string): Promise<IPortfolioSection | null> {
     const section = await this._repository.findById(sectionId);
     if (!section) return null;
 

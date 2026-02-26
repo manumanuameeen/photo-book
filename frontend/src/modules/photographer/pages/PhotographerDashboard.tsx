@@ -1,16 +1,16 @@
-import React from 'react';
 import { useState } from 'react';
 import {
     TrendingUp,
     Star,
-    User,
-    Calendar,
     DollarSign,
-    Clock,
     Activity,
     Briefcase,
     ImageIcon,
-    MapPin
+    MapPin,
+    Package,
+    User,
+    // callender
+    Calendar
 } from 'lucide-react';
 import { motion } from "framer-motion";
 import { ROUTES } from "../../../constants/routes";
@@ -26,8 +26,10 @@ import {
     Tooltip,
     Filler,
     Legend,
+    ArcElement,
+    type TooltipItem
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Line, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,
@@ -37,7 +39,8 @@ ChartJS.register(
     Title,
     Tooltip,
     Filler,
-    Legend
+    Legend,
+    ArcElement
 );
 
 const PhotographerDashboard = () => {
@@ -61,7 +64,7 @@ const PhotographerDashboard = () => {
                 boxPadding: 4,
                 usePointStyle: true,
                 callbacks: {
-                    label: function (context: { parsed: { y: number } }) {
+                    label: function (context: TooltipItem<'line'>) {
                         return `$${context.parsed.y} Revenue`;
                     }
                 }
@@ -113,6 +116,9 @@ const PhotographerDashboard = () => {
                 borderWidth: 2,
                 borderColor: '#ffffff'
             }
+        },
+        animation: {
+            duration: 2000,
         }
     };
 
@@ -120,7 +126,7 @@ const PhotographerDashboard = () => {
         if (!stats?.revenueTrend) return { labels: [], datasets: [] };
 
         const data = [...stats.revenueTrend];
-        const slicedData = timeRange === '6m' ? data.slice(-6) : data; // Last 6 or all 12
+        const slicedData = timeRange === '6m' ? data.slice(-6) : data;
 
         return {
             labels: slicedData.map(d => d.month),
@@ -148,19 +154,42 @@ const PhotographerDashboard = () => {
         };
     };
 
-    if (isLoading) return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div></div>;
+    const getPackagePopularityData = () => {
+        if (!stats?.sessions.packagePopularity) return { labels: [], datasets: [] };
+
+        const backgroundColors = [
+            'rgba(34, 197, 94, 0.8)', // Green
+            'rgba(59, 130, 246, 0.8)', // Blue
+            'rgba(245, 158, 11, 0.8)', // Amber
+            'rgba(168, 85, 247, 0.8)', // Purple
+            'rgba(236, 72, 153, 0.8)'  // Pink
+        ];
+
+        return {
+            labels: stats.sessions.packagePopularity.map(p => p.name),
+            datasets: [
+                {
+                    data: stats.sessions.packagePopularity.map(p => p.count),
+                    backgroundColor: backgroundColors.slice(0, stats.sessions.packagePopularity.length),
+                    borderWidth: 0,
+                }
+            ]
+        };
+    };
+
+    if (isLoading) return <div className="flex justify-center items-center h-screen">< div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700" ></div></div >;
     if (error) return <div className="text-red-500 text-center p-10">Failed to load dashboard data</div>;
 
     const statsCards = [
         { title: 'Total Revenue', value: `$${stats?.earnings.total.toLocaleString()}`, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50', trend: `+${stats?.earnings.growth}% from last month` },
-        { title: 'Pending Payouts', value: `$${stats?.earnings.pendingPayouts.toLocaleString()}`, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50', trend: 'Processing' },
-        { title: 'Pending Requests', value: stats?.pendingRequests.length || 0, icon: User, color: 'text-blue-600', bg: 'bg-blue-50', trend: 'Needs attention' },
+        { title: 'Total Customers', value: stats?.sessions.totalCustomers || 0, icon: User, color: 'text-blue-600', bg: 'bg-blue-50', trend: 'Unique clients' },
+        { title: 'Total Reviews', value: stats?.reviews.totalReviews || 0, icon: Star, color: 'text-yellow-600', bg: 'bg-yellow-50', trend: `${stats?.reviews.averageRating} Avg Rating` },
         { title: 'Total Sessions', value: stats?.sessions.total, icon: Briefcase, color: 'text-purple-600', bg: 'bg-purple-50', trend: 'Lifetime bookings' },
     ];
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 pb-12">
-            {/* Header */}
+
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
@@ -185,15 +214,18 @@ const PhotographerDashboard = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {statsCards.map((stat, index) => (
                         <motion.div
                             key={index}
                             initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                            animate={{ y: [0, -8, 0], opacity: 1 }}
+                            transition={{
+                                delay: index * 0.1,
+                                y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                                opacity: { duration: 0.5 }
+                            }}
+                            className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -213,10 +245,9 @@ const PhotographerDashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Content Column */}
+
                     <div className="lg:col-span-2 space-y-8">
 
-                        {/* Revenue Chart */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -239,14 +270,16 @@ const PhotographerDashboard = () => {
                             </div>
                         </motion.div>
 
-                        {/* Recent Requests */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 }}
-                            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+                            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative ring-1 ring-black/5"
                         >
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            {stats?.pendingRequests && stats.pendingRequests.length > 0 && (
+                                <div className="absolute inset-0 bg-green-500/5 animate-pulse rounded-2xl pointer-events-none" />
+                            )}
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center relative z-10">
                                 <h2 className="text-lg font-bold text-gray-900">Pending Requests</h2>
                                 <Link to={ROUTES.PHOTOGRAPHER.BOOKINGS} className="text-sm font-bold text-green-700 hover:text-green-800">View All</Link>
                             </div>
@@ -315,6 +348,36 @@ const PhotographerDashboard = () => {
                             </div>
                         </motion.div>
 
+                        {/* Top Packages */}
+                        {stats?.sessions.packagePopularity && stats.sessions.packagePopularity.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.65 }}
+                                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center"
+                            >
+                                <div className="flex items-center justify-between w-full mb-4">
+                                    <h2 className="text-lg font-bold text-gray-900">Top Packages</h2>
+                                    <Package className="w-4 h-4 text-green-600" />
+                                </div>
+                                <div className="w-full relative h-48 flex items-center justify-center">
+                                    <Doughnut
+                                        data={getPackagePopularityData()}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'right',
+                                                    labels: { boxWidth: 10, font: { size: 10 } }
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+
                         {/* Upcoming Schedule */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
@@ -355,7 +418,6 @@ const PhotographerDashboard = () => {
                             </div>
                         </motion.div>
 
-                        {/* Reviews Section */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}

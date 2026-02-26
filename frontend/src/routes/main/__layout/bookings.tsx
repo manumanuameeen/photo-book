@@ -6,10 +6,11 @@ import {
   Calendar,
 } from 'lucide-react';
 import { useUserBookings } from "../../../modules/user/hooks/useUserBookings";
-import { bookingApi } from "../../../services/api/bookingApi";
+import { bookingApi, type BookingDetails } from "../../../services/api/bookingApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { getErrorMessage } from "../../../utils/errorhandler";
 
 export const Route = createFileRoute('/main/__layout/bookings')({
   component: UserBookingsPage,
@@ -21,7 +22,6 @@ function UserBookingsPage() {
   const { data, isLoading, refetch } = useUserBookings(page, LIMIT);
   const queryClient = useQueryClient();
 
-  
   const bookings = data?.bookings || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / LIMIT);
@@ -44,9 +44,11 @@ function UserBookingsPage() {
       toast.success("Deposit paid successfully!", { id: toastId });
       refetch();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-    } catch (error: any) {
+    } catch (error: unknown) {
+
       console.error("Payment error:", error);
-      toast.error(error.response?.data?.message || "Payment failed", { id: toastId });
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage, { id: toastId });
     }
   };
 
@@ -79,11 +81,12 @@ function UserBookingsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {bookings.map((booking: any) => (
+              {bookings.map((booking: BookingDetails) => (
+
                 <div key={booking._id} className="p-5 rounded-lg border border-gray-100 hover:border-green-100 hover:bg-green-50/10 transition-colors bg-gray-50/50">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h4 className="font-bold text-gray-900 text-lg">{booking.packageDetails?.name || booking.packageId?.name || "Custom Package"}</h4>
+                      <h4 className="font-bold text-gray-900 text-lg">{booking.packageId?.name || "Custom Package"}</h4>
                       <p className="text-sm text-gray-500">with <span className="font-medium text-gray-700">{booking.photographerId?.name || "Photographer"}</span></p>
                     </div>
                     <span className={`text-xs font-bold px-3 py-1 rounded-full border capitalize ${getStatusColor(booking.status)}`}>
@@ -126,7 +129,6 @@ function UserBookingsPage() {
             </div>
           )}
 
-          {}
           {totalPages > 1 && (
             <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-100">
               <button

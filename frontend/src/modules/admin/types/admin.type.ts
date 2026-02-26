@@ -5,6 +5,7 @@ export interface IUser {
   email: string;
   role: string;
   isBlocked: boolean;
+  profileImage?: string;
 }
 
 export interface IUserListResponce {

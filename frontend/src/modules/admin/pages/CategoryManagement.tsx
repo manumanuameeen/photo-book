@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, X, Check, ArrowLeft, Layers, Search, Lightbulb, CheckCircle2, ShieldAlert, Power } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Check, Layers, Search, Lightbulb, ShieldAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { adminCategoryApi, type Category, CategoryType } from '../../../services/api/adminCategoryApi';
 import { toast } from 'sonner';
@@ -37,7 +37,7 @@ const CategoryManagement = () => {
                 setCategories(data.categories);
                 setTotalPages(data.totalPages || 0);
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to load categories");
         } finally {
             setIsLoading(false);
@@ -64,9 +64,10 @@ const CategoryManagement = () => {
             fetchCategories();
             reset();
             setEditingCategory(null);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error saving category:", error);
-            const message = error.response?.data?.message || "Failed to save category";
+            const err = error as { response?: { data?: { message?: string } } };
+            const message = err.response?.data?.message || "Failed to save category";
             toast.error(message);
         }
     };
@@ -86,7 +87,9 @@ const CategoryManagement = () => {
             await adminCategoryApi.deleteCategory(id);
             toast.success("Category deleted");
             fetchCategories();
+            fetchCategories();
         } catch (error) {
+            console.error(error);
             toast.error("Failed to delete category");
         }
     };
@@ -99,7 +102,9 @@ const CategoryManagement = () => {
             await adminCategoryApi.approveCategory(cat._id, message);
             toast.success("Category approved and active");
             fetchCategories();
+            fetchCategories();
         } catch (error) {
+            console.error(error);
             toast.error("Failed to approve category");
         }
     };
@@ -110,21 +115,10 @@ const CategoryManagement = () => {
             await adminCategoryApi.deleteCategory(cat._id);
             toast.success("Suggestion discarded");
             fetchCategories();
-        } catch (error) {
-            toast.error("Failed to discard suggestion");
-        }
-    };
-
-
-
-    const handleToggleStatus = async (cat: Category) => {
-        try {
-            const newStatus = cat.isActive === false;
-            await adminCategoryApi.updateCategory(cat._id, { isActive: newStatus });
-            toast.success(`Category ${newStatus ? 'activated' : 'deactivated'}`);
             fetchCategories();
         } catch (error) {
-            toast.error("Failed to update status");
+            console.error(error);
+            toast.error("Failed to discard suggestion");
         }
     };
 
@@ -139,7 +133,7 @@ const CategoryManagement = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div className="flex items-center gap-4">
-                        {}
+                        
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
                             <p className="text-gray-500 mt-1">Manage standard categories and review suggestions.</p>
@@ -166,14 +160,13 @@ const CategoryManagement = () => {
                     <div className="inline-flex bg-gray-100/50 p-1.5 rounded-xl gap-1">
                         {[
                             { id: 'ALL', label: 'All', icon: Layers },
-                            
-                            
+
                             { id: 'BLOCKED', label: 'Blocked', icon: ShieldAlert },
                             { id: 'REQUESTS', label: 'Requests', icon: Lightbulb }
                         ].map((item) => (
                             <button
                                 key={item.id}
-                                onClick={() => { setFilterStatus(item.id as any); setPage(1); }}
+                                onClick={() => { setFilterStatus(item.id as 'ALL' | 'ACTIVE' | 'INACTIVE' | 'BLOCKED' | 'REQUESTS'); setPage(1); }}
                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${filterStatus === item.id
                                     ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
@@ -229,11 +222,11 @@ const CategoryManagement = () => {
                                         className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden"
                                     >
                                         <div className="flex flex-col md:flex-row items-stretch md:items-center">
-                                            {}
+                                            
                                             <div className={`w-2 md:w-3 ${cat.isBlocked ? 'bg-red-500' : (cat.isActive === false ? 'bg-amber-400' : 'bg-green-500')}`} />
 
                                             <div className="flex-1 p-5 md:p-6 flex flex-col md:flex-row items-center gap-6">
-                                                {}
+                                                
                                                 <div className="flex items-center gap-5 flex-1 min-w-0 w-full md:w-auto">
                                                     <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-gray-900 group-hover:bg-gray-100 transition-all shrink-0">
                                                         <Layers size={28} />
@@ -256,14 +249,12 @@ const CategoryManagement = () => {
                                                     </div>
                                                 </div>
 
-                                                {}
                                                 <div className="hidden lg:block flex-[1.5] min-w-0">
                                                     <p className="text-sm text-gray-500 line-clamp-2 italic leading-relaxed">
                                                         {cat.description}
                                                     </p>
                                                 </div>
 
-                                                {}
                                                 <div className="flex items-center gap-2 w-full md:w-auto justify-end">
                                                     {cat.isSuggested ? (
                                                         <div className="flex gap-2">
@@ -282,7 +273,7 @@ const CategoryManagement = () => {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            {}
+                                                            
                                                             <button
                                                                 onClick={() => handleEdit(cat)}
                                                                 className="p-2.5 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-900 rounded-xl transition-all"
@@ -305,27 +296,25 @@ const CategoryManagement = () => {
                             </div>
                         )}
 
-                        {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-4 mt-8">
-                                <button
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
-                                >
-                                    Previous
-                                </button>
-                                <span className="text-sm font-medium text-gray-600">
-                                    Page {page} of {totalPages}
-                                </span>
-                                <button
-                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={page === totalPages}
-                                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        )}
+                        <div className="flex justify-center items-center gap-4 mt-8">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="px-4 py-2 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm font-medium text-gray-600">
+                                Page {page} of {Math.max(1, totalPages)}
+                            </span>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page >= totalPages}
+                                className="px-4 py-2 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
                     </>
                 )}
             </div>

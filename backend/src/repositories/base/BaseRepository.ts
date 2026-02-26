@@ -16,12 +16,12 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
     return await this._model.findById(id).exec();
   }
 
-  async findOne(query: Partial<T>): Promise<T | null> {
-    const data = await this._model.findOne(query as any).exec();
+  async findOne(query: mongoose.FilterQuery<T>): Promise<T | null> {
+    const data = await this._model.findOne(query).exec();
     return data;
   }
 
-  async update(id: string, data: Partial<T>): Promise<T | null> {
+  async update(id: string, data: mongoose.UpdateQuery<T>): Promise<T | null> {
     return await this._model.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 
@@ -35,9 +35,13 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
     if (!doc) return null;
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
+    const docData = doc as unknown as { likes: mongoose.Types.ObjectId[] };
+    if (!Array.isArray(docData.likes)) {
+      docData.likes = [];
+    }
 
-    const likes = (doc as any).likes || [];
-    const index = likes.findIndex((id: any) => id.toString() === userId.toString());
+    const likes = docData.likes;
+    const index = likes.findIndex((likeId) => likeId.toString() === userId.toString());
 
     if (index === -1) {
       likes.push(userObjectId);
@@ -45,8 +49,6 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
       likes.splice(index, 1);
     }
 
-
-    (doc as any).likes = likes;
     return await doc.save();
   }
 }

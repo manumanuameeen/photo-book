@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Home, User } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';

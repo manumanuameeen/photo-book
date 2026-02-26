@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useRef, type ReactNode } from 'react';
 
 interface MagneticButtonProps {
@@ -42,7 +42,7 @@ export const MagneticButton = ({ children, className = "", onClick, style }: Mag
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
         >
-            {}
+            
             <motion.div
                 className="absolute inset-0 overflow-hidden rounded-md pointer-events-none"
                 initial={{ opacity: 0 }}

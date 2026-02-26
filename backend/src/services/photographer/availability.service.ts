@@ -53,14 +53,14 @@ export class AvailabilityService implements IAvailabilityService {
 
     if (existing) {
       return (await this._repository.update(existing.id, {
-        slots: data.slots as any,
+        slots: data.slots as IAvailability["slots"],
         isFullDayAvailable: data.isFullDayAvailable,
       }))!;
     } else {
       return await this._repository.create({
         photographer: new mongoose.Types.ObjectId(photographerId),
         date: date,
-        slots: data.slots as any,
+        slots: data.slots as IAvailability["slots"],
         isFullDayAvailable: data.isFullDayAvailable,
       });
     }
@@ -107,7 +107,7 @@ export class AvailabilityService implements IAvailabilityService {
           slots: [],
           createdAt: new Date(),
           updatedAt: new Date(),
-        } as any;
+        } as unknown as IAvailability;
         availabilityMap.set(dateKey, bookedEntry);
       }
     });
@@ -209,8 +209,6 @@ export class AvailabilityService implements IAvailabilityService {
 
     const existing = await this._repository.findByPhotographerAndDate(photographerId, d);
     if (existing) {
-
-
       const booking = await BookingModel.findOne({
         photographerId: new mongoose.Types.ObjectId(photographerId),
         eventDate: {
@@ -247,7 +245,6 @@ export class AvailabilityService implements IAvailabilityService {
       throw new AppError("Start date cannot be after end date", HttpStatus.BAD_REQUEST);
     }
 
-    
     const booking = await BookingModel.findOne({
       photographerId: new mongoose.Types.ObjectId(photographerId),
       eventDate: { $gte: start, $lte: end },
@@ -257,15 +254,12 @@ export class AvailabilityService implements IAvailabilityService {
     if (booking) {
       throw new AppError(
         "Cannot unblock range that strictly contains dates with existing bookings",
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
 
     const current = new Date(start);
     while (current <= end) {
-      
-      
-      
       const d = new Date(current);
       d.setHours(0, 0, 0, 0);
       const existing = await this._repository.findByPhotographerAndDate(photographerId, d);

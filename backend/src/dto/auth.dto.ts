@@ -13,6 +13,15 @@ export const LoginDto = z.object({
   password: z.string(),
 });
 
+export const UpdateReviewDto = z
+  .object({
+    comment: z.string().min(1, "Comment cannot be empty").optional(),
+    rating: z.number().min(1).max(5, "Rating must be between 1 and 5").optional(),
+  })
+  .refine((data) => data.comment !== undefined || data.rating !== undefined, {
+    message: "At least comment or rating must be provided",
+  });
+
 export const VerifyOtpDto = z.object({
   email: z.string().email(),
   otp: z.string().length(6),

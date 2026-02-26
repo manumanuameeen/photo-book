@@ -3,14 +3,12 @@ import { useApplicationStore } from "../../store/useApplicationStore";
 import { FormInput } from "../../../../components/common/FormInput";
 import { type ChangeEvent } from "react"; 
 
-
 const ALL_SPECIALTIES = [
     'Wedding Photography', 'Portrait Photography', 'Event Photography',
     'Commercial Photography', 'Fashion Photography', 'Food Photography',
     'Travel Photography', 'Nature Photography', 'Documentary Photography',
     'Sports Photography', 'Real Estate Photography', 'Studio Photography',
 ];
-
 
 const ProfessionalDetailsStep = () => {
     const { formData, updateFormData, setStep } = useApplicationStore();

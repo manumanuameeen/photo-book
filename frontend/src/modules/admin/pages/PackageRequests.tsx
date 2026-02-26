@@ -4,60 +4,34 @@ import { Check, Package, Calendar, DollarSign, Image as ImageIcon, Info, Ban, Re
 import { adminPhotographerApi } from '../../../services/api/adminPhotographerApi';
 import { toast } from 'sonner';
 
-interface IPackage {
-    _id: string;
-    photographer: {
-        _id: string;
-        personalInfo: {
-            name: string;
-            email: string;
-        };
-    };
-    name: string;
-    description: string;
-    price: number;
-    baseprice?: number;
-    editedPhoto: number;
-    features: string[];
-    deliveryTime: string;
-    coverImage?: string;
-    isActive: boolean;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED';
-    rejectionReason?: string;
-    categoryId: {
-        _id: string;
-        name: string;
-    };
-    createdAt: string;
-}
+import type { IAdminPackage } from '../types/photographer.types';
 
 const PackageRequests = () => {
-    const [packages, setPackages] = useState<IPackage[]>([]);
+    const [packages, setPackages] = useState<IAdminPackage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedPackage, setSelectedPackage] = useState<IPackage | null>(null);
+    const [selectedPackage, setSelectedPackage] = useState<IAdminPackage | null>(null);
 
-    
     const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
     useEffect(() => {
         fetchPackages();
-    }, [statusFilter]);
+    }, [statusFilter]); 
 
     const fetchPackages = async () => {
         setIsLoading(true);
         try {
             const data = await adminPhotographerApi.getPackages(1, 50, statusFilter);
             if (data && Array.isArray(data.packages)) {
-                setPackages(data.packages);
+                setPackages(data.packages as IAdminPackage[]);
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to load packages");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleBlock = async (pkg: IPackage) => {
+    const handleBlock = async (pkg: IAdminPackage) => {
         const reason = prompt(`Please enter the reason for blocking "${pkg.name}":`);
         if (!reason) return;
         if (reason.length < 10) {
@@ -70,19 +44,19 @@ const PackageRequests = () => {
             toast.success("Package blocked successfully");
             fetchPackages();
             setSelectedPackage(null);
-        } catch (error) {
+        } catch {
             toast.error("Failed to block package");
         }
     };
 
-    const handleUnblock = async (pkg: IPackage) => {
+    const handleUnblock = async (pkg: IAdminPackage) => {
         if (!confirm(`Are you sure you want to UNBLOCK "${pkg.name}"? It will become visible again.`)) return;
         try {
             await adminPhotographerApi.unblockPackage(pkg._id);
             toast.success("Package unblocked successfully");
             fetchPackages();
             setSelectedPackage(null);
-        } catch (error) {
+        } catch {
             toast.error("Failed to unblock package");
         }
     };

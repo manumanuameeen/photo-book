@@ -1,4 +1,5 @@
 import apiClient from "../apiClient";
+import { API_ROUTES } from "../../constants/apiRoutes";
 
 export interface WalletTransaction {
     type: 'CREDIT' | 'DEBIT';
@@ -67,21 +68,21 @@ export interface DashboardStats {
 
 export const walletApi = {
     getWalletDetails: async (): Promise<WalletDetails> => {
-        const response = await apiClient.get('/wallet');
+        const response = await apiClient.get(API_ROUTES.WALLET.DETAILS);
         return response.data.data;
     },
     getDashboardStats: async (): Promise<DashboardStats> => {
-        const response = await apiClient.get('/wallet/dashboard-stats');
+        const response = await apiClient.get(API_ROUTES.WALLET.DASHBOARD_STATS);
         return response.data.data;
     },
     getEscrowStats: async (page: number, limit: number, search: string) => {
-        const response = await apiClient.get('/wallet/escrow-stats', {
+        const response = await apiClient.get(API_ROUTES.WALLET.ESCROW_STATS, {
             params: { page, limit, search }
         });
         return response.data.data;
     },
     getWalletTransactions: async (page: number, limit: number, type: string, status?: string) => {
-        const response = await apiClient.get('/wallet/transactions', {
+        const response = await apiClient.get(API_ROUTES.WALLET.TRANSACTIONS, {
             params: { page, limit, type, status }
         });
         return response.data.data;

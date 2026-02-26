@@ -10,10 +10,9 @@ import {
     Search,
     X,
     User,
-    MessageCircle
+    MessageCircle,
+    Star
 } from 'lucide-react';
-
-
 
 import { toast } from 'sonner';
 import { userPhotographerApi } from '../../../services/api/userPhotographerApi';
@@ -68,8 +67,6 @@ interface PortfolioItem {
     sectionTitle: string;
 }
 
-
-
 import { ReportModal } from '../../../components/common/ReportModal';
 import { CheckAvailabilityModal } from '../components/CheckAvailabilityModal';
 
@@ -78,10 +75,9 @@ const PhotographerDetails = () => {
     const { user, role } = useAuthStore();
     const [selectedImage, setSelectedImage] = useState<PortfolioItem | null>(null);
     const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
-    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [reportTarget, setReportTarget] = useState<{ id: string, type: 'photographer' | 'package', name: string } | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 3;
-
 
     const [reviewTarget, setReviewTarget] = useState<{ id: string; type: 'photographer' | 'package' }>({ id: '', type: 'photographer' });
     const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
@@ -90,25 +86,19 @@ const PhotographerDetails = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeSection, setActiveSection] = useState<{ id: string; title: string; images: string[] } | null>(null);
 
-
     useEffect(() => {
         if (selectedPackage) {
             toast.info("Package selected. You can now view its reviews.");
         }
     }, [selectedPackage]);
 
-    const { id } = useParams({ strict: false });
+    const { id } = useParams({ strict: false }) as { id: string };
 
     useEffect(() => {
         if (id) {
             setReviewTarget(prev => ({ ...prev, id, type: 'photographer' }));
         }
     }, [id]);
-
-
-
-
-
 
     useEffect(() => {
         const fetchPhotographer = async () => {
@@ -119,24 +109,8 @@ const PhotographerDetails = () => {
                 const data = await userPhotographerApi.getPhotographerById(id);
                 setPhotographer(data);
 
-
-
-                if (data.portfolioSections && data.portfolioSections.length > 0) {
-                    const flattened: PortfolioItem[] = [];
-                    data.portfolioSections.forEach((section: { id: string; title: string; images: string[] }) => {
-                        section.images.forEach((img: string, idx: number) => {
-                            flattened.push({
-                                id: `${section.id}-${idx}`,
-                                image: img,
-                                sectionTitle: section.title
-                            });
-                        });
-                    });
-                } else if (data.portfolio && Array.isArray(data.portfolio) && data.portfolio.length > 0) {
-
-                }
-
-
+                // Portfolio data is already structured in the response
+                // No client-side processing needed for now
             } catch (error) {
                 console.error("Failed to fetch photographer details:", error);
                 toast.error("Failed to load photographer details");
@@ -148,13 +122,9 @@ const PhotographerDetails = () => {
         fetchPhotographer();
     }, [id]);
 
-
-
-
-
     const handleBack = () => {
 
-        navigate({ to: ROUTES.USER.PHOTOGRAPHER as any });
+        navigate({ to: ROUTES.USER.PHOTOGRAPHER });
     };
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader /></div>;
@@ -163,8 +133,6 @@ const PhotographerDetails = () => {
     const filteredPackages = photographer.packages.filter(pkg =>
         pkg.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-
 
     const totalPages = Math.ceil(filteredPackages.length / ITEMS_PER_PAGE);
     const paginatedPackages = filteredPackages.slice(
@@ -184,7 +152,6 @@ const PhotographerDetails = () => {
                         Back to Search
                     </button>
 
-                    { }
                     <div className="relative w-full md:w-96">
                         <input
                             type="text"
@@ -198,10 +165,9 @@ const PhotographerDetails = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    { }
+                    
                     <div className="lg:col-span-2 space-y-8">
 
-                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-6 items-start">
                             <div className="relative">
                                 <img
@@ -246,7 +212,6 @@ const PhotographerDetails = () => {
                             </div>
                         </div>
 
-                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-lg font-bold text-gray-900">
@@ -277,7 +242,7 @@ const PhotographerDetails = () => {
                                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveSection(section); }}
                                             >
                                                 <div className="relative aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden shadow-sm border border-gray-100 mb-3 group-hover:shadow-md transition-all group-hover:-translate-y-1">
-                                                    { }
+                                                    
                                                     <div className="absolute top-0 right-0 w-full h-full bg-gray-200 translate-x-1 -translate-y-1 rounded-2xl -z-10"></div>
                                                     <div className="absolute top-0 right-0 w-full h-full bg-gray-300 translate-x-2 -translate-y-2 rounded-2xl -z-20"></div>
 
@@ -392,7 +357,6 @@ const PhotographerDetails = () => {
                             )}
                         </div>
 
-                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <h2 className="text-lg font-bold text-gray-900 mb-6">Packages</h2>
                             <div className="space-y-4 mb-6">
@@ -419,6 +383,18 @@ const PhotographerDetails = () => {
                                                             initialLikes={pkg.likes}
                                                             className="scale-90"
                                                         />
+                                                        {role !== 'photographer' && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setReportTarget({ id: pkg.id, type: 'package', name: pkg.name });
+                                                                }}
+                                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                title="Report Package"
+                                                            >
+                                                                <Award size={16} className="rotate-180" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                     <span className="text-lg font-bold text-gray-900">${pkg.price}</span>
                                                 </div>
@@ -433,7 +409,6 @@ const PhotographerDetails = () => {
                                             </div>
                                         ))}
 
-                                        { }
                                         {totalPages > 1 && (
                                             <div className="flex justify-center items-center gap-2 mt-6">
                                                 <button
@@ -466,15 +441,14 @@ const PhotographerDetails = () => {
                             </div>
                         </div>
 
-                        { }
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <div className="flex gap-4">
+                            <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+                                <div className="flex gap-4 bg-gray-100 p-1 rounded-lg">
                                     <button
                                         onClick={() => setReviewTarget({ id: id!, type: 'photographer' })}
-                                        className={`text-lg font-bold pb-1 border-b-2 transition-colors ${reviewTarget.type === 'photographer'
-                                            ? 'text-gray-900 border-green-600'
-                                            : 'text-gray-400 border-transparent hover:text-gray-600'
+                                        className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${reviewTarget.type === 'photographer'
+                                            ? 'bg-white text-green-700 shadow-sm'
+                                            : 'text-gray-400 hover:text-gray-600'
                                             }`}
                                     >
                                         Photographer Reviews
@@ -495,6 +469,15 @@ const PhotographerDetails = () => {
                                         Package Reviews
                                     </button>
                                 </div>
+                                {user?._id && (
+                                    <button
+                                        onClick={() => navigate({ to: ROUTES.USER.DASHBOARD, search: { tab: 'reviews' } })}
+                                        className="text-xs font-bold text-green-700 hover:bg-green-50 px-3 py-2 rounded-lg border border-green-100 transition-all flex items-center gap-1.5"
+                                    >
+                                        <Star size={14} className="fill-green-700" />
+                                        Manage My Reviews
+                                    </button>
+                                )}
                             </div>
 
                             <div className="mb-4">
@@ -514,7 +497,6 @@ const PhotographerDetails = () => {
                                 )}
                             </div>
 
-                            { }
                             {user?._id !== photographer.userId && (
                                 (reviewTarget.type === 'photographer' || (reviewTarget.type === 'package' && selectedPackage)) && (
                                     <div className="mb-8">
@@ -527,7 +509,6 @@ const PhotographerDetails = () => {
                                 )
                             )}
 
-                            { }
                             {(reviewTarget.type === 'photographer' || (reviewTarget.type === 'package' && selectedPackage)) && (
                                 <ReviewList
                                     key={`list-${reviewTarget.id}`}
@@ -539,7 +520,6 @@ const PhotographerDetails = () => {
 
                     </div>
 
-                    { }
                     <div className="space-y-6">
                         {role !== 'photographer' ? (
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
@@ -562,11 +542,11 @@ const PhotographerDetails = () => {
                                     disabled={!selectedPackage}
 
                                     onClick={() => navigate({
-                                        to: ROUTES.USER.BOOKING as any,
+                                        to: ROUTES.USER.BOOKING,
                                         search: {
                                             photographerId: photographer.id,
                                             packageId: selectedPackage
-                                        } as any
+                                        }
                                     })}
                                 >
                                     Book Now
@@ -588,7 +568,7 @@ const PhotographerDetails = () => {
                                         <MessageCircle size={14} /> Send a Message
                                     </button>
                                     <button
-                                        onClick={() => setIsReportModalOpen(true)}
+                                        onClick={() => setReportTarget({ id: photographer.id, type: 'photographer', name: photographer.name })}
                                         className="text-xs text-gray-400 hover:text-red-500 flex items-center justify-center gap-1 transition-colors"
                                     >
                                         <Award size={14} className="rotate-180" /> Report Profile
@@ -614,7 +594,6 @@ const PhotographerDetails = () => {
                 </div>
             </div>
 
-            { }
             {
                 selectedImage && (
                     <div
@@ -648,13 +627,15 @@ const PhotographerDetails = () => {
                 )
             }
 
-            <ReportModal
-                isOpen={isReportModalOpen}
-                onClose={() => setIsReportModalOpen(false)}
-                targetId={photographer.id}
-                targetType="photographer"
-                targetName={photographer.name}
-            />
+            {reportTarget && (
+                <ReportModal
+                    isOpen={!!reportTarget}
+                    onClose={() => setReportTarget(null)}
+                    targetId={reportTarget.id}
+                    targetType={reportTarget.type}
+                    targetName={reportTarget.name}
+                />
+            )}
 
             <CheckAvailabilityModal
                 isOpen={isAvailabilityModalOpen}
@@ -666,12 +647,12 @@ const PhotographerDetails = () => {
                     setIsAvailabilityModalOpen(false);
 
                     navigate({
-                        to: ROUTES.USER.BOOKING as any,
+                        to: ROUTES.USER.BOOKING,
                         search: {
                             photographerId: photographer.id,
                             packageId: selectedPackage || undefined,
                             date: date.toISOString()
-                        } as any
+                        }
                     });
                 }}
             />

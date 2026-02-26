@@ -1,4 +1,5 @@
 import apiClient from "../apiClient";
+import { API_ROUTES } from "../../constants/apiRoutes";
 
 export interface SystemMessage {
     id: string;
@@ -12,12 +13,22 @@ export interface SystemMessage {
     receiverName?: string;
 }
 
+interface RawSystemMessage {
+    _id: string;
+    content: string;
+    type: 'SYSTEM' | 'CLIENT';
+    isRead: boolean;
+    senderId?: { name: string };
+    receiverId?: { name: string };
+    createdAt: string;
+}
+
 export const messageApi = {
     getMessages: async (page = 1, limit = 10): Promise<{ messages: SystemMessage[]; total: number }> => {
-        const response = await apiClient.get("/message", { params: { page, limit } });
+        const response = await apiClient.get(API_ROUTES.MESSAGE.BASE, { params: { page, limit } });
         const { messages, total } = response.data.data;
         return {
-            messages: messages.map((msg: any) => ({
+            messages: messages.map((msg: RawSystemMessage) => ({
                 id: msg._id,
                 content: msg.content,
                 type: msg.type,
@@ -32,10 +43,10 @@ export const messageApi = {
     },
 
     getSentMessages: async (page = 1, limit = 10): Promise<{ messages: SystemMessage[]; total: number }> => {
-        const response = await apiClient.get("/message/sent", { params: { page, limit } });
+        const response = await apiClient.get(API_ROUTES.MESSAGE.SENT, { params: { page, limit } });
         const { messages, total } = response.data.data;
         return {
-            messages: messages.map((msg: any) => ({
+            messages: messages.map((msg: RawSystemMessage) => ({
                 id: msg._id,
                 content: msg.content,
                 type: msg.type,
@@ -51,15 +62,15 @@ export const messageApi = {
     },
 
     markAsRead: async (id: string): Promise<void> => {
-        await apiClient.put(`/message/${id}/read`);
+        await apiClient.put(API_ROUTES.MESSAGE.READ(id));
     },
 
     deleteMessage: async (id: string): Promise<void> => {
-        await apiClient.delete(`/message/${id}`);
+        await apiClient.delete(API_ROUTES.MESSAGE.DELETE(id));
     },
 
     sendMessage: async (receiverId: string, content: string): Promise<void> => {
-        await apiClient.post("/message", { receiverId, content });
+        await apiClient.post(API_ROUTES.MESSAGE.BASE, { receiverId, content });
     },
 
     getSystemMessages: async (page = 1, limit = 10): Promise<{ messages: SystemMessage[]; total: number }> => {

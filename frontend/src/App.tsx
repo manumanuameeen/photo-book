@@ -15,21 +15,32 @@ export default function App() {
     rehydrateUser();
   }, [rehydrateUser]);
 
-  
   useEffect(() => {
     if (user?._id) {
       socketService.connect();
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const handleNewMessage = (data: any) => {
-        
+
         if (!window.location.href.includes('/chat')) {
-          const senderName = data.senderId?.name || 'Someone';
+          let senderName = 'Someone';
+          let senderIdValue = '';
+
+          if (data.senderId) {
+            if (typeof data.senderId === 'string') {
+              senderIdValue = data.senderId;
+            } else {
+              senderName = data.senderId.name || 'Someone';
+              senderIdValue = data.senderId._id || '';
+            }
+          }
+
           toast.success(`New message from ${senderName}`, {
             description: data.content || 'Sent a photo/attachment',
             duration: 4000,
             action: {
               label: 'View',
-              onClick: () => window.location.href = `/chat?userId=${data.senderId?._id || data.senderId}`
+              onClick: () => window.location.href = `/chat?userId=${senderIdValue}`
             }
           });
         }

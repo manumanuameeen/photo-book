@@ -25,9 +25,10 @@ export function PaymentSuccessPage() {
                 await rentalApi.payDeposit(orderId, sessionId);
                 toast.success('Payment confirmed! Your rental is now active.');
                 setIsConfirming(false);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Payment confirmation error:', error);
-                toast.error(error?.response?.data?.message || 'Failed to confirm payment');
+                const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to confirm payment';
+                toast.error(errorMessage);
                 setIsConfirming(false);
             }
         };

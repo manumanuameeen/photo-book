@@ -5,7 +5,6 @@ import type { IAuthRespository } from "../interface/IAuthRepository"
 
 export class AuthRepository implements IAuthRespository {
 
-
   async signup(data: ISignupRequest): Promise<IAuthResponse> {
     const res = await apiClient.post<IAuthResponse>("/auth/signup", data);
     console.log("res from front end repository", res.data)

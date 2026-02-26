@@ -6,7 +6,6 @@ import { useAuthStore } from "../../modules/auth/store/useAuthStore.ts";
 import { confirm } from "../../components/ConfirmToaster.tsx";
 import { ROUTES } from "../../constants/routes.ts"
 
-
 const AdminHeader: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -52,11 +51,9 @@ const AdminHeader: React.FC = () => {
           <p className="text-sm text-gray-500">Welcome back!</p>
         </div>
 
-
       </div>
 
       <div className="flex items-center gap-4">
-
 
         <div className="relative">
           <button

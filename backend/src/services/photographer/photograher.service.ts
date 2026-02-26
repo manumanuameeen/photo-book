@@ -1,9 +1,43 @@
-import { ApplyPhtographerDtoType, PhotographerResponseDto } from "../../dto/photographer.dto.ts";
+import {
+  ApplyPhtographerDtoType,
+  PhotographerResponseDto,
+  IPaginatedPhotographerResponse,
+  IPublicPhotographer,
+  IPublicReview,
+} from "../../dto/photographer.dto.ts";
 import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto.ts";
 import mongoose from "mongoose";
 import { BookingModel } from "../../model/bookingModel.ts";
 import type { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository.ts";
-import type { IPhotographerCreate } from "./photographer.types.ts";
+import type {
+  IPhotographerCreate,
+  IDashboardBooking,
+  IPendingRequest,
+  IUpcomingBooking,
+} from "./photographer.types.ts";
+
+export interface IBookingMapped {
+  _id: string;
+  userId: string | undefined;
+  clientName: string;
+  clientImage?: string;
+  clientEmail?: string;
+  packageName: string;
+  packagePrice: number;
+  eventDate: Date | string;
+  eventType: string;
+  location: string;
+  status: string;
+  paymentStatus: string;
+  createdAt: Date | string;
+}
+
+export interface IPagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 import type { IPhotographerService } from "../../interfaces/services/IPhotographerService.ts";
 import { PhotographerMapper } from "../../mappers/photographerMapper.ts";
 import { AppError } from "../../utils/AppError.ts";
@@ -11,7 +45,15 @@ import { Messages } from "../../constants/messages.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 
 import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import { ReviewModel } from "../../model/reviewModel.ts";
+import { ReviewModel, IReview } from "../../model/reviewModel.ts";
+import { IPhotographer } from "../../model/photographerModel.ts";
+
+interface IReviewer {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  profileImage?: string;
+  role?: string;
+}
 
 export class PhotographerService implements IPhotographerService {
   private readonly _repository: IPhotographerRepository;
@@ -64,7 +106,7 @@ export class PhotographerService implements IPhotographerService {
       }
       if (existing.status === "REJECTED") {
         const updatedData = { ...newApplication, rejectionReason: "" };
-        const updated = await this._repository.update(existing.id, updatedData as any);
+        const updated = await this._repository.update(existing.id, updatedData);
         if (!updated) {
           throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
@@ -76,7 +118,7 @@ export class PhotographerService implements IPhotographerService {
       }
     }
 
-    const created = await this._repository.create(newApplication as any);
+    const created = await this._repository.create(newApplication);
     console.log("Created photographer - images:", created.portfolio.portfolioImages?.length || 0);
     return PhotographerMapper.toResponse(created);
   }
@@ -91,12 +133,12 @@ export class PhotographerService implements IPhotographerService {
       throw new AppError("Invalid photographer user ID", HttpStatus.BAD_REQUEST);
     }
 
-    const bookings = await BookingModel.find({
+    const bookings = (await BookingModel.find({
       photographerId: { $in: [photographer.userId, photographer._id] },
     })
       .populate("userId", "name profileImage")
       .populate("packageId")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })) as unknown as IDashboardBooking[];
 
     let totalEarnings = 0;
     let totalSessions = 0;
@@ -104,16 +146,17 @@ export class PhotographerService implements IPhotographerService {
     let newRequests = 0;
     let monthlyEarnings = 0;
 
-    const upcomingBookingsList: any[] = [];
-    const pendingRequestsList: any[] = [];
+    const upcomingBookingsList: IUpcomingBooking[] = [];
+    const pendingRequestsList: IPendingRequest[] = [];
     const revenueTrendMap = new Map<string, number>();
     const sessionTypeMap = new Map<string, number>();
+    const uniqueCustomers = new Set<string>();
+    const packagePopularityMap = new Map<string, number>();
 
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
 
     for (let i = 11; i >= 0; i--) {
       const d = new Date(currentYear, currentMonth - i, 1);
@@ -121,15 +164,22 @@ export class PhotographerService implements IPhotographerService {
       revenueTrendMap.set(key, 0);
     }
 
-    bookings.forEach((booking: any) => {
+    bookings.forEach((booking: IDashboardBooking) => {
       const clientName = booking.userId?.name || "Unknown Client";
       const bookingDate = new Date(booking.eventDate || booking.createdAt);
       const monthKey = bookingDate.toLocaleString("default", { month: "short" });
+
+      if (booking.userId?._id) {
+        uniqueCustomers.add(booking.userId._id.toString());
+      }
 
       if (booking.status === "COMPLETED" || booking.paymentStatus === "paid") {
         const amount = booking.totalAmount || 0;
         totalEarnings += amount;
         totalSessions++;
+
+        const pkgName = booking.packageDetails?.name || booking.packageId?.name || "Custom Package";
+        packagePopularityMap.set(pkgName, (packagePopularityMap.get(pkgName) || 0) + 1);
 
         if (bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear) {
           monthlyEarnings += amount;
@@ -146,7 +196,7 @@ export class PhotographerService implements IPhotographerService {
       if (booking.status === "pending") {
         pendingPayouts += booking.depositeRequired || 0;
         pendingRequestsList.push({
-          _id: (booking._id as mongoose.Types.ObjectId).toString(),
+          _id: booking._id.toString(),
           clientName: clientName,
           eventType: booking.eventType,
           date: bookingDate.toDateString(),
@@ -158,7 +208,7 @@ export class PhotographerService implements IPhotographerService {
         }
       } else if (["accepted", "confirmed", "work_started", "work_ended"].includes(booking.status)) {
         upcomingBookingsList.push({
-          _id: (booking._id as mongoose.Types.ObjectId).toString(),
+          _id: booking._id.toString(),
           clientName: clientName,
           date: bookingDate.toDateString(),
           location: booking.location,
@@ -175,11 +225,9 @@ export class PhotographerService implements IPhotographerService {
     const totalReviews = await ReviewModel.countDocuments({ targetId: photographer._id });
     const allReviews = await ReviewModel.find({ targetId: photographer._id });
     const averageRating =
-      totalReviews > 0
-        ? allReviews.reduce((acc, rev) => acc + rev.rating, 0) / totalReviews
-        : 0;
+      totalReviews > 0 ? allReviews.reduce((acc, rev) => acc + rev.rating, 0) / totalReviews : 0;
 
-    const recentMessages = await this._messageService.getMessages(photographer.userId.toString());
+    const conversations = await this._messageService.getConversations(photographer.userId.toString());
 
     pendingRequestsList.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     upcomingBookingsList.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -194,13 +242,17 @@ export class PhotographerService implements IPhotographerService {
       sessions: {
         total: totalSessions,
         newRequests: newRequests,
+        totalCustomers: uniqueCustomers.size,
+        packagePopularity: Array.from(packagePopularityMap.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count),
       },
       reviews: {
         averageRating: Number.parseFloat(averageRating.toFixed(1)),
         totalReviews: totalReviews,
-        latest: reviews.map((r: any) => ({
-          _id: r._id.toString(),
-          clientName: r.reviewerId?.name || "Anonymous",
+        latest: reviews.map((r: IReview) => ({
+          _id: (r._id as mongoose.Types.ObjectId).toString(),
+          clientName: (r.reviewerId as unknown as IReviewer)?.name || "Anonymous",
           comment: r.comment,
           rating: r.rating,
           createdAt: r.createdAt,
@@ -208,17 +260,21 @@ export class PhotographerService implements IPhotographerService {
       },
       pendingRequests: pendingRequestsList,
       upcomingBookings: upcomingBookingsList,
-      recentMessages: recentMessages.messages.map((msg: any) => ({
-        _id: (msg as any)._id.toString(),
-        clientName: (msg.senderId as any)?.name || "System",
-        senderRole: (msg.senderId as any)?.role || "system",
-        message: msg.content,
-        time:
-          msg.createdAt instanceof Date
-            ? msg.createdAt.toLocaleTimeString()
-            : new Date(msg.createdAt).toLocaleTimeString(),
-        fullDate: msg.createdAt,
-      })),
+      recentMessages: conversations.map((conv) => {
+        const msg = conv.lastMessage as { _id: { toString: () => string }; content: string; createdAt: Date | string | number };
+        const partner = conv.partner as { name?: string; role?: string } | undefined | null;
+        return {
+          _id: msg._id.toString(),
+          clientName: partner?.name || "System",
+          senderRole: partner?.role || "system",
+          message: msg.content,
+          time:
+            msg.createdAt instanceof Date
+              ? msg.createdAt.toLocaleTimeString()
+              : new Date(msg.createdAt).toLocaleTimeString(),
+          fullDate: msg.createdAt instanceof Date ? msg.createdAt : new Date(msg.createdAt),
+        };
+      }),
       revenueTrend: Array.from(revenueTrendMap.entries()).map(([month, amount]) => ({
         month,
         amount,
@@ -238,11 +294,11 @@ export class PhotographerService implements IPhotographerService {
     lng?: number;
     page: number;
     limit: number;
-  }): Promise<{ photographers: any[]; total: number; page: number; limit: number; totalPages: number }> {
+  }): Promise<IPaginatedPhotographerResponse> {
     return await this._repository.getPublicPhotographers(filters);
   }
 
-  async getPhotographerById(id: string): Promise<any> {
+  async getPhotographerById(id: string): Promise<IPublicPhotographer & { reviews: IPublicReview[] }> {
     const photographer = await this._repository.getPublicPhotographerById(id);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -259,9 +315,9 @@ export class PhotographerService implements IPhotographerService {
     return {
       ...photographer,
       reviews: reviews.map((r) => ({
-        id: r._id,
-        userName: (r.reviewerId as any)?.name || "Anonymous",
-        userImage: (r.reviewerId as any)?.profileImage,
+        id: String(r._id),
+        userName: (r.reviewerId as unknown as IReviewer)?.name || "Anonymous",
+        userImage: (r.reviewerId as unknown as IReviewer)?.profileImage,
         rating: r.rating,
         comment: r.comment,
         date: r.createdAt,
@@ -275,7 +331,7 @@ export class PhotographerService implements IPhotographerService {
     userId: string,
     photographerId: string,
     review: { rating: number; comment: string },
-  ): Promise<any> {
+  ): Promise<IReview> {
     const photographer = await this._repository.getPublicPhotographerById(photographerId);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -301,14 +357,14 @@ export class PhotographerService implements IPhotographerService {
     status?: string,
     page: number = 1,
     limit: number = 10,
-  ): Promise<any> {
+  ): Promise<{ bookings: IBookingMapped[]; pagination: IPagination }> {
     const photographer = await this._repository.findByUserId(userId);
 
     if (!photographer?.userId) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
-    const query: any = {
+    const query: Record<string, unknown> = {
       photographerId: { $in: [photographer.userId, photographer._id] },
     };
 
@@ -318,17 +374,17 @@ export class PhotographerService implements IPhotographerService {
 
     const skip = (page - 1) * limit;
 
-    const bookings = await BookingModel.find(query)
+    const bookings = (await BookingModel.find(query)
       .populate("userId", "name email profileImage phone")
       .populate("packageId", "name price")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)) as unknown as IDashboardBooking[];
 
     const total = await BookingModel.countDocuments(query);
 
     return {
-      bookings: bookings.map((b: any) => ({
+      bookings: bookings.map((b: IDashboardBooking) => ({
         _id: b._id.toString(),
         userId: b.userId?._id?.toString(),
         clientName: b.userId?.name || "Unknown Client",
@@ -352,13 +408,13 @@ export class PhotographerService implements IPhotographerService {
     };
   }
 
-  async updateProfile(userId: string, data: any): Promise<any> {
+  async updateProfile(userId: string, data: Partial<IPhotographer>): Promise<PhotographerResponseDto> {
     const photographer = await this._repository.findByUserId(userId);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
-    const updateData: any = {};
+    const updateData: Partial<IPhotographer> = {};
     if (data.personalInfo)
       updateData.personalInfo = { ...photographer.personalInfo, ...data.personalInfo };
     if (data.professionalDetails)
@@ -378,7 +434,7 @@ export class PhotographerService implements IPhotographerService {
     return PhotographerMapper.toResponse(updated);
   }
 
-  async getOwnProfile(userId: string): Promise<any> {
+  async getOwnProfile(userId: string): Promise<PhotographerResponseDto> {
     const photographer = await this._repository.findByUserId(userId);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -386,7 +442,7 @@ export class PhotographerService implements IPhotographerService {
     return PhotographerMapper.toResponse(photographer);
   }
 
-  async toggleLike(id: string, userId: string): Promise<any> {
+  async toggleLike(id: string, userId: string): Promise<IPhotographer> {
     const photographer = await this._repository.toggleLike(id, userId);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);

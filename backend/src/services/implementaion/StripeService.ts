@@ -5,25 +5,32 @@ dotenv.config();
 
 import { IStripeService } from "../../interfaces/services/IStripeService.ts";
 
+export interface StripeMetadata {
+  type?: string;
+  bookingId?: string;
+  orderId?: string;
+  [key: string]: string | number | undefined;
+}
+
 export class StripeService implements IStripeService {
-  private readonly stripe: Stripe;
+  private readonly _stripe: Stripe;
 
   constructor() {
     if (!process.env.STRIPE_SECRET_KEY) {
       console.warn("⚠️ STRIPE_SECRET_KEY is missing! Stripe functionality will fail.");
     }
-    this.stripe = new Stripe((process.env.STRIPE_SECRET_KEY as string) || "dummy_key_for_dev", {
-      apiVersion: "2024-06-20" as any,
+    this._stripe = new Stripe((process.env.STRIPE_SECRET_KEY as string) || "dummy_key_for_dev", {
+      apiVersion: "2024-06-20" as Stripe.LatestApiVersion,
     });
   }
 
   async createPaymentIntent(
     amount: number,
     currency: string = "usd",
-    metadata: any = {},
-  ): Promise<string> {
+    metadata: Record<string, string | number> = {},
+  ): Promise<{ id: string; clientSecret: string }> {
     try {
-      const paymentIntent = await this.stripe.paymentIntents.create({
+      const paymentIntent = await this._stripe.paymentIntents.create({
         amount: Math.round(amount * 100),
         currency,
         metadata: this._stringifyMetadata(metadata),
@@ -32,14 +39,17 @@ export class StripeService implements IStripeService {
         },
       });
 
-      return paymentIntent.client_secret as string;
-    } catch (error: any) {
-      throw new Error(error.message);
+      return { id: paymentIntent.id, clientSecret: paymentIntent.client_secret as string };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw new Error("An unknown error occurred during payment intent creation");
     }
   }
 
   async retrievePaymentIntent(id: string): Promise<Stripe.PaymentIntent> {
-    return await this.stripe.paymentIntents.retrieve(id);
+    return await this._stripe.paymentIntents.retrieve(id);
   }
 
   async refundPayment(paymentIntentId: string, amount?: number): Promise<Stripe.Refund> {
@@ -50,28 +60,34 @@ export class StripeService implements IStripeService {
       if (amount) {
         refundConfig.amount = Math.round(amount * 100);
       }
-      return await this.stripe.refunds.create(refundConfig);
-    } catch (error: any) {
-      throw new Error(`Refund failed: ${error.message}`);
+      return await this._stripe.refunds.create(refundConfig);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      throw new Error(`Refund failed: ${message}`);
     }
   }
   async createCheckoutSession(
     amount: number,
     currency: string = "usd",
-    metadata: any = {},
+    metadata: Record<string, string | number> = {},
     successUrl: string,
     cancelUrl: string,
     customerEmail?: string,
   ): Promise<{ url: string; id: string }> {
     try {
-      const session = await this.stripe.checkout.sessions.create({
+      const session = await this._stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
           {
             price_data: {
               currency,
               product_data: {
-                name: metadata.type === "booking_deposit" ? "Booking Deposit" : metadata.type === "rental_initial_payment" ? "Rental Deposit" : "Rental Balance",
+                name:
+                  metadata.type === "booking_deposit"
+                    ? "Booking Deposit"
+                    : metadata.type === "rental_initial_payment"
+                      ? "Rental Deposit"
+                      : "Rental Balance",
                 description: `Payment for ${metadata.bookingId || metadata.orderId}`,
               },
               unit_amount: Math.round(amount * 100),
@@ -91,21 +107,25 @@ export class StripeService implements IStripeService {
       }
 
       return { url: session.url, id: session.id };
-    } catch (error: any) {
-      throw new Error(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw new Error("An unknown error occurred during checkout session creation");
     }
   }
   async retrieveCheckoutSession(id: string): Promise<Stripe.Checkout.Session> {
-    return await this.stripe.checkout.sessions.retrieve(id);
+    return await this._stripe.checkout.sessions.retrieve(id);
   }
 
-  private _stringifyMetadata(metadata: any): Record<string, string> {
+  private _stringifyMetadata(metadata: StripeMetadata): Record<string, string> {
     const stringified: Record<string, string> = {};
     for (const key in metadata) {
       if (Object.prototype.hasOwnProperty.call(metadata, key)) {
         const value = metadata[key];
-        stringified[key] =
-          typeof value === "string" ? value : value?.toString ? value.toString() : String(value);
+        if (value !== undefined) {
+          stringified[key] = String(value);
+        }
       }
     }
     return stringified;

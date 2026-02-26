@@ -35,7 +35,6 @@ const AdminPhotographerProfile: React.FC = () => {
         isUnblocking
     } = usePhotographerManagement();
 
-
     const {
         data: photographer,
         isLoading,
@@ -51,7 +50,7 @@ const AdminPhotographerProfile: React.FC = () => {
             } else {
                 await blockPhotographer({ id: photographer.id, reason: "Blocked by admin" });
             }
-        } catch (e) {
+        } catch (e: unknown) {
             console.error("Failed to toggle block status", e);
         }
     };
@@ -103,7 +102,7 @@ const AdminPhotographerProfile: React.FC = () => {
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="flex items-center gap-5">
                         <img
-                            src={photographer.personalInfo.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(photographer.personalInfo.name)}&background=random`}
+                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(photographer.personalInfo.name)}&background=random`}
                             alt={photographer.personalInfo.name}
                             className="w-24 h-24 rounded-full object-cover border-4 border-gray-50"
                         />

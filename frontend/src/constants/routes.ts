@@ -5,9 +5,11 @@ export const ROUTES = {
     VERIFY_OTP: "/auth/verify-otp",
     FORGOT_PASSWORD: "/auth/forgetPassword",
     RESET_PASSWORD: "/auth/resetPassword",
-    RESET_OTP: "/auth/reset-otp"
+    RESET_OTP: "/auth/reset-otp",
+    ROOT: "/auth"
   },
   ADMIN: {
+    ROOT: "/admin",
     DASHBOARD: "/admin/dashboard",
     USERS: "/admin/usermanagement",
     PHOTOGRAPHERS: "/admin/photographers",
@@ -19,11 +21,13 @@ export const ROUTES = {
     RENTAL_MANAGEMENT: "/admin/rental-management",
     RENTAL_MANAGEMENT_DETAILS: "/admin/rental-management/$id",
     RENTAL_ORDERS: "/admin/rental-orders",
-    RENTAL_ORDER_DETAILS: "/admin/rental-orders/$id",
+    RENTAL_ORDER_DETAILS: "/admin/rental-orders/$orderId",
     PACKAGES: "/admin/packages",
     WALLET: "/admin/wallet",
     REPORTS: "/admin/reports",
-    RULES: "/admin/rules"
+    REPORT_CATEGORIES: "/admin/report-categories",
+    RULES: "/admin/rules",
+    HELP_MANAGEMENT: "/admin/help"
   },
   USER: {
     HOME: "/main/home",
@@ -41,13 +45,16 @@ export const ROUTES = {
     RENTAL_DETAILS: "/main/rentals/$id",
     RENT_ITEM: "/main/rent-item",
     RULES: "/main/rules",
-    MY_LISTINGS: "/main/my-listings"
+    HOW_IT_WORKS: "/main/how-it-works",
+    MY_LISTINGS: "/main/my-listings",
+    ROOT: "/main"
   },
   CHAT: {
     INDEX: "/chat"
   },
 
   PHOTOGRAPHER: {
+    ROOT: "/photographer",
     APPLY: "/photographer/apply",
     DASHBOARD: "/photographer/dashboard",
     PROFILE: "/photographer/profile",
@@ -59,6 +66,7 @@ export const ROUTES = {
     BOOKING_DETAILS: "/photographer/bookings/$id",
   },
   GENERAL: {
+    ROOT: "/",
     ABOUT: "/about"
   }
 } as const;

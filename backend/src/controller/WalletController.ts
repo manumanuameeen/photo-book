@@ -10,18 +10,18 @@ import { IBookingRepository } from "../interfaces/repositories/IBookingRepositor
 import { IRentalRepository } from "../interfaces/repositories/IRentalRepository.ts";
 
 export class WalletController implements IWalletController {
-  private readonly walletService: IWalletService;
-  private readonly bookingRepository: IBookingRepository;
-  private readonly rentalRepository: IRentalRepository;
+  private readonly _walletService: IWalletService;
+  private readonly _bookingRepository: IBookingRepository;
+  private readonly _rentalRepository: IRentalRepository;
 
   constructor(
     walletService: IWalletService,
     bookingRepository: IBookingRepository,
     rentalRepository: IRentalRepository,
   ) {
-    this.walletService = walletService;
-    this.bookingRepository = bookingRepository;
-    this.rentalRepository = rentalRepository;
+    this._walletService = walletService;
+    this._bookingRepository = bookingRepository;
+    this._rentalRepository = rentalRepository;
   }
 
   getWalletDetails = async (req: AuthRequest, res: Response) => {
@@ -30,7 +30,7 @@ export class WalletController implements IWalletController {
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
-      const wallet = await this.walletService.ensureWalletExists(userId, req.user?.role || "user");
+      const wallet = await this._walletService.ensureWalletExists(userId, req.user?.role || "user");
       const walletObj = wallet.toObject();
       const pendingBalance = wallet.transaction
         .filter((t) => t.status === "PENDING" && t.type === "CREDIT")
@@ -53,7 +53,13 @@ export class WalletController implements IWalletController {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      const result = await this.walletService.getWalletTransactions(userId, page, limit, type, status);
+      const result = await this._walletService.getWalletTransactions(
+        userId,
+        page,
+        limit,
+        type,
+        status,
+      );
       console.log(
         `[WalletController] getTransactions for ${userId}: Balance=${result.balance}, Total=${result.total}`,
       );
@@ -67,7 +73,7 @@ export class WalletController implements IWalletController {
     try {
       const userId = req.user?.userId;
       if (!userId || req.user?.role !== "admin") {
-        throw new AppError("Unauthorized access to Escrow Stats", HttpStatus.FORBIDDEN);
+        throw new AppError(Messages.UNAUTHORIZED_ESCROW, HttpStatus.FORBIDDEN);
       }
 
       const page = Number.parseInt(req.query.page as string) || 1;
@@ -75,8 +81,8 @@ export class WalletController implements IWalletController {
       const search = req.query.search as string;
 
       const [bookingStats, rentalStats] = await Promise.all([
-        this.bookingRepository.findEscrowHoldings(page, limit, search),
-        this.rentalRepository.findEscrowHoldings(page, limit, search),
+        this._bookingRepository.findEscrowHoldings(page, limit, search),
+        this._rentalRepository.findEscrowHoldings(page, limit, search),
       ]);
 
       ApiResponse.success(
@@ -98,12 +104,12 @@ export class WalletController implements IWalletController {
     try {
       const userId = req.user?.userId;
       if (!userId || req.user?.role !== "admin") {
-        throw new AppError("Unauthorized access to Dashboard Stats", HttpStatus.FORBIDDEN);
+        throw new AppError(Messages.UNAUTHORIZED_DASHBOARD, HttpStatus.FORBIDDEN);
       }
 
       const [bookingStats, rentalStats] = await Promise.all([
-        this.bookingRepository.getAdminStats(),
-        this.rentalRepository.getAdminStats(),
+        this._bookingRepository.getAdminStats(),
+        this._rentalRepository.getAdminStats(),
       ]);
 
       const totalStats = {

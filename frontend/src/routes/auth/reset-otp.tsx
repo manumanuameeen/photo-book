@@ -5,4 +5,3 @@ export const Route = createFileRoute('/auth/reset-otp')({
   component: VerifyResetOtp,
 })
 
-

@@ -69,7 +69,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
 
     return (
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-[500px] flex flex-col border border-gray-200">
-            { }
+            
             <div className="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
                 <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                     <Mail size={20} />
@@ -82,7 +82,6 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
                 )}
             </div>
 
-            { }
             <div className="flex border-b">
                 <button
                     onClick={() => setActiveTab('inbox')}
@@ -104,7 +103,6 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
                 </button>
             </div>
 
-            { }
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
                 {loading ? (
                     <div className="text-center py-10 text-gray-400">Loading...</div>
@@ -156,7 +154,6 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
                 )}
             </div>
 
-            { }
             <div className="p-3 border-t bg-gray-50 flex items-center justify-between gap-2">
                 <button
                     onClick={() => setPage(prev => Math.max(prev - 1, 1))}

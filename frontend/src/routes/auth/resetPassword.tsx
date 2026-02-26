@@ -4,4 +4,3 @@ export const Route = createFileRoute('/auth/resetPassword')({
   component: ResetPassword,
 })
 
-

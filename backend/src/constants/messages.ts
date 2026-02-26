@@ -14,6 +14,7 @@ export const Messages = {
   REFRESH_TOKEN_MISSING: "Refresh token missing",
   INVALID_REFRESH_TOKEN: "Invalid refresh token",
   INTERNAL_ERROR: "Internal server error",
+  INTERNAL_SERVER_ERROR: "Internal server error",
   FORGET_PASSWORD_SENT: "Reset code sent to your email",
   RESET_OTP_VERIFIED: "Code verified. Set new password.",
   PASSWORD_CHANGED: "Password changed successfully",
@@ -126,7 +127,6 @@ export const Messages = {
   GOOGLE_TOKEN_REQUIRED: "Google token is required",
   S3_UPLOAD_FAILED: "Failed to upload images to S3",
 
-  // Report Messages
   REPORT_SUBMITTED: "Report submitted successfully",
   MISSING_FIELDS: "Missing required fields",
   STATUS_REQUIRED: "Status is required",
@@ -135,16 +135,16 @@ export const Messages = {
   MESSAGE_CONTENT_REQUIRED: "Message content is required",
   REPORT_FORWARDED: "Report forwarded successfully",
 
-  // Review Messages
   REVIEWS_FETCHED: "Reviews fetched successfully",
   ALL_FIELDS_REQUIRED: "All fields are required",
   REVIEW_STATS_FETCHED: "Review stats fetched successfully",
   REPLY_ADDED: "Reply added successfully",
   LIKE_TOGGLED: "Like toggled successfully",
   REVIEW_DELETED: "Review deleted successfully",
+  REVIEW_UPDATED: "Review updated successfully",
+  NOT_AUTHORIZED_TO_EDIT_REVIEW: "You are not authorized to edit this review",
   COMMENT_REQUIRED: "Comment is required",
 
-  // Rental & Booking Messages
   PAYMENT_INTENT_ID_REQUIRED: "Payment Intent ID is required",
   OWNER_ORDERS_FETCHED: "Owner orders fetched",
   ORDER_STATUS_UPDATED: "Order status updated",
@@ -171,7 +171,6 @@ export const Messages = {
   WORK_DELIVERY_CONFIRMED: "Work delivery confirmed and booking completed",
   WALLET_TOP_UP: "Wallet Top-up",
 
-  // Message Controller
   MESSAGE_DELETED_FOR_YOU: "Message deleted for you",
   MESSAGE_DELETED_FOR_EVERYONE: "Message deleted for everyone",
   CHAT_CLEARED: "Chat cleared successfully",
@@ -185,20 +184,14 @@ export const Messages = {
   NO_FILE_UPLOADED: "No file uploaded",
   FILE_UPLOADED: "File uploaded successfully",
 
-  // Wallet
   UNAUTHORIZED_ESCROW: "Unauthorized access to Escrow Stats",
   UNAUTHORIZED_DASHBOARD: "Unauthorized access to Dashboard Stats",
 
-  // Rule
   RULE_NOT_FOUND: "Rule not found",
 
-  // Package/Availability
   INVALID_ID_FORMAT: "Invalid ID format",
   RANGE_UNBLOCKED: "Range unblocked successfully",
   DATE_REQUIRED: "Date is required",
   AVAILABILITY_DELETED: "Availability deleted",
 
-  // Review
-  ALL_FIELDS_REQUIRED: "All fields are required",
-  REVIEWS_FETCHED: "Reviews fetched successfully",
 } as const;

@@ -7,9 +7,9 @@ import {
   LayoutDashboard,
   Home,
   Camera,
-  Calendar,
   ToolCase,
-  MessageCircle
+  MessageCircle,
+  HelpCircle
 } from "lucide-react";
 import photoBookLogo from "../../assets/photoBook-icon.png"
 import { toast } from "sonner";
@@ -37,7 +37,6 @@ const Header: React.FC = () => {
           <span className="text-xl font-bold text-gray-900">PhotoBook</span>
         </div>
 
-
         <nav className="hidden md:flex space-x-6 text-sm font-medium items-center text-gray-600">
           <div
             role="button"
@@ -59,22 +58,13 @@ const Header: React.FC = () => {
             <Camera size={16} />
             <span>Photographers</span>
           </div>
+          
           <div
             role="button"
             tabIndex={0}
             className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none"
-            onClick={() => navigate({ to: ROUTES.USER.BOOKING })}
-            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.BOOKING })}
-          >
-            <Calendar size={16} />
-            <span>Book Session</span>
-          </div>
-          <div
-            role="button"
-            tabIndex={0}
-            className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none"
-            onClick={() => navigate({ to: ROUTES.USER.RENTAL_MARKETPLACE } as any)}
-            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.RENTAL_MARKETPLACE } as any)}
+            onClick={() => navigate({ to: ROUTES.USER.RENTAL_MARKETPLACE })}
+            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.RENTAL_MARKETPLACE })}
           >
             <ToolCase size={16} />
             <span>Equipment</span>
@@ -92,7 +82,6 @@ const Header: React.FC = () => {
             </div>
           )}
 
-
           {role === "photographer" ? (
             <div className="relative">
               <div
@@ -107,7 +96,7 @@ const Header: React.FC = () => {
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
                     onClick={() => {
-                      navigate({ to: ROUTES.USER.DASHBOARD as any });
+                      navigate({ to: ROUTES.USER.DASHBOARD });
                       setDashboardMenuOpen(false);
                     }}
                   >
@@ -126,11 +115,21 @@ const Header: React.FC = () => {
               )}
             </div>
           ) : role === "user" && (
-            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" onClick={() => navigate({ to: ROUTES.USER.DASHBOARD as any })}>
+            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" onClick={() => navigate({ to: ROUTES.USER.DASHBOARD })}>
               <LayoutDashboard size={16} />
               <span>Dashboard</span>
             </div>
           )}
+          <div
+            role="button"
+            tabIndex={0}
+            className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none text-green-600 font-bold"
+            onClick={() => navigate({ to: ROUTES.USER.HOW_IT_WORKS })}
+            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.HOW_IT_WORKS })}
+          >
+            <HelpCircle size={16} />
+            <span>Help</span>
+          </div>
         </nav>
 
         <div className="flex items-center space-x-4 relative">
@@ -161,7 +160,7 @@ const Header: React.FC = () => {
                 className="flex items-center space-x-1 border border-gray-200 px-3 py-1 rounded-full hover:shadow bg-gray-50 text-gray-700"
               >
                 <User size={18} />
-                <span className="flex item-center text-">{user.name}</span>
+                <span className="flex item-center text-sm">{user.name}</span>
               </button>
 
               {profileOpen && (
@@ -175,7 +174,7 @@ const Header: React.FC = () => {
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50"
                     onClick={() => {
-                      navigate({ to: ROUTES.USER.DASHBOARD as any });
+                      navigate({ to: ROUTES.USER.DASHBOARD });
                       setProfileOpen(false);
                     }}
                   >
@@ -191,6 +190,16 @@ const Header: React.FC = () => {
                   >
                     <MessageCircle size={16} className="mr-2" />
                     Messages
+                  </button>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50"
+                    onClick={() => {
+                      navigate({ to: ROUTES.USER.HOW_IT_WORKS });
+                      setProfileOpen(false);
+                    }}
+                  >
+                    <HelpCircle size={16} className="mr-2" />
+                    How It Works
                   </button>
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:opacity-80 hover:bg-gray-50"
