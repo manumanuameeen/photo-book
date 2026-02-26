@@ -1,0 +1,8 @@
+import { IBooking } from "../../../model/bookingModel.ts";
+
+export interface IBookingPaymentService {
+  createPaymentIntent(bookingId: string): Promise<{ url: string; sessionId: string }>;
+  confirmPayment(bookingId: string, paymentIntentId: string): Promise<IBooking | null>;
+  processCancellation(booking: IBooking, cancelledByUserId: string): Promise<void>;
+  releaseFunds(bookingId: string, userId?: string): Promise<void>;
+}
