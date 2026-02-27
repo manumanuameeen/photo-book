@@ -20,7 +20,7 @@ export class RentalService implements IRentalService {
     private readonly _availabilityService: IRentalAvailabilityService,
     private readonly _financeService: IRentalFinanceService,
     private readonly _messageService: IMessageService,
-  ) { }
+  ) {}
 
   private _getUserId(user: MongoReference | unknown): string | null {
     if (!user) return "";

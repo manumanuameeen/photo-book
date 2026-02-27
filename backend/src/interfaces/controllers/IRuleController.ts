@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 export interface IRuleController {
-  createRule(req: Request, res: Response, next: NextFunction): Promise<void>;
-  getAllRules(req: Request, res: Response, next: NextFunction): Promise<void>;
-  updateRule(req: Request, res: Response, next: NextFunction): Promise<void>;
-  deleteRule(req: Request, res: Response, next: NextFunction): Promise<void>;
+  createRule(req: Request, res: Response): Promise<void>;
+  getAllRules(req: Request, res: Response): Promise<void>;
+  updateRule(req: Request, res: Response): Promise<void>;
+  deleteRule(req: Request, res: Response): Promise<void>;
 }

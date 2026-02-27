@@ -13,7 +13,8 @@ import mongoose, { FilterQuery, PipelineStage } from "mongoose";
 
 export class PhotographerRepository
   extends BaseRepository<IPhotographer>
-  implements IPhotographerRepository {
+  implements IPhotographerRepository
+{
   constructor() {
     super(PhotographerModel);
   }
@@ -217,10 +218,7 @@ export class PhotographerRepository
         category: { $ifNull: [{ $arrayElemAt: ["$categories.name", 0] }, "General"] },
         location: { $ifNull: ["$personalInfo.location", "$user.location"] },
         rating: {
-          $ifNull: [
-            { $round: [{ $avg: "$photographerReviews.rating" }, 1] },
-            0
-          ]
+          $ifNull: [{ $round: [{ $avg: "$photographerReviews.rating" }, 1] }, 0],
         },
         reviews: { $size: "$photographerReviews" },
         price: {
@@ -366,10 +364,7 @@ export class PhotographerRepository
         category: { $ifNull: [{ $arrayElemAt: ["$categories.name", 0] }, "General"] },
         location: { $ifNull: ["$personalInfo.location", "$user.location"] },
         rating: {
-          $ifNull: [
-            { $round: [{ $avg: "$photographerReviews.rating" }, 1] },
-            0
-          ]
+          $ifNull: [{ $round: [{ $avg: "$photographerReviews.rating" }, 1] }, 0],
         },
         reviewsCount: { $size: "$photographerReviews" },
         price: {

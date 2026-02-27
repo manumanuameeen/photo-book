@@ -11,7 +11,6 @@ import { IAdminDashboardService } from "../../interfaces/services/IAdminDashboar
 
 export class AdminDashboardService implements IAdminDashboardService {
   async getDashboardStats(startDate?: Date, endDate?: Date): Promise<AdminDashboardStatsDto> {
-
     // Create query filter for dates if they exist
     const dateFilter: { createdAt?: { $gte?: Date; $lte?: Date } } = {};
     if (startDate || endDate) {
@@ -35,7 +34,7 @@ export class AdminDashboardService implements IAdminDashboardService {
           status: {
             $in: ["COMPLETED", "CONFIRMED", "ONGOING", "DELIVERED", "RETURNED"],
           },
-          ...dateFilter
+          ...dateFilter,
         },
       },
       { $group: { _id: null, total: { $sum: "$totalAmount" } } },
@@ -86,8 +85,13 @@ export class AdminDashboardService implements IAdminDashboardService {
     }
 
     const [recentUsers, recentBookings] = await Promise.all([
-      User.find({ ...dateFilter }).sort({ createdAt: -1 }).limit(5),
-      BookingModel.find({ ...dateFilter }).populate("userId", "name").sort({ createdAt: -1 }).limit(5),
+      User.find({ ...dateFilter })
+        .sort({ createdAt: -1 })
+        .limit(5),
+      BookingModel.find({ ...dateFilter })
+        .populate("userId", "name")
+        .sort({ createdAt: -1 })
+        .limit(5),
     ]);
 
     interface Activity {
@@ -158,7 +162,7 @@ export class AdminDashboardService implements IAdminDashboardService {
               status: {
                 $in: ["completed", "work_delivered", "work_ended"],
               },
-              ...dateFilter
+              ...dateFilter,
             },
           },
           { $group: { _id: null, total: { $sum: "$totalAmount" } } },
@@ -167,7 +171,7 @@ export class AdminDashboardService implements IAdminDashboardService {
           {
             $match: {
               status: { $in: ["COMPLETED", "CONFIRMED", "ONGOING"] },
-              ...dateFilter
+              ...dateFilter,
             },
           },
           { $group: { _id: null, total: { $sum: "$totalAmount" } } },
@@ -220,7 +224,7 @@ export class AdminDashboardService implements IAdminDashboardService {
               status: {
                 $in: ["COMPLETED", "CONFIRMED", "ONGOING", "DELIVERED", "RETURNED"],
               },
-              ...dateFilter
+              ...dateFilter,
             },
           },
           {
@@ -265,14 +269,17 @@ export class AdminDashboardService implements IAdminDashboardService {
               orders: 1,
               items: 1,
             },
-          }
+          },
         ]),
       ]);
 
     const [totalReports, resolvedReports, completedBookings, topRegionsRaw] = await Promise.all([
       Report.countDocuments({ ...dateFilter }),
       Report.countDocuments({ status: { $in: ["resolved", "dismissed"] }, ...dateFilter }),
-      BookingModel.countDocuments({ status: { $in: ["completed", "work_delivered", "work_ended"] }, ...dateFilter }),
+      BookingModel.countDocuments({
+        status: { $in: ["completed", "work_delivered", "work_ended"] },
+        ...dateFilter,
+      }),
       BookingModel.aggregate([
         { $match: { ...dateFilter } },
         { $group: { _id: "$location", value: { $sum: 1 } } },
@@ -281,8 +288,10 @@ export class AdminDashboardService implements IAdminDashboardService {
       ]),
     ]);
 
-    const disputeHealth = totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 100;
-    const conversionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+    const disputeHealth =
+      totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 100;
+    const conversionRate =
+      totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
 
     const topRegions = topRegionsRaw.map((r) => ({
       name: r._id || "Unknown",
@@ -376,7 +385,8 @@ export class AdminDashboardService implements IAdminDashboardService {
           title: "Dispute Health",
           value: `${disputeHealth}%`,
           trend: "Resolved / Dismissed",
-          trendColor: disputeHealth >= 80 ? "positive" : disputeHealth >= 60 ? "neutral" : "negative",
+          trendColor:
+            disputeHealth >= 80 ? "positive" : disputeHealth >= 60 ? "neutral" : "negative",
           icon: "fas fa-shield-alt",
           iconBgColor: "red",
           isSmall: true,

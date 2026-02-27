@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { AuthRequest } from "../middleware/authMiddleware.ts";
 import {
   IPackageService,
@@ -8,6 +8,7 @@ import { ApiResponse } from "../utils/response.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { Messages } from "../constants/messages.ts";
 import { AppError } from "../utils/AppError.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 import { IPackageAvailabilityController } from "../interfaces/controllers/IPackageAvailabilityController.ts";
 
@@ -28,7 +29,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
     this._fileService = fileService;
   }
 
-  createPackage = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  createPackage = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -57,11 +58,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       const result = await this._packageService.createPackage(userId, packageData);
       ApiResponse.success(res, result, Messages.PACKAGE_CREATED, HttpStatus.CREATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getPackages = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  getPackages = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -74,11 +75,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       );
       ApiResponse.success(res, result, Messages.PACKAGES_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getPublicPackages = async (req: Request, res: Response, _next: NextFunction) => {
+  getPublicPackages = async (req: Request, res: Response) => {
     try {
       const { photographerId } = req.params;
       if (!photographerId)
@@ -92,11 +93,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       );
       ApiResponse.success(res, result, Messages.PACKAGES_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  updatePackage = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  updatePackage = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       const { id } = req.params;
@@ -128,11 +129,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       const result = await this._packageService.updatePackage(userId, updateData);
       ApiResponse.success(res, result, Messages.PACKAGE_UPDATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  deletePackage = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  deletePackage = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       const { id } = req.params;
@@ -141,11 +142,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       await this._packageService.deletePackage(userId, id);
       ApiResponse.success(res, null, Messages.PACKAGE_DELETED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  setAvailability = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  setAvailability = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -153,11 +154,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       const result = await this._availabilityService.setAvailability(userId, req.body);
       ApiResponse.success(res, result, Messages.AVAILABILITY_SET);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getAvailability = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  getAvailability = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       const { startDate, endDate } = req.query;
@@ -174,11 +175,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       );
       ApiResponse.success(res, result, Messages.AVAILABILITY_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getPublicAvailability = async (req: Request, res: Response, _next: NextFunction) => {
+  getPublicAvailability = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       console.log(`🔍 getPublicAvailability hit. ID: ${id}`);
@@ -224,11 +225,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       ApiResponse.success(res, result, Messages.AVAILABILITY_FETCHED);
     } catch (error) {
       console.error("Error in getPublicAvailability:", error);
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  blockRange = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  blockRange = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       const { startDate, endDate } = req.body;
@@ -241,11 +242,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       await this._availabilityService.blockRange(userId, new Date(startDate), new Date(endDate));
       ApiResponse.success(res, null, Messages.RANGE_BLOCKED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  unblockRange = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  unblockRange = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       const { startDate, endDate } = req.body;
@@ -258,11 +259,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       await this._availabilityService.unblockRange(userId, new Date(startDate), new Date(endDate));
       ApiResponse.success(res, null, Messages.RANGE_UNBLOCKED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  deleteAvailability = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  deleteAvailability = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       const { date } = req.params;
@@ -272,23 +273,11 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       await this._availabilityService.deleteAvailability(userId, new Date(date));
       ApiResponse.success(res, null, Messages.AVAILABILITY_DELETED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
-
-  toggleLike = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  toggleLike = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
@@ -296,7 +285,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
       const pkg = await this._packageService.toggleLike(id, userId);
       ApiResponse.success(res, pkg, Messages.LIKE_TOGGLED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 }

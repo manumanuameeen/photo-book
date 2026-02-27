@@ -52,7 +52,11 @@ router.post(
   messageController.uploadAttachment.bind(messageController),
 );
 
-router.put(ROUTES.V1.MESSAGE.EDIT, authMiddleware, messageController.editMessage.bind(messageController));
+router.put(
+  ROUTES.V1.MESSAGE.EDIT,
+  authMiddleware,
+  messageController.editMessage.bind(messageController),
+);
 
 router.patch(
   "/:id/reaction",

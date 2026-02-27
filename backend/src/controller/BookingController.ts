@@ -7,6 +7,7 @@ import { AuthRequest } from "../middleware/authMiddleware.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { AppError } from "../utils/AppError.ts";
 import { Messages } from "../constants/messages.ts";
+import { handleError } from "../utils/errorHandler.ts";
 import {
   CreateBookingDTO,
   BookingRescheduleRequestDTO,
@@ -18,23 +19,6 @@ export class BookingController implements IBookingController {
 
   constructor(bookingService: IBookingService) {
     this._bookingService = bookingService;
-  }
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof z.ZodError) {
-      const errorMessage = error.issues.map((issue) => issue.message).join(", ");
-      ApiResponse.error(res, errorMessage, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 
   private _validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
@@ -52,7 +36,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.createBookingRequest(userId, bookingData);
       ApiResponse.success(res, booking, Messages.BOOKING_CREATED, HttpStatus.CREATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -65,7 +49,7 @@ export class BookingController implements IBookingController {
       }
       ApiResponse.success(res, booking, Messages.BOOKING_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -78,7 +62,7 @@ export class BookingController implements IBookingController {
       }
       ApiResponse.success(res, booking, Messages.BOOKING_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -103,7 +87,7 @@ export class BookingController implements IBookingController {
       );
       ApiResponse.success(res, result, Messages.BOOKINGS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -128,7 +112,7 @@ export class BookingController implements IBookingController {
       );
       ApiResponse.success(res, result, Messages.BOOKINGS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -139,7 +123,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.acceptBooking(id, message);
       ApiResponse.success(res, booking, Messages.BOOKING_ACCEPTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -149,7 +133,7 @@ export class BookingController implements IBookingController {
       const session = await this._bookingService.createBookingPaymentIntent(id);
       ApiResponse.success(res, session, Messages.PAYMENT_INTENT_CREATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -170,7 +154,7 @@ export class BookingController implements IBookingController {
       ApiResponse.success(res, booking, Messages.PAYMENT_CONFIRMED);
     } catch (error: unknown) {
       console.error("[BookingController] confirmPayment Error:", error);
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -181,7 +165,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.rejectBooking(id, message);
       ApiResponse.success(res, booking, Messages.BOOKING_REJECTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -198,7 +182,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.cancelBooking(id, userId, reason, isEmergency);
       ApiResponse.success(res, booking, Messages.BOOKING_CANCELLED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -208,7 +192,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.completeBooking(id);
       ApiResponse.success(res, booking, Messages.BOOKING_COMPLETED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -218,7 +202,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.startWork(id);
       ApiResponse.success(res, booking, Messages.WORK_STARTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -228,7 +212,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.endWork(id);
       ApiResponse.success(res, booking, Messages.WORK_END_REQUESTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -238,7 +222,7 @@ export class BookingController implements IBookingController {
       const booking = await this._bookingService.confirmEndWork(id);
       ApiResponse.success(res, booking, Messages.WORK_COMPLETION_CONFIRMED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -254,7 +238,7 @@ export class BookingController implements IBookingController {
       ApiResponse.success(res, booking, Messages.WORK_DELIVERED);
     } catch (error: unknown) {
       console.error(`[BookingController] deliverWork Error for ID: ${req.params.id}:`, error);
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -269,7 +253,7 @@ export class BookingController implements IBookingController {
         `[BookingController] confirmWorkDelivery Error for ID: ${req.params.id}:`,
         error,
       );
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -290,7 +274,7 @@ export class BookingController implements IBookingController {
       );
       ApiResponse.success(res, booking, Messages.RESCHEDULE_REQUEST_SUBMITTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -311,7 +295,7 @@ export class BookingController implements IBookingController {
       );
       ApiResponse.success(res, booking, `${Messages.RESCHEDULE_PROCESSED}: ${decision}`);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 }

@@ -15,7 +15,7 @@ export const PhotographerDashboardStatsSchema = z.object({
       z.object({
         name: z.string(),
         count: z.number(),
-      })
+      }),
     ),
   }),
   reviews: z.object({
@@ -28,7 +28,7 @@ export const PhotographerDashboardStatsSchema = z.object({
         comment: z.string(),
         rating: z.number(),
         createdAt: z.date(),
-      })
+      }),
     ),
   }),
   pendingRequests: z.array(

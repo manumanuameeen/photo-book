@@ -602,16 +602,12 @@ class DIContainer {
   }
 
   get reportCategoryService(): ReportCategoryService {
-    this._reportCategoryService ??= new ReportCategoryService(
-      this.reportCategoryRepository,
-    );
+    this._reportCategoryService ??= new ReportCategoryService(this.reportCategoryRepository);
     return this._reportCategoryService;
   }
 
   get reportCategoryController(): ReportCategoryController {
-    this._reportCategoryController ??= new ReportCategoryController(
-      this.reportCategoryService,
-    );
+    this._reportCategoryController ??= new ReportCategoryController(this.reportCategoryService);
     return this._reportCategoryController;
   }
 
@@ -641,7 +637,9 @@ class DIContainer {
   }
 
   get helpTopicRequestController(): IHelpTopicRequestController {
-    this._helpTopicRequestController ??= new HelpTopicRequestController(this.helpTopicRequestService);
+    this._helpTopicRequestController ??= new HelpTopicRequestController(
+      this.helpTopicRequestService,
+    );
     return this._helpTopicRequestController;
   }
 }

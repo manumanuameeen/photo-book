@@ -6,6 +6,7 @@ import { ApiResponse } from "../../utils/response.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { Messages } from "../../constants/messages.ts";
 import { AppError } from "../../utils/AppError.ts";
+import { handleError } from "../../utils/errorHandler.ts";
 import {
   GetPhotographersQueryDto,
   BlockPhotographerDto,
@@ -26,7 +27,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       const result = await this._service.getPhotographers(query);
       ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -35,7 +36,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       const result = await this._service.getPhotographerById(req.params.id);
       ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -45,7 +46,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.blockPhotographer(req.params.id, reason);
       ApiResponse.success(res, null, Messages.PHOTOGRAPHER_BLOCKED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -54,7 +55,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.unblockPhotographer(req.params.id);
       ApiResponse.success(res, null, Messages.PHOTOGRAPHER_UNBLOCKED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -64,7 +65,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       const result = await this._service.getApplications(query);
       ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -73,7 +74,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       const result = await this._service.getApplicationById(req.params.id);
       ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -83,7 +84,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.approveApplication(req.params.id, message);
       ApiResponse.success(res, null, Messages.APPLICATION_APPROVED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -93,7 +94,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.rejectApplication(req.params.id, reason);
       ApiResponse.success(res, null, Messages.APPLICATION_REJECTED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -102,7 +103,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       const result = await this._service.getStatistics();
       ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -112,7 +113,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       const result = await this._service.getPackages(query);
       ApiResponse.success(res, result, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -121,7 +122,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.approvePackage(req.params.id, req.user?.userId);
       ApiResponse.success(res, null, Messages.PACKAGE_APPROVED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -131,7 +132,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.rejectPackage(req.params.id, reason, req.user?.userId);
       ApiResponse.success(res, null, Messages.PACKAGE_REJECTED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -141,7 +142,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.blockPackage(req.params.id, reason, req.user?.userId);
       ApiResponse.success(res, null, Messages.PACKAGE_BLOCKED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -150,7 +151,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       await this._service.unblockPackage(req.params.id, req.user?.userId);
       ApiResponse.success(res, null, Messages.PACKAGE_UNBLOCKED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -159,19 +160,7 @@ export class AdminPhotographerController implements IAdminPhotographerController
       const result = await this._service.fixLegacyData();
       ApiResponse.success(res, result, Messages.LEGACY_MIGRATION_SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

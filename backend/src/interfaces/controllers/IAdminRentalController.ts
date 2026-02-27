@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 export interface IAdminRentalController {
-  getAdminItems(req: Request, res: Response, next: NextFunction): Promise<void>;
-  getAllOrders(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getAdminItems(req: Request, res: Response): Promise<void>;
+  getAllOrders(req: Request, res: Response): Promise<void>;
 }

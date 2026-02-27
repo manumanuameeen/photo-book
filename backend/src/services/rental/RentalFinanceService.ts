@@ -1,5 +1,10 @@
 import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository.ts";
-import { IRentalOrder, RentalStatus, IRentalOrderPopulated, IRentalPopulatedItem } from "../../model/rentalOrderModel.ts";
+import {
+  IRentalOrder,
+  RentalStatus,
+  IRentalOrderPopulated,
+  IRentalPopulatedItem,
+} from "../../model/rentalOrderModel.ts";
 import { IPopulatedUser } from "../../model/bookingModel.ts";
 import mongoose from "mongoose";
 import { StripeService } from "../implementaion/StripeService.ts";
@@ -38,9 +43,17 @@ export class RentalFinanceService implements IRentalFinanceService {
     private readonly _emailService: IEmailService,
     private readonly _pdfService: PdfService,
     private readonly _availabilityService: IRentalAvailabilityService,
-  ) { }
+  ) {}
 
-  private _getUserId(user: string | mongoose.Types.ObjectId | IPopulatedUser | IRentalPopulatedItem | null | undefined): string {
+  private _getUserId(
+    user:
+      | string
+      | mongoose.Types.ObjectId
+      | IPopulatedUser
+      | IRentalPopulatedItem
+      | null
+      | undefined,
+  ): string {
     if (!user) return "";
     if (typeof user === "string") return user;
     if (user instanceof mongoose.Types.ObjectId) return user.toString();
@@ -315,7 +328,9 @@ export class RentalFinanceService implements IRentalFinanceService {
     });
 
     if (updatedOrder && updatedOrder.amountPaid >= updatedOrder.totalAmount) {
-      if (["ONGOING", "COMPLETED", "RETURNED", "DELIVERED"].includes(updatedOrder.status as string)) {
+      if (
+        ["ONGOING", "COMPLETED", "RETURNED", "DELIVERED"].includes(updatedOrder.status as string)
+      ) {
         await this.releaseFundsToOwners(updatedOrder);
       }
     }
@@ -455,7 +470,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     const days =
       Math.ceil(
         (new Date(order.endDate).getTime() - new Date(order.startDate).getTime()) /
-        (1000 * 3600 * 24),
+          (1000 * 3600 * 24),
       ) + 1;
     const ownerShares = new Map<string, number>();
     let totalItemValue = 0;
@@ -573,11 +588,11 @@ export class RentalFinanceService implements IRentalFinanceService {
     const days =
       Math.ceil(
         (new Date(order.endDate).getTime() - new Date(order.startDate).getTime()) /
-        (1000 * 3600 * 24),
+          (1000 * 3600 * 24),
       ) + 1;
 
     if (order.items && Array.isArray(order.items)) {
-      for (const item of (order.items as unknown as IRentalPopulatedItem[])) {
+      for (const item of order.items as unknown as IRentalPopulatedItem[]) {
         const ownerId = this._getOwnerIdString(item.ownerId);
         if (ownerId === userId) {
           orderEarnings += item.pricePerDay * days;
@@ -599,7 +614,15 @@ export class RentalFinanceService implements IRentalFinanceService {
     }
   }
 
-  private _getOwnerIdString(ownerId: string | mongoose.Types.ObjectId | { _id: mongoose.Types.ObjectId } | IRentalPopulatedItem | null | undefined): string | null {
+  private _getOwnerIdString(
+    ownerId:
+      | string
+      | mongoose.Types.ObjectId
+      | { _id: mongoose.Types.ObjectId }
+      | IRentalPopulatedItem
+      | null
+      | undefined,
+  ): string | null {
     if (!ownerId) return null;
     if (typeof ownerId === "string") return ownerId;
     if (ownerId instanceof mongoose.Types.ObjectId) return ownerId.toString();
@@ -669,7 +692,7 @@ export class RentalFinanceService implements IRentalFinanceService {
 
     let newTotalAmount = 0;
     if (order.items && Array.isArray(order.items)) {
-      for (const item of (order.items as unknown as IRentalPopulatedItem[])) {
+      for (const item of order.items as unknown as IRentalPopulatedItem[]) {
         if (item && item.pricePerDay) {
           newTotalAmount += item.pricePerDay * days;
         }

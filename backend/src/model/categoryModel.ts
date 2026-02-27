@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-
 export const CategoryType = {
   WEDDING: "Wedding",
   PORTRAIT: "Portrait",

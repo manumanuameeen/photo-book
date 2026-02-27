@@ -8,6 +8,7 @@ import { ApiResponse } from "../utils/response.ts";
 import { IWalletController } from "../interfaces/controllers/IWalletController.ts";
 import { IBookingRepository } from "../interfaces/repositories/IBookingRepository.ts";
 import { IRentalRepository } from "../interfaces/repositories/IRentalRepository.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 export class WalletController implements IWalletController {
   private readonly _walletService: IWalletService;
@@ -37,7 +38,7 @@ export class WalletController implements IWalletController {
         .reduce((sum, t) => sum + t.amount, 0);
       ApiResponse.success(res, { ...walletObj, pendingBalance }, Messages.WALLET_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -65,7 +66,7 @@ export class WalletController implements IWalletController {
       );
       ApiResponse.success(res, result, Messages.WALLET_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -96,7 +97,7 @@ export class WalletController implements IWalletController {
         Messages.WALLET_FETCHED,
       );
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -121,19 +122,7 @@ export class WalletController implements IWalletController {
 
       ApiResponse.success(res, totalStats, Messages.WALLET_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

@@ -6,9 +6,13 @@ import { ROUTES } from "../constants/routes.ts";
 const router = Router();
 const reviewController = container.reviewController;
 
-router.post(ROUTES.V1.REVIEWS.ADD, verifyAccessToken, (req, res) => reviewController.addReview(req, res));
+router.post(ROUTES.V1.REVIEWS.ADD, verifyAccessToken, (req, res) =>
+  reviewController.addReview(req, res),
+);
 
-router.get(ROUTES.V1.REVIEWS.GET_TARGET_REVIEWS, verifyAccessToken, (req, res) => reviewController.getReviews(req, res));
+router.get(ROUTES.V1.REVIEWS.GET_TARGET_REVIEWS, verifyAccessToken, (req, res) =>
+  reviewController.getReviews(req, res),
+);
 
 router.get(ROUTES.V1.REVIEWS.GET_TARGET_STATS, verifyAccessToken, (req, res) =>
   reviewController.getStats(req, res),
@@ -28,8 +32,12 @@ router.get(ROUTES.V1.REVIEWS.MY_REVIEWS, verifyAccessToken, (req, res) =>
 router.get(ROUTES.V1.REVIEWS.RECEIVED_REVIEWS, verifyAccessToken, (req, res) =>
   reviewController.getReceivedReviews(req, res),
 );
-router.patch(ROUTES.V1.REVIEWS.UPDATE, verifyAccessToken, (req, res) => reviewController.updateReview(req, res));
+router.patch(ROUTES.V1.REVIEWS.UPDATE, verifyAccessToken, (req, res) =>
+  reviewController.updateReview(req, res),
+);
 
-router.delete(ROUTES.V1.REVIEWS.DELETE, verifyAccessToken, (req, res) => reviewController.deleteReview(req, res));
+router.delete(ROUTES.V1.REVIEWS.DELETE, verifyAccessToken, (req, res) =>
+  reviewController.deleteReview(req, res),
+);
 
 export default router;

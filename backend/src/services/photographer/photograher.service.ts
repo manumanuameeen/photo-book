@@ -227,7 +227,9 @@ export class PhotographerService implements IPhotographerService {
     const averageRating =
       totalReviews > 0 ? allReviews.reduce((acc, rev) => acc + rev.rating, 0) / totalReviews : 0;
 
-    const conversations = await this._messageService.getConversations(photographer.userId.toString());
+    const conversations = await this._messageService.getConversations(
+      photographer.userId.toString(),
+    );
 
     pendingRequestsList.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     upcomingBookingsList.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -261,7 +263,11 @@ export class PhotographerService implements IPhotographerService {
       pendingRequests: pendingRequestsList,
       upcomingBookings: upcomingBookingsList,
       recentMessages: conversations.map((conv) => {
-        const msg = conv.lastMessage as { _id: { toString: () => string }; content: string; createdAt: Date | string | number };
+        const msg = conv.lastMessage as {
+          _id: { toString: () => string };
+          content: string;
+          createdAt: Date | string | number;
+        };
         const partner = conv.partner as { name?: string; role?: string } | undefined | null;
         return {
           _id: msg._id.toString(),
@@ -298,7 +304,9 @@ export class PhotographerService implements IPhotographerService {
     return await this._repository.getPublicPhotographers(filters);
   }
 
-  async getPhotographerById(id: string): Promise<IPublicPhotographer & { reviews: IPublicReview[] }> {
+  async getPhotographerById(
+    id: string,
+  ): Promise<IPublicPhotographer & { reviews: IPublicReview[] }> {
     const photographer = await this._repository.getPublicPhotographerById(id);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -408,7 +416,10 @@ export class PhotographerService implements IPhotographerService {
     };
   }
 
-  async updateProfile(userId: string, data: Partial<IPhotographer>): Promise<PhotographerResponseDto> {
+  async updateProfile(
+    userId: string,
+    data: Partial<IPhotographer>,
+  ): Promise<PhotographerResponseDto> {
     const photographer = await this._repository.findByUserId(userId);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);

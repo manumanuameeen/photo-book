@@ -44,6 +44,7 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, userId, onSu
                 onSuccess?.();
             } catch (err) {
                 setErrorMessage("Failed to confirm payment with server.");
+                console.log(err)
             }
             setIsProcessing(false);
         } else {

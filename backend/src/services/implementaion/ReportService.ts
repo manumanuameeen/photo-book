@@ -24,17 +24,14 @@ export class ReportService implements IReportService {
   constructor(
     messageService: IMessageService,
     reportRepository: IReportRepository,
-    fileService: IFileService
+    fileService: IFileService,
   ) {
     this._messageService = messageService;
     this._reportRepository = reportRepository;
     this._fileService = fileService;
   }
 
-  async createReport(
-    reporterId: string,
-    data: CreateReportDTO,
-  ): Promise<IReport> {
+  async createReport(reporterId: string, data: CreateReportDTO): Promise<IReport> {
     return await this._reportRepository.create({
       reporterId: new mongoose.Types.ObjectId(reporterId),
       targetId: data.targetId,
@@ -65,11 +62,7 @@ export class ReportService implements IReportService {
 
     const skip = (page - 1) * limit;
 
-    const { reports, total } = await this._reportRepository.findAll(
-      query,
-      skip,
-      limit,
-    );
+    const { reports, total } = await this._reportRepository.findAll(query, skip, limit);
 
     const enhancedReports = await Promise.all(
       reports.map(async (report) => {
@@ -79,9 +72,10 @@ export class ReportService implements IReportService {
 
         try {
           if (report.targetType === "rental") {
-            const rental = await RentalItemModel.findById(
-              report.targetId,
-            ).populate("ownerId", "name email profileImage");
+            const rental = await RentalItemModel.findById(report.targetId).populate(
+              "ownerId",
+              "name email profileImage",
+            );
             if (rental) {
               targetMetadata = {
                 image: rental.images?.[0] || null,
@@ -89,7 +83,10 @@ export class ReportService implements IReportService {
                 price: rental.pricePerDay,
               };
               if (rental.ownerId) {
-                const ownerDoc = rental.ownerId as unknown as Pick<IUser, "_id" | "name" | "email" | "profileImage">;
+                const ownerDoc = rental.ownerId as unknown as Pick<
+                  IUser,
+                  "_id" | "name" | "email" | "profileImage"
+                >;
                 ownerDetails = {
                   name: ownerDoc.name || "",
                   email: ownerDoc.email,
@@ -99,18 +96,20 @@ export class ReportService implements IReportService {
               }
             }
           } else if (report.targetType === "photographer") {
-            const photographer = await PhotographerModel.findById(
-              report.targetId,
-            ).populate("userId", "name email profileImage");
+            const photographer = await PhotographerModel.findById(report.targetId).populate(
+              "userId",
+              "name email profileImage",
+            );
             if (photographer) {
               targetMetadata = {
                 image: photographer.portfolio?.portfolioImages?.[0] || null,
-                name:
-                  photographer.businessInfo?.businessName ||
-                  "Photographer Profile",
+                name: photographer.businessInfo?.businessName || "Photographer Profile",
               };
               if (photographer.userId) {
-                const userDoc = photographer.userId as unknown as Pick<IUser, "_id" | "name" | "email" | "profileImage">;
+                const userDoc = photographer.userId as unknown as Pick<
+                  IUser,
+                  "_id" | "name" | "email" | "profileImage"
+                >;
                 ownerDetails = {
                   name: userDoc.name || "",
                   email: userDoc.email,
@@ -136,10 +135,7 @@ export class ReportService implements IReportService {
             }
           }
         } catch (error: unknown) {
-          console.error(
-            `Error populating report details for ${report._id}`,
-            error,
-          );
+          console.error(`Error populating report details for ${report._id}`, error);
         }
 
         return {
@@ -153,10 +149,7 @@ export class ReportService implements IReportService {
     return { reports: enhancedReports, total };
   }
 
-  async updateReportStatus(
-    id: string,
-    data: IUpdateReportStatusDTO,
-  ): Promise<IReport | null> {
+  async updateReportStatus(id: string, data: IUpdateReportStatusDTO): Promise<IReport | null> {
     return await this._reportRepository.update(id, data);
   }
 
@@ -195,12 +188,7 @@ export class ReportService implements IReportService {
       throw new Error("Could not resolve target user for this report message");
     }
 
-    await this._messageService.sendSystemMessage(
-      targetUserId,
-      messageContent,
-      adminId,
-      reportId,
-    );
+    await this._messageService.sendSystemMessage(targetUserId, messageContent, adminId, reportId);
 
     const timestamp = new Date().toLocaleString();
     const recipientLabel = recipientType === "reporter" ? "Reporter" : "Owner";
@@ -244,7 +232,16 @@ export class ReportService implements IReportService {
       : `[${timestamp}] Penalty Applied: ${penaltyDto.actionTaken}. Notes: ${penaltyDto.adminNotes}`;
 
     let ownerId: string | null = null;
-    let targetDoc: (mongoose.Document & { _id?: mongoose.Types.ObjectId; ownerId?: mongoose.Types.ObjectId; userId?: mongoose.Types.ObjectId; isBlocked?: boolean; isBlock?: boolean; status?: string }) | null = null;
+    let targetDoc:
+      | (mongoose.Document & {
+          _id?: mongoose.Types.ObjectId;
+          ownerId?: mongoose.Types.ObjectId;
+          userId?: mongoose.Types.ObjectId;
+          isBlocked?: boolean;
+          isBlock?: boolean;
+          status?: string;
+        })
+      | null = null;
     if (report.targetType === "rental") {
       targetDoc = await RentalItemModel.findById(report.targetId);
       if (targetDoc && targetDoc.ownerId) ownerId = targetDoc.ownerId.toString();
@@ -269,33 +266,37 @@ export class ReportService implements IReportService {
       await targetDoc.save();
     }
 
-    if (ownerId && penaltyDto.actionTaken !== "resolved" && penaltyDto.actionTaken !== "false_report_dismissed") {
-      const penaltyMsg = `Action taken alert: A formal '${penaltyDto.actionTaken}' action has been placed on your account or listing due to a violation of our guidelines. Reason: ${report.reason.replace('_', ' ')}. Notes: ${penaltyDto.adminNotes}`;
+    if (
+      ownerId &&
+      penaltyDto.actionTaken !== "resolved" &&
+      penaltyDto.actionTaken !== "false_report_dismissed"
+    ) {
+      const penaltyMsg = `Action taken alert: A formal '${penaltyDto.actionTaken}' action has been placed on your account or listing due to a violation of our guidelines. Reason: ${report.reason.replace("_", " ")}. Notes: ${penaltyDto.adminNotes}`;
       await this._messageService.sendSystemMessage(ownerId, penaltyMsg, adminId, reportId);
     }
 
     if (report.reporterId) {
-      const outcomeMsg = penaltyDto.actionTaken === "false_report_dismissed"
-        ? `We reviewed your report regarding a ${report.targetType}. We found no violation of our guidelines at this time. Thank you for keeping our community safe.`
-        : `Thanks for reporting. We've reviewed your report regarding a ${report.targetType} and took the necessary actions to keep our platform safe.`;
+      const outcomeMsg =
+        penaltyDto.actionTaken === "false_report_dismissed"
+          ? `We reviewed your report regarding a ${report.targetType}. We found no violation of our guidelines at this time. Thank you for keeping our community safe.`
+          : `Thanks for reporting. We've reviewed your report regarding a ${report.targetType} and took the necessary actions to keep our platform safe.`;
 
-      await this._messageService.sendSystemMessage(report.reporterId.toString(), outcomeMsg, adminId, reportId);
+      await this._messageService.sendSystemMessage(
+        report.reporterId.toString(),
+        outcomeMsg,
+        adminId,
+        reportId,
+      );
     }
 
     return await this._reportRepository.update(reportId, {
-      status:
-        penaltyDto.actionTaken === "false_report_dismissed"
-          ? "dismissed"
-          : "resolved",
+      status: penaltyDto.actionTaken === "false_report_dismissed" ? "dismissed" : "resolved",
       actionTaken: penaltyDto.actionTaken,
       adminNotes: finalNotes,
     });
   }
 
-  async uploadEvidence(
-    files: Express.Multer.File[],
-    uploaderId: string,
-  ): Promise<string[]> {
+  async uploadEvidence(files: Express.Multer.File[], uploaderId: string): Promise<string[]> {
     if (!files || files.length === 0) {
       return [];
     }

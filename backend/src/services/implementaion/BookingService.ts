@@ -226,7 +226,7 @@ export class BookingService implements IBookingService {
       await this._availabilityService.setAvailability(photographerId, {
         date: booking.eventDate,
         isFullDayAvailable: true,
-        slots: []
+        slots: [],
       } as SetAvailabilityDto);
     } catch (error: unknown) {
       console.warn(
@@ -319,7 +319,7 @@ export class BookingService implements IBookingService {
       await this._availabilityService.setAvailability(photographerId, {
         date: booking.eventDate,
         isFullDayAvailable: true,
-        slots: []
+        slots: [],
       } as SetAvailabilityDto);
     } catch (error: unknown) {
       console.warn(

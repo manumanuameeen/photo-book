@@ -55,12 +55,9 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
           $and: [
             { $or: [{ senderId: userObjId }, { receiverId: userObjId }] },
             {
-              $or: [
-                { type: "DIRECT" },
-                { type: "SYSTEM", senderId: { $exists: true, $ne: null } }
-              ]
-            }
-          ]
+              $or: [{ type: "DIRECT" }, { type: "SYSTEM", senderId: { $exists: true, $ne: null } }],
+            },
+          ],
         },
       },
       {
@@ -80,10 +77,7 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
             $sum: {
               $cond: [
                 {
-                  $and: [
-                    { $eq: ["$receiverId", userObjId] },
-                    { $eq: ["$isRead", false] },
-                  ],
+                  $and: [{ $eq: ["$receiverId", userObjId] }, { $eq: ["$isRead", false] }],
                 },
                 1,
                 0,

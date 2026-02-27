@@ -17,6 +17,7 @@ import { Messages } from "../constants/messages.ts";
 import { ENV } from "../constants/env.ts";
 import { AppError } from "../utils/AppError.ts";
 import { UserMapper } from "../mappers/user.mapper.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 export class AuthController implements IAuthController {
   private readonly _authService: IAuthService;
@@ -40,7 +41,7 @@ export class AuthController implements IAuthController {
         HttpStatus.CREATED,
       );
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -57,7 +58,7 @@ export class AuthController implements IAuthController {
         Messages.OTP_VERIFIED,
       );
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -67,7 +68,7 @@ export class AuthController implements IAuthController {
       const result = await this._authService.resendOtp(input);
       ApiResponse.success(res, null, result.message);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -83,7 +84,7 @@ export class AuthController implements IAuthController {
         Messages.LOGIN_SUCCESS,
       );
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -100,7 +101,7 @@ export class AuthController implements IAuthController {
         Messages.LOGIN_SUCCESS,
       );
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -129,7 +130,7 @@ export class AuthController implements IAuthController {
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
 
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -140,7 +141,7 @@ export class AuthController implements IAuthController {
       res.clearCookie("accessToken").clearCookie("refreshToken");
       ApiResponse.success(res, null, Messages.LOGOUT_SUCCESS);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -150,7 +151,7 @@ export class AuthController implements IAuthController {
       const result = await this._authService.forgetPassword(input);
       ApiResponse.success(res, null, result.message);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -161,7 +162,7 @@ export class AuthController implements IAuthController {
       const result = await this._authService.verifyResetOtp(input);
       ApiResponse.success(res, null, result.message);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -171,33 +172,9 @@ export class AuthController implements IAuthController {
       const result = await this._authService.resetPassword(input);
       ApiResponse.success(res, null, result.message);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof z.ZodError) {
-      ApiResponse.error(res, Messages.VALIDATION_FAILED, HttpStatus.BAD_REQUEST);
-      return;
-    }
-
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-
-    if (error instanceof Error) {
-      const status = error.message.includes("blocked")
-        ? HttpStatus.FORBIDDEN
-        : error.message.includes("exists")
-          ? HttpStatus.CONFLICT
-          : HttpStatus.BAD_REQUEST;
-      ApiResponse.error(res, error.message, status);
-      return;
-    }
-
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 
   private _setCookies(res: Response, access: string, refresh: string): void {
     const isProd = process.env.NODE_ENV === "production";

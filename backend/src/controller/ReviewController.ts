@@ -7,6 +7,7 @@ import { HttpStatus } from "../constants/httpStatus.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { IReviewController } from "../interfaces/controllers/IReviewController.ts";
 import { UpdateReviewDto } from "../dto/auth.dto.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 export class ReviewController implements IReviewController {
   private readonly _reviewService: IReviewService;
@@ -37,7 +38,7 @@ export class ReviewController implements IReviewController {
       );
       ApiResponse.success(res, review, Messages.REVIEW_ADDED, HttpStatus.CREATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -50,7 +51,7 @@ export class ReviewController implements IReviewController {
       const result = await this._reviewService.getReviews(targetId, page, limit);
       ApiResponse.success(res, result, Messages.REVIEWS_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -60,7 +61,7 @@ export class ReviewController implements IReviewController {
       const stats = await this._reviewService.getStats(targetId);
       ApiResponse.success(res, stats, Messages.REVIEW_STATS_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -81,7 +82,7 @@ export class ReviewController implements IReviewController {
       const review = await this._reviewService.replyToReview(ownerId, reviewId, comment);
       ApiResponse.success(res, review, Messages.REPLY_ADDED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -97,7 +98,7 @@ export class ReviewController implements IReviewController {
       const review = await this._reviewService.toggleLikeReview(userId, reviewId);
       ApiResponse.success(res, review, Messages.LIKE_TOGGLED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -113,7 +114,7 @@ export class ReviewController implements IReviewController {
       await this._reviewService.deleteReview(userId, reviewId);
       ApiResponse.success(res, null, Messages.REVIEW_DELETED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -131,7 +132,7 @@ export class ReviewController implements IReviewController {
       const updated = await this._reviewService.updateReview(reviewId, userId, payload);
       ApiResponse.success(res, updated, Messages.REVIEW_UPDATED, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -149,7 +150,7 @@ export class ReviewController implements IReviewController {
       const data = await this._reviewService.getUserReviews(userId, page, limit, search);
       ApiResponse.success(res, data, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -167,19 +168,7 @@ export class ReviewController implements IReviewController {
       const data = await this._reviewService.getReceivedReviews(userId, page, limit, search);
       ApiResponse.success(res, data, Messages.SUCCESS, HttpStatus.OK);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

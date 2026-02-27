@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { Messages } from "../constants/messages.ts";
 import { IRentalController } from "../interfaces/controllers/IRentalController.ts";
@@ -7,6 +7,7 @@ import { IRentalService } from "../interfaces/services/IRentalService.ts";
 import { AuthRequest } from "../middleware/authMiddleware.ts";
 import { AppError } from "../utils/AppError.ts";
 import { ApiResponse } from "../utils/response.ts";
+import { handleError } from "../utils/errorHandler.ts";
 import {
   CreateRentalItemDTO,
   UpdateRentalItemDTO,
@@ -20,7 +21,7 @@ export class RentalController implements IRentalController {
     private readonly _fileService: IFileService,
   ) {}
 
-  getAllItems = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getAllItems = async (req: AuthRequest, res: Response) => {
     try {
       const { category, page, limit } = req.query;
       const pageNum = page ? Number.parseInt(page as string) : 1;
@@ -36,11 +37,11 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, result, Messages.RENTAL_ITEMS_FETCHED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getAdminItems = async (req: Request, res: Response, next: NextFunction) => {
+  getAdminItems = async (req: Request, res: Response) => {
     try {
       const { status, page, limit, search } = req.query;
       const pageNum = page ? Number.parseInt(page as string) : 1;
@@ -53,21 +54,21 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, result, Messages.ADMIN_ITEMS_FETCHED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getItemDetails = async (req: Request, res: Response, next: NextFunction) => {
+  getItemDetails = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const item = await this._rentalService.getRentalItemDetails(id);
       ApiResponse.success(res, item, Messages.ITEM_DETAILS_FETCHED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  rentItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  rentItem = async (req: AuthRequest, res: Response) => {
     try {
       console.log("[RentalController] rentItem called");
       console.log("[RentalController] Body:", JSON.stringify(req.body));
@@ -118,11 +119,11 @@ export class RentalController implements IRentalController {
       ApiResponse.success(res, result, Messages.ITEM_RENT_REQUEST_SUBMITTED);
     } catch (error) {
       console.error("[RentalController] rentItem Error:", error);
-      next(error);
+      handleError(res, error);
     }
   };
 
-  confirmPayment = async (req: Request, res: Response, next: NextFunction) => {
+  confirmPayment = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const { paymentIntentId } = req.body;
@@ -134,11 +135,11 @@ export class RentalController implements IRentalController {
       await this._rentalService.confirmRentalPayment(id, paymentIntentId);
       ApiResponse.success(res, { success: true }, "Payment confirmed successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  createItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  createItem = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
@@ -167,11 +168,11 @@ export class RentalController implements IRentalController {
       const item = await this._rentalService.createRentalItem(itemData);
       ApiResponse.success(res, item, Messages.RENTAL_ITEM_CREATED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getUserOrders = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getUserOrders = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -192,11 +193,11 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, orders, Messages.USER_RENTAL_ORDERS_FETCHED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getUserItems = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getUserItems = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
@@ -208,11 +209,11 @@ export class RentalController implements IRentalController {
       const result = await this._rentalService.getUserRentalItems(userId, pageNum, limitNum);
       ApiResponse.success(res, result, Messages.USER_ITEMS_FETCHED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  updateItemStatus = async (req: AuthRequest, res: Response, _next: NextFunction) => {
+  updateItemStatus = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -226,11 +227,11 @@ export class RentalController implements IRentalController {
       const item = await this._rentalService.updateRentalItemStatus(id, status, userId, role);
       ApiResponse.success(res, item, Messages.ITEM_STATUS_UPDATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getOwnerOrders = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getOwnerOrders = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
@@ -249,11 +250,11 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, orders, "Owner orders fetched successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getAllOrders = async (req: Request, res: Response, next: NextFunction) => {
+  getAllOrders = async (req: Request, res: Response) => {
     try {
       const { page, limit, search, status } = req.query;
       const pageNum = page ? Number.parseInt(page as string) : 1;
@@ -266,11 +267,11 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, result, "All rental orders fetched");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  updateOrderStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  updateOrderStatus = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -282,21 +283,21 @@ export class RentalController implements IRentalController {
       const result = await this._rentalService.updateOrderStatus(id, status, userId, role);
       ApiResponse.success(res, result, "Order status updated");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getOrderDetails = async (req: Request, res: Response, next: NextFunction) => {
+  getOrderDetails = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const result = await this._rentalService.getOrderDetails(id);
       ApiResponse.success(res, result, "Order details fetched");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  acceptOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  acceptOrder = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -305,11 +306,11 @@ export class RentalController implements IRentalController {
       const order = await this._rentalService.acceptRentalOrder(id, userId);
       ApiResponse.success(res, order, "Order accepted");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  rejectOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  rejectOrder = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -318,11 +319,11 @@ export class RentalController implements IRentalController {
       const order = await this._rentalService.rejectRentalOrder(id, userId);
       ApiResponse.success(res, order, "Order rejected");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  payDeposit = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  payDeposit = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { paymentIntentId } = req.body;
@@ -336,11 +337,11 @@ export class RentalController implements IRentalController {
       const order = await this._rentalService.payRentalDeposit(id, paymentIntentId);
       ApiResponse.success(res, order, "Deposit paid");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  createDepositPaymentIntent = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  createDepositPaymentIntent = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -349,11 +350,11 @@ export class RentalController implements IRentalController {
       const session = await this._rentalService.createDepositPaymentIntent(id);
       ApiResponse.success(res, { url: session.url }, "Payment session created");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  createBalancePaymentIntent = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  createBalancePaymentIntent = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -362,11 +363,11 @@ export class RentalController implements IRentalController {
       const session = await this._rentalService.createBalancePaymentIntent(id);
       ApiResponse.success(res, session, "Balance payment intent created");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  payBalance = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  payBalance = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { paymentIntentId } = req.body;
@@ -380,11 +381,11 @@ export class RentalController implements IRentalController {
       const order = await this._rentalService.payRentalBalance(id, paymentIntentId);
       ApiResponse.success(res, order, "Balance paid successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  completeOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  completeOrder = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -393,11 +394,11 @@ export class RentalController implements IRentalController {
       const order = await this._rentalService.completeRentalOrder(id);
       ApiResponse.success(res, order, "Order completed and funds released");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  updateItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  updateItem = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -436,11 +437,11 @@ export class RentalController implements IRentalController {
       const updatedItem = await this._rentalService.updateRentalItem(id, updateData);
       ApiResponse.success(res, updatedItem, "Item updated successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  checkAvailability = async (req: Request, res: Response, next: NextFunction) => {
+  checkAvailability = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const { startDate, endDate } = req.query;
@@ -456,21 +457,21 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, { isAvailable }, "Availability checked");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getUnavailableDates = async (req: Request, res: Response, next: NextFunction) => {
+  getUnavailableDates = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const result = await this._rentalService.getUnavailableDates(id);
       ApiResponse.success(res, result, "Unavailable dates fetched");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  blockDates = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  blockDates = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { startDate, endDate, reason } = req.body as BlockDatesDTO;
@@ -489,11 +490,11 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, result, "Dates blocked successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  unblockDates = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  unblockDates = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { startDate, endDate } = req.body;
@@ -511,11 +512,11 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, result, "Dates unblocked successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getDashboardStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  getDashboardStats = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
@@ -523,11 +524,11 @@ export class RentalController implements IRentalController {
       const stats = await this._rentalService.getRentalDashboardStats(userId);
       ApiResponse.success(res, stats, "Dashboard stats fetched successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  requestReschedule = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  requestReschedule = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { requestedStartDate, requestedEndDate, reason } = req.body;
@@ -546,11 +547,11 @@ export class RentalController implements IRentalController {
       );
       ApiResponse.success(res, result, "Reschedule request submitted successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  respondToReschedule = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  respondToReschedule = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { action } = req.body;
@@ -565,11 +566,11 @@ export class RentalController implements IRentalController {
       const result = await this._rentalService.respondToReschedule(id, action, userId, role);
       ApiResponse.success(res, result, "Reschedule request " + action + "ed");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  toggleLike = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  toggleLike = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -578,11 +579,11 @@ export class RentalController implements IRentalController {
       const result = await this._rentalService.toggleLike(id, userId);
       ApiResponse.success(res, result, "Like toggled");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  cancelRentalOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  cancelRentalOrder = async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { reason, isEmergency } = req.body;
@@ -595,7 +596,7 @@ export class RentalController implements IRentalController {
       const result = await this._rentalService.cancelRentalOrder(id, userId, reason, isEmergency);
       ApiResponse.success(res, result, "Rental order cancelled successfully");
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
@@ -613,17 +614,5 @@ export class RentalController implements IRentalController {
         throw new AppError("Unauthorized to update this item", HttpStatus.FORBIDDEN);
       }
     }
-  }
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 }

@@ -7,25 +7,27 @@ const router = Router();
 const reportCategoryController = container.reportCategoryController;
 
 router.get(ROUTES.V1.REPORT_CATEGORY.GET_ALL, verifyAccessToken, verifyAdmin, (req, res) =>
-    reportCategoryController.getAllCategories(req, res),
+  reportCategoryController.getAllCategories(req, res),
 );
 
-router.get(ROUTES.V1.REPORT_CATEGORY.GET_PUBLIC, (req, res) => reportCategoryController.getAllCategories(req, res));
+router.get(ROUTES.V1.REPORT_CATEGORY.GET_PUBLIC, (req, res) =>
+  reportCategoryController.getAllCategories(req, res),
+);
 
 router.post(ROUTES.V1.REPORT_CATEGORY.CREATE, verifyAccessToken, verifyAdmin, (req, res) =>
-    reportCategoryController.createCategory(req, res),
+  reportCategoryController.createCategory(req, res),
 );
 
 router.get(ROUTES.V1.REPORT_CATEGORY.GET_BY_ID, verifyAccessToken, verifyAdmin, (req, res) =>
-    reportCategoryController.getCategoryById(req, res),
+  reportCategoryController.getCategoryById(req, res),
 );
 
 router.patch(ROUTES.V1.REPORT_CATEGORY.UPDATE, verifyAccessToken, verifyAdmin, (req, res) =>
-    reportCategoryController.updateCategory(req, res),
+  reportCategoryController.updateCategory(req, res),
 );
 
 router.delete(ROUTES.V1.REPORT_CATEGORY.DELETE, verifyAccessToken, verifyAdmin, (req, res) =>
-    reportCategoryController.deleteCategory(req, res),
+  reportCategoryController.deleteCategory(req, res),
 );
 
 export default router;

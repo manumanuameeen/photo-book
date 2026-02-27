@@ -1,7 +1,12 @@
 import { IMessage } from "../../model/messageModel.ts";
 
 export interface IMessageService {
-  sendSystemMessage(receiverId: string, content: string, senderId?: string, reportId?: string): Promise<IMessage>;
+  sendSystemMessage(
+    receiverId: string,
+    content: string,
+    senderId?: string,
+    reportId?: string,
+  ): Promise<IMessage>;
   getMessages(
     userId: string,
     partnerId: string,

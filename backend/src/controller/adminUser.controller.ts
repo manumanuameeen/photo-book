@@ -8,6 +8,7 @@ import { ApiResponse } from "../utils/response.ts";
 import { Messages } from "../constants/messages.ts";
 import { AppError } from "../utils/AppError.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 export class AdminController implements IAdminController {
   private adminService: IAdminService;
@@ -16,13 +17,9 @@ export class AdminController implements IAdminController {
     this.adminService = adminService;
   }
 
-  private _validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
-    return schema.parse(data);
-  }
-
   getAllUser = async (req: Request, res: Response): Promise<void> => {
     try {
-      const queryDto = this._validate(AdminUserQueryDto, req.query);
+      const queryDto = AdminUserQueryDto.parse(req.query);
 
       const queryInput = AdminMapper.toQueryInput(queryDto);
       const result = await this.adminService.getAllUser(queryInput);
@@ -38,7 +35,7 @@ export class AdminController implements IAdminController {
 
       ApiResponse.success(res, responseData, Messages.USERS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -53,7 +50,7 @@ export class AdminController implements IAdminController {
 
       ApiResponse.success(res, user, Messages.USER_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -64,7 +61,7 @@ export class AdminController implements IAdminController {
 
       ApiResponse.success(res, user, Messages.USER_BLOCKED_SUCCESS);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -75,19 +72,7 @@ export class AdminController implements IAdminController {
 
       ApiResponse.success(res, user, Messages.USER_UNBLOCKED_SUCCESS);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

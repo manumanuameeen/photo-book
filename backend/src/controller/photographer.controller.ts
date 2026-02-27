@@ -1,4 +1,4 @@
-import type { Response, NextFunction, Request } from "express";
+import type { Response, Request } from "express";
 import type { AuthRequest } from "../middleware/authMiddleware.ts";
 import type { IPhtogrpherController } from "../interfaces/user/IPhotographyController.ts";
 import type { IPhotographerService } from "../interfaces/services/IPhotographerService.ts";
@@ -9,6 +9,7 @@ import { Messages } from "../constants/messages.ts";
 import { AppError } from "../utils/AppError.ts";
 import { z } from "zod";
 import { ApplyPhtographerDto } from "../dto/photographer.dto.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 export class PhotographerController implements IPhtogrpherController {
   private readonly _photographerService: IPhotographerService;
@@ -23,7 +24,7 @@ export class PhotographerController implements IPhtogrpherController {
     return schema.parse(data);
   }
 
-  apply = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  apply = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -66,7 +67,7 @@ export class PhotographerController implements IPhtogrpherController {
 
       ApiResponse.success(res, result, Messages.APPLYED_SUCCESSFULLY, HttpStatus.CREATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -93,11 +94,7 @@ export class PhotographerController implements IPhtogrpherController {
     ApiResponse.error(res, Messages.INTERNAL_ERROR);
   }
 
-  getDashboardStats = async (
-    req: AuthRequest,
-    res: Response,
-    _next: NextFunction,
-  ): Promise<void> => {
+  getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -107,11 +104,11 @@ export class PhotographerController implements IPhtogrpherController {
       const stats = await this._photographerService.getDashboardStats(userId);
       ApiResponse.success(res, stats, Messages.DASHBOARD_STATS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getBookings = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  getBookings = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -129,11 +126,11 @@ export class PhotographerController implements IPhtogrpherController {
 
       ApiResponse.success(res, bookings, Messages.BOOKINGS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getPhotographers = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  getPhotographers = async (req: Request, res: Response): Promise<void> => {
     try {
       const { category, priceRange, location, lat, lng, page, limit } = req.query;
 
@@ -149,25 +146,21 @@ export class PhotographerController implements IPhtogrpherController {
 
       ApiResponse.success(res, result, Messages.PHOTOGRAPHERS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getPhotographerById = async (
-    req: AuthRequest,
-    res: Response,
-    _next: NextFunction,
-  ): Promise<void> => {
+  getPhotographerById = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const photographer = await this._photographerService.getPhotographerById(id);
       ApiResponse.success(res, photographer, Messages.PHOTOGRAPHER_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  addReview = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  addReview = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -183,11 +176,11 @@ export class PhotographerController implements IPhtogrpherController {
       const review = await this._photographerService.addReview(userId, id, reviewData);
       ApiResponse.success(res, review, Messages.REVIEW_ADDED, HttpStatus.CREATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  updateProfile = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -197,11 +190,11 @@ export class PhotographerController implements IPhtogrpherController {
       const updated = await this._photographerService.updateProfile(userId, req.body);
       ApiResponse.success(res, updated, Messages.PROFILE_UPDATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getProfile = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  getProfile = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -211,11 +204,11 @@ export class PhotographerController implements IPhtogrpherController {
       const profile = await this._photographerService.getOwnProfile(userId);
       ApiResponse.success(res, profile, Messages.PROFILE_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  toggleLike = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  toggleLike = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -225,7 +218,7 @@ export class PhotographerController implements IPhtogrpherController {
       const photographer = await this._photographerService.toggleLike(id, userId);
       ApiResponse.success(res, photographer, Messages.LIKE_TOGGLED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 }

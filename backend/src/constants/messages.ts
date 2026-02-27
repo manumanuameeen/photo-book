@@ -193,5 +193,4 @@ export const Messages = {
   RANGE_UNBLOCKED: "Range unblocked successfully",
   DATE_REQUIRED: "Date is required",
   AVAILABILITY_DELETED: "Availability deleted",
-
 } as const;

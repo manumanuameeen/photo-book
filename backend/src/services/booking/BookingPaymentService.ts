@@ -4,7 +4,12 @@ import { IStripeService } from "../../interfaces/services/IStripeService.ts";
 import { IPaymentService } from "../../interfaces/services/IPaymentService.ts";
 import { IWalletService } from "../../interfaces/services/IWalletService.ts";
 import { IEmailService } from "../../interfaces/services/IEmailService.ts";
-import { BookingStatus, IBooking, IPopulatedUser, PaymentStatus } from "../../model/bookingModel.ts";
+import {
+  BookingStatus,
+  IBooking,
+  IPopulatedUser,
+  PaymentStatus,
+} from "../../model/bookingModel.ts";
 import mongoose from "mongoose";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
@@ -18,7 +23,7 @@ export class BookingPaymentService implements IBookingPaymentService {
     private readonly _paymentService: IPaymentService,
     private readonly _walletService: IWalletService,
     private readonly _emailService: IEmailService,
-  ) { }
+  ) {}
 
   async createPaymentIntent(bookingId: string): Promise<{ url: string; sessionId: string }> {
     const booking = await this._bookingRepository.findById(bookingId);
@@ -144,7 +149,8 @@ export class BookingPaymentService implements IBookingPaymentService {
       if (booking.photographerId) {
         const photographer = booking.photographerId as unknown as IPopulatedUser;
         const photographerEmail = photographer.email;
-        const photographerName = photographer.personalInfo?.name || photographer.name || "Photographer";
+        const photographerName =
+          photographer.personalInfo?.name || photographer.name || "Photographer";
 
         if (photographerEmail) {
           try {

@@ -112,7 +112,9 @@ export class ReviewRepository extends BaseRepository<IReview> implements IReview
     targetIds?: string[],
   ): Promise<{ reviews: IReview[]; total: number }> {
     const skip = (page - 1) * limit;
-    const query: mongoose.FilterQuery<IReview> = { reviewerId: new mongoose.Types.ObjectId(reviewerId) };
+    const query: mongoose.FilterQuery<IReview> = {
+      reviewerId: new mongoose.Types.ObjectId(reviewerId),
+    };
 
     if (search) {
       const searchConditions: mongoose.FilterQuery<IReview>[] = [

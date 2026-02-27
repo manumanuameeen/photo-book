@@ -64,6 +64,7 @@ export const MessageBox: React.FC<MessageBoxProps> = ({ onClose }) => {
             }
         } catch (error) {
             toast.error("Failed to delete message");
+            console.log(error)
         }
     };
 

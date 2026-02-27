@@ -157,9 +157,9 @@ export class AdminPhotographerService implements IAdminPhotographerService {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 })) as unknown as Populated<
-        IBookingPackage,
-        "photographer" | "categoryId"
-      >[];
+      IBookingPackage,
+      "photographer" | "categoryId"
+    >[];
 
     const total = await BookingPackageModel.countDocuments(filter);
 

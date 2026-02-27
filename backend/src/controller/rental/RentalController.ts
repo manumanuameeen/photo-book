@@ -8,6 +8,7 @@ import { AppError } from "../../utils/AppError.ts";
 import { ApiResponse } from "../../utils/response.ts";
 import { Messages } from "../../constants/messages.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
+import { handleError } from "../../utils/errorHandler.ts";
 import jwt from "jsonwebtoken";
 import { CreateRentalItemDTO, BlockDatesDTO, UpdateRentalItemDTO } from "../../dto/rental.dto.ts";
 
@@ -18,18 +19,6 @@ export class RentalController {
     private readonly _paymentService: IRentalPaymentService,
     private readonly _fileService: IFileService,
   ) {}
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 
   getAllItems = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -62,7 +51,7 @@ export class RentalController {
       );
       ApiResponse.success(res, result, Messages.RENTAL_ITEMS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -72,7 +61,7 @@ export class RentalController {
       const item = await this._itemService.getRentalItemDetails(id);
       ApiResponse.success(res, item, Messages.ITEM_DETAILS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -109,7 +98,7 @@ export class RentalController {
       );
       ApiResponse.success(res, result, Messages.ITEM_RENT_REQUEST_SUBMITTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -124,7 +113,7 @@ export class RentalController {
       await this._paymentService?.confirmRentalPayment(id, paymentIntentId);
       ApiResponse.success(res, { success: true }, Messages.PAYMENT_CONFIRMED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -152,7 +141,7 @@ export class RentalController {
       const item = await this._itemService.createRentalItem(itemData);
       ApiResponse.success(res, item, Messages.RENTAL_ITEM_CREATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -169,7 +158,7 @@ export class RentalController {
       );
       ApiResponse.success(res, result, Messages.USER_RENTAL_ORDERS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -184,7 +173,7 @@ export class RentalController {
       );
       ApiResponse.success(res, result, Messages.USER_ITEMS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -201,7 +190,7 @@ export class RentalController {
       const item = await this._itemService.updateRentalItemStatus(id, status, userId, role);
       ApiResponse.success(res, item, Messages.ITEM_STATUS_UPDATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -219,7 +208,7 @@ export class RentalController {
 
       ApiResponse.success(res, result, Messages.OWNER_ORDERS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -233,7 +222,7 @@ export class RentalController {
       await this._orderService.updateOrderStatus(id, status, userId, req.user?.role);
       ApiResponse.success(res, { success: true }, Messages.ORDER_STATUS_UPDATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -242,7 +231,7 @@ export class RentalController {
       const result = await this._orderService.getOrderDetails(req.params.id);
       ApiResponse.success(res, result, Messages.ORDER_DETAILS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -253,7 +242,7 @@ export class RentalController {
       const result = await this._orderService.acceptRentalOrder(req.params.id, userId);
       ApiResponse.success(res, result, Messages.ORDER_ACCEPTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -264,7 +253,7 @@ export class RentalController {
       const result = await this._orderService.rejectRentalOrder(req.params.id, userId);
       ApiResponse.success(res, result, Messages.ORDER_REJECTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -277,7 +266,7 @@ export class RentalController {
       const result = await this._paymentService.payRentalDeposit(req.params.id, paymentIntentId);
       ApiResponse.success(res, result, Messages.DEPOSIT_PAID);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -286,7 +275,7 @@ export class RentalController {
       const session = await this._paymentService.createDepositPaymentIntent(req.params.id);
       ApiResponse.success(res, { url: session.url }, Messages.PAYMENT_SESSION_CREATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -295,7 +284,7 @@ export class RentalController {
       const session = await this._paymentService.createBalancePaymentIntent(req.params.id);
       ApiResponse.success(res, session, Messages.BALANCE_PAYMENT_INTENT_CREATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -308,7 +297,7 @@ export class RentalController {
       const result = await this._paymentService.payRentalBalance(req.params.id, paymentIntentId);
       ApiResponse.success(res, result, Messages.BALANCE_PAID);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -317,7 +306,7 @@ export class RentalController {
       const result = await this._paymentService.completeRentalOrder(req.params.id);
       ApiResponse.success(res, result, Messages.ORDER_COMPLETED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -348,7 +337,7 @@ export class RentalController {
       const result = await this._itemService.updateRentalItem(id, updateData);
       ApiResponse.success(res, result, Messages.ITEM_UPDATED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -365,7 +354,7 @@ export class RentalController {
       );
       ApiResponse.success(res, { isAvailable }, Messages.AVAILABILITY_CHECKED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -374,7 +363,7 @@ export class RentalController {
       const result = await this._itemService.getUnavailableDates(req.params.id);
       ApiResponse.success(res, result, Messages.DATES_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -391,7 +380,7 @@ export class RentalController {
       );
       ApiResponse.success(res, result, Messages.DATES_BLOCKED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -410,7 +399,7 @@ export class RentalController {
       );
       ApiResponse.success(res, result, Messages.DATES_UNBLOCKED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -421,7 +410,7 @@ export class RentalController {
       const result = await this._orderService.getRentalDashboardStats(userId);
       ApiResponse.success(res, result, Messages.STATS_FETCHED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -433,7 +422,7 @@ export class RentalController {
       const item = await this._itemService.toggleLike(id, userId);
       ApiResponse.success(res, item, Messages.LIKE_TOGGLED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -452,7 +441,7 @@ export class RentalController {
       );
       ApiResponse.success(res, result, Messages.RESCHEDULE_REQUEST_SUBMITTED);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -466,7 +455,7 @@ export class RentalController {
       const result = await this._orderService.respondToReschedule(id, decision);
       ApiResponse.success(res, result, `${Messages.RESCHEDULE_PROCESSED}: ${decision}`);
     } catch (error: unknown) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 }

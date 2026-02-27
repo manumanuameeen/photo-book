@@ -155,7 +155,9 @@ export class ReviewService implements IReviewService {
     const photographer = await PhotographerModel.findOne({ userId });
     if (photographer) {
       targetIds.push(String(photographer._id));
-      const packages = await BookingPackageModel.find({ photographer: photographer._id }).select("_id");
+      const packages = await BookingPackageModel.find({ photographer: photographer._id }).select(
+        "_id",
+      );
       packages.forEach((pkg: { _id: unknown }) => targetIds.push(String(pkg._id)));
     }
 
@@ -260,9 +262,14 @@ export class ReviewService implements IReviewService {
     } else if (type === "package") {
       const pkg = await BookingPackageModel.findById(targetId).populate("photographer");
       if (pkg) {
-        const photographer = pkg.photographer as unknown as { _id?: mongoose.Types.ObjectId; userId?: mongoose.Types.ObjectId };
+        const photographer = pkg.photographer as unknown as {
+          _id?: mongoose.Types.ObjectId;
+          userId?: mongoose.Types.ObjectId;
+        };
         if (photographer && (photographer.userId || photographer._id)) {
-          const ownerUserId = photographer.userId?.toString() || (await PhotographerModel.findById(photographer._id))?.userId?.toString();
+          const ownerUserId =
+            photographer.userId?.toString() ||
+            (await PhotographerModel.findById(photographer._id))?.userId?.toString();
           if (ownerUserId === reviewerId) {
             throw new AppError("You cannot review your own package.", HttpStatus.FORBIDDEN);
           }

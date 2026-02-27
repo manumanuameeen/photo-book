@@ -1,10 +1,11 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { IMessageService } from "../interfaces/services/IMessageService.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { ApiResponse } from "../utils/response.ts";
 import { AuthRequest } from "../middleware/authMiddleware.ts";
 import { AppError } from "../utils/AppError.ts";
 import { Messages } from "../constants/messages.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 import { IMessageController } from "../interfaces/controllers/IMessageController.ts";
 
@@ -14,7 +15,7 @@ export class MessageController implements IMessageController {
     this._service = service;
   }
 
-  getMessages = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  getMessages = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { partnerId } = req.params;
       const userId = req.user?.userId;
@@ -33,11 +34,11 @@ export class MessageController implements IMessageController {
       );
       ApiResponse.success(res, result, Messages.MESSAGES_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  getConversations = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  getConversations = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -46,25 +47,21 @@ export class MessageController implements IMessageController {
       const conversations = await this._service.getConversations(userId);
       ApiResponse.success(res, conversations, "Conversations fetched successfully");
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  markAsRead = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  markAsRead = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       await this._service.markAsRead(id);
       ApiResponse.success(res, null, Messages.MESSAGE_MARKED_READ);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  deleteMessageForMe = async (
-    req: AuthRequest,
-    res: Response,
-    _next: NextFunction,
-  ): Promise<void> => {
+  deleteMessageForMe = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -72,15 +69,11 @@ export class MessageController implements IMessageController {
       await this._service.deleteMessageForMe(id, userId);
       ApiResponse.success(res, null, Messages.MESSAGE_DELETED_FOR_YOU);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  deleteMessageForEveryone = async (
-    req: AuthRequest,
-    res: Response,
-    _next: NextFunction,
-  ): Promise<void> => {
+  deleteMessageForEveryone = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
@@ -88,11 +81,11 @@ export class MessageController implements IMessageController {
       await this._service.deleteMessageForEveryone(id, userId);
       ApiResponse.success(res, null, Messages.MESSAGE_DELETED_FOR_EVERYONE);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  clearChat = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  clearChat = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { partnerId } = req.params;
       const userId = req.user?.userId;
@@ -101,11 +94,11 @@ export class MessageController implements IMessageController {
       await this._service.clearChat(userId, partnerId);
       ApiResponse.success(res, null, Messages.CHAT_CLEARED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  sendMessage = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  sendMessage = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { receiverId, content, attachment } = req.body;
       const senderId = req.user?.userId;
@@ -122,11 +115,11 @@ export class MessageController implements IMessageController {
       );
       ApiResponse.success(res, message, Messages.MESSAGE_SENT);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  editMessage = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  editMessage = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { content } = req.body;
@@ -138,11 +131,11 @@ export class MessageController implements IMessageController {
       const message = await this._service.editMessage(id, userId, content);
       ApiResponse.success(res, message, Messages.MESSAGE_UPDATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  toggleReaction = async (req: AuthRequest, res: Response, _next: NextFunction): Promise<void> => {
+  toggleReaction = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { emoji } = req.body;
@@ -156,11 +149,11 @@ export class MessageController implements IMessageController {
       const message = await this._service.toggleReaction(id, userId, emoji);
       ApiResponse.success(res, message, Messages.REACTION_TOGGLED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  uploadAttachment = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  uploadAttachment = async (req: Request, res: Response): Promise<void> => {
     try {
       console.log("Upload request received. File:", req.file ? "Present" : "Missing");
       if (req.file) {
@@ -178,21 +171,7 @@ export class MessageController implements IMessageController {
       const url = await fileService.uploadFile(req.file);
       ApiResponse.success(res, { url }, Messages.FILE_UPLOADED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

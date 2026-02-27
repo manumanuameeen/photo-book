@@ -6,7 +6,8 @@ import mongoose from "mongoose";
 
 export class RentalOrderRepository
   extends BaseRepository<IRentalOrder>
-  implements IRentalOrderRepository {
+  implements IRentalOrderRepository
+{
   constructor() {
     super(RentalOrderModel);
   }
@@ -390,9 +391,7 @@ export class RentalOrderRepository
             },
             { $group: { _id: null, count: { $sum: 1 } } },
           ],
-          totalOrders: [
-            { $group: { _id: null, count: { $sum: 1 } } },
-          ],
+          totalOrders: [{ $group: { _id: null, count: { $sum: 1 } } }],
           recentActivity: [
             { $sort: { createdAt: -1 } },
             { $limit: 5 },

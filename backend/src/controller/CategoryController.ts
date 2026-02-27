@@ -14,6 +14,7 @@ import { ICategoryService } from "../interfaces/services/ICategoryService.ts";
 import { AuthRequest } from "../middleware/authMiddleware.ts";
 import { AppError } from "../utils/AppError.ts";
 import { ApiResponse } from "../utils/response.ts";
+import { handleError } from "../utils/errorHandler.ts";
 
 export class CategoryController implements ICategoryController {
   private readonly _service: ICategoryService;
@@ -41,7 +42,7 @@ export class CategoryController implements ICategoryController {
 
       ApiResponse.success(res, result, Messages.CATEGORIES_FETCHED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -55,7 +56,7 @@ export class CategoryController implements ICategoryController {
       );
       ApiResponse.success(res, category, Messages.CATEGORY_CREATED, HttpStatus.CREATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -76,7 +77,7 @@ export class CategoryController implements ICategoryController {
       );
       ApiResponse.success(res, category, Messages.CATEGORY_SUGGESTION_submitted);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -91,7 +92,7 @@ export class CategoryController implements ICategoryController {
       }
       ApiResponse.success(res, updated, Messages.CATEGORY_APPROVED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -106,7 +107,7 @@ export class CategoryController implements ICategoryController {
       }
       ApiResponse.success(res, updated, Messages.CATEGORY_REJECTED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -122,7 +123,7 @@ export class CategoryController implements ICategoryController {
 
       ApiResponse.success(res, updated, Messages.CATEGORY_UPDATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
@@ -135,24 +136,7 @@ export class CategoryController implements ICategoryController {
       }
       ApiResponse.success(res, null, Messages.CATEGORY_DELETED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof z.ZodError) {
-      const errorMessage = error.issues.map((issue) => issue.message).join(", ");
-      ApiResponse.error(res, errorMessage, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

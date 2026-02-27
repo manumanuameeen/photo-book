@@ -20,10 +20,7 @@ export interface ReportTargetMetadata {
 }
 
 export interface IReportService {
-  createReport(
-    reporterId: string,
-    data: CreateReportDTO,
-  ): Promise<IReport>;
+  createReport(reporterId: string, data: CreateReportDTO): Promise<IReport>;
 
   getReports(
     page?: number,
@@ -37,10 +34,7 @@ export interface IReportService {
     total: number;
   }>;
 
-  updateReportStatus(
-    id: string,
-    data: IUpdateReportStatusDTO,
-  ): Promise<IReport | null>;
+  updateReportStatus(id: string, data: IUpdateReportStatusDTO): Promise<IReport | null>;
 
   forwardReportToChat(
     reportId: string,
@@ -55,10 +49,7 @@ export interface IReportService {
     adminId: string,
   ): Promise<IReport | null>;
 
-  uploadEvidence(
-    files: Express.Multer.File[],
-    uploaderId: string,
-  ): Promise<string[]>;
+  uploadEvidence(files: Express.Multer.File[], uploaderId: string): Promise<string[]>;
 
   getReportMessages(reportId: string): Promise<IMessage[]>;
 }

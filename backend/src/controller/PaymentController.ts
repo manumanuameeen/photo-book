@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { ApiResponse } from "../utils/response.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import { Messages } from "../constants/messages.ts";
-import { AppError } from "../utils/AppError.ts";
 import { StripeService } from "../services/implementaion/StripeService.ts";
+import { handleError } from "../utils/errorHandler.ts";
 import { IWalletService } from "../interfaces/services/IWalletService.ts";
 import { IPaymentController } from "../interfaces/controllers/IPaymentController.ts";
 import { CreatePaymentIntentDTO, ConfirmPaymentDTO } from "../dto/payment.dto.ts";
@@ -14,17 +14,17 @@ export class PaymentController implements IPaymentController {
     private readonly _walletService: IWalletService,
   ) {}
 
-  createPaymentIntent = async (req: Request, res: Response, _next: NextFunction) => {
+  createPaymentIntent = async (req: Request, res: Response) => {
     try {
       const { amount, currency } = req.body as CreatePaymentIntentDTO;
       const clientSecret = await this._stripeService.createPaymentIntent(amount, currency);
       ApiResponse.success(res, { clientSecret }, Messages.PAYMENT_INTENT_CREATED);
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
 
-  confirmPayment = async (req: Request, res: Response, _next: NextFunction) => {
+  confirmPayment = async (req: Request, res: Response) => {
     try {
       const { paymentIntentId, userId, amount, description } = req.body as ConfirmPaymentDTO;
 
@@ -42,19 +42,7 @@ export class PaymentController implements IPaymentController {
         ApiResponse.error(res, Messages.PAYMENT_FAILED, HttpStatus.BAD_REQUEST);
       }
     } catch (error) {
-      this._handleError(res, error);
+      handleError(res, error);
     }
   };
-
-  private _handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      ApiResponse.error(res, error.message, error.statusCode as HttpStatus);
-      return;
-    }
-    if (error instanceof Error) {
-      ApiResponse.error(res, error.message, HttpStatus.BAD_REQUEST);
-      return;
-    }
-    ApiResponse.error(res, Messages.INTERNAL_ERROR);
-  }
 }

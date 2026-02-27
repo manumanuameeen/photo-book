@@ -1,14 +1,15 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { IAdminRentalService } from "../../interfaces/services/rental/IAdminRentalService.ts";
 import { ApiResponse } from "../../utils/response.ts";
 import { Messages } from "../../constants/messages.ts";
 
 import { IAdminRentalController } from "../../interfaces/controllers/IAdminRentalController.ts";
+import { handleError } from "../../utils/errorHandler.ts";
 
 export class AdminRentalController implements IAdminRentalController {
   constructor(private readonly _adminRentalService: IAdminRentalService) {}
 
-  getAdminItems = async (req: Request, res: Response, next: NextFunction) => {
+  getAdminItems = async (req: Request, res: Response) => {
     try {
       const { status, page, limit, search } = req.query;
       const pageNum = page ? Number.parseInt(page as string) : 1;
@@ -21,11 +22,11 @@ export class AdminRentalController implements IAdminRentalController {
       );
       ApiResponse.success(res, result, Messages.ADMIN_ITEMS_FETCHED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 
-  getAllOrders = async (req: Request, res: Response, next: NextFunction) => {
+  getAllOrders = async (req: Request, res: Response) => {
     try {
       const { page, limit, search, status } = req.query;
       const pageNum = page ? Number.parseInt(page as string) : 1;
@@ -38,7 +39,7 @@ export class AdminRentalController implements IAdminRentalController {
       );
       ApiResponse.success(res, result, Messages.ALL_RENTAL_ORDERS_FETCHED);
     } catch (error) {
-      next(error);
+      handleError(res, error);
     }
   };
 }
