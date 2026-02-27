@@ -12,6 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PhotographerProfileRouteImport } from './routes/photographer/profile'
 import { Route as Photographer_layoutRouteImport } from './routes/photographer/__layout'
 import { Route as Main_layoutRouteImport } from './routes/main/__layout'
@@ -106,6 +107,11 @@ const ChatLazyRoute = ChatLazyRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PhotographerProfileRoute = PhotographerProfileRouteImport.update({
@@ -407,6 +413,7 @@ const Admin_layoutApplicationsIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/chat': typeof ChatLazyRoute
   '/admin': typeof Admin_layoutRouteWithChildren
@@ -466,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/photographer/bookings/': typeof Photographer_layoutBookingsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/chat': typeof ChatLazyRoute
   '/admin': typeof Admin_layoutRouteWithChildren
@@ -525,6 +533,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/chat': typeof ChatLazyRoute
   '/admin': typeof AdminRouteWithChildren
@@ -590,6 +599,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/about'
     | '/chat'
     | '/admin'
@@ -649,6 +659,7 @@ export interface FileRouteTypes {
     | '/photographer/bookings/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/about'
     | '/chat'
     | '/admin'
@@ -707,6 +718,7 @@ export interface FileRouteTypes {
     | '/photographer/bookings'
   id:
     | '__root__'
+    | '/'
     | '/about'
     | '/chat'
     | '/admin'
@@ -771,6 +783,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ChatLazyRoute: typeof ChatLazyRoute
   AdminRoute: typeof AdminRouteWithChildren
@@ -821,6 +834,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/photographer/profile': {
@@ -1411,6 +1431,7 @@ const PhotographerRouteWithChildren = PhotographerRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ChatLazyRoute: ChatLazyRoute,
   AdminRoute: AdminRouteWithChildren,

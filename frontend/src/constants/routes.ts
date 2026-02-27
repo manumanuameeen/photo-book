@@ -30,7 +30,7 @@ export const ROUTES = {
     HELP_MANAGEMENT: "/admin/help"
   },
   USER: {
-    HOME: "/main/home",
+    HOME: "/",
     PROFILE: "/main/profile",
     EDIT_PROFILE: "/main/editProfile",
     PHOTOGRAPHER: "/main/photographer",

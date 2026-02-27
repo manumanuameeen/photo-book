@@ -21,7 +21,7 @@ const failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?:
 apiClient.interceptors.request.use(
     async (config) => {
         const authState = useAuthStore.getState();
-        
+
         if (!authState.user) {
             const cache = sessionStorage.getItem("auth-cache");
             if (cache) {
@@ -38,7 +38,7 @@ apiClient.interceptors.request.use(
                 }
             }
         }
-        
+
         return config;
     },
     (error) => Promise.reject(error)
@@ -64,23 +64,34 @@ apiClient.interceptors.response.use(
 
             try {
                 const data = await tokenService.refreshAccessToken();
-                
+
                 if (data?.user) {
                     useAuthStore.getState().setUser(data.user as never);
                 }
-                
+
                 return apiClient(original);
-                
+
             } catch (err) {
+                const wasAuthenticated = useAuthStore.getState().isAuthenticated;
                 useAuthStore.getState().clearUser();
                 sessionStorage.removeItem("auth-cache");
-                
+
                 const currentPath = window.location.pathname;
                 if (!currentPath.includes(ROUTES.AUTH.LOGIN)) {
-                    toast.error("Session expired. Please login again.");
-                    router.navigate({ to: ROUTES.AUTH.LOGIN });
+                    if (wasAuthenticated) {
+                        toast.error("Session expired. Please login again.");
+                        router.navigate({ to: ROUTES.AUTH.LOGIN });
+                    } else {
+                        router.navigate({
+                            to: ROUTES.AUTH.LOGIN,
+                            search: {
+                                message: "Please login to access more features",
+                                redirect: currentPath
+                            }
+                        });
+                    }
                 }
-                
+
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false;

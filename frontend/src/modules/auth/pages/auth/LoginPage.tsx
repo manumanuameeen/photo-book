@@ -5,7 +5,7 @@ import { Eye, EyeOff, Mail, Lock, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { getErrorMessage } from "../../../../utils/errorhandler";
-import { useNavigate } from "@tanstack/react-router";
+import { useSearch, useNavigate } from "@tanstack/react-router";
 import { useLogin, useGoogleLogin } from "../../hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -237,6 +237,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const search = useSearch({ from: '/auth/login' });
   const { setUser } = useAuthStore();
   const loginMutation = useLogin();
   const googleLoginMutation = useGoogleLogin();
@@ -247,6 +248,12 @@ const LoginPage: React.FC = () => {
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
+
+  React.useEffect(() => {
+    if (search.message) {
+      toast.error(search.message, { id: 'redirect-message' });
+    }
+  }, [search.message]);
 
   React.useEffect(() => {
     const { user } = useAuthStore.getState();
@@ -295,7 +302,7 @@ const LoginPage: React.FC = () => {
 
         const redirectTo = user.role === "admin"
           ? ROUTES.ADMIN.DASHBOARD
-          : ROUTES.USER.HOME;
+          : (search.redirect || ROUTES.USER.HOME);
 
         navigate({ to: redirectTo });
 
@@ -316,7 +323,10 @@ const LoginPage: React.FC = () => {
           toast.success("Google Login successful!");
           const user = response.data.user;
           setUser(user);
-          const redirectTo = user.role === "admin" ? ROUTES.ADMIN.DASHBOARD : ROUTES.USER.HOME;
+          const redirectTo = user.role === "admin"
+            ? ROUTES.ADMIN.DASHBOARD
+            : (search.redirect || ROUTES.USER.HOME);
+
           navigate({ to: redirectTo });
         },
         onError: (error: unknown) => {

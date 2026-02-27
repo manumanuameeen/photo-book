@@ -59,7 +59,12 @@ export class RentalRepository extends BaseRepository<IRentalItem> implements IRe
   }
 
   async getOrderById(id: string): Promise<IRentalOrder | null> {
-    return await RentalOrderModel.findById(id).populate("items").populate("renterId", "name email");
+    return await RentalOrderModel.findById(id)
+      .populate({
+        path: "items",
+        populate: { path: "ownerId", select: "name email phone profileImage" },
+      })
+      .populate("renterId", "name email");
   }
 
   async getUserOrders(
@@ -215,7 +220,10 @@ export class RentalRepository extends BaseRepository<IRentalItem> implements IRe
 
     const [orders, totalCount] = await Promise.all([
       RentalOrderModel.find(filter)
-        .populate("items")
+        .populate({
+          path: "items",
+          populate: { path: "ownerId", select: "name email phone profileImage" },
+        })
         .populate("renterId", "name email profileImage")
         .sort({ createdAt: -1 })
         .skip(skip)

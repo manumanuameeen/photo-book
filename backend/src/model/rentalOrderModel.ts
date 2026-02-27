@@ -41,6 +41,7 @@ export type RentalStatus = (typeof RentalStatus)[keyof typeof RentalStatus];
 
 export interface IRentalOrder extends Document {
   _id: mongoose.Types.ObjectId;
+  rentalId: string;
   renterId: mongoose.Types.ObjectId;
   items: mongoose.Types.ObjectId[];
   startDate: Date;
@@ -124,9 +125,30 @@ const RentalOrderSchema: Schema = new Schema(
     penaltyAmount: { type: Number },
     platformFeeRetained: { type: Boolean },
     isEmergency: { type: Boolean },
+    rentalId: { type: String, unique: true },
   },
   { timestamps: true },
 );
+
+async function generateRentalId(): Promise<string> {
+  const date = new Date();
+  const dateStr = date.toISOString().slice(0, 10).replaceAll("-", "");
+  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const rentalId = `RN-${dateStr}-${randomStr}`;
+
+  const existing = await mongoose.models.RentalOrder.findOne({ rentalId });
+  if (existing) {
+    return generateRentalId();
+  }
+  return rentalId;
+}
+
+RentalOrderSchema.pre("save", async function (next) {
+  if (!this.rentalId) {
+    this.rentalId = await generateRentalId();
+  }
+  next();
+});
 
 export const RentalOrderModel: Model<IRentalOrder> = mongoose.model<IRentalOrder>(
   "RentalOrder",

@@ -52,7 +52,7 @@ const PersonalInfoStep = () => {
             >
                 Personal Information
             </motion.h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <motion.div
                     custom={0}
@@ -68,7 +68,7 @@ const PersonalInfoStep = () => {
                         onChange={handleChange}
                     />
                 </motion.div>
-                
+
                 <motion.div
                     custom={1}
                     initial="hidden"
@@ -84,7 +84,7 @@ const PersonalInfoStep = () => {
                         onChange={handleChange}
                     />
                 </motion.div>
-                
+
                 <motion.div
                     custom={2}
                     initial="hidden"
@@ -100,7 +100,7 @@ const PersonalInfoStep = () => {
                         onChange={handleChange}
                     />
                 </motion.div>
-                
+
                 <motion.div
                     custom={3}
                     initial="hidden"
@@ -116,7 +116,7 @@ const PersonalInfoStep = () => {
                     />
                 </motion.div>
             </div>
-            
+
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

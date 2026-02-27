@@ -20,6 +20,7 @@
     "@types/react-dom": "^19.2.2",
     "baseline-browser-mapping": "^2.9.16",
     "concurrently": "^8.2.2",
+    "kill-port": "^2.0.1",
     "morgan": "^1.10.1"
   },
   "dependencies": {

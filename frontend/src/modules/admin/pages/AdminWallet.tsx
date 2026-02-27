@@ -65,6 +65,7 @@ const AdminWallet = () => {
 
     interface NormalizedEscrowItem {
         _id: string;
+        displayId: string;
         type: 'Booking' | 'Rental';
         amount: number;
         createdAt: string;
@@ -78,6 +79,7 @@ const AdminWallet = () => {
     const escrowItems: NormalizedEscrowItem[] = [
         ...(escrowStats?.bookings || []).map((b: EscrowBooking) => ({
             _id: b._id,
+            displayId: b.bookingId || b._id.slice(-6).toUpperCase(),
             type: 'Booking' as const,
             amount: b.totalAmount || 0,
             createdAt: b.createdAt,
@@ -89,6 +91,7 @@ const AdminWallet = () => {
         })),
         ...(escrowStats?.rentals || []).map((r: EscrowRental) => ({
             _id: r._id,
+            displayId: r.rentalId || r._id.slice(-6).toUpperCase(),
             type: 'Rental' as const,
             amount: r.totalAmount || 0,
             createdAt: r.createdAt,
@@ -109,7 +112,7 @@ const AdminWallet = () => {
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800">Admin Wallet & Escrow</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="p-2 rounded-full bg-blue-50 text-blue-600">
@@ -159,7 +162,7 @@ const AdminWallet = () => {
                     </div>
                     <div className="text-xl font-bold text-gray-900">${wallet.pendingBalance?.toFixed(2) || '0.00'}</div>
                 </div>
-            </div>
+            </div> */}
 
             <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -252,7 +255,18 @@ const AdminWallet = () => {
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-800">{transaction.description}</p>
-                                            <p className="text-xs text-gray-400">{format(new Date(transaction.date), 'PPP p')}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-xs text-gray-400">{format(new Date(transaction.date), 'PPP p')}</p>
+                                                {(transaction.customerName || transaction.providerName) && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-medium">
+                                                        <User size={10} />
+                                                        {transaction.customerName || 'N/A'}
+                                                        <span className="text-gray-300">|</span>
+                                                        <Camera size={10} />
+                                                        {transaction.providerName || 'N/A'}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -294,7 +308,7 @@ const AdminWallet = () => {
                                                     <div className="flex flex-col">
                                                         <span className="font-bold text-gray-800 flex items-center gap-1">
                                                             {item.type === 'Booking' ? <Camera size={14} className="text-blue-500" /> : <Lock size={14} className="text-orange-500" />}
-                                                            #{item._id.slice(-6).toUpperCase()}
+                                                            {item.displayId}
                                                         </span>
                                                         <span className="text-[10px] text-gray-400">{format(new Date(item.createdAt), 'MMM dd, yyyy')}</span>
                                                         {item.context.name && (

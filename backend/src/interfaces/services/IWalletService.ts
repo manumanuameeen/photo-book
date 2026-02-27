@@ -8,14 +8,25 @@ export interface IWalletService {
     amount: number,
     description: string,
     refId: string,
+    customerName?: string,
+    providerName?: string,
   ): Promise<IWallet>;
-  debitWallet(userId: string, amount: number, description: string, refId: string): Promise<IWallet>;
+  debitWallet(
+    userId: string,
+    amount: number,
+    description: string,
+    refId: string,
+    customerName?: string,
+    providerName?: string,
+  ): Promise<IWallet>;
   ensureWalletExists(userId: string, role: string): Promise<IWallet>;
   creditPending(
     userId: string,
     amount: number,
     description: string,
     refId: string,
+    customerName?: string,
+    providerName?: string,
   ): Promise<IWallet>;
   releasePending(userId: string, refId: string): Promise<IWallet>;
   getWalletTransactions(
