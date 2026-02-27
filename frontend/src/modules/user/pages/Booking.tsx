@@ -6,6 +6,7 @@ import { bookingApi } from '../../../services/api/bookingApi';
 import { userPhotographerApi } from '../../../services/api/userPhotographerApi';
 import { CheckAvailabilityModal } from '../components/CheckAvailabilityModal';
 import { SmallLocationPicker } from '../../../components/MapLocationPicker';
+import PhoneInputWrapper from '../../../components/common/PhoneInputWrapper';
 import { TimePicker } from '../../../components/common/TimePicker';
 import {
     Check,
@@ -14,7 +15,6 @@ import {
     Calendar,
     User,
     Mail,
-    Phone,
     ChevronLeft,
     ArrowRight
 } from 'lucide-react';
@@ -417,22 +417,16 @@ function BookingWizard() {
                                         </div>
                                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                                        <div className="relative">
-                                            <input
-                                                type="tel"
-                                                value={formData.phone}
-                                                onChange={(e) => {
-                                                    setFormData({ ...formData, phone: e.target.value });
-                                                    setErrors({ ...errors, phone: '' });
-                                                }}
-                                                placeholder="(555) 123-4567"
-                                                className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 ${errors.phone ? 'border-red-500' : 'border-gray-200'}`}
-                                            />
-                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                        </div>
-                                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                                    <div className="booking-phone-input">
+                                        <PhoneInputWrapper
+                                            label="Phone Number *"
+                                            value={formData.phone}
+                                            onChange={(phone) => {
+                                                setFormData({ ...formData, phone });
+                                                setErrors({ ...errors, phone: '' });
+                                            }}
+                                            error={errors.phone}
+                                        />
                                     </div>
                                 </div>
 

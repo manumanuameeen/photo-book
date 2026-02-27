@@ -191,7 +191,7 @@ const PhotographerSearch = () => {
                             className="w-full md:w-auto px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-green-950 font-bold rounded-full transition-all duration-300 shadow-lg shrink-0 mt-2 md:mt-0"
                             onClick={() => { }}
                         >
-                            <span className="flex items-center gap-2">Filter Insights</span>
+                            <span className="flex items-center gap-2">search</span>
                         </MagneticButton>
                     </div>
 
@@ -259,6 +259,7 @@ const PhotographerSearch = () => {
                             [ {totalItems} Profiles Indexed ]
                         </div>
                         <motion.div
+                            key={searchQuery}
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
                             variants={staggerContainer}
                             initial="initial"

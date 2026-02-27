@@ -7,6 +7,8 @@ export interface ITransaction {
   referenceId: string;
   date: Date;
   status: string;
+  customerName?: string;
+  providerName?: string;
 }
 
 export interface IWallet extends Document {
@@ -24,6 +26,8 @@ const TransactionSchema: Schema = new Schema({
   referenceId: { type: String, required: true },
   date: { type: Date, default: Date.now },
   status: { type: String, required: true },
+  customerName: { type: String },
+  providerName: { type: String },
 });
 
 const WalletSchema: Schema = new Schema(

@@ -8,6 +8,8 @@ export interface WalletTransaction {
     referenceId?: string;
     date: string;
     status: 'COMPLETED' | 'PENDING' | 'FAILED';
+    customerName?: string;
+    providerName?: string;
 }
 
 export interface WalletDetails {
@@ -20,6 +22,7 @@ export interface WalletDetails {
 
 export interface EscrowBooking {
     _id: string;
+    bookingId: string;
     totalAmount: number;
     createdAt: string;
     status: string;
@@ -42,6 +45,7 @@ export interface EscrowBooking {
 
 export interface EscrowRental {
     _id: string;
+    rentalId: string;
     totalAmount: number;
     createdAt: string;
     status: string;

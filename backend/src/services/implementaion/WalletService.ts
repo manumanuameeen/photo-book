@@ -69,6 +69,8 @@ export class WalletService implements IWalletService {
     amount: number,
     description: string,
     refId: string,
+    customerName?: string,
+    providerName?: string,
   ): Promise<IWallet> {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
@@ -93,6 +95,8 @@ export class WalletService implements IWalletService {
       referenceId: refId,
       date: new Date(),
       status: "COMPLETED",
+      customerName,
+      providerName,
     };
 
     return (await this._walletRepository.addTransaction(targetId, transaction as ITransaction))!;
@@ -114,6 +118,8 @@ export class WalletService implements IWalletService {
     amount: number,
     description: string,
     refId: string,
+    customerName?: string,
+    providerName?: string,
   ): Promise<IWallet> {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
@@ -139,6 +145,8 @@ export class WalletService implements IWalletService {
       referenceId: refId,
       date: new Date(),
       status: "COMPLETED",
+      customerName,
+      providerName,
     };
 
     return (await this._walletRepository.addTransaction(targetId, transaction as ITransaction))!;
@@ -149,6 +157,8 @@ export class WalletService implements IWalletService {
     amount: number,
     description: string,
     refId: string,
+    customerName?: string,
+    providerName?: string,
   ): Promise<IWallet> {
     const targetId = await this._resolveUserId(userId);
     const wallet = await this.ensureWalletExists(targetId, userId === "admin" ? "admin" : "user");
@@ -170,6 +180,8 @@ export class WalletService implements IWalletService {
       referenceId: refId,
       date: new Date(),
       status: "PENDING",
+      customerName,
+      providerName,
     };
 
     return (await this._walletRepository.addTransaction(targetId, transaction as ITransaction))!;

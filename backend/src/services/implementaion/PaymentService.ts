@@ -50,16 +50,27 @@ export class PaymentService implements IPaymentService {
     paymentIntentId: string,
     amountPaid: number,
   ): Promise<void> {
-    await this._walletService.creditWallet(
-      "admin",
-      amountPaid,
-      `${entityType === "rental" ? "Rental" : "Booking"} Deposit - Escrow Held`,
-      paymentIntentId,
-    );
+    let customerName = "";
+    let providerName = "";
 
     if (entityType === "rental") {
       const order = await this._rentalRepository.getOrderById(entityId);
       if (!order) throw new AppError("Rental Order not found", HttpStatus.NOT_FOUND);
+
+      customerName = (order.renterId as any)?.name || "Unknown User";
+      const items = (order.items as any) || [];
+      if (items.length > 0 && items[0].ownerId) {
+        providerName = items[0].ownerId.name || "Unknown Owner";
+      }
+
+      await this._walletService.creditWallet(
+        "admin",
+        amountPaid,
+        "Rental Deposit - Escrow Held",
+        paymentIntentId,
+        customerName,
+        providerName,
+      );
 
       const owners = this._getRentalOwners(
         order as unknown as {
@@ -82,6 +93,18 @@ export class PaymentService implements IPaymentService {
       const booking = await this._bookingRepository.findById(entityId);
       if (!booking) throw new AppError("Booking not found", HttpStatus.NOT_FOUND);
 
+      customerName = (booking.userId as any)?.name || booking.contactDetails?.name || "Unknown User";
+      providerName = (booking.photographerId as any)?.name || "Unknown Photographer";
+
+      await this._walletService.creditWallet(
+        "admin",
+        amountPaid,
+        "Booking Deposit - Escrow Held",
+        paymentIntentId,
+        customerName,
+        providerName,
+      );
+
       const photographerId = this._getUserId(booking.photographerId);
 
       if (photographerId) {
@@ -99,11 +122,34 @@ export class PaymentService implements IPaymentService {
     paymentIntentId: string,
     amountPaid: number,
   ): Promise<void> {
+    let customerName = "";
+    let providerName = "";
+
+    if (entityType === "rental") {
+      const order = await this._rentalRepository.getOrderById(entityId);
+      if (order) {
+        customerName = (order.renterId as any)?.name || "Unknown User";
+        const items = (order.items as any) || [];
+        if (items.length > 0 && items[0].ownerId) {
+          providerName = items[0].ownerId.name || "Unknown Owner";
+        }
+      }
+    } else {
+      const booking = await this._bookingRepository.findById(entityId);
+      if (booking) {
+        customerName =
+          (booking.userId as any)?.name || booking.contactDetails?.name || "Unknown User";
+        providerName = (booking.photographerId as any)?.name || "Unknown Photographer";
+      }
+    }
+
     await this._walletService.creditWallet(
       "admin",
       amountPaid,
       `${entityType === "rental" ? "Rental" : "Booking"} Balance - Escrow Held`,
       paymentIntentId,
+      customerName,
+      providerName,
     );
   }
 
@@ -127,6 +173,8 @@ export class PaymentService implements IPaymentService {
       const adminFee = totalAmount * this._RENTAL_ADMIN_COMMISSION;
       const distributableAmount = totalAmount - adminFee;
 
+      const customerName = (order.renterId as any)?.name || "Unknown User";
+
       const owners = this._getRentalOwners(
         order as unknown as {
           startDate: Date | string;
@@ -144,11 +192,23 @@ export class PaymentService implements IPaymentService {
         const ratio = totalAmount > 0 ? ownerItemValue / totalAmount : 0;
         const myShare = distributableAmount * ratio;
 
+        // Fetch owner name for the transaction record
+        let providerName = "Item Owner";
+        const items = (order.items as any) || [];
+        const itemForOwner = items.find(
+          (it: any) => String(it.ownerId?._id || it.ownerId) === String(oId),
+        );
+        if (itemForOwner && itemForOwner.ownerId?.name) {
+          providerName = itemForOwner.ownerId.name;
+        }
+
         await this._walletService.debitWallet(
           "admin",
           myShare,
           `Payout Release for Rental #${String(order._id)}`,
           String(order._id),
+          customerName,
+          providerName,
         );
 
         await this._walletService.creditWallet(
@@ -156,6 +216,8 @@ export class PaymentService implements IPaymentService {
           myShare,
           `Rental Income #${String(order._id)}`,
           String(order._id),
+          customerName,
+          providerName,
         );
 
         await this._messageService.sendSystemMessage(
@@ -200,6 +262,9 @@ export class PaymentService implements IPaymentService {
       const adminFee = totalAmount * this._BOOKING_ADMIN_COMMISSION;
       const photographerShare = totalAmount - adminFee;
 
+      const customerName = (booking.userId as any)?.name || booking.contactDetails?.name || "";
+      const photographerName = (booking.photographerId as any)?.name || "";
+
       const adminWallet = await this._walletService.getWallet("admin");
       if (!adminWallet || adminWallet.balance < photographerShare) {
         console.warn(
@@ -210,6 +275,8 @@ export class PaymentService implements IPaymentService {
           photographerShare + 500,
           "System Auto-Seed for Payout",
           String(booking._id),
+          customerName,
+          photographerName,
         );
       }
 
@@ -221,6 +288,8 @@ export class PaymentService implements IPaymentService {
         photographerShare,
         `Payout Release for Booking #${String(booking._id)}`,
         String(booking._id),
+        customerName,
+        photographerName,
       );
 
       await this._walletService.creditWallet(
@@ -228,6 +297,8 @@ export class PaymentService implements IPaymentService {
         photographerShare,
         `Booking Income #${String(booking._id)}`,
         String(booking._id),
+        customerName,
+        photographerName,
       );
 
       await this._messageService.sendSystemMessage(
@@ -247,17 +318,41 @@ export class PaymentService implements IPaymentService {
   ): Promise<void> {
     try {
       let paymentIntentId = "";
+      let customerName = "";
+      let providerName = "";
+
       if (entityType === "rental") {
         const order = await this._rentalRepository.getOrderById(entityId);
-        if (order && order.paymentId) {
-          paymentIntentId = order.paymentId;
+        if (order) {
+          paymentIntentId = order.paymentId || "";
+          customerName = (order.renterId as any)?.name || "Unknown User";
+          const items = (order.items as any) || [];
+          if (items.length > 0 && items[0].ownerId) {
+            providerName = items[0].ownerId.name || "Unknown Owner";
+          }
         }
       } else {
-        console.log("Booking refund logic not yet fully implemented for fetching paymentID");
+        const booking = await this._bookingRepository.findById(entityId);
+        if (booking) {
+          paymentIntentId = booking.transactionId || "";
+          customerName = (booking.userId as any)?.name || booking.contactDetails?.name || "Unknown User";
+          providerName = (booking.photographerId as any)?.name || "Unknown Photographer";
+        }
       }
 
       if (paymentIntentId) {
         await this._stripeService.refundPayment(paymentIntentId, amount);
+
+        // Debit admin wallet to reflect money leaving the system
+        await this._walletService.debitWallet(
+          "admin",
+          amount,
+          `Refund for ${entityType} #${entityId.slice(-6)} - ${reason}`,
+          paymentIntentId,
+          customerName,
+          providerName,
+        );
+
         console.log(
           `Refund processed for ${entityType} ${entityId}: $${amount} - Reason: ${reason}`,
         );
