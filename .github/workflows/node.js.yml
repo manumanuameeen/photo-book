@@ -1,51 +1,100 @@
+# name: CI - Build and Test
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # 1️⃣ Checkout the repository
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       # 2️⃣ Set up Node.js
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+
+#       # 3️⃣ Install and build backend
+#       - name: Install backend dependencies
+#         run: |
+#           cd backend
+#           npm install
+
+#       - name: Build backend
+#         run: |
+#           cd backend
+#           npm run build
+
+#       # 4️⃣ Install and build frontend
+#       - name: Install frontend dependencies
+#         run: |
+#           cd frontend
+#           npm install
+
+#       - name: Build frontend
+#         run: |
+#           cd frontend
+#           npm run build
+
+#       # 5️⃣ Optional: Run tests (if you add them later)
+#       - name: Run backend tests
+#         if: false
+#         run: |
+#           cd backend
+#           npm test
 name: CI - Build and Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ dev, main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Node.js
-      - name: Set up Node.js
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
+          cache: 'npm'
 
-      # 3️⃣ Install and build backend
+      # 3️⃣ Install backend dependencies
       - name: Install backend dependencies
-        run: |
-          cd backend
-          npm install
+        working-directory: backend
+        run: npm ci
 
+      # 4️⃣ Build backend
       - name: Build backend
-        run: |
-          cd backend
-          npm run build
+        working-directory: backend
+        run: npm run build
 
-      # 4️⃣ Install and build frontend
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
-
-      # 5️⃣ Optional: Run tests (if you add them later)
+      # 5️⃣ Run backend tests (optional)
       - name: Run backend tests
-        if: false
-        run: |
-          cd backend
-          npm test
+        working-directory: backend
+        run: npm test
+        continue-on-error: true
+
+      # 6️⃣ Install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # 7️⃣ Build frontend
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
