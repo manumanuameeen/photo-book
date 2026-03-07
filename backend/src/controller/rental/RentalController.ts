@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { z } from "zod";
 import { IRentalItemService } from "../../interfaces/services/rental/IRentalItemService.ts";
 import { IRentalOrderService } from "../../interfaces/services/rental/IRentalOrderService.ts";
 import { IRentalPaymentService } from "../../interfaces/services/rental/IRentalPaymentService.ts";
@@ -10,7 +11,12 @@ import { Messages } from "../../constants/messages.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { handleError } from "../../utils/errorHandler.ts";
 import jwt from "jsonwebtoken";
-import { CreateRentalItemDTO, BlockDatesDTO, UpdateRentalItemDTO } from "../../dto/rental.dto.ts";
+import {
+  CreateRentalItemSchema,
+  UpdateRentalItemSchema,
+  RentItemSchema,
+  BlockDatesSchema,
+} from "../../dto/rental.dto.ts";
 
 export class RentalController {
   constructor(
@@ -18,7 +24,11 @@ export class RentalController {
     private readonly _orderService: IRentalOrderService,
     private readonly _paymentService: IRentalPaymentService,
     private readonly _fileService: IFileService,
-  ) {}
+  ) { }
+
+  private _validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
+    return schema.parse(data);
+  }
 
   getAllItems = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -68,33 +78,16 @@ export class RentalController {
   rentItem = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
-      const { itemIds, startDate, endDate, paymentIntentId, paymentMethod } = req.body;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
-
-      let parsedItemIds: string[];
-      if (typeof itemIds === "string") {
-        try {
-          if (itemIds.trim().startsWith("[")) {
-            parsedItemIds = JSON.parse(itemIds);
-          } else {
-            parsedItemIds = [itemIds];
-          }
-        } catch {
-          parsedItemIds = [itemIds];
-        }
-      } else if (Array.isArray(itemIds)) {
-        parsedItemIds = itemIds;
-      } else {
-        parsedItemIds = [itemIds];
-      }
+      const rentData = this._validate(RentItemSchema, req.body);
 
       const result = await this._orderService.rentItem(
         userId,
-        parsedItemIds,
-        new Date(startDate),
-        new Date(endDate),
-        paymentIntentId,
-        paymentMethod,
+        Array.isArray(rentData.itemIds) ? rentData.itemIds : [rentData.itemIds],
+        new Date(rentData.startDate),
+        new Date(rentData.endDate),
+        rentData.paymentIntentId,
+        rentData.paymentMethod,
       );
       ApiResponse.success(res, result, Messages.ITEM_RENT_REQUEST_SUBMITTED);
     } catch (error: unknown) {
@@ -129,14 +122,14 @@ export class RentalController {
         imageUrls.push(...newUrls);
       }
 
-      const itemData: CreateRentalItemDTO = {
+      const itemData = this._validate(CreateRentalItemSchema, {
         ...req.body,
         pricePerDay: Number(req.body.pricePerDay),
         securityDeposit: Number(req.body.securityDeposit),
         minRentalPeriod: Number(req.body.minRentalPeriod),
         ownerId: userId,
         images: imageUrls,
-      };
+      });
 
       const item = await this._itemService.createRentalItem(itemData);
       ApiResponse.success(res, item, Messages.RENTAL_ITEM_CREATED);
@@ -329,10 +322,13 @@ export class RentalController {
         imageUrls.push(...newUrls);
       }
 
-      const updateData: UpdateRentalItemDTO = { ...req.body, images: imageUrls };
-      if (req.body.pricePerDay) updateData.pricePerDay = Number(req.body.pricePerDay);
-      if (req.body.securityDeposit) updateData.securityDeposit = Number(req.body.securityDeposit);
-      if (req.body.minRentalPeriod) updateData.minRentalPeriod = Number(req.body.minRentalPeriod);
+      const updateData = this._validate(UpdateRentalItemSchema, {
+        ...req.body,
+        images: imageUrls,
+        pricePerDay: req.body.pricePerDay ? Number(req.body.pricePerDay) : undefined,
+        securityDeposit: req.body.securityDeposit ? Number(req.body.securityDeposit) : undefined,
+        minRentalPeriod: req.body.minRentalPeriod ? Number(req.body.minRentalPeriod) : undefined,
+      });
 
       const result = await this._itemService.updateRentalItem(id, updateData);
       ApiResponse.success(res, result, Messages.ITEM_UPDATED);
@@ -369,12 +365,12 @@ export class RentalController {
 
   blockDates = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const { startDate, endDate, reason } = req.body as BlockDatesDTO;
+      const blockData = this._validate(BlockDatesSchema, req.body);
       const result = await this._itemService.blockRentalDates(
         req.params.id,
-        new Date(startDate),
-        new Date(endDate),
-        reason,
+        new Date(blockData.startDate),
+        new Date(blockData.endDate),
+        blockData.reason,
         req.user?.userId,
         req.user?.role,
       );

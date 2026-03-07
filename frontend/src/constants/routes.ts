@@ -27,7 +27,8 @@ export const ROUTES = {
     REPORTS: "/admin/reports",
     REPORT_CATEGORIES: "/admin/report-categories",
     RULES: "/admin/rules",
-    HELP_MANAGEMENT: "/admin/help"
+    HELP_MANAGEMENT: "/admin/help",
+    REVIEWS: "/admin/reviews"
   },
   USER: {
     HOME: "/",

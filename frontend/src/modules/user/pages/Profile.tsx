@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import {
   Briefcase,
   Camera,
-  CreditCard,
   MapPin,
   User,
   Clock,
@@ -93,9 +92,9 @@ const Profile = () => {
     navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD });
   };
 
-  const handleWallet = () => {
-    navigate({ to: ROUTES.USER.WALLET });
-  };
+  // const handleWallet = () => {
+  //   navigate({ to: ROUTES.USER.WALLET });
+  // };
 
   const handleBookings = () => {
     navigate({ to: ROUTES.USER.BOOKINGS });
@@ -149,7 +148,7 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-3">
-              
+
               {(applicationStatus === 'none' || applicationStatus === 'rejected') && (
                 <button
                   onClick={handleApplyNow}
@@ -186,13 +185,13 @@ const Profile = () => {
                 Edit Profile
               </button>
 
-              <button
+              {/* <button
                 onClick={handleWallet}
                 className="flex items-center gap-2 bg-white text-gray-700 border border-gray-300 px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-gray-50 transition-colors"
               >
                 <CreditCard size={16} />
                 My Wallet
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -266,7 +265,7 @@ const Profile = () => {
                 {data.bio || "No bio information provided yet."}
               </p>
             </div>
-
+            {/* 
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
               <h2 className="text-lg font-bold text-gray-700 mb-6">Account Status</h2>
               <div className="space-y-5">
@@ -281,7 +280,7 @@ const Profile = () => {
                   icon={User}
                 />
               </div>
-            </div>
+            </div> */}
 
           </div>
 
@@ -295,11 +294,11 @@ const InfoField = ({ label, value, icon: Icon, isLink = false }: { label: string
   <div>
     <label className="block text-xs font-medium text-gray-500 mb-1.5 ml-1">{label}</label>
     <div className={`
-      flex items - center gap - 3 px - 4 py - 3 rounded - lg border border - gray - 50
+      flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-50
       ${isLink ? 'bg-green-50/50 text-green-700' : 'bg-gray-50 text-gray-800'}
 `}>
       <Icon size={18} className={isLink ? 'text-green-600' : 'text-gray-400'} />
-      <span className={`text - sm font - medium ${isLink ? 'hover:underline cursor-pointer' : ''} `}>
+      <span className={`text-sm font-medium ${isLink ? 'hover:underline cursor-pointer' : ''} `}>
         {value}
       </span>
     </div>

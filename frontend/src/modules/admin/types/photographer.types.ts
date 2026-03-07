@@ -25,6 +25,7 @@ export interface Photographer {
     isBlock: boolean;
     status: "PENDING" | "APPROVED" | "REJECTED";
     rejectionReason?: string;
+    completedBookingsCount?: number;
     createdAt: string;
 }
 

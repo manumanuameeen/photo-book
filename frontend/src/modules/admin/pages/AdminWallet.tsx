@@ -18,10 +18,11 @@ const AdminWallet = () => {
         queryFn: walletApi.getWalletDetails,
     });
 
-    const { data: dashboardStats, isLoading: statsLoading } = useQuery({
-        queryKey: ['admin-dashboard-stats'],
-        queryFn: walletApi.getDashboardStats,
-    });
+    // const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+    //     queryKey: ['admin-dashboard-stats'],
+    //     queryFn: walletApi.getDashboardStats,
+    // });
+    const statsLoading = false; // Not used currently
 
     const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
         queryKey: ['admin-wallet-transactions', page, typeFilter],

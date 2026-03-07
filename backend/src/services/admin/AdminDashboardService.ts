@@ -11,7 +11,6 @@ import { IAdminDashboardService } from "../../interfaces/services/IAdminDashboar
 
 export class AdminDashboardService implements IAdminDashboardService {
   async getDashboardStats(startDate?: Date, endDate?: Date): Promise<AdminDashboardStatsDto> {
-    // Create query filter for dates if they exist
     const dateFilter: { createdAt?: { $gte?: Date; $lte?: Date } } = {};
     if (startDate || endDate) {
       dateFilter.createdAt = {};

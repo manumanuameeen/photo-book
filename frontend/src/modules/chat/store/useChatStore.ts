@@ -42,6 +42,7 @@ interface ChatState {
     togglePin: (userId: string) => void;
     toggleReaction: (messageId: string, emoji: string) => Promise<void>;
     initSocket: () => void;
+    clearUnreadForPartner: (partnerId: string) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -61,7 +62,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set({ isLoading: true });
         try {
             const data = await ChatApi.getConversations();
-            set({ conversations: data, isLoading: false });
+            set({ conversations: data as IConversation[], isLoading: false });
         } catch (error) {
             console.error("Failed to fetch conversations", error);
             set({ isLoading: false });
@@ -72,7 +73,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set({ isLoading: true });
         try {
             const data = await ChatApi.getMessages(partnerId);
-            
+
             set({ activeChatMessages: data.messages.reverse(), isLoading: false });
         } catch (error) {
             console.error("Failed to fetch active chat messages", error);
@@ -81,7 +82,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     },
 
     sendMessage: async (content: string, attachment?: { url: string; type: string }) => {
-        const { selectedUser, receiveMessage, updateMessageStatus, replyTo, setReplyTo } = get();
+        const { selectedUser, updateMessageStatus, replyTo, setReplyTo } = get();
         if (!selectedUser) return;
 
         const currentUser = useAuthStore.getState().user as unknown as UserCompact;
@@ -101,7 +102,29 @@ export const useChatStore = create<ChatState>((set, get) => ({
             replyTo: replyTo || undefined
         };
 
-        receiveMessage(tempMessage);
+        // Add temp message directly to active chat (don't use receiveMessage - it's for incoming messages only)
+        set((state) => {
+            const activeChatMessages = [...state.activeChatMessages, tempMessage];
+            
+            // Update or create conversation
+            const conversations = [...state.conversations];
+            const index = conversations.findIndex(c => getIds(c.partner?._id) === selectedUser._id);
+            
+            if (index !== -1) {
+                conversations[index].lastMessage = tempMessage;
+                const [conv] = conversations.splice(index, 1);
+                conversations.unshift(conv);
+            } else {
+                conversations.unshift({
+                    partner: selectedUser,
+                    lastMessage: tempMessage,
+                    unreadCount: 0
+                });
+            }
+            
+            return { activeChatMessages, conversations };
+        });
+        
         setReplyTo(null);
 
         try {
@@ -117,12 +140,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
                     conversations[index].lastMessage = { ...newMessage, status: 'sent' as const };
                     const [conv] = conversations.splice(index, 1);
                     conversations.unshift(conv);
-                } else {
-                    conversations.unshift({
-                        partner: selectedUser,
-                        lastMessage: { ...newMessage, status: 'sent' as const },
-                        unreadCount: 0
-                    });
                 }
 
                 return { activeChatMessages, conversations };
@@ -135,18 +152,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
     },
 
     receiveMessage: (message: IMessage) => {
-        const currentUser = useAuthStore.getState().user as unknown as UserCompact;
-        const currentUserId = currentUser?._id?.toString() || '';
-
         set((state) => {
-            const senderId = message.senderId ? getIds(message.senderId) : 'system';
-            const receiverId = message.receiverId ? getIds(message.receiverId) : 'system';
+            const senderId = getIds(message.senderId) || 'system';
+            const receiverId = getIds(message.receiverId) || 'system';
+            const currentUserId = getIds(useAuthStore.getState().user?._id);
 
             const isSender = senderId === currentUserId;
             const partnerId = isSender ? receiverId : senderId;
 
-            const selectedUserId = state.selectedUser?._id;
-            const isChattingWithSender = selectedUserId === partnerId;
+            const selectedUserId = getIds(state.selectedUser?._id);
+            const isChattingWithSender = !!selectedUserId && selectedUserId === partnerId;
 
             let newActiveMessages = state.activeChatMessages;
             if (isChattingWithSender) {
@@ -185,9 +200,37 @@ export const useChatStore = create<ChatState>((set, get) => ({
                 const [conv] = conversations.splice(index, 1);
                 conversations.unshift(conv);
             } else {
-                const partnerObj = message.type === 'SYSTEM' ? { _id: 'system', name: 'System Notification', role: 'admin' } : (message.senderId || { _id: partnerId, name: 'Unknown User' });
+                // Correctly identify the partner object
+                let partnerObj: UserCompact;
+
+                if (message.type === 'SYSTEM') {
+                    partnerObj = { _id: 'system', name: 'System Notification', role: 'admin', firstName: 'System', lastName: 'Notification', email: '' };
+                } else if (isSender && state.selectedUser && getIds(state.selectedUser._id) === partnerId) {
+                    // If I'm the sender, use the selectedUser (receiver) - we always know who we're sending to
+                    partnerObj = state.selectedUser;
+                } else {
+                    // For received messages or other cases, extract from message
+                    const potentialPartner = isSender ? message.receiverId : message.senderId;
+
+                    if (typeof potentialPartner === 'object' && potentialPartner !== null && '_id' in potentialPartner) {
+                        // Partner is already an object with _id - use it directly
+                        partnerObj = potentialPartner as UserCompact;
+                    } else {
+                        // Fallback: create minimal object from available data
+                        const partnerData = typeof potentialPartner === 'object' && potentialPartner !== null ? potentialPartner as any : {};
+                        partnerObj = { 
+                            _id: partnerId, 
+                            name: partnerData?.name || partnerData?.firstName || '', 
+                            firstName: partnerData?.firstName || '', 
+                            lastName: partnerData?.lastName || '', 
+                            email: partnerData?.email || '', 
+                            role: partnerData?.role || 'user' 
+                        };
+                    }
+                }
+
                 conversations.unshift({
-                    partner: partnerObj as UserCompact,
+                    partner: partnerObj,
                     lastMessage: message,
                     unreadCount: (!isSender && !isChattingWithSender) ? 1 : 0
                 });
@@ -314,6 +357,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
             });
 
             return { activeChatMessages, conversations };
+        });
+    },
+
+    clearUnreadForPartner: (partnerId: string) => {
+        set((state) => {
+            const conversations = state.conversations.map(c =>
+                getIds(c.partner?._id) === partnerId ? { ...c, unreadCount: 0 } : c
+            );
+
+            const activeChatMessages = state.activeChatMessages.map(m =>
+                getIds(m.senderId) === partnerId ? { ...m, isRead: true } : m
+            );
+
+            return { conversations, activeChatMessages };
         });
     },
 

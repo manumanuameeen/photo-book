@@ -1,33 +1,40 @@
-export interface CreateBookingDTO {
-  photographerId: string;
-  packageId: string;
-  packageName: string;
-  packagePrice: number;
-  packageFeatures: string[];
-  date: string | Date;
-  startTime: string;
-  location: string;
-  lat?: number;
-  lng?: number;
-  eventType: string;
-  contactName: string;
-  email: string;
-  phone: string;
-}
+import { z } from "zod";
 
-export interface BookingRescheduleRequestDTO {
-  newDate: Date | string;
-  newStartTime: string;
-  reason: string;
-}
+export const CreateBookingSchema = z.object({
+  photographerId: z.string(),
+  packageId: z.string(),
+  packageName: z.string(),
+  packagePrice: z.number(),
+  packageFeatures: z.array(z.string()),
+  date: z.union([z.string(), z.date()]),
+  startTime: z.string(),
+  location: z.string(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+  eventType: z.string(),
+  contactName: z.string(),
+  email: z.string().email(),
+  phone: z.string(),
+});
 
-export interface BookingRescheduleResponseDTO {
-  decision: "accepted" | "rejected";
-}
+export const BookingRescheduleRequestSchema = z.object({
+  newDate: z.union([z.date(), z.string()]),
+  newStartTime: z.string(),
+  reason: z.string(),
+});
 
-export interface SearchBookingsQueryDTO {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-}
+export const BookingRescheduleResponseSchema = z.object({
+  decision: z.enum(["accepted", "rejected"]),
+});
+
+export const SearchBookingsQuerySchema = z.object({
+  page: z.number().optional(),
+  limit: z.number().optional(),
+  search: z.string().optional(),
+  status: z.string().optional(),
+});
+
+export type CreateBookingDTO = z.infer<typeof CreateBookingSchema>;
+export type BookingRescheduleRequestDTO = z.infer<typeof BookingRescheduleRequestSchema>;
+export type BookingRescheduleResponseDTO = z.infer<typeof BookingRescheduleResponseSchema>;
+export type SearchBookingsQueryDTO = z.infer<typeof SearchBookingsQuerySchema>;

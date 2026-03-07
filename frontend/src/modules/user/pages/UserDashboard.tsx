@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import type { IRentalOrder } from '../../../types/rental';
 import { useRentalDashboard } from '../../../hooks/useRentalDashboard';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-import { DashboardOverview } from '../components/dashboard/DashboardOverview';
+// import { DashboardOverview } from '../components/dashboard/DashboardOverview';
 import { UserBookingsTab } from '../components/dashboard/UserBookingsTab';
 import { UserRentalsTab } from '../components/dashboard/UserRentalsTab';
 import { UserRequestsTab } from '../components/dashboard/UserRequestsTab';
@@ -40,7 +40,7 @@ const UserDashboard = () => {
         }
     }, [activeTab]);
 
-    const { stats, isLoading: statsLoading } = useRentalDashboard()
+    // const { stats, isLoading: statsLoading, period, setPeriod } = useRentalDashboard()
     const { user } = useAuthStore();
     const { confirmEndWork, confirmDelivery } = useUserActions();
 
@@ -344,7 +344,7 @@ const UserDashboard = () => {
 
                             <nav className="space-y-2">
                                 {[
-                                    { id: 'overview', label: 'Dashboard', icon: Grid },
+                                    // { id: 'overview', label: 'Dashboard', icon: Grid },
                                     { id: 'bookings', label: 'My Bookings', icon: Calendar },
                                     { id: 'rentals', label: 'My Rentals', icon: ShoppingBag },
                                     { id: 'listings', label: 'My Listings', icon: List },
@@ -423,7 +423,7 @@ const UserDashboard = () => {
                         </div>
 
                         <AnimatePresence mode="wait">
-                            {activeTab === 'overview' && (
+                            {/* {activeTab === 'overview' && (
                                 <DashboardOverview
                                     bookings={bookings}
                                     stats={stats}
@@ -431,8 +431,10 @@ const UserDashboard = () => {
                                     onViewBookings={() => setActiveTab('bookings')}
                                     walletData={walletData}
                                     rentalRequests={rentalRequests}
+                                    period={period}
+                                    onPeriodChange={setPeriod}
                                 />
-                            )}
+                            )} */}
                             {activeTab === 'bookings' && (
                                 <UserBookingsTab
                                     bookings={bookings}

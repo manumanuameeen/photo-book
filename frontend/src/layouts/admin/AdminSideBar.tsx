@@ -14,7 +14,8 @@ import {
   Wallet,
   AlertTriangle,
   BookOpen,
-  HelpCircle
+  HelpCircle,
+  MessageSquare
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../modules/auth/store/useAuthStore.ts";
@@ -37,6 +38,7 @@ const navItems = [
   { id: 11, name: "Report Categories", icon: <Tag size={20} />, path: ROUTES.ADMIN.REPORT_CATEGORIES },
   { id: 12, name: "Rules & Policies", icon: <BookOpen size={20} />, path: ROUTES.ADMIN.RULES },
   { id: 13, name: "Help Center", icon: <HelpCircle size={20} />, path: ROUTES.ADMIN.HELP_MANAGEMENT },
+  { id: 14, name: "Reviews", icon: <MessageSquare size={20} />, path: ROUTES.ADMIN.REVIEWS || '/admin/reviews' },
 ];
 
 const AdminSidebar: React.FC = () => {

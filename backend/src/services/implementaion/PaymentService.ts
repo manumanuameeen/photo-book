@@ -192,7 +192,6 @@ export class PaymentService implements IPaymentService {
         const ratio = totalAmount > 0 ? ownerItemValue / totalAmount : 0;
         const myShare = distributableAmount * ratio;
 
-        // Fetch owner name for the transaction record
         let providerName = "Item Owner";
         const items = (order.items as any) || [];
         const itemForOwner = items.find(
@@ -343,7 +342,6 @@ export class PaymentService implements IPaymentService {
       if (paymentIntentId) {
         await this._stripeService.refundPayment(paymentIntentId, amount);
 
-        // Debit admin wallet to reflect money leaving the system
         await this._walletService.debitWallet(
           "admin",
           amount,

@@ -117,7 +117,7 @@ export interface IRentalDashboardStats {
         activeRentals: number;
         totalListings: number;
         totalOrders: number;
-        monthlyEarnings: { month: string; amount: number }[];
+        monthlyEarnings: { month: string; amount: number; rentalAmount?: number; bookingAmount?: number }[];
         recentActivity: IRecentActivity[];
         totalReviews?: number;
         averageRating?: number;
@@ -128,6 +128,9 @@ export interface IRentalDashboardStats {
         totalOrders: number;
         recentActivity: IRecentActivity[];
         photographerSpending?: number;
+        totalWarnings?: number;
+        monthlyEquipmentSpent?: { month: string; amount: number }[];
+        monthlyPhotographerSpent?: { month: string; amount: number }[];
     };
 }
 

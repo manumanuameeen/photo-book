@@ -11,6 +11,8 @@ interface CacheData {
   expires: number;
 }
 
+import { useAuthStore } from "../../modules/auth/store/useAuthStore";
+
 export const Route = createFileRoute("/main/__layout")({
   loader: async ({ location }) => {
     const publicPaths = [
@@ -41,6 +43,15 @@ export const Route = createFileRoute("/main/__layout")({
         }
       } catch (error) {
         console.error("Auth cache parse error", error);
+      }
+    }
+
+    // Check store if not in cache (e.g. session started)
+    if (!isAuthenticated) {
+      const { user: storeUser, isAuthenticated: isStoreAuth } = useAuthStore.getState();
+      if (isStoreAuth && storeUser) {
+        userRole = storeUser.role;
+        isAuthenticated = true;
       }
     }
 

@@ -260,10 +260,10 @@ const LoginPage: React.FC = () => {
     if (user) {
       const redirectTo = user.role === "admin"
         ? ROUTES.ADMIN.DASHBOARD
-        : ROUTES.USER.HOME;
+        : (search.redirect || ROUTES.USER.DASHBOARD);
       navigate({ to: redirectTo });
     }
-  }, [navigate]);
+  }, [navigate, search.redirect]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -302,7 +302,7 @@ const LoginPage: React.FC = () => {
 
         const redirectTo = user.role === "admin"
           ? ROUTES.ADMIN.DASHBOARD
-          : (search.redirect || ROUTES.USER.HOME);
+          : (search.redirect || ROUTES.USER.DASHBOARD);
 
         navigate({ to: redirectTo });
 
@@ -325,7 +325,7 @@ const LoginPage: React.FC = () => {
           setUser(user);
           const redirectTo = user.role === "admin"
             ? ROUTES.ADMIN.DASHBOARD
-            : (search.redirect || ROUTES.USER.HOME);
+            : (search.redirect || ROUTES.USER.DASHBOARD);
 
           navigate({ to: redirectTo });
         },

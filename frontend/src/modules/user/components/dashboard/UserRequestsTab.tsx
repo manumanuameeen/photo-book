@@ -52,17 +52,17 @@ export const UserRequestsTab = ({
 
     const getStatusColor = (status: string) => {
         const colors: Record<string, string> = {
-            PENDING: 'bg-yellow-100 text-yellow-800',
-            ACCEPTED: 'bg-green-100 text-green-800',
+            PENDING: 'bg-amber-100 text-amber-800',
+            ACCEPTED: 'bg-blue-100 text-blue-800',
             WAITING_FOR_DEPOSIT: 'bg-orange-100 text-orange-800',
-            REJECTED: 'bg-red-100 text-red-800',
+            REJECTED: 'bg-rose-100 text-rose-800',
             CANCELLED: 'bg-gray-100 text-gray-800',
-            COMPLETED: 'bg-blue-100 text-blue-800',
-            CONFIRMED: 'bg-green-100 text-green-800',
-            ONGOING: 'bg-purple-100 text-purple-800',
-            SHIPPED: 'bg-blue-100 text-blue-800',
-            RETURNED: 'bg-amber-100 text-amber-800',
-            DELIVERED: 'bg-green-100 text-green-800'
+            CONFIRMED: 'bg-indigo-100 text-indigo-800',
+            ONGOING: 'bg-emerald-100 text-emerald-800',
+            SHIPPED: 'bg-cyan-100 text-cyan-800',
+            RETURNED: 'bg-violet-100 text-violet-800',
+            DELIVERED: 'bg-green-100 text-green-800',
+            COMPLETED: 'bg-green-100 text-green-800'
         };
         return colors[status] || 'bg-gray-100 text-gray-800';
     };

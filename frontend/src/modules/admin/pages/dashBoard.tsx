@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import MetricCard from '../../../layouts/admin/MetricCard';
 import { adminDashboardApi } from '../../../services/api/adminDashboardApi';
 import { LineChart, DoughnutChart, PieChart, BarChart } from '../components/DashboardCharts';
-import { TopPhotographersTable, TopRentalOwnersTable } from '../components/TopPerformers';
+import { TopRentalOwnersTable } from '../components/TopPerformers';
 import { Loader2, AlertCircle, CheckCircle, Download } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
@@ -205,7 +205,7 @@ const DashboardLayout: React.FC = () => {
         </motion.div>
 
         <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {stats.topPhotographers && <TopPhotographersTable data={stats.topPhotographers} />}
+          {/* {stats.topPhotographers && <TopPhotographersTable data={stats.topPhotographers} />} */}
           {stats.topRentalOwners && <TopRentalOwnersTable data={stats.topRentalOwners} />}
         </motion.div>
 
@@ -221,12 +221,72 @@ const DashboardLayout: React.FC = () => {
         </motion.div>
 
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-gray-900">Recent Reviews</h3>
+              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">View All</button>
+            </div>
+            <div className="space-y-4 flex-grow">
+              {stats.recentReviews.length > 0 ? (
+                stats.recentReviews.map((review) => (
+                  <div key={review.id} className="p-4 rounded-lg bg-gray-50 border border-gray-100 hover:border-blue-100 transition-colors">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <span className="font-semibold text-gray-900 text-sm">{review.reviewerName}</span>
+                        <span className="text-gray-400 text-xs mx-2">•</span>
+                        <span className="text-gray-500 text-xs">on {review.targetName}</span>
+                      </div>
+                      <div className="flex gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} className={`text-xs ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2 italic">"{review.comment}"</p>
+                    <div className="mt-2 text-[10px] text-gray-400">
+                      {new Date(review.createdAt).toLocaleDateString()} at {new Date(review.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                  <p>No recent reviews found</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="lg:col-span-1 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-6">Real-time Activity</h3>
+            <div className="space-y-6 flex-grow overflow-y-auto max-h-[400px] pr-2 scrollbar-thin scrollbar-thumb-gray-200">
+              {stats.activities.map((activity) => (
+                <div key={activity.id} className="flex gap-4 relative">
+                  <div className="flex-shrink-0 relative z-10 w-10 h-10 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center">
+                    <i className={`${activity.icon} text-sm`} style={{ color: activity.borderColor }}></i>
+                  </div>
+                  <div className="flex-grow pt-1">
+                    <div className="flex justify-between items-start">
+                      <p className="text-sm font-bold text-gray-900">{activity.title}</p>
+                      <span className="text-[10px] text-gray-400 font-medium">
+                        {new Date(activity.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{activity.detail}</p>
+                  </div>
+                  <div className="absolute left-5 top-10 bottom-[-24px] w-px bg-gray-100 last:hidden"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-1 gap-4">
             {stats.smallMetrics.map((data, index) => (
               <MetricCard key={index} data={data} />
             ))}
 
-            <div className="sm:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">System Alerts</h4>
               <div className="space-y-3">
                 {stats.alerts.length > 0 ? (

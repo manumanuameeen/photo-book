@@ -130,6 +130,10 @@ const AdminPhotographerProfile: React.FC = () => {
                                 <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Reviews</p>
                             </div>
                             <div className="bg-gray-50 p-3 rounded-lg flex-1 md:flex-none text-center min-w-[100px]">
+                                <div className="font-bold text-lg text-blue-600">{photographer.completedBookingsCount || 0}</div>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Bookings</p>
+                            </div>
+                            <div className="bg-gray-50 p-3 rounded-lg flex-1 md:flex-none text-center min-w-[100px]">
                                 <div className="font-bold text-lg text-gray-900">{photographer.professionalDetails.yearsExperience} Year(s)</div>
                                 <p className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">Experience</p>
                             </div>

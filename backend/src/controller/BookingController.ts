@@ -9,9 +9,9 @@ import { AppError } from "../utils/AppError.ts";
 import { Messages } from "../constants/messages.ts";
 import { handleError } from "../utils/errorHandler.ts";
 import {
-  CreateBookingDTO,
-  BookingRescheduleRequestDTO,
-  BookingRescheduleResponseDTO,
+  CreateBookingSchema,
+  BookingRescheduleRequestSchema,
+  BookingRescheduleResponseSchema,
 } from "../dto/booking.dto.ts";
 
 export class BookingController implements IBookingController {
@@ -32,7 +32,7 @@ export class BookingController implements IBookingController {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
-      const bookingData = req.body as CreateBookingDTO;
+      const bookingData = this._validate(CreateBookingSchema, req.body);
       const booking = await this._bookingService.createBookingRequest(userId, bookingData);
       ApiResponse.success(res, booking, Messages.BOOKING_CREATED, HttpStatus.CREATED);
     } catch (error: unknown) {
@@ -260,7 +260,6 @@ export class BookingController implements IBookingController {
   requestReschedule = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { newDate, newStartTime, reason } = req.body;
       const userId = req.user?.userId;
 
       if (!userId) {
@@ -269,7 +268,7 @@ export class BookingController implements IBookingController {
 
       const booking = await this._bookingService.requestReschedule(
         id,
-        { newDate, newStartTime, reason } as BookingRescheduleRequestDTO,
+        this._validate(BookingRescheduleRequestSchema, req.body),
         userId,
       );
       ApiResponse.success(res, booking, Messages.RESCHEDULE_REQUEST_SUBMITTED);
@@ -281,19 +280,19 @@ export class BookingController implements IBookingController {
   respondToReschedule = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { decision } = req.body;
       const userId = req.user?.userId;
 
       if (!userId) {
         throw new AppError(Messages.USER_NOT_FOUND, HttpStatus.UNAUTHORIZED);
       }
 
+      const resultData = this._validate(BookingRescheduleResponseSchema, req.body);
       const booking = await this._bookingService.respondToReschedule(
         id,
-        { decision } as BookingRescheduleResponseDTO,
+        resultData,
         userId,
       );
-      ApiResponse.success(res, booking, `${Messages.RESCHEDULE_PROCESSED}: ${decision}`);
+      ApiResponse.success(res, booking, `${Messages.RESCHEDULE_PROCESSED}: ${resultData.decision}`);
     } catch (error: unknown) {
       handleError(res, error);
     }

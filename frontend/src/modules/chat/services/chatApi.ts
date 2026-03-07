@@ -2,7 +2,7 @@ import apiClient from "../../../services/apiClient";
 import type { IMessage } from "../chat.types";
 
 export const ChatApi = {
-    getConversations: async (): Promise<any[]> => {
+    getConversations: async (): Promise<unknown[]> => {
         const response = await apiClient.get('/message/conversations');
         return response.data.data;
     },
