@@ -70,6 +70,14 @@ export interface DashboardStats {
         name: string;
         value: number;
     }[];
+    recentReviews: {
+        id: string;
+        reviewerName: string;
+        rating: number;
+        comment: string;
+        createdAt: string;
+        targetName: string;
+    }[];
     pendingReportsCount?: number;
 }
 

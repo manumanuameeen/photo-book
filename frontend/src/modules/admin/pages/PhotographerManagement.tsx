@@ -19,6 +19,7 @@ interface PhotographerTableData {
     businessName: string;
     isBlocked: boolean;
     status: "PENDING" | "APPROVED" | "REJECTED";
+    completedBookings: number;
 }
 
 const PhotographerManagement: React.FC = () => {
@@ -90,7 +91,8 @@ const PhotographerManagement: React.FC = () => {
         location: photographer.personalInfo.location,
         businessName: photographer.businessInfo.businessName,
         isBlocked: photographer.isBlock,
-        status: photographer.status
+        status: photographer.status,
+        completedBookings: photographer.completedBookingsCount || 0
     }));
 
     const columns: Column<PhotographerTableData>[] = [
@@ -132,6 +134,15 @@ const PhotographerManagement: React.FC = () => {
                     }`}>
                     {item.isBlocked ? "Blocked" : "Active"}
                 </span>
+            ),
+        },
+        {
+            header: "Bookings",
+            render: (item: PhotographerTableData) => (
+                <div className="flex flex-col items-center">
+                    <span className="text-sm font-bold text-blue-600">{item.completedBookings}</span>
+                    <span className="text-[10px] text-gray-400 uppercase font-medium">Completed</span>
+                </div>
             ),
         },
         {

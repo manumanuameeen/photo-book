@@ -7,12 +7,13 @@ export function useRentalDashboard() {
     const [stats, setStats] = useState<IRentalDashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [period, setPeriod] = useState<string>("1y");
 
     const fetchStats = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await rentalApi.getDashboardStats();
+            const response = await rentalApi.getDashboardStats(period);
             if (response.success) {
                 setStats(response.data);
             }
@@ -24,11 +25,11 @@ export function useRentalDashboard() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [period]);
 
     useEffect(() => {
         fetchStats();
     }, [fetchStats]);
 
-    return { stats, isLoading, error, refetch: fetchStats };
+    return { stats, isLoading, error, period, setPeriod, refetch: fetchStats };
 }

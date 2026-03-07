@@ -180,8 +180,10 @@ export const rentalApi = {
     unblockDates: (id: string, startDate: Date, endDate: Date): Promise<void> =>
         apiClient.post(API_ROUTES.RENTAL.ITEM_UNBLOCK(id), { startDate, endDate }),
 
-    getDashboardStats: async (): Promise<ApiResponse<IRentalDashboardStats>> => {
-        const response = await apiClient.get(API_ROUTES.RENTAL.STATS);
+    getDashboardStats: async (period?: string): Promise<ApiResponse<IRentalDashboardStats>> => {
+        const response = await apiClient.get(API_ROUTES.RENTAL.STATS, {
+            params: { period }
+        });
         return response.data;
     },
 

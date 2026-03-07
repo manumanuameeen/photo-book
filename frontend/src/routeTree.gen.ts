@@ -47,6 +47,7 @@ import { Route as AdminPhotographersIdRouteImport } from './routes/admin/photogr
 import { Route as Admin_layoutWalletRouteImport } from './routes/admin/__layout/wallet'
 import { Route as Admin_layoutUsermanagementRouteImport } from './routes/admin/__layout/usermanagement'
 import { Route as Admin_layoutRulesRouteImport } from './routes/admin/__layout/rules'
+import { Route as Admin_layoutReviewsRouteImport } from './routes/admin/__layout/reviews'
 import { Route as Admin_layoutReportsRouteImport } from './routes/admin/__layout/reports'
 import { Route as Admin_layoutReportCategoriesRouteImport } from './routes/admin/__layout/report-categories'
 import { Route as Admin_layoutRentalOrdersRouteImport } from './routes/admin/__layout/rental-orders'
@@ -303,6 +304,11 @@ const Admin_layoutRulesRoute = Admin_layoutRulesRouteImport.update({
   path: '/rules',
   getParentRoute: () => Admin_layoutRoute,
 } as any)
+const Admin_layoutReviewsRoute = Admin_layoutReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => Admin_layoutRoute,
+} as any)
 const Admin_layoutReportsRoute = Admin_layoutReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -435,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/admin/rental-orders': typeof Admin_layoutRentalOrdersRoute
   '/admin/report-categories': typeof Admin_layoutReportCategoriesRoute
   '/admin/reports': typeof Admin_layoutReportsRoute
+  '/admin/reviews': typeof Admin_layoutReviewsRoute
   '/admin/rules': typeof Admin_layoutRulesRoute
   '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
   '/admin/wallet': typeof Admin_layoutWalletRoute
@@ -495,6 +502,7 @@ export interface FileRoutesByTo {
   '/admin/rental-orders': typeof Admin_layoutRentalOrdersRoute
   '/admin/report-categories': typeof Admin_layoutReportCategoriesRoute
   '/admin/reports': typeof Admin_layoutReportsRoute
+  '/admin/reviews': typeof Admin_layoutReviewsRoute
   '/admin/rules': typeof Admin_layoutRulesRoute
   '/admin/usermanagement': typeof Admin_layoutUsermanagementRoute
   '/admin/wallet': typeof Admin_layoutWalletRoute
@@ -559,6 +567,7 @@ export interface FileRoutesById {
   '/admin/__layout/rental-orders': typeof Admin_layoutRentalOrdersRoute
   '/admin/__layout/report-categories': typeof Admin_layoutReportCategoriesRoute
   '/admin/__layout/reports': typeof Admin_layoutReportsRoute
+  '/admin/__layout/reviews': typeof Admin_layoutReviewsRoute
   '/admin/__layout/rules': typeof Admin_layoutRulesRoute
   '/admin/__layout/usermanagement': typeof Admin_layoutUsermanagementRoute
   '/admin/__layout/wallet': typeof Admin_layoutWalletRoute
@@ -621,6 +630,7 @@ export interface FileRouteTypes {
     | '/admin/rental-orders'
     | '/admin/report-categories'
     | '/admin/reports'
+    | '/admin/reviews'
     | '/admin/rules'
     | '/admin/usermanagement'
     | '/admin/wallet'
@@ -681,6 +691,7 @@ export interface FileRouteTypes {
     | '/admin/rental-orders'
     | '/admin/report-categories'
     | '/admin/reports'
+    | '/admin/reviews'
     | '/admin/rules'
     | '/admin/usermanagement'
     | '/admin/wallet'
@@ -744,6 +755,7 @@ export interface FileRouteTypes {
     | '/admin/__layout/rental-orders'
     | '/admin/__layout/report-categories'
     | '/admin/__layout/reports'
+    | '/admin/__layout/reviews'
     | '/admin/__layout/rules'
     | '/admin/__layout/usermanagement'
     | '/admin/__layout/wallet'
@@ -1095,6 +1107,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Admin_layoutRulesRouteImport
       parentRoute: typeof Admin_layoutRoute
     }
+    '/admin/__layout/reviews': {
+      id: '/admin/__layout/reviews'
+      path: '/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof Admin_layoutReviewsRouteImport
+      parentRoute: typeof Admin_layoutRoute
+    }
     '/admin/__layout/reports': {
       id: '/admin/__layout/reports'
       path: '/reports'
@@ -1254,6 +1273,7 @@ interface Admin_layoutRouteChildren {
   Admin_layoutRentalOrdersRoute: typeof Admin_layoutRentalOrdersRoute
   Admin_layoutReportCategoriesRoute: typeof Admin_layoutReportCategoriesRoute
   Admin_layoutReportsRoute: typeof Admin_layoutReportsRoute
+  Admin_layoutReviewsRoute: typeof Admin_layoutReviewsRoute
   Admin_layoutRulesRoute: typeof Admin_layoutRulesRoute
   Admin_layoutUsermanagementRoute: typeof Admin_layoutUsermanagementRoute
   Admin_layoutWalletRoute: typeof Admin_layoutWalletRoute
@@ -1273,6 +1293,7 @@ const Admin_layoutRouteChildren: Admin_layoutRouteChildren = {
   Admin_layoutRentalOrdersRoute: Admin_layoutRentalOrdersRoute,
   Admin_layoutReportCategoriesRoute: Admin_layoutReportCategoriesRoute,
   Admin_layoutReportsRoute: Admin_layoutReportsRoute,
+  Admin_layoutReviewsRoute: Admin_layoutReviewsRoute,
   Admin_layoutRulesRoute: Admin_layoutRulesRoute,
   Admin_layoutUsermanagementRoute: Admin_layoutUsermanagementRoute,
   Admin_layoutWalletRoute: Admin_layoutWalletRoute,

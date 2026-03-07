@@ -4,7 +4,7 @@ import { rentalApi } from '../../../services/api/rentalApi';
 import type { IRentalItem } from '../../../types/rental';
 import { X, Upload, Loader2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
-import { LocationAutocomplete } from '../../../components/common/LocationAutocomplete';
+import LocationAutocomplete from "../../../components/common/LocationAutocomplete";
 
 interface EditRentalItemModalProps {
 
@@ -159,7 +159,7 @@ export default function EditRentalItemModal({ item, onClose }: EditRentalItemMod
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Location</label>
                                 <LocationAutocomplete
                                     defaultValue={pickupLocation}
-                                    onSelect={(address) => setPickupLocation(address)}
+                                    onSelect={(address) => setPickupLocation(address.address)}
                                     className="mb-1"
                                 />
                                 {pickupLocation && (
@@ -205,7 +205,7 @@ export default function EditRentalItemModal({ item, onClose }: EditRentalItemMod
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Images ({existingImages.length + newImages.length})</label>
                         <div className="flex flex-wrap gap-4">
-                            
+
                             {existingImages.map((img, index) => (
                                 <div key={`exist-${index}`} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
                                     <img src={img} alt="Existing" className="w-full h-full object-cover" />

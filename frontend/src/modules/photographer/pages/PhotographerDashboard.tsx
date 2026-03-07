@@ -1,4 +1,4 @@
-import { useState } from 'react';
+
 import {
     TrendingUp,
     Star,
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from "framer-motion";
 import { ROUTES } from "../../../constants/routes";
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { usePhotographerDashboard, useBookingActions } from '../hooks/usePhotographerDashboard';
 import {
     Chart as ChartJS,
@@ -27,9 +27,9 @@ import {
     Filler,
     Legend,
     ArcElement,
-    type TooltipItem
+    
 } from 'chart.js';
-import { Line, Doughnut } from 'react-chartjs-2';
+import {  Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,
@@ -44,115 +44,116 @@ ChartJS.register(
 );
 
 const PhotographerDashboard = () => {
+    const navigate = useNavigate()
     const { data: stats, isLoading, error } = usePhotographerDashboard();
     const { acceptBooking, rejectBooking } = useBookingActions();
-    const [timeRange, setTimeRange] = useState<'6m' | '1y'>('6m');
+    // const [timeRange, setTimeRange] = useState<'6m' | '1y'>('6m');
 
-    const chartOptions = {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false,
-            },
-            tooltip: {
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                titleColor: '#1F2937',
-                bodyColor: '#4B5563',
-                borderColor: '#E5E7EB',
-                borderWidth: 1,
-                padding: 12,
-                boxPadding: 4,
-                usePointStyle: true,
-                callbacks: {
-                    label: function (context: TooltipItem<'line'>) {
-                        return `$${context.parsed.y} Revenue`;
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                grid: {
-                    display: false,
-                },
-                ticks: {
-                    font: {
-                        size: 11
-                    },
-                    color: '#9CA3AF'
-                }
-            },
-            y: {
-                border: {
-                    display: false
-                },
-                grid: {
-                    color: '#F3F4F6',
-                },
-                ticks: {
-                    callback: function (value: string | number) {
-                        return '$' + value;
-                    },
-                    font: {
-                        size: 11
-                    },
-                    color: '#9CA3AF',
-                    maxTicksLimit: 5
-                }
-            }
-        },
-        interaction: {
-            intersect: false,
-            mode: 'index' as const,
-        },
-        elements: {
-            line: {
-                tension: 0.4
-            },
-            point: {
-                radius: 0,
-                hoverRadius: 6,
-                backgroundColor: '#2E7D46',
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }
-        },
-        animation: {
-            duration: 2000,
-        }
-    };
+    // const chartOptions = {
+    //     responsive: true,
+    //     plugins: {
+    //         legend: {
+    //             display: false,
+    //         },
+    //         tooltip: {
+    //             backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    //             titleColor: '#1F2937',
+    //             bodyColor: '#4B5563',
+    //             borderColor: '#E5E7EB',
+    //             borderWidth: 1,
+    //             padding: 12,
+    //             boxPadding: 4,
+    //             usePointStyle: true,
+    //             callbacks: {
+    //                 label: function (context: TooltipItem<'line'>) {
+    //                     return `$${context.parsed.y} Revenue`;
+    //                 }
+    //             }
+    //         }
+    //     },
+    //     scales: {
+    //         x: {
+    //             grid: {
+    //                 display: false,
+    //             },
+    //             ticks: {
+    //                 font: {
+    //                     size: 11
+    //                 },
+    //                 color: '#9CA3AF'
+    //             }
+    //         },
+    //         y: {
+    //             border: {
+    //                 display: false
+    //             },
+    //             grid: {
+    //                 color: '#F3F4F6',
+    //             },
+    //             ticks: {
+    //                 callback: function (value: string | number) {
+    //                     return '$' + value;
+    //                 },
+    //                 font: {
+    //                     size: 11
+    //                 },
+    //                 color: '#9CA3AF',
+    //                 maxTicksLimit: 5
+    //             }
+    //         }
+    //     },
+    //     interaction: {
+    //         intersect: false,
+    //         mode: 'index' as const,
+    //     },
+    //     elements: {
+    //         line: {
+    //             tension: 0.4
+    //         },
+    //         point: {
+    //             radius: 0,
+    //             hoverRadius: 6,
+    //             backgroundColor: '#2E7D46',
+    //             borderWidth: 2,
+    //             borderColor: '#ffffff'
+    //         }
+    //     },
+    //     animation: {
+    //         duration: 2000,
+    //     }
+    // };
 
-    const getFilteredChartData = () => {
-        if (!stats?.revenueTrend) return { labels: [], datasets: [] };
+    // const getFilteredChartData = () => {
+    //     if (!stats?.revenueTrend) return { labels: [], datasets: [] };
 
-        const data = [...stats.revenueTrend];
-        const slicedData = timeRange === '6m' ? data.slice(-6) : data;
+    //     const data = [...stats.revenueTrend];
+    //     const slicedData = timeRange === '6m' ? data.slice(-6) : data;
 
-        return {
-            labels: slicedData.map(d => d.month),
-            datasets: [
-                {
-                    fill: true,
-                    label: 'Revenue',
-                    data: slicedData.map(d => d.amount),
-                    borderColor: '#2E7D46',
-                    backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D } }) => {
-                        const ctx = context.chart.ctx;
-                        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                        gradient.addColorStop(0, 'rgba(46, 125, 70, 0.15)');
-                        gradient.addColorStop(1, 'rgba(46, 125, 70, 0.01)');
-                        return gradient;
-                    },
-                    tension: 0.4,
-                    pointBackgroundColor: '#2E7D46',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                },
-            ],
-        };
-    };
+    //     return {
+    //         labels: slicedData.map(d => d.month),
+    //         datasets: [
+    //             {
+    //                 fill: true,
+    //                 label: 'Revenue',
+    //                 data: slicedData.map(d => d.amount),
+    //                 borderColor: '#2E7D46',
+    //                 backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D } }) => {
+    //                     const ctx = context.chart.ctx;
+    //                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    //                     gradient.addColorStop(0, 'rgba(46, 125, 70, 0.15)');
+    //                     gradient.addColorStop(1, 'rgba(46, 125, 70, 0.01)');
+    //                     return gradient;
+    //                 },
+    //                 tension: 0.4,
+    //                 pointBackgroundColor: '#2E7D46',
+    //                 pointBorderColor: '#fff',
+    //                 pointBorderWidth: 2,
+    //                 pointRadius: 4,
+    //                 pointHoverRadius: 6,
+    //             },
+    //         ],
+    //     };
+    // };
 
     const getPackagePopularityData = () => {
         if (!stats?.sessions.packagePopularity) return { labels: [], datasets: [] };
@@ -200,12 +201,12 @@ const PhotographerDashboard = () => {
                             <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Link to={ROUTES.USER.WALLET} className="hidden sm:flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">
+                            {/* <Link to={ROUTES.USER.WALLET} className="hidden sm:flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">
                                 <DollarSign size={16} />
                                 Wallet
-                            </Link>
+                            </Link> */}
                             <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center border border-green-200 text-green-800 font-bold text-sm">
-                                <User size={16} />
+                                <User size={16} onClick={()=>navigate({to:ROUTES.USER.PROFILE})} />
                             </div>
                         </div>
                     </div>
@@ -248,27 +249,6 @@ const PhotographerDashboard = () => {
 
                     <div className="lg:col-span-2 space-y-8">
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-                        >
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-bold text-gray-900">Revenue Trend</h2>
-                                <select
-                                    value={timeRange}
-                                    onChange={(e) => setTimeRange(e.target.value as '6m' | '1y')}
-                                    className="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-green-500 focus:border-green-500 p-1 bg-gray-50 outline-none"
-                                >
-                                    <option value="6m">Last 6 Months</option>
-                                    <option value="1y">This Year</option>
-                                </select>
-                            </div>
-                            <div className="h-64 w-full">
-                                <Line options={chartOptions} data={getFilteredChartData()} />
-                            </div>
-                        </motion.div>
 
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}

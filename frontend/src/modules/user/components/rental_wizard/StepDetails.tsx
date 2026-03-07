@@ -1,6 +1,6 @@
 import { useFormContext } from 'react-hook-form';
 import { AlertCircle, Camera, Tag, MapPin, AlignLeft, Info } from 'lucide-react';
-import { LocationAutocomplete } from '../../../../components/common/LocationAutocomplete';
+import LocationAutocomplete from '../../../../components/common/LocationAutocomplete';
 import type { RentItemFormData } from '../../../../types/rental';
 
 export function StepDetails() {
@@ -94,10 +94,10 @@ export function StepDetails() {
                     </label>
                     <LocationAutocomplete
                         defaultValue={watch('pickupLocation')}
-                        onSelect={(address: string) => setValue('pickupLocation', address, { shouldValidate: true })}
+                        onSelect={(address) => setValue('pickupLocation', address.address, { shouldValidate: true })}
                         className="w-full"
                     />
-                    
+
                     <input type="hidden" {...register('pickupLocation')} />
 
                     {errors.pickupLocation && <span className="text-red-500 text-xs mt-1.5 block font-medium">{errors.pickupLocation.message as string}</span>}

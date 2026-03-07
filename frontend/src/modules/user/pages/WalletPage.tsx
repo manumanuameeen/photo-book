@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "../../auth/store/useAuthStore";
 import { Wallet, Plus, History, ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { StripeWrapper } from "../../../components/payment/StripeWrapper";
@@ -15,15 +15,7 @@ export function WalletPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [isLoadingTxs, setIsLoadingTxs] = useState(false);
 
-    useEffect(() => {
-        fetchWalletDetails();
-    }, []);
-
-    useEffect(() => {
-        fetchTransactions();
-    }, [page]);
-
-    const fetchWalletDetails = async () => {
+    const fetchWalletDetails = useCallback(async () => {
         try {
             const data = await walletApi.getWalletDetails();
             setBalance(data.balance || 0);
@@ -31,9 +23,9 @@ export function WalletPage() {
             console.error("Failed to fetch wallet details", error);
             toast.error("Failed to load wallet details");
         }
-    };
+    }, []);
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback(async () => {
         setIsLoadingTxs(true);
         try {
             const data = await walletApi.getWalletTransactions(page, 5, 'ALL');
@@ -45,7 +37,15 @@ export function WalletPage() {
         } finally {
             setIsLoadingTxs(false);
         }
-    };
+    }, [page]);
+
+    useEffect(() => {
+        fetchWalletDetails();
+    }, [fetchWalletDetails]);
+
+    useEffect(() => {
+        fetchTransactions();
+    }, [fetchTransactions]);
 
     return (
         <div className="p-6 max-w-4xl mx-auto space-y-6">
