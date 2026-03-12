@@ -13,6 +13,11 @@ export interface IMessageService {
     page?: number,
     limit?: number,
   ): Promise<{ messages: IMessage[]; total: number }>;
+  getSystemMessages(
+    userId: string,
+    page?: number,
+    limit?: number,
+  ): Promise<{ messages: IMessage[]; total: number }>;
   getConversations(userId: string): Promise<Record<string, unknown>[]>;
   getMessagesByReportId(reportId: string): Promise<IMessage[]>;
   markAsRead(messageId: string): Promise<IMessage | null>;

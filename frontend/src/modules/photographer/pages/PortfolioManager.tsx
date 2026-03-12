@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Image as ImageIcon, Trash2, X, FolderPlus, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { portfolioApi, type IPortfolioSection } from '../../../services/api/portfolioApi';
+import { portfolioApi, type IPortfolioSection, type IPortfolioImage } from '../../../services/api/portfolioApi';
 import { toast } from 'sonner';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from '../../../constants/routes';
@@ -21,8 +21,8 @@ const SectionCard = ({ section, onDelete, onSelect }: { section: IPortfolioSecti
             }}
         >
             <div className="aspect-video bg-gray-100 rounded-lg mb-3 overflow-hidden">
-                {section.coverImage || section.images[0] ? (
-                    <img src={section.coverImage || section.images[0]} alt={section.title} className="w-full h-full object-cover" />
+                {section.coverImage || section.images[0]?.url ? (
+                    <img src={section.coverImage || section.images[0]?.url} alt={section.title} className="w-full h-full object-cover" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                         <ImageIcon size={32} />
@@ -45,7 +45,7 @@ const SectionCard = ({ section, onDelete, onSelect }: { section: IPortfolioSecti
     );
 };
 
-const ImageGrid = ({ images, onDelete, onAdd }: { images: string[], onDelete: (url: string) => void, onAdd: (files: File[]) => void }) => {
+const ImageGrid = ({ images, onDelete, onAdd }: { images: IPortfolioImage[], onDelete: (url: string) => void, onAdd: (files: File[]) => void }) => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
@@ -64,11 +64,31 @@ const ImageGrid = ({ images, onDelete, onAdd }: { images: string[], onDelete: (u
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {images.map((img, idx) => (
                 <div key={idx} className="aspect-square bg-gray-100 rounded-lg relative overflow-hidden group">
-                    <img src={img} alt="Portfolio" className="w-full h-full object-cover" />
+                    <img src={img.url} alt="Portfolio" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button onClick={() => onDelete(img)} className="p-2 bg-white text-red-600 rounded-full hover:bg-gray-100">
+                        <button onClick={() => onDelete(img.url)} className="p-2 bg-white text-red-600 rounded-full hover:bg-gray-100">
                             <Trash2 size={16} />
                         </button>
+                    </div>
+                    {/* AI Caption and Tags Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {img.caption && (
+                            <p className="text-white text-xs font-medium mb-2 line-clamp-2">{img.caption}</p>
+                        )}
+                        {img.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                                {img.tags.slice(0, 3).map((tag, tagIdx) => (
+                                    <span key={tagIdx} className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                        {tag}
+                                    </span>
+                                ))}
+                                {img.tags.length > 3 && (
+                                    <span className="bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                        +{img.tags.length - 3}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             ))}
@@ -90,9 +110,36 @@ const PortfolioManager = () => {
     const [isCreating, setIsCreating] = useState(false);
     const [newSectionTitle, setNewSectionTitle] = useState("");
 
+    const [editTitle, setEditTitle] = useState("");
+
+    useEffect(() => {
+        if (selectedSection) setEditTitle(selectedSection.title);
+    }, [selectedSection]);
+
     useEffect(() => {
         loadSections();
     }, []);
+
+    const handleSuggestName = async () => {
+        if (!selectedSection) return;
+        const toastId = toast.loading("✨ Suggesting album name...");
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/album/${selectedSection._id}/suggest-name`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const data = await response.json();
+            if (data.success) {
+                setEditTitle(data.suggestedName);
+                toast.success("Name suggested!", { id: toastId });
+            } else {
+                toast.error(data.message || "Failed to suggest name", { id: toastId });
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error suggesting name", { id: toastId });
+        }
+    };
 
     const loadSections = async () => {
         try {
@@ -135,7 +182,7 @@ const PortfolioManager = () => {
         if (!selectedSection) return;
         if (files.length === 0) return;
 
-        const toastId = toast.loading(`Uploading ${files.length} image(s)...`);
+        const toastId = toast.loading(`✨ AI is analyzing your photo(s)...`);
         let successCount = 0;
         let currentSectionState = selectedSection;
 
@@ -156,7 +203,7 @@ const PortfolioManager = () => {
             setSections(sections.map(s => s._id === currentSectionState._id ? currentSectionState : s));
 
             if (successCount === files.length) {
-                toast.success(`Successfully added ${successCount} images`, { id: toastId });
+                toast.success(`Successfully added ${successCount} images with AI captions and tags!`, { id: toastId });
             } else if (successCount > 0) {
                 toast.warning(`Added ${successCount} images, but ${files.length - successCount} failed`, { id: toastId });
             } else {
@@ -271,8 +318,21 @@ const PortfolioManager = () => {
                                             <X size={24} />
                                         </button>
                                         <div>
-                                            <h2 className="text-2xl font-bold">{selectedSection.title}</h2>
-                                            <p className="text-gray-500 text-sm">{selectedSection.images.length} photos</p>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={editTitle}
+                                                    onChange={(e) => setEditTitle(e.target.value)}
+                                                    className="text-2xl font-bold bg-transparent border-b border-transparent hover:border-gray-200 focus:border-green-500 outline-none w-auto min-w-[300px]"
+                                                />
+                                                <button
+                                                    onClick={handleSuggestName}
+                                                    className="text-xs font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 transition-all"
+                                                >
+                                                    ✨ Suggest Album Name
+                                                </button>
+                                            </div>
+                                            <p className="text-gray-500 text-sm mt-1">{selectedSection.images.length} photos</p>
                                         </div>
                                     </div>
                                     <button className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium">

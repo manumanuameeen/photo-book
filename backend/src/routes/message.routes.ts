@@ -12,6 +12,11 @@ router.get(
   messageController.getConversations.bind(messageController),
 );
 router.get(
+  "/",
+  authMiddleware,
+  messageController.getSystemMessages.bind(messageController),
+);
+router.get(
   ROUTES.V1.MESSAGE.GET_ALL,
   authMiddleware,
   messageController.getMessages.bind(messageController),

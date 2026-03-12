@@ -38,6 +38,24 @@ export class MessageController implements IMessageController {
     }
   };
 
+  getSystemMessages = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
+      }
+      const { page, limit } = req.query;
+      const result = await this._service.getSystemMessages(
+        userId,
+        page ? parseInt(page as string) : 1,
+        limit ? parseInt(limit as string) : 50,
+      );
+      ApiResponse.success(res, result, Messages.MESSAGES_FETCHED);
+    } catch (error) {
+      handleError(res, error);
+    }
+  };
+
   getConversations = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user?.userId;
