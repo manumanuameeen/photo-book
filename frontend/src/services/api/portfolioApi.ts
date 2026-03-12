@@ -1,11 +1,18 @@
 import apiClient from "../apiClient";
 import { API_ROUTES } from "../../constants/apiRoutes";
 
+export interface IPortfolioImage {
+    url: string;
+    caption: string;
+    tags: string[];
+    embedding: number[];
+}
+
 export interface IPortfolioSection {
     _id: string;
     title: string;
     coverImage?: string;
-    images: string[];
+    images: IPortfolioImage[];
 }
 
 export const portfolioApi = {

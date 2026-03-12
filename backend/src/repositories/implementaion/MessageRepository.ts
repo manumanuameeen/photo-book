@@ -45,6 +45,32 @@ export class MessageRepository extends BaseRepository<IMessage> implements IMess
     return { messages, total };
   }
 
+  async getSystemMessages(
+    userId: string,
+    page = 1,
+    limit = 50,
+  ): Promise<{ messages: IMessage[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const userObjId = new mongoose.Types.ObjectId(userId);
+
+    const query = {
+      receiverId: userObjId,
+      type: "SYSTEM",
+      deletedFor: { $ne: userObjId },
+    };
+
+    const [messages, total] = await Promise.all([
+      this._model
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._model.countDocuments(query),
+    ]);
+    return { messages, total };
+  }
+
   async getConversations(userId: string): Promise<Record<string, unknown>[]> {
     const userObjId = new mongoose.Types.ObjectId(userId);
 

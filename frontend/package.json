@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@tailwindcss/postcss": "^4.2.1",
     "@tanstack/router-plugin": "^1.134.14",
     "@types/axios": "^0.9.36",
     "@types/date-fns": "^2.5.3",

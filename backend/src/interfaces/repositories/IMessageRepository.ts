@@ -8,6 +8,11 @@ export interface IMessageRepository extends IBaseRepository<IMessage> {
     page?: number,
     limit?: number,
   ): Promise<{ messages: IMessage[]; total: number }>;
+  getSystemMessages(
+    userId: string,
+    page?: number,
+    limit?: number,
+  ): Promise<{ messages: IMessage[]; total: number }>;
   getConversations(userId: string): Promise<Record<string, unknown>[]>;
   findByReportId(reportId: string): Promise<IMessage[]>;
   getUnreadCount(receiverId: string): Promise<number>;

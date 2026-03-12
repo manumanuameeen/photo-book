@@ -219,5 +219,10 @@ export const ROUTES = {
       UPDATE: "/:id",
       DELETE: "/:id",
     },
+    AI: {
+      BASE: "/api/v1/ai",
+      SEARCH: "/search",
+      ALBUM_SUGGEST_NAME: "/album/:albumId/suggest-name",
+    },
   },
 } as const;

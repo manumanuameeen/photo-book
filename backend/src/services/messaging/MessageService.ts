@@ -56,6 +56,14 @@ export class MessageService implements IMessageService {
     return await this._repository.findByPartnerId(userId, partnerId, page, limit);
   }
 
+  async getSystemMessages(
+    userId: string,
+    page = 1,
+    limit = 50,
+  ): Promise<{ messages: IMessage[]; total: number }> {
+    return await this._repository.getSystemMessages(userId, page, limit);
+  }
+
   async getConversations(userId: string): Promise<Record<string, unknown>[]> {
     return await this._repository.getConversations(userId);
   }
