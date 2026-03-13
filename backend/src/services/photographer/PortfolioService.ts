@@ -1,6 +1,6 @@
 import { IPortfolioService } from "../../interfaces/services/IPortfolioService.ts";
 import { IPortfolioRepository } from "../../interfaces/repositories/IPortfolioRepository.ts";
-import { IPortfolioSection } from "../../model/portfolioSectionModel.ts";
+import { IPortfolioSection } from "../../models/portfolioSection.model.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { Messages } from "../../constants/messages.ts";

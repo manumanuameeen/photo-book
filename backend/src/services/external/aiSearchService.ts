@@ -13,6 +13,11 @@ export interface IEmbeddingResult {
   success: boolean;
 }
 
+// shape returned by the HF CLIP endpoint (we only care about `embedding`)
+interface IHuggingFaceEmbeddingResponse {
+  embedding?: number[];
+}
+
 /**
  * Gets CLIP embedding for a base64 image
  * @param imageBase64 - Base64 encoded image string
@@ -42,9 +47,9 @@ export async function getImageEmbedding(imageBase64: string): Promise<IEmbedding
       return { embedding: [], success: false };
     }
 
-    const data: any = await response.json();
+    const data = (await response.json()) as IHuggingFaceEmbeddingResponse;
     return { embedding: data.embedding || [], success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[aiSearchService] Error getting image embedding:", error);
     return { embedding: [], success: false };
   }
@@ -79,9 +84,9 @@ export async function getTextEmbedding(query: string): Promise<IEmbeddingResult>
       return { embedding: [], success: false };
     }
 
-    const data: any = await response.json();
+    const data = (await response.json()) as IHuggingFaceEmbeddingResponse;
     return { embedding: data.embedding || [], success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[aiSearchService] Error getting text embedding:", error);
     return { embedding: [], success: false };
   }

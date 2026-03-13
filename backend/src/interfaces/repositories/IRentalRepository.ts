@@ -1,5 +1,5 @@
-import { IRentalItem } from "../../model/rentalItemModel.ts";
-import { IRentalOrder } from "../../model/rentalOrderModel.ts";
+import { IRentalItem } from "../../models/rentalItem.model.ts";
+import { IRentalOrder } from "../../models/rentalOrder.model.ts";
 
 import { IBaseRepository } from "./IBaseRepository.ts";
 

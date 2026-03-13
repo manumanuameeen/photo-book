@@ -1,10 +1,10 @@
 import { IRentalPaymentService } from "../../interfaces/services/rental/IRentalPaymentService.ts";
-import { IRentalOrder, RentalStatus } from "../../model/rentalOrderModel.ts";
-import { IPopulatedUser } from "../../model/bookingModel.ts";
+import { IRentalOrder, RentalStatus } from "../../models/rentalOrder.model.ts";
+import { IPopulatedUser } from "../../models/booking.model.ts";
 import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository.ts";
 import { IPaymentService } from "../../interfaces/services/IPaymentService.ts";
 import { IWalletService } from "../../interfaces/services/IWalletService.ts";
-import { StripeService } from "../implementaion/StripeService.ts";
+import { StripeService } from "../implementation/booking/StripeService.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { IEmailService } from "../../interfaces/services/IEmailService.ts";

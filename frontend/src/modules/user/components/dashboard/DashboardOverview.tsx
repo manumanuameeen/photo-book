@@ -7,10 +7,10 @@ import type { WalletDetails } from '../../../../services/api/walletApi';
 
 interface DashboardOverviewProps {
     bookings: BookingDetails[];
-    stats: any;
+    stats?: IRentalDashboardStats | null;
     statsLoading: boolean;
     onViewBookings: () => void;
-    walletData: any;
+    walletData?: WalletDetails | null;
     rentalRequests: IRentalOrder[];
     period: string;
     onPeriodChange: (period: string) => void;

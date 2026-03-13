@@ -1,5 +1,5 @@
-import { BookingModel, BookingStatus } from "../../model/bookingModel.ts";
-import { RentalStatus } from "../../model/rentalOrderModel.ts";
+import { BookingModel, BookingStatus } from "../../models/booking.model.ts";
+import { RentalStatus } from "../../models/rentalOrder.model.ts";
 
 import { IBookingService } from "../../interfaces/services/IBookingService.ts";
 import { ICronService } from "../../interfaces/services/ICronService.ts";
@@ -39,7 +39,7 @@ export class CronService {
 
         const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
-        const { RentalOrderModel } = await import("../../model/rentalOrderModel.ts");
+        const { RentalOrderModel } = await import("../../models/rentalOrder.model.ts");
 
         const expiredRentals = await RentalOrderModel.find({
           status: RentalStatus.WAITING_FOR_DEPOSIT,

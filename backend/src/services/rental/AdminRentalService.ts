@@ -1,6 +1,6 @@
 import { IAdminRentalService } from "../../interfaces/services/rental/IAdminRentalService.ts";
-import { IRentalItem } from "../../model/rentalItemModel.ts";
-import { IRentalOrder } from "../../model/rentalOrderModel.ts";
+import { IRentalItem } from "../../models/rentalItem.model.ts";
+import { IRentalOrder } from "../../models/rentalOrder.model.ts";
 import { IRentalItemRepository } from "../../interfaces/repositories/rental/IRentalItemRepository.ts";
 import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository.ts";
 

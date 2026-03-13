@@ -1,4 +1,4 @@
-import { IRentalOrder } from "../../../model/rentalOrderModel.ts";
+import { IRentalOrder } from "../../../models/rentalOrder.model.ts";
 
 export interface IRecentActivity {
   _id: string;

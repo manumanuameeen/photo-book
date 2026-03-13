@@ -1,5 +1,5 @@
 import type { CreateRentalItemDTO, UpdateRentalItemDTO } from "../../dto/rental.dto.ts";
-import type { IRentalItem } from "../../model/rentalItemModel.ts";
+import type { IRentalItem } from "../../models/rentalItem.model.ts";
 import type { IMapper } from "./IMapper.ts";
 export interface IRentalItemResponseDto {
   id: string;

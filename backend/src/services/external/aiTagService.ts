@@ -43,14 +43,14 @@ export async function generateTags(imageBase64: string): Promise<ITagResult> {
       return { tags: [], success: false };
     }
 
-    const results = (await response.json()) as any as IHFClassification[];
+    const results = (await response.json()) as IHFClassification[]; // already typed by interface
 
     const tags = results
       .filter((r) => r.score > 0.3)
       .map((r) => r.label.toLowerCase().trim());
 
     return { tags, success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[aiTagService] Error generating tags:", error);
     return { tags: [], success: false };
   }

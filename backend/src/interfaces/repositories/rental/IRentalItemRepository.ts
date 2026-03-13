@@ -1,4 +1,4 @@
-import { IRentalItem } from "../../../model/rentalItemModel.ts";
+import { IRentalItem } from "../../../models/rentalItem.model.ts";
 import { IBaseRepository } from "../IBaseRepository.ts";
 
 export interface IRentalItemRepository extends IBaseRepository<IRentalItem> {

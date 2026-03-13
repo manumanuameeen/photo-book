@@ -43,11 +43,14 @@ export async function suggestAlbumName(captions: string[]): Promise<IAlbumNameRe
       return { name: "My Album", success: false };
     }
 
-    const data: any = await response.json();
+    interface IAnthropicMessage { text?: string }
+    interface IAnthropicResponse { content?: IAnthropicMessage[]; /* add other fields as needed */ }
+
+    const data = (await response.json()) as IAnthropicResponse;
     const name = data.content?.[0]?.text?.trim() || "My Album";
 
     return { name, success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[albumNameService] Error suggesting album name:", error);
     return { name: "My Album", success: false };
   }

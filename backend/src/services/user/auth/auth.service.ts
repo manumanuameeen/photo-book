@@ -1,4 +1,4 @@
-import type { IUser } from "../../../model/userModel.ts";
+import type { IUser } from "../../../models/user.model.ts";
 import type { IUserRepository } from "../../../interfaces/repositories/IUserRepository.ts";
 import { AppError } from "../../../utils/AppError.ts";
 import { HttpStatus } from "../../../constants/httpStatus.ts";
@@ -21,7 +21,7 @@ import type { IWalletService } from "../../../interfaces/services/IWalletService
 import { Messages } from "../../../constants/messages.ts";
 import { AuthMapper } from "../../../mappers/auth.mapper.ts";
 import bcrypt from "bcrypt";
-import { tokenBlacklistService } from "../../token/tokenBalcklist.service.ts";
+import { tokenBlacklistService } from "../../token/tokenBlacklist.service.ts";
 import jwt from "jsonwebtoken";
 import logger from "../../../config/logger.ts";
 import { OAuth2Client } from "google-auth-library";

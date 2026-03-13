@@ -1,5 +1,5 @@
 import type { IPhotographerStats } from "../repositories/IPhotographerRepository.ts";
-import { IBookingPackage } from "../../model/bookingPackageModel.ts";
+import { IBookingPackage } from "../../models/bookingPackage.model.ts";
 import { Populated } from "../../types/common.types.ts";
 
 export interface IGetPhotographersQuery {

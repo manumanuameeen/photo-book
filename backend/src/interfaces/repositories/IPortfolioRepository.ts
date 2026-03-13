@@ -1,4 +1,4 @@
-import { IPortfolioSection } from "../../model/portfolioSectionModel.ts";
+import { IPortfolioSection } from "../../models/portfolioSection.model.ts";
 import { IBaseRepository } from "./IBaseRepository.ts";
 
 export interface IPortfolioRepository extends IBaseRepository<IPortfolioSection> {

@@ -1,5 +1,5 @@
 import type { Response, NextFunction } from "express";
-import { User } from "../model/userModel.ts";
+import { User } from "../models/user.model.ts";
 import { Messages } from "../constants/messages.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 

@@ -4,13 +4,13 @@ import {
   RentalStatus,
   IRentalOrderPopulated,
   IRentalPopulatedItem,
-} from "../../model/rentalOrderModel.ts";
-import { IPopulatedUser } from "../../model/bookingModel.ts";
+} from "../../models/rentalOrder.model.ts";
+import { IPopulatedUser } from "../../models/booking.model.ts";
 import mongoose from "mongoose";
-import { StripeService } from "../implementaion/StripeService.ts";
+import { StripeService } from "../implementation/booking/StripeService.ts";
 import { IWalletService } from "../../interfaces/services/IWalletService.ts";
 import { IPaymentService } from "../../interfaces/services/IPaymentService.ts";
-import { PdfService } from "../implementaion/PdfService.ts";
+import { PdfService } from "../implementation/common/PdfService.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { IEmailService } from "../../interfaces/services/IEmailService.ts";

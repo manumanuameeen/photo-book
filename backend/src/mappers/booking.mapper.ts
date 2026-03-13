@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { BookingStatus, IBooking, PaymentStatus } from "../model/bookingModel";
+import { BookingStatus, IBooking, PaymentStatus } from "../models/booking.model";
 import type { CreateBookingDTO, BookingRescheduleRequestDTO } from "../dto/booking.dto";
 import type {
   IBookingMapper,
