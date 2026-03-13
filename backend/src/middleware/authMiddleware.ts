@@ -15,6 +15,8 @@ export interface AuthRequest extends Request {
   user?: JWTPayload;
   role?: string;
   userId?: string;
+  file?: any;
+  files?: any[];
 }
 
 export const verifyAccessToken = async (
