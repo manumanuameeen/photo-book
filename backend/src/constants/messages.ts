@@ -148,6 +148,7 @@ export const Messages = {
   PAYMENT_INTENT_ID_REQUIRED: "Payment Intent ID is required",
   OWNER_ORDERS_FETCHED: "Owner orders fetched",
   ORDER_STATUS_UPDATED: "Order status updated",
+  ORDER_CANCELLED: "Order cancelled successfully",
   ORDER_DETAILS_FETCHED: "Order details fetched",
   ORDER_ACCEPTED: "Order accepted",
   ORDER_REJECTED: "Order rejected",

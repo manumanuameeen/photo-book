@@ -61,7 +61,7 @@ import { AdminRentalService } from "../services/rental/AdminRentalService.ts";
 import { AdminRentalController } from "../controller/admin/AdminRentalController.ts";
 import { AdminDashboardService } from "../services/admin/AdminDashboardService.ts";
 import { AdminDashboardController } from "../controller/admin/AdminDashboardController.ts";
-import { RentalController } from "../controller/RentalController.ts";
+import { RentalController } from "../controller/rental/RentalController.ts";
 import { IReviewRepository } from "../interfaces/repositories/IReviewRepository.ts";
 import { IReviewService } from "../interfaces/services/IReviewService.ts";
 import { IHelpRepository } from "../interfaces/repositories/IHelpRepository.ts";
@@ -86,6 +86,9 @@ import { RuleService } from "../services/implementaion/admin/RuleService.ts";
 import { RuleController } from "../controller/ruleController.ts";
 import { IRentalAvailabilityService } from "../interfaces/services/rental/IRentalAvailabilityService.ts";
 import { IRentalFinanceService } from "../interfaces/services/rental/IRentalFinanceService.ts";
+import { IRentalItemService } from "../interfaces/services/rental/IRentalItemService.ts";
+import { IRentalOrderService } from "../interfaces/services/rental/IRentalOrderService.ts";
+import { IRentalPaymentService } from "../interfaces/services/rental/IRentalPaymentService.ts";
 import { HelpTopicRequestRepository } from "../repositories/implementaion/HelpTopicRequestRepository.ts";
 import { HelpTopicRequestService } from "../services/implementaion/HelpTopicRequestService.ts";
 import { HelpTopicRequestController } from "../controller/HelpTopicRequestController.ts";
@@ -355,7 +358,7 @@ class DIContainer {
     return this._walletService;
   }
 
-  get rentalItemService(): RentalItemService {
+  get rentalItemService(): IRentalItemService {
     this._rentalItemService ??= new RentalItemService(
       this.rentalItemRepository,
       this.rentalOrderRepository,
@@ -363,7 +366,7 @@ class DIContainer {
     return this._rentalItemService;
   }
 
-  get rentalPaymentService(): RentalPaymentService {
+  get rentalPaymentService(): IRentalPaymentService {
     this._rentalPaymentService ??= new RentalPaymentService(
       this.rentalOrderRepository,
       this.paymentService,
@@ -375,7 +378,7 @@ class DIContainer {
     return this._rentalPaymentService;
   }
 
-  get rentalOrderService(): RentalOrderService {
+  get rentalOrderService(): IRentalOrderService {
     this._rentalOrderService ??= new RentalOrderService(
       this.rentalOrderRepository,
       this.rentalItemRepository,
@@ -536,7 +539,12 @@ class DIContainer {
   }
 
   get rentalController(): RentalController {
-    this._rentalController ??= new RentalController(this.rentalService, this.fileService);
+    this._rentalController ??= new RentalController(
+      this.rentalItemService,
+      this.rentalOrderService,
+      this.rentalPaymentService,
+      this.fileService,
+    );
     return this._rentalController;
   }
 

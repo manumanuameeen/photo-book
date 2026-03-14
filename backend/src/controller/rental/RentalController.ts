@@ -24,7 +24,7 @@ export class RentalController {
     private readonly _orderService: IRentalOrderService,
     private readonly _paymentService: IRentalPaymentService,
     private readonly _fileService: IFileService,
-  ) { }
+  ) {}
 
   private _validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
     return schema.parse(data);
@@ -245,6 +245,17 @@ export class RentalController {
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
       const result = await this._orderService.rejectRentalOrder(req.params.id, userId);
       ApiResponse.success(res, result, Messages.ORDER_REJECTED);
+    } catch (error: unknown) {
+      handleError(res, error);
+    }
+  };
+
+  cancelRentalOrder = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
+      const result = await this._orderService.cancelRentalOrder(req.params.id, userId);
+      ApiResponse.success(res, result, Messages.ORDER_CANCELLED);
     } catch (error: unknown) {
       handleError(res, error);
     }
