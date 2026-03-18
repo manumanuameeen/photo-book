@@ -1,4 +1,4 @@
-import { IMessage } from "../../model/messageModel.ts";
+import { IMessage } from "../../models/message.model.ts";
 import { IBaseRepository } from "./IBaseRepository.ts";
 
 export interface IMessageRepository extends IBaseRepository<IMessage> {

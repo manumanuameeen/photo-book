@@ -1,4 +1,4 @@
-import type { IReview, IEnrichedReview } from "../../model/reviewModel.ts";
+import type { IReview, IEnrichedReview } from "../../models/review.model.ts";
 
 export interface IReviewService {
   addReview(

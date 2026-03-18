@@ -217,7 +217,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
                         partnerObj = potentialPartner as UserCompact;
                     } else {
                         // Fallback: create minimal object from available data
-                        const partnerData = typeof potentialPartner === 'object' && potentialPartner !== null ? potentialPartner as any : {};
+                        const partnerData = typeof potentialPartner === 'object' && potentialPartner !== null ? (potentialPartner as Partial<UserCompact>) : {};
                         partnerObj = { 
                             _id: partnerId, 
                             name: partnerData?.name || partnerData?.firstName || '', 

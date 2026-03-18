@@ -1,6 +1,6 @@
 import { IMessageRepository } from "../../interfaces/repositories/IMessageRepository.ts";
 import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import { IMessage } from "../../model/messageModel.ts";
+import { IMessage } from "../../models/message.model.ts";
 import mongoose from "mongoose";
 import { AppError } from "../../utils/AppError.ts";
 

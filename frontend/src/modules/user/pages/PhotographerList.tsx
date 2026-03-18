@@ -49,7 +49,7 @@ const PhotographerSearch = () => {
 
     // AI Search States
     const [aiSearchQuery, setAiSearchQuery] = useState('');
-    const [aiSearchResults, setAiSearchResults] = useState<any[]>([]);
+    const [aiSearchResults, setAiSearchResults] = useState<{ photoId?: string, url?: string, image?: string }[]>([]);
     const [isAiSearching, setIsAiSearching] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');

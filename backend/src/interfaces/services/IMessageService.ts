@@ -1,4 +1,4 @@
-import { IMessage } from "../../model/messageModel.ts";
+import { IMessage } from "../../models/message.model.ts";
 
 export interface IMessageService {
   sendSystemMessage(

@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IAdminPhotographerController } from "../../interfaces/admin/IAdminPhotographerController.ts";
+import { IAdminPhotographerController } from "../../interfaces/controllers/IAdminPhotographerController.ts";
 import { IAdminPhotographerService } from "../../interfaces/services/IAdminPhotographerService.ts";
 import { ApiResponse } from "../../utils/response.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";

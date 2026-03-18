@@ -1,7 +1,7 @@
 import { IPackageService } from "../../interfaces/services/IPackageAvailabilityService.ts";
 import { IPackageRepository } from "../../interfaces/repositories/IPackageRepository.ts";
 import { CreatePackageDto, UpdatePackageDto } from "../../dto/package-availability.dto.ts";
-import { IBookingPackage } from "../../model/bookingPackageModel.ts";
+import { IBookingPackage, BookingPackageModel } from "../../models/bookingPackage.model.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 

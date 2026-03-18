@@ -1,4 +1,4 @@
-import type { IReview } from "../../model/reviewModel.ts";
+import type { IReview } from "../../models/review.model.ts";
 
 export interface IReviewRepository {
   addReview(review: Partial<IReview>): Promise<IReview>;

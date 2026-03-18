@@ -38,11 +38,12 @@ export async function generateCaption(imageBase64: string): Promise<ICaptionResu
       return { caption: "A beautiful photo", success: false };
     }
 
-    const result: any = await response.json();
+    type IBlipItem = { generated_text?: string };
+    const result = (await response.json()) as IBlipItem[];
     const caption = result[0]?.generated_text || "A beautiful photo";
 
     return { caption, success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[aiCaptionService] Error generating caption:", error);
     return { caption: "A beautiful photo", success: false };
   }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CategoryType } from "../model/categoryModel.ts";
+import { CategoryType } from "../models/category.model.ts";
 
 export const CreateCategorySchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name must be less than 50 characters"),

@@ -7,7 +7,7 @@ import { Router, Request, Response } from "express";
 import { verifyAccessToken } from "../middleware/authMiddleware";
 import { rankPhotosByQuery } from "../services/external/aiSearchService";
 import { suggestAlbumName } from "../services/external/albumNameService";
-import { PortfolioSectionModel } from "../model/portfolioSectionModel";
+import { PortfolioSectionModel } from "../models/portfolioSection.model";
 
 const router = Router();
 

@@ -1,6 +1,6 @@
-import { IReport } from "../../model/Report.ts";
+import { IReport } from "../../models/report.model.ts";
 import { CreateReportDTO, ApplyPenaltyDTO } from "../../dto/report.dto.ts";
-import { IMessage } from "../../model/messageModel.ts";
+import { IMessage } from "../../models/message.model.ts";
 
 export interface IUpdateReportStatusDTO {
   status: "pending" | "reviewed" | "resolved" | "dismissed";

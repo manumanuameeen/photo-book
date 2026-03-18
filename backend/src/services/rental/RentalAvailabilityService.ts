@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository.ts";
-import { IRentalItem } from "../../model/rentalItemModel.ts";
-import { RentalStatus } from "../../model/rentalOrderModel.ts";
+import { IRentalItem } from "../../models/rentalItem.model.ts";
+import { RentalStatus } from "../../models/rentalOrder.model.ts";
 import { IRentalAvailabilityService } from "../../interfaces/services/rental/IRentalAvailabilityService.ts";
 
 export class RentalAvailabilityService implements IRentalAvailabilityService {

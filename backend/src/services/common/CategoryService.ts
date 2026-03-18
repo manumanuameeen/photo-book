@@ -3,8 +3,8 @@ import {
   ICategoryQuery,
   ICategoryPagination,
 } from "../../interfaces/services/ICategoryService.ts";
-import { CategoryRepository } from "../../repositories/implementaion/CategoryRepository.ts";
-import { ICategory, CategoryType } from "../../model/categoryModel.ts";
+import { CategoryRepository } from "../../repositories/implementation/common/CategoryRepository.ts";
+import { ICategory, CategoryType } from "../../models/category.model.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { Messages } from "../../constants/messages.ts";

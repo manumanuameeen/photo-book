@@ -1,4 +1,4 @@
-import type { IUser } from "../model/userModel.ts";
+import type { IUser } from "../models/user.model.ts";
 import { UserResponseDto, UserProfileResponseDto, AuthResponseDto } from "../dto/user.dto.ts";
 
 export class UserMapper {

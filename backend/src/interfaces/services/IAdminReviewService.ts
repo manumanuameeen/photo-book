@@ -1,4 +1,4 @@
-import { IReview, IEnrichedReview } from "../../model/reviewModel.ts";
+import { IReview, IEnrichedReview } from "../../models/review.model.ts";
 export interface IAdminReviewService {
   getAllReviews(
     page: number,

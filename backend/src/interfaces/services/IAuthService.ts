@@ -6,7 +6,7 @@ import type {
   ForgetPasswordDtoType,
   ResetPasswordDtoType,
 } from "../../dto/auth.dto.ts";
-import type { IUser } from "../../model/userModel.ts";
+import type { IUser } from "../../models/user.model.ts";
 
 export interface IAuthService {
   signup(data: SignupDtoType): Promise<{ message: string }>;

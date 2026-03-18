@@ -1,4 +1,4 @@
-import { IWallet, ITransaction } from "../../model/walletModel.ts";
+import { IWallet, ITransaction } from "../../models/wallet.model.ts";
 import { IBaseRepository } from "./IBaseRepository.ts";
 
 export interface IWalletRepository extends IBaseRepository<IWallet> {

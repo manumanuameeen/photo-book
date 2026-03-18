@@ -1,4 +1,4 @@
-import { IBookingPackage } from "../../model/bookingPackageModel.ts";
+import { IBookingPackage } from "../../models/bookingPackage.model.ts";
 import { IBaseRepository } from "./IBaseRepository.ts";
 
 export interface IPackageRepository extends IBaseRepository<IBookingPackage> {

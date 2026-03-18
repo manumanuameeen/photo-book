@@ -1,5 +1,5 @@
 import type { AdminUserQueryDtoType } from "../dto/admin.dto.ts";
-import type { IAdminUserQuery } from "../interfaces/admin/IAdminUser.interface.ts";
+import type { IAdminUserQuery } from "../interfaces/services/IAdminUserService.ts";
 
 export class AdminMapper {
   static toQueryInput(dto: AdminUserQueryDtoType): IAdminUserQuery {
@@ -12,7 +12,7 @@ export class AdminMapper {
     };
   }
 
-  static toUserResponse(user: import("../model/userModel").IUser) {
+  static toUserResponse(user: import("../models/user.model").IUser) {
     return {
       _id: String(user._id),
       name: user.name,

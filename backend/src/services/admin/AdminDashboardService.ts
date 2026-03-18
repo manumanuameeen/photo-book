@@ -1,11 +1,11 @@
 import { Model } from "mongoose";
-import { User } from "../../model/userModel";
-import { PhotographerModel } from "../../model/photographerModel";
-import { BookingModel } from "../../model/bookingModel";
-import { RentalOrderModel } from "../../model/rentalOrderModel";
-import { WalletModel } from "../../model/walletModel";
-import { ReviewModel } from "../../model/reviewModel";
-import { Report } from "../../model/Report";
+import { User } from "../../models/user.model";
+import { PhotographerModel } from "../../models/photographer.model";
+import { BookingModel } from "../../models/booking.model";
+import { RentalOrderModel } from "../../models/rentalOrder.model";
+import { WalletModel } from "../../models/wallet.model";
+import { ReviewModel } from "../../models/review.model";
+import { Report } from "../../models/report.model";
 import { AdminDashboardStatsDto } from "../../dto/admin.dashboard.dto";
 import { IAdminDashboardService } from "../../interfaces/services/IAdminDashboardService.ts";
 

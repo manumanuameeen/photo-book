@@ -1,4 +1,4 @@
-import { IHelpTopicRequest } from "../../model/helpTopicRequestModel.ts";
+import { IHelpTopicRequest } from "../../models/helpTopicRequest.model.ts";
 import { IBaseRepository } from "./IBaseRepository.ts";
 
 export interface IHelpTopicRequestRepository extends IBaseRepository<IHelpTopicRequest> {

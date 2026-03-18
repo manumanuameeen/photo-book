@@ -19,24 +19,27 @@ export default function App() {
     if (user?._id) {
       socketService.connect();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const handleNewMessage = (data: any) => {
-
+      interface NewMessageData {
+        senderId?: string | { name?: string; _id?: string };
+        content?: string;
+      }
+      const handleNewMessage = (data: unknown) => {
+        const messageData = data as NewMessageData;
         if (!window.location.href.includes('/chat')) {
           let senderName = 'Someone';
           let senderIdValue = '';
 
-          if (data.senderId) {
-            if (typeof data.senderId === 'string') {
-              senderIdValue = data.senderId;
+          if (messageData.senderId) {
+            if (typeof messageData.senderId === 'string') {
+              senderIdValue = messageData.senderId;
             } else {
-              senderName = data.senderId.name || 'Someone';
-              senderIdValue = data.senderId._id || '';
+              senderName = messageData.senderId.name || 'Someone';
+              senderIdValue = messageData.senderId._id || '';
             }
           }
 
           toast.success(`New message from ${senderName}`, {
-            description: data.content || 'Sent a photo/attachment',
+            description: messageData.content || 'Sent a photo/attachment',
             duration: 4000,
             action: {
               label: 'View',

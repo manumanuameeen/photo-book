@@ -1,4 +1,4 @@
-import { IRentalItem } from "../../../model/rentalItemModel.ts";
+import { IRentalItem } from "../../../models/rentalItem.model.ts";
 
 export interface IRentalAvailabilityService {
   checkItemAvailability(

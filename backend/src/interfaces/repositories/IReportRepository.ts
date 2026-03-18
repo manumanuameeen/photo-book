@@ -1,4 +1,4 @@
-import { IReport } from "../../model/Report.ts";
+import { IReport } from "../../models/report.model.ts";
 
 export interface IReportRepository {
   create(data: Partial<IReport>): Promise<IReport>;

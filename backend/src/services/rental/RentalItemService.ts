@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { AppError } from "../../utils/AppError.ts";
-import { IRentalItem } from "../../model/rentalItemModel.ts";
+import { IRentalItem } from "../../models/rentalItem.model.ts";
 import { IRentalItemService } from "../../interfaces/services/rental/IRentalItemService.ts";
 import { IRentalItemRepository } from "../../interfaces/repositories/rental/IRentalItemRepository.ts";
 import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository.ts";

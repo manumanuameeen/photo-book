@@ -1,5 +1,5 @@
 import Jwt from "jsonwebtoken";
-import { PhotographerModel } from "../model/photographerModel.ts";
+import { PhotographerModel } from "../models/photographer.model.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import type { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";

@@ -1,4 +1,4 @@
-import { IRentalOrder } from "../../../model/rentalOrderModel.ts";
+import { IRentalOrder } from "../../../models/rentalOrder.model.ts";
 import { IRecentActivity } from "../../services/rental/IRentalOrderService.ts";
 
 export interface IRentalOrderRepository {
