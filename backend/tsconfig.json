@@ -1,24 +1,4 @@
-﻿// {
-//   "compilerOptions": {
-//     "target": "ES2022",
-//     "lib": ["ES2022"],
-//     "module": "ES2022",
-//     "moduleResolution": "bundler",
-//     "allowImportingTsExtensions": false,
-//     "outDir": "./dist",
-//     "rootDir": "./src",
-//     "noEmit": false,
-//     "noEmitOnError": false,
-//     "strict": true,
-//     "esModuleInterop": true,
-//     "skipLibCheck": true,
-//     "resolveJsonModule": true,
-//     "baseUrl": "./src"
-//   },
-//   "include": ["src"],
-//   "exclude": ["node_modules", "dist"]
-// }
-
+﻿
 {
   "compilerOptions": {
     "target": "ES2022",
