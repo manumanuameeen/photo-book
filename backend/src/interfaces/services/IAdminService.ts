@@ -2,7 +2,7 @@ import type {
   IAdminUserQuery,
   IPaginationUsers,
   IUserResponse,
-} from "../services/IAdminUserService.ts";
+} from "../services/IAdminUserService";
 
 export interface IAdminService {
   getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers>;

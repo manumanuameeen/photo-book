@@ -1,5 +1,5 @@
 import { Response, Request } from "express";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
+import { AuthRequest } from "../../middleware/authMiddleware";
 
 export interface IPhtogrpherController {
   apply(req: AuthRequest, res: Response): Promise<void>;

@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { IAdminRentalService } from "../../interfaces/services/rental/IAdminRentalService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { Messages } from "../../constants/messages.ts";
+import { IAdminRentalService } from "../../interfaces/services/rental/IAdminRentalService";
+import { ApiResponse } from "../../utils/response";
+import { Messages } from "../../constants/messages";
 
-import { IAdminRentalController } from "../../interfaces/controllers/IAdminRentalController.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IAdminRentalController } from "../../interfaces/controllers/IAdminRentalController";
+import { handleError } from "../../utils/errorHandler";
 
 export class AdminRentalController implements IAdminRentalController {
   constructor(private readonly _adminRentalService: IAdminRentalService) {}

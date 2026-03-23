@@ -1,6 +1,6 @@
 import type { Response, NextFunction } from "express";
 
-import { AuthRequest } from "./authMiddleware.ts";
+import { AuthRequest } from "./authMiddleware";
 
 export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.role) {

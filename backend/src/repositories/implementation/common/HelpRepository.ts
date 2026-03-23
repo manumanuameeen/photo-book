@@ -1,6 +1,6 @@
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { IHelpContent, HelpContentModel } from "../../../models/helpContent.model.ts";
-import { IHelpRepository } from "../../../interfaces/repositories/IHelpRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
+import { IHelpContent, HelpContentModel } from "../../../models/helpContent.model";
+import { IHelpRepository } from "../../../interfaces/repositories/IHelpRepository";
 
 export class HelpRepository extends BaseRepository<IHelpContent> implements IHelpRepository {
   constructor() {

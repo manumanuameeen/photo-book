@@ -1,9 +1,9 @@
-import { HttpStatus } from "../../../constants/httpStatus.ts";
-import { Messages } from "../../../constants/messages.ts";
-import { IWalletRepository } from "../../../interfaces/repositories/IWalletRepository.ts";
-import { IWalletService } from "../../../interfaces/services/IWalletService.ts";
-import { IWallet, ITransaction } from "../../../models/wallet.model.ts";
-import { AppError } from "../../../utils/AppError.ts";
+import { HttpStatus } from "../../../constants/httpStatus";
+import { Messages } from "../../../constants/messages";
+import { IWalletRepository } from "../../../interfaces/repositories/IWalletRepository";
+import { IWalletService } from "../../../interfaces/services/IWalletService";
+import { IWallet, ITransaction } from "../../../models/wallet.model";
+import { AppError } from "../../../utils/AppError";
 
 export class WalletService implements IWalletService {
   private readonly _walletRepository: IWalletRepository;
@@ -30,7 +30,7 @@ export class WalletService implements IWalletService {
       const adminWallet = await this._walletRepository.findByRole("admin");
       if (adminWallet) return adminWallet.userId.toString();
 
-      const { User } = await import("../../../models/user.model.ts");
+      const { User } = await import("../../../models/user.model");
       const adminUser = await User.findOne({ role: "admin" });
       if (adminUser) {
         return String(adminUser._id);

@@ -1,9 +1,9 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import type { UserRoleType } from "../interfaces/common/userRole.enum.ts";
-import UserRole from "../interfaces/common/userRole.enum.ts";
-import type { UserStatusType } from "../interfaces/common/userStatus.enum.ts";
-import UserStatus from "../interfaces/common/userStatus.enum.ts";
+import type { UserRoleType } from "../interfaces/common/userRole.enum";
+import UserRole from "../interfaces/common/userRole.enum";
+import type { UserStatusType } from "../interfaces/common/userStatus.enum";
+import UserStatus from "../interfaces/common/userStatus.enum";
 
 export interface IUser extends Document {
   name: string;

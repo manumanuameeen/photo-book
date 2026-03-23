@@ -1,5 +1,5 @@
-import { IRentalItem } from "../../../models/rentalItem.model.ts";
-import { IBaseRepository } from "../IBaseRepository.ts";
+import { IRentalItem } from "../../../models/rentalItem.model";
+import { IBaseRepository } from "../IBaseRepository";
 
 export interface IRentalItemRepository extends IBaseRepository<IRentalItem> {
   createItem(data: Partial<IRentalItem>): Promise<IRentalItem>;

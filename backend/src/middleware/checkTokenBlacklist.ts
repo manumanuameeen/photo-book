@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import { tokenBlacklistService } from "../services/token/tokenBlacklist.service.ts";
-import { HttpStatus } from "../constants/httpStatus.ts";
-import { Messages } from "../constants/messages.ts";
+import { tokenBlacklistService } from "../services/token/tokenBlacklist.service";
+import { HttpStatus } from "../constants/httpStatus";
+import { Messages } from "../constants/messages";
 
 interface AuthRequest extends Request {
   user?: {

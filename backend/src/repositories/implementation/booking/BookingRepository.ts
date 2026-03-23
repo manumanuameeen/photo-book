@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { BookingModel, IBooking } from "../../../models/booking.model.ts";
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { IBookingRepository } from "../../../interfaces/repositories/IBookingRepository.ts";
+import { BookingModel, IBooking } from "../../../models/booking.model";
+import { BaseRepository } from "../../base/BaseRepository";
+import { IBookingRepository } from "../../../interfaces/repositories/IBookingRepository";
 
 export class BookingRepository extends BaseRepository<IBooking> implements IBookingRepository {
   constructor() {

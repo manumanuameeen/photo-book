@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { CategoryType } from "../models/category.model";
 import type { CreateCategoryDto, UpdateCategoryDto } from "../dto/category.dto";
 import type { ICategory } from "../models/category.model";
-import type { ICategoryMapper, ICategoryResponseDto } from "./interfaces/ICategoryMapper.ts";
+import type { ICategoryMapper, ICategoryResponseDto } from "./interfaces/ICategoryMapper";
 export class CategoryMapper implements ICategoryMapper {
   fromDto(dto: CreateCategoryDto): Partial<ICategory> {
     return {

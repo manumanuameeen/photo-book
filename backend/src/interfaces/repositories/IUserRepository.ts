@@ -1,4 +1,4 @@
-import type { IUser } from "../../models/user.model.ts";
+import type { IUser } from "../../models/user.model";
 
 export interface IUserRepository {
   create(data: Partial<IUser>): Promise<IUser>;

@@ -1,6 +1,6 @@
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { AvailabilityModel, IAvailability } from "../../../models/availability.model.ts";
-import { IAvailabilityRepository } from "../../../interfaces/repositories/IAvailabilityRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
+import { AvailabilityModel, IAvailability } from "../../../models/availability.model";
+import { IAvailabilityRepository } from "../../../interfaces/repositories/IAvailabilityRepository";
 
 export class AvailabilityRepository
   extends BaseRepository<IAvailability>

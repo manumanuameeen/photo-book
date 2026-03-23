@@ -1,10 +1,10 @@
-import { IBookingPackage } from "../../models/bookingPackage.model.ts";
+import { IBookingPackage } from "../../models/bookingPackage.model";
 import {
   CreatePackageDto,
   UpdatePackageDto,
   SetAvailabilityDto,
-} from "../../dto/package-availability.dto.ts";
-import { IAvailability } from "../../models/availability.model.ts";
+} from "../../dto/package-availability.dto";
+import { IAvailability } from "../../models/availability.model";
 
 export interface IPackageService {
   createPackage(userId: string, data: CreatePackageDto): Promise<IBookingPackage>;

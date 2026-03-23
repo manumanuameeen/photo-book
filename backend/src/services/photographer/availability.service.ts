@@ -1,11 +1,11 @@
-import { IAvailabilityService } from "../../interfaces/services/IPackageAvailabilityService.ts";
-import { IAvailabilityRepository } from "../../interfaces/repositories/IAvailabilityRepository.ts";
-import { SetAvailabilityDto } from "../../dto/package-availability.dto.ts";
-import { IAvailability } from "../../models/availability.model.ts";
-import { BookingModel } from "../../models/booking.model.ts";
-import { PhotographerModel } from "../../models/photographer.model.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
+import { IAvailabilityService } from "../../interfaces/services/IPackageAvailabilityService";
+import { IAvailabilityRepository } from "../../interfaces/repositories/IAvailabilityRepository";
+import { SetAvailabilityDto } from "../../dto/package-availability.dto";
+import { IAvailability } from "../../models/availability.model";
+import { BookingModel } from "../../models/booking.model";
+import { PhotographerModel } from "../../models/photographer.model";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
 import mongoose from "mongoose";
 
 export class AvailabilityService implements IAvailabilityService {

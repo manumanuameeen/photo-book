@@ -1,8 +1,8 @@
-import { RentalItemModel, IRentalItem } from "../../../models/rentalItem.model.ts";
-import { RentalOrderModel, IRentalOrder } from "../../../models/rentalOrder.model.ts";
-import { BaseRepository } from "../../base/BaseRepository.ts";
+import { RentalItemModel, IRentalItem } from "../../../models/rentalItem.model";
+import { RentalOrderModel, IRentalOrder } from "../../../models/rentalOrder.model";
+import { BaseRepository } from "../../base/BaseRepository";
 import mongoose, { FilterQuery } from "mongoose";
-import { IRentalRepository } from "../../../interfaces/repositories/IRentalRepository.ts";
+import { IRentalRepository } from "../../../interfaces/repositories/IRentalRepository";
 
 export class RentalRepository extends BaseRepository<IRentalItem> implements IRentalRepository {
   constructor() {

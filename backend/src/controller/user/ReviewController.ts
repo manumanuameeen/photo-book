@@ -1,13 +1,13 @@
 import { Response } from "express";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IReviewService } from "../../interfaces/services/IReviewService.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { Messages } from "../../constants/messages.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { IReviewController } from "../../interfaces/controllers/IReviewController.ts";
-import { UpdateReviewDto } from "../../dto/auth.dto.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { IReviewService } from "../../interfaces/services/IReviewService";
+import { AppError } from "../../utils/AppError";
+import { Messages } from "../../constants/messages";
+import { HttpStatus } from "../../constants/httpStatus";
+import { ApiResponse } from "../../utils/response";
+import { IReviewController } from "../../interfaces/controllers/IReviewController";
+import { UpdateReviewDto } from "../../dto/auth.dto";
+import { handleError } from "../../utils/errorHandler";
 
 export class ReviewController implements IReviewController {
   private readonly _reviewService: IReviewService;

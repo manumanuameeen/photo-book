@@ -1,5 +1,5 @@
 import mongoose, { Model, Document } from "mongoose";
-import { IBaseRepository } from "../../interfaces/repositories/IBaseRepository.ts";
+import { IBaseRepository } from "../../interfaces/repositories/IBaseRepository";
 
 export abstract class BaseRepository<T extends Document> implements IBaseRepository<T> {
   protected readonly _model: Model<T>;

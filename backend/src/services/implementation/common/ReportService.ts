@@ -3,18 +3,18 @@ import {
   IUpdateReportStatusDTO,
   ReportOwnerDetails,
   ReportTargetMetadata,
-} from "../../../interfaces/services/IReportService.ts";
-import { IReport } from "../../../models/report.model.ts";
-import { IMessageService } from "../../../interfaces/services/IMessageService.ts";
-import { IReportRepository } from "../../../interfaces/repositories/IReportRepository.ts";
-import { RentalItemModel } from "../../../models/rentalItem.model.ts";
-import { PhotographerModel } from "../../../models/photographer.model.ts";
-import { User, IUser } from "../../../models/user.model.ts";
-import { IMessage } from "../../../models/message.model.ts";
+} from "../../../interfaces/services/IReportService";
+import { IReport } from "../../../models/report.model";
+import { IMessageService } from "../../../interfaces/services/IMessageService";
+import { IReportRepository } from "../../../interfaces/repositories/IReportRepository";
+import { RentalItemModel } from "../../../models/rentalItem.model";
+import { PhotographerModel } from "../../../models/photographer.model";
+import { User, IUser } from "../../../models/user.model";
+import { IMessage } from "../../../models/message.model";
 import mongoose from "mongoose";
-import { CreateReportDTO, ApplyPenaltyDTO } from "../../../dto/report.dto.ts";
-import { IFileService } from "../../../interfaces/services/IFileService.ts";
-import { ModerationLog } from "../../../models/moderationLog.model.ts";
+import { CreateReportDTO, ApplyPenaltyDTO } from "../../../dto/report.dto";
+import { IFileService } from "../../../interfaces/services/IFileService";
+import { ModerationLog } from "../../../models/moderationLog.model";
 
 export class ReportService implements IReportService {
   private _messageService: IMessageService;

@@ -1,11 +1,11 @@
 import { Response } from "express";
-import { IHelpTopicRequestService } from "../../interfaces/services/IHelpTopicRequestService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IHelpTopicRequestController } from "../../interfaces/controllers/IHelpTopicRequestController.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IHelpTopicRequestService } from "../../interfaces/services/IHelpTopicRequestService";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { IHelpTopicRequestController } from "../../interfaces/controllers/IHelpTopicRequestController";
+import { handleError } from "../../utils/errorHandler";
 
 export class HelpTopicRequestController implements IHelpTopicRequestController {
   private readonly _service: IHelpTopicRequestService;

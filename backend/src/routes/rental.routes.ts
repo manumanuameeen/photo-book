@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { container } from "../di/container.ts";
-import { verifyAccessToken, optionalAuth } from "../middleware/authMiddleware.ts";
-import { ROUTES } from "../constants/routes.ts";
+import { container } from "../di/container";
+import { verifyAccessToken, optionalAuth } from "../middleware/authMiddleware";
+import { ROUTES } from "../constants/routes";
 
-import { uploadMiddleware } from "../middleware/uploadMiddleware.ts";
+import { uploadMiddleware } from "../middleware/uploadMiddleware";
 
 const router = Router();
 const rentalController = container.rentalController;

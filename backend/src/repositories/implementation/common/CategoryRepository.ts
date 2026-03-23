@@ -1,8 +1,8 @@
-import { BaseRepository } from "../../base/BaseRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
 import { FilterQuery } from "mongoose";
-import { ICategory, CategoryModel } from "../../../models/category.model.ts";
-import { ICategoryRepository } from "../../../interfaces/repositories/ICategoryRepository.ts";
-import { ICategoryPagination, ICategoryQuery } from "../../../interfaces/services/ICategoryService.ts";
+import { ICategory, CategoryModel } from "../../../models/category.model";
+import { ICategoryRepository } from "../../../interfaces/repositories/ICategoryRepository";
+import { ICategoryPagination, ICategoryQuery } from "../../../interfaces/services/ICategoryService";
 
 export class CategoryRepository extends BaseRepository<ICategory> implements ICategoryRepository {
   constructor() {

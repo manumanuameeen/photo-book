@@ -1,6 +1,6 @@
-import { IReportCategoryRepository } from "../../../interfaces/repositories/IReportCategoryRepository.ts";
-import { ReportCategory } from "../../../models/reportCategory.model.ts";
-import { IReportCategory } from "../../../interfaces/models/IReportCategory.ts";
+import { IReportCategoryRepository } from "../../../interfaces/repositories/IReportCategoryRepository";
+import { ReportCategory } from "../../../models/reportCategory.model";
+import { IReportCategory } from "../../../interfaces/models/IReportCategory";
 
 export class ReportCategoryRepository implements IReportCategoryRepository {
   async create(data: Partial<IReportCategory>): Promise<IReportCategory> {

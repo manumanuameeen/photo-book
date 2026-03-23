@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import { IStripeService } from "../../../interfaces/services/IStripeService.ts";
+import { IStripeService } from "../../../interfaces/services/IStripeService";
 
 export interface StripeMetadata {
   type?: string;

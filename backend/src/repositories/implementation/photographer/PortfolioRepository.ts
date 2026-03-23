@@ -1,6 +1,6 @@
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { PortfolioSectionModel, IPortfolioSection } from "../../../models/portfolioSection.model.ts";
-import { IPortfolioRepository } from "../../../interfaces/repositories/IPortfolioRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
+import { PortfolioSectionModel, IPortfolioSection } from "../../../models/portfolioSection.model";
+import { IPortfolioRepository } from "../../../interfaces/repositories/IPortfolioRepository";
 
 export class PortfolioRepository
   extends BaseRepository<IPortfolioSection>

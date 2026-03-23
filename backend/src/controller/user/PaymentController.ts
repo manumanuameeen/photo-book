@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { StripeService } from "../../services/implementation/booking/StripeService.ts";
-import { handleError } from "../../utils/errorHandler.ts";
-import { IWalletService } from "../../interfaces/services/IWalletService.ts";
-import { IPaymentController } from "../../interfaces/controllers/IPaymentController.ts";
-import { CreatePaymentIntentDTO, ConfirmPaymentDTO } from "../../dto/payment.dto.ts";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { StripeService } from "../../services/implementation/booking/StripeService";
+import { handleError } from "../../utils/errorHandler";
+import { IWalletService } from "../../interfaces/services/IWalletService";
+import { IPaymentController } from "../../interfaces/controllers/IPaymentController";
+import { CreatePaymentIntentDTO, ConfirmPaymentDTO } from "../../dto/payment.dto";
 
 export class PaymentController implements IPaymentController {
   constructor(

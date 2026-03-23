@@ -3,17 +3,17 @@ import {
   ChangePasswordDtoType,
   UpdateProfileDtoType,
   UserProfileResponseDto,
-} from "../../dto/user.dto.ts";
-import { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository.ts";
-import { IUserRepository } from "../../interfaces/repositories/IUserRepository.ts";
-import { IUserService } from "../../interfaces/services/IUserService.ts";
-import { UserMapper } from "../../mappers/user.mapper.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { S3FileService } from "../external/S3FileService.ts";
-import { NodeMailerService } from "./email/nodemailer.service.ts";
-import { OtpService } from "./otp/otp.service.ts";
+} from "../../dto/user.dto";
+import { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository";
+import { IUserRepository } from "../../interfaces/repositories/IUserRepository";
+import { IUserService } from "../../interfaces/services/IUserService";
+import { UserMapper } from "../../mappers/user.mapper";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { S3FileService } from "../external/S3FileService";
+import { NodeMailerService } from "./email/nodemailer.service";
+import { OtpService } from "./otp/otp.service";
 
 export class UserService implements IUserService {
   private readonly _userRespository: IUserRepository;

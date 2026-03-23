@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { IAdminReviewService } from "../../interfaces/services/IAdminReviewService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { Messages } from "../../constants/messages.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IAdminReviewService } from "../../interfaces/services/IAdminReviewService";
+import { ApiResponse } from "../../utils/response";
+import { Messages } from "../../constants/messages";
+import { handleError } from "../../utils/errorHandler";
 export class AdminReviewController {
   private readonly _adminReviewService: IAdminReviewService;
   constructor(adminReviewService: IAdminReviewService) {

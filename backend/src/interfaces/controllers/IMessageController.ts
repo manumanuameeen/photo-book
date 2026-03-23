@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
+import { AuthRequest } from "../../middleware/authMiddleware";
 
 export interface IMessageController {
   getMessages(req: AuthRequest, res: Response): Promise<void>;

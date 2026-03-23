@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { AuthRateLimiter } from "../middleware/rateLimiter.middleware.ts";
-import { ROUTES } from "../constants/routes.ts";
-import { checkTokenBlacklist } from "../middleware/checkTokenBlacklist.ts";
-import { container } from "../di/container.ts";
-import { verifyAccessToken } from "../middleware/authMiddleware.ts";
+import { AuthRateLimiter } from "../middleware/rateLimiter.middleware";
+import { ROUTES } from "../constants/routes";
+import { checkTokenBlacklist } from "../middleware/checkTokenBlacklist";
+import { container } from "../di/container";
+import { verifyAccessToken } from "../middleware/authMiddleware";
 
 const router = Router();
 

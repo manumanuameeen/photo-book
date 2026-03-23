@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { IRuleController } from "../interfaces/controllers/IRuleController.ts";
-import { ROUTES } from "../constants/routes.ts";
+import { IRuleController } from "../interfaces/controllers/IRuleController";
+import { ROUTES } from "../constants/routes";
 
 export function ruleRoutes(ruleController: IRuleController) {
   const router = Router();

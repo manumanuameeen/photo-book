@@ -5,7 +5,7 @@ import type {
   IBookingMapper,
   IBookingResponseDto,
   IBookingRescheduleResponseDto,
-} from "./interfaces/IBookingMapper.ts";
+} from "./interfaces/IBookingMapper";
 export class BookingMapper implements IBookingMapper {
   fromDto(dto: CreateBookingDTO): Partial<IBooking> {
     const price = Number(dto.packagePrice);

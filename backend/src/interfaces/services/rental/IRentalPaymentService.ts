@@ -1,4 +1,4 @@
-import { IRentalOrder } from "../../../models/rentalOrder.model.ts";
+import { IRentalOrder } from "../../../models/rentalOrder.model";
 
 export interface IRentalPaymentService {
   createDepositPaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }>;

@@ -1,6 +1,6 @@
-import { IRentalItem } from "../../models/rentalItem.model.ts";
-import { IRentalOrder } from "../../models/rentalOrder.model.ts";
-import { CreateRentalItemDTO, UpdateRentalItemDTO } from "../../dto/rental.dto.ts";
+import { IRentalItem } from "../../models/rentalItem.model";
+import { IRentalOrder } from "../../models/rentalOrder.model";
+import { CreateRentalItemDTO, UpdateRentalItemDTO } from "../../dto/rental.dto";
 
 export interface IRentalService {
   createRentalItem(data: CreateRentalItemDTO): Promise<IRentalItem>;

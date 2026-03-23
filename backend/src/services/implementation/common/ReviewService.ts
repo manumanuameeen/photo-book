@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
-import { HttpStatus } from "../../../constants/httpStatus.ts";
-import { IReviewRepository } from "../../../interfaces/repositories/IReviewRepository.ts";
-import { IReviewService } from "../../../interfaces/services/IReviewService.ts";
-import type { IReview, IEnrichedReview } from "../../../models/review.model.ts";
-import { AppError } from "../../../utils/AppError.ts";
-import { RentalItemModel } from "../../../models/rentalItem.model.ts";
-import { BookingPackageModel } from "../../../models/bookingPackage.model.ts";
-import { BookingModel, BookingStatus } from "../../../models/booking.model.ts";
-import { RentalOrderModel, RentalStatus } from "../../../models/rentalOrder.model.ts";
-import { PhotographerModel } from "../../../models/photographer.model.ts";
+import { HttpStatus } from "../../../constants/httpStatus";
+import { IReviewRepository } from "../../../interfaces/repositories/IReviewRepository";
+import { IReviewService } from "../../../interfaces/services/IReviewService";
+import type { IReview, IEnrichedReview } from "../../../models/review.model";
+import { AppError } from "../../../utils/AppError";
+import { RentalItemModel } from "../../../models/rentalItem.model";
+import { BookingPackageModel } from "../../../models/bookingPackage.model";
+import { BookingModel, BookingStatus } from "../../../models/booking.model";
+import { RentalOrderModel, RentalStatus } from "../../../models/rentalOrder.model";
+import { PhotographerModel } from "../../../models/photographer.model";
 
 export class ReviewService implements IReviewService {
   private readonly _reviewRepository: IReviewRepository;

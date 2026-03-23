@@ -1,5 +1,5 @@
-import type { AdminUserQueryDtoType } from "../dto/admin.dto.ts";
-import type { IAdminUserQuery } from "../interfaces/services/IAdminUserService.ts";
+import type { AdminUserQueryDtoType } from "../dto/admin.dto";
+import type { IAdminUserQuery } from "../interfaces/services/IAdminUserService";
 
 export class AdminMapper {
   static toQueryInput(dto: AdminUserQueryDtoType): IAdminUserQuery {

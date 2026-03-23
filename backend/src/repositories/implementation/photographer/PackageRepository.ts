@@ -1,7 +1,7 @@
-import { BaseRepository } from "../../base/BaseRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
 import mongoose from "mongoose";
-import { BookingPackageModel, IBookingPackage } from "../../../models/bookingPackage.model.ts";
-import { IPackageRepository } from "../../../interfaces/repositories/IPackageRepository.ts";
+import { BookingPackageModel, IBookingPackage } from "../../../models/bookingPackage.model";
+import { IPackageRepository } from "../../../interfaces/repositories/IPackageRepository";
 
 export class PackageRepository
   extends BaseRepository<IBookingPackage>

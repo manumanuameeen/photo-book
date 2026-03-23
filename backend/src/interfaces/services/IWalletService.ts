@@ -1,4 +1,4 @@
-import { IWallet, ITransaction } from "../../models/wallet.model.ts";
+import { IWallet, ITransaction } from "../../models/wallet.model";
 
 export interface IWalletService {
   createWallet(userId: string, role: string): Promise<IWallet>;

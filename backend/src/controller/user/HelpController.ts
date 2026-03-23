@@ -1,11 +1,11 @@
 import { Response } from "express";
-import { IHelpService } from "../../interfaces/services/IHelpService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IHelpController } from "../../interfaces/controllers/IHelpController.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IHelpService } from "../../interfaces/services/IHelpService";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { IHelpController } from "../../interfaces/controllers/IHelpController";
+import { handleError } from "../../utils/errorHandler";
 
 export class HelpController implements IHelpController {
   private readonly _helpService: IHelpService;

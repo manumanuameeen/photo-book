@@ -1,8 +1,8 @@
-import { IAdminRentalService } from "../../interfaces/services/rental/IAdminRentalService.ts";
-import { IRentalItem } from "../../models/rentalItem.model.ts";
-import { IRentalOrder } from "../../models/rentalOrder.model.ts";
-import { IRentalItemRepository } from "../../interfaces/repositories/rental/IRentalItemRepository.ts";
-import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository.ts";
+import { IAdminRentalService } from "../../interfaces/services/rental/IAdminRentalService";
+import { IRentalItem } from "../../models/rentalItem.model";
+import { IRentalOrder } from "../../models/rentalOrder.model";
+import { IRentalItemRepository } from "../../interfaces/repositories/rental/IRentalItemRepository";
+import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository";
 
 export class AdminRentalService implements IAdminRentalService {
   private readonly _itemRepo: IRentalItemRepository;

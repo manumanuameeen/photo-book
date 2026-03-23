@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
-import { User, IUser } from "../../../models/user.model.ts";
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import type { IAdminRepository } from "../../../interfaces/repositories/IAdminRepository.ts";
+import { User, IUser } from "../../../models/user.model";
+import { BaseRepository } from "../../base/BaseRepository";
+import type { IAdminRepository } from "../../../interfaces/repositories/IAdminRepository";
 import type {
   IUserResponse,
   IAdminUserQuery,
   IPaginationUsers,
-} from "../../../interfaces/services/IAdminUserService.ts";
-import { AdminMapper } from "../../../mappers/admin.mapper.ts";
+} from "../../../interfaces/services/IAdminUserService";
+import { AdminMapper } from "../../../mappers/admin.mapper";
 
 export class AdminRepository extends BaseRepository<IUser> implements IAdminRepository {
   constructor() {

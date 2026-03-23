@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import type { CreateReportDTO, ApplyPenaltyDTO } from "../dto/report.dto";
 import type { IReport } from "../models/report.model";
-import type { IReportMapper, IReportResponseDto } from "./interfaces/IReportMapper.ts";
+import type { IReportMapper, IReportResponseDto } from "./interfaces/IReportMapper";
 export class ReportMapper implements IReportMapper {
   fromDto(dto: CreateReportDTO): Partial<IReport> {
     return {

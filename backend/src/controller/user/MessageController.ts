@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { Messages } from "../../constants/messages.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IMessageService } from "../../interfaces/services/IMessageService";
+import { HttpStatus } from "../../constants/httpStatus";
+import { ApiResponse } from "../../utils/response";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { AppError } from "../../utils/AppError";
+import { Messages } from "../../constants/messages";
+import { handleError } from "../../utils/errorHandler";
 
-import { IMessageController } from "../../interfaces/controllers/IMessageController.ts";
+import { IMessageController } from "../../interfaces/controllers/IMessageController";
 
 export class MessageController implements IMessageController {
   private readonly _service: IMessageService;
@@ -183,7 +183,7 @@ export class MessageController implements IMessageController {
       }
       if (!req.file) throw new AppError(Messages.NO_FILE_UPLOADED, HttpStatus.BAD_REQUEST);
 
-      const { CloudinaryService } = await import("../../services/external/CloudinaryService.ts");
+      const { CloudinaryService } = await import("../../services/external/CloudinaryService");
       const fileService = new CloudinaryService();
 
       const url = await fileService.uploadFile(req.file);

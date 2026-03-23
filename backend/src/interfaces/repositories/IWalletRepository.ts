@@ -1,5 +1,5 @@
-import { IWallet, ITransaction } from "../../models/wallet.model.ts";
-import { IBaseRepository } from "./IBaseRepository.ts";
+import { IWallet, ITransaction } from "../../models/wallet.model";
+import { IBaseRepository } from "./IBaseRepository";
 
 export interface IWalletRepository extends IBaseRepository<IWallet> {
   createWallet(userId: string, role: string): Promise<IWallet>;

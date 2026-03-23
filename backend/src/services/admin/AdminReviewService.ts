@@ -1,10 +1,10 @@
-import { IAdminReviewService } from "../../interfaces/services/IAdminReviewService.ts";
-import { ReviewModel, IReview, IEnrichedReview } from "../../models/review.model.ts";
-import { PhotographerModel } from "../../models/photographer.model.ts";
-import { RentalItemModel } from "../../models/rentalItem.model.ts";
-import { BookingPackageModel } from "../../models/bookingPackage.model.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
+import { IAdminReviewService } from "../../interfaces/services/IAdminReviewService";
+import { ReviewModel, IReview, IEnrichedReview } from "../../models/review.model";
+import { PhotographerModel } from "../../models/photographer.model";
+import { RentalItemModel } from "../../models/rentalItem.model";
+import { BookingPackageModel } from "../../models/bookingPackage.model";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
 import mongoose from "mongoose";
 export class AdminReviewService implements IAdminReviewService {
   async getAllReviews(

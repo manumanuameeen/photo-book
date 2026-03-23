@@ -1,16 +1,16 @@
 import mongoose from "mongoose";
-import { HttpStatus } from "../../../constants/httpStatus.ts";
-import { IRentalRepository } from "../../../interfaces/repositories/IRentalRepository.ts";
-import { IRentalDashboardStats, IRentalService } from "../../../interfaces/services/IRentalService.ts";
-import { IMessageService } from "../../../interfaces/services/IMessageService.ts";
-import { CreateRentalItemDTO, UpdateRentalItemDTO } from "../../../dto/rental.dto.ts";
-import { IRentalItem } from "../../../models/rentalItem.model.ts";
-import { IRentalOrder, RentalStatus, RentalOrderModel } from "../../../models/rentalOrder.model.ts";
-import { IUserRepository } from "../../../interfaces/repositories/IUserRepository.ts";
-import { AppError } from "../../../utils/AppError.ts";
-import { Messages } from "../../../constants/messages.ts";
-import { IRentalAvailabilityService } from "../../../interfaces/services/rental/IRentalAvailabilityService.ts";
-import { IRentalFinanceService } from "../../../interfaces/services/rental/IRentalFinanceService.ts";
+import { HttpStatus } from "../../../constants/httpStatus";
+import { IRentalRepository } from "../../../interfaces/repositories/IRentalRepository";
+import { IRentalDashboardStats, IRentalService } from "../../../interfaces/services/IRentalService";
+import { IMessageService } from "../../../interfaces/services/IMessageService";
+import { CreateRentalItemDTO, UpdateRentalItemDTO } from "../../../dto/rental.dto";
+import { IRentalItem } from "../../../models/rentalItem.model";
+import { IRentalOrder, RentalStatus, RentalOrderModel } from "../../../models/rentalOrder.model";
+import { IUserRepository } from "../../../interfaces/repositories/IUserRepository";
+import { AppError } from "../../../utils/AppError";
+import { Messages } from "../../../constants/messages";
+import { IRentalAvailabilityService } from "../../../interfaces/services/rental/IRentalAvailabilityService";
+import { IRentalFinanceService } from "../../../interfaces/services/rental/IRentalFinanceService";
 type MongoReference = string | mongoose.Types.ObjectId | { _id: string | mongoose.Types.ObjectId };
 
 export class RentalService implements IRentalService {

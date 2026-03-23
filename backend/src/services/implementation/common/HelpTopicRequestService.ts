@@ -1,6 +1,6 @@
-import { IHelpTopicRequest } from "../../../models/helpTopicRequest.model.ts";
-import { IHelpTopicRequestRepository } from "../../../interfaces/repositories/IHelpTopicRequestRepository.ts";
-import { IHelpTopicRequestService } from "../../../interfaces/services/IHelpTopicRequestService.ts";
+import { IHelpTopicRequest } from "../../../models/helpTopicRequest.model";
+import { IHelpTopicRequestRepository } from "../../../interfaces/repositories/IHelpTopicRequestRepository";
+import { IHelpTopicRequestService } from "../../../interfaces/services/IHelpTopicRequestService";
 
 export class HelpTopicRequestService implements IHelpTopicRequestService {
   private readonly _repository: IHelpTopicRequestRepository;

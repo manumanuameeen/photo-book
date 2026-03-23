@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import { HttpStatus } from "../constants/httpStatus.ts";
+import { HttpStatus } from "../constants/httpStatus";
 
 export class ApiResponse {
   static success<T>(

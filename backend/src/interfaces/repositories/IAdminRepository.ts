@@ -1,10 +1,10 @@
-import { IUser } from "../../models/user.model.ts";
-import { IBaseRepository } from "./IBaseRepository.ts";
+import { IUser } from "../../models/user.model";
+import { IBaseRepository } from "./IBaseRepository";
 import type {
   IPaginationUsers,
   IAdminUserQuery,
   IUserResponse,
-} from "../services/IAdminUserService.ts";
+} from "../services/IAdminUserService";
 
 export interface IAdminRepository extends IBaseRepository<IUser> {
   getAllUser(query: IAdminUserQuery): Promise<IPaginationUsers>;

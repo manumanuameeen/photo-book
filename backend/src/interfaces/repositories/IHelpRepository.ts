@@ -1,5 +1,5 @@
-import { IBaseRepository } from "./IBaseRepository.ts";
-import { IHelpContent } from "../../models/helpContent.model.ts";
+import { IBaseRepository } from "./IBaseRepository";
+import { IHelpContent } from "../../models/helpContent.model";
 
 export interface IHelpRepository extends IBaseRepository<IHelpContent> {
   getAll(): Promise<IHelpContent[]>;

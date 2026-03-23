@@ -1,7 +1,7 @@
-import { RentalOrderModel, IRentalOrder } from "../../../models/rentalOrder.model.ts";
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { IRentalOrderRepository } from "../../../interfaces/repositories/rental/IRentalOrderRepository.ts";
-import { IRecentActivity } from "../../../interfaces/services/rental/IRentalOrderService.ts";
+import { RentalOrderModel, IRentalOrder } from "../../../models/rentalOrder.model";
+import { BaseRepository } from "../../base/BaseRepository";
+import { IRentalOrderRepository } from "../../../interfaces/repositories/rental/IRentalOrderRepository";
+import { IRecentActivity } from "../../../interfaces/services/rental/IRentalOrderService";
 import mongoose from "mongoose";
 
 export class RentalOrderRepository

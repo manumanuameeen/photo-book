@@ -1,8 +1,8 @@
-import { IHelpService } from "../../../interfaces/services/IHelpService.ts";
-import { IHelpRepository } from "../../../interfaces/repositories/IHelpRepository.ts";
-import { IHelpContent } from "../../../models/helpContent.model.ts";
-import { AppError } from "../../../utils/AppError.ts";
-import { HttpStatus } from "../../../constants/httpStatus.ts";
+import { IHelpService } from "../../../interfaces/services/IHelpService";
+import { IHelpRepository } from "../../../interfaces/repositories/IHelpRepository";
+import { IHelpContent } from "../../../models/helpContent.model";
+import { AppError } from "../../../utils/AppError";
+import { HttpStatus } from "../../../constants/httpStatus";
 
 export class HelpService implements IHelpService {
   private readonly _helpRepository: IHelpRepository;

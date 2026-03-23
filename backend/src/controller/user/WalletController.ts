@@ -1,14 +1,14 @@
 import { Response } from "express";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IWalletService } from "../../interfaces/services/IWalletService.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { Messages } from "../../constants/messages.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { IWalletController } from "../../interfaces/controllers/IWalletController.ts";
-import { IBookingRepository } from "../../interfaces/repositories/IBookingRepository.ts";
-import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { IWalletService } from "../../interfaces/services/IWalletService";
+import { AppError } from "../../utils/AppError";
+import { Messages } from "../../constants/messages";
+import { HttpStatus } from "../../constants/httpStatus";
+import { ApiResponse } from "../../utils/response";
+import { IWalletController } from "../../interfaces/controllers/IWalletController";
+import { IBookingRepository } from "../../interfaces/repositories/IBookingRepository";
+import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository";
+import { handleError } from "../../utils/errorHandler";
 
 export class WalletController implements IWalletController {
   private readonly _walletService: IWalletService;

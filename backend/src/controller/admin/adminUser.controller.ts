@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
-import type { IAdminService } from "../../interfaces/services/IAdminService.ts";
-import type { IAdminController } from "../../interfaces/controllers/IAdminController.ts";
-import { AdminUserQueryDto } from "../../dto/admin.dto.ts";
-import { AdminMapper } from "../../mappers/admin.mapper.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { Messages } from "../../constants/messages.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import type { IAdminService } from "../../interfaces/services/IAdminService";
+import type { IAdminController } from "../../interfaces/controllers/IAdminController";
+import { AdminUserQueryDto } from "../../dto/admin.dto";
+import { AdminMapper } from "../../mappers/admin.mapper";
+import { ApiResponse } from "../../utils/response";
+import { Messages } from "../../constants/messages";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { handleError } from "../../utils/errorHandler";
 
 export class AdminController implements IAdminController {
   private readonly _adminService: IAdminService;

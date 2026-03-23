@@ -1,6 +1,6 @@
-import redisClient from "../../config/redis.ts";
-import logger from "../../config/logger.ts";
-import type { ITokenBlackListService } from "./interface.ts";
+import redisClient from "../../config/redis";
+import logger from "../../config/logger";
+import type { ITokenBlackListService } from "./interface";
 
 export class TokenBlacklistService implements ITokenBlackListService {
   private readonly _Prefix = "blacklist:";

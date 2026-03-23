@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { verifyAccessToken, verifyAdmin } from "../middleware/authMiddleware.ts";
-import { ROUTES } from "../constants/routes.ts";
-import { container } from "../di/container.ts";
+import { verifyAccessToken, verifyAdmin } from "../middleware/authMiddleware";
+import { ROUTES } from "../constants/routes";
+import { container } from "../di/container";
 
 const router = Router();
 const reportCategoryController = container.reportCategoryController;

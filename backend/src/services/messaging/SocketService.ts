@@ -1,8 +1,8 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
-import { socketAuthMiddleware, AuthSocket } from "../../middleware/socketMiddleware.ts";
-import { SocketEvents } from "../../constants/socketEvents.ts";
-import type { ISocketService } from "../../interfaces/services/ISocketService.ts";
+import { socketAuthMiddleware, AuthSocket } from "../../middleware/socketMiddleware";
+import { SocketEvents } from "../../constants/socketEvents";
+import type { ISocketService } from "../../interfaces/services/ISocketService";
 
 export class SocketService implements ISocketService {
   private static _instance: SocketService;

@@ -1,13 +1,13 @@
-import { IPackageService } from "../../interfaces/services/IPackageAvailabilityService.ts";
-import { IPackageRepository } from "../../interfaces/repositories/IPackageRepository.ts";
-import { CreatePackageDto, UpdatePackageDto } from "../../dto/package-availability.dto.ts";
-import { IBookingPackage, BookingPackageModel } from "../../models/bookingPackage.model.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
+import { IPackageService } from "../../interfaces/services/IPackageAvailabilityService";
+import { IPackageRepository } from "../../interfaces/repositories/IPackageRepository";
+import { CreatePackageDto, UpdatePackageDto } from "../../dto/package-availability.dto";
+import { IBookingPackage, BookingPackageModel } from "../../models/bookingPackage.model";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
 
 import mongoose from "mongoose";
 
-import { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository.ts";
+import { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository";
 
 export class PackageService implements IPackageService {
   private readonly _repository: IPackageRepository;

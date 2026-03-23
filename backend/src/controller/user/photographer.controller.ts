@@ -1,15 +1,15 @@
 import type { Response, Request } from "express";
-import type { AuthRequest } from "../../middleware/authMiddleware.ts";
-import type { IPhtogrpherController } from "../../interfaces/controllers/IPhotographyController.ts";
-import type { IPhotographerService } from "../../interfaces/services/IPhotographerService.ts";
-import type { IFileService } from "../../interfaces/services/IFileService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { AppError } from "../../utils/AppError.ts";
+import type { AuthRequest } from "../../middleware/authMiddleware";
+import type { IPhtogrpherController } from "../../interfaces/controllers/IPhotographyController";
+import type { IPhotographerService } from "../../interfaces/services/IPhotographerService";
+import type { IFileService } from "../../interfaces/services/IFileService";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { AppError } from "../../utils/AppError";
 import { z } from "zod";
-import { ApplyPhtographerDto } from "../../dto/photographer.dto.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { ApplyPhtographerDto } from "../../dto/photographer.dto";
+import { handleError } from "../../utils/errorHandler";
 
 export class PhotographerController implements IPhtogrpherController {
   private readonly _photographerService: IPhotographerService;

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { WalletModel, IWallet, ITransaction } from "../../../models/wallet.model.ts";
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { IWalletRepository } from "../../../interfaces/repositories/IWalletRepository.ts";
+import { WalletModel, IWallet, ITransaction } from "../../../models/wallet.model";
+import { BaseRepository } from "../../base/BaseRepository";
+import { IWalletRepository } from "../../../interfaces/repositories/IWalletRepository";
 
 export class WalletRepository extends BaseRepository<IWallet> implements IWalletRepository {
   constructor() {

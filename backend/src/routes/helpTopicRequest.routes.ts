@@ -1,8 +1,8 @@
 import express from "express";
-import { IHelpTopicRequestController } from "../interfaces/controllers/IHelpTopicRequestController.ts";
-import { verifyAccessToken } from "../middleware/authMiddleware.ts";
-import { verifyAdmin } from "../middleware/verifyAdmin.ts";
-import { ROUTES } from "../constants/routes.ts";
+import { IHelpTopicRequestController } from "../interfaces/controllers/IHelpTopicRequestController";
+import { verifyAccessToken } from "../middleware/authMiddleware";
+import { verifyAdmin } from "../middleware/verifyAdmin";
+import { ROUTES } from "../constants/routes";
 
 export function helpRequestRoutes(controller: IHelpTopicRequestController) {
   const router = express.Router();

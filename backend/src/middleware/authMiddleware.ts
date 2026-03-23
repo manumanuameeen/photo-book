@@ -1,6 +1,6 @@
 import Jwt from "jsonwebtoken";
-import { PhotographerModel } from "../models/photographer.model.ts";
-import { HttpStatus } from "../constants/httpStatus.ts";
+import { PhotographerModel } from "../models/photographer.model";
+import { HttpStatus } from "../constants/httpStatus";
 import type { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 dotenv.config();

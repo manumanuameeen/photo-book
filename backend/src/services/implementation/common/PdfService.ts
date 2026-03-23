@@ -1,6 +1,6 @@
 import PDFDocument from "pdfkit";
-import { IPdfService } from "../../../interfaces/services/IPdfService.ts";
-import { IRentalOrder } from "../../../models/rentalOrder.model.ts";
+import { IPdfService } from "../../../interfaces/services/IPdfService";
+import { IRentalOrder } from "../../../models/rentalOrder.model";
 
 export class PdfService implements IPdfService {
   async generateRentalAgreement(order: IRentalOrder): Promise<Buffer> {

@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
-import { IPortfolioController } from "../../interfaces/controllers/IPortfolioController.ts";
-import { IPortfolioService } from "../../interfaces/services/IPortfolioService.ts";
-import { IFileService } from "../../interfaces/services/IFileService.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { handleError } from "../../utils/errorHandler.ts";
-import { generateCaption } from "../../services/external/aiCaptionService.ts";
-import { generateTags } from "../../services/external/aiTagService.ts";
-import { getImageEmbedding } from "../../services/external/aiSearchService.ts";
+import { IPortfolioController } from "../../interfaces/controllers/IPortfolioController";
+import { IPortfolioService } from "../../interfaces/services/IPortfolioService";
+import { IFileService } from "../../interfaces/services/IFileService";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { ApiResponse } from "../../utils/response";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { handleError } from "../../utils/errorHandler";
+import { generateCaption } from "../../services/external/aiCaptionService";
+import { generateTags } from "../../services/external/aiTagService";
+import { getImageEmbedding } from "../../services/external/aiSearchService";
 
 export class PortfolioController implements IPortfolioController {
   private _service: IPortfolioService;

@@ -1,9 +1,9 @@
-import { IBooking } from "../../models/booking.model.ts";
+import { IBooking } from "../../models/booking.model";
 import {
   CreateBookingDTO,
   BookingRescheduleRequestDTO,
   BookingRescheduleResponseDTO,
-} from "../../dto/booking.dto.ts";
+} from "../../dto/booking.dto";
 
 export interface IBookingService {
   createBookingRequest(userId: string, data: CreateBookingDTO): Promise<IBooking>;

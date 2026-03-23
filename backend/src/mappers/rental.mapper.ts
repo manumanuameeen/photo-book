@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import type { CreateRentalItemDTO, UpdateRentalItemDTO } from "../dto/rental.dto";
 import type { IRentalItem } from "../models/rentalItem.model";
-import type { IRentalItemMapper, IRentalItemResponseDto } from "./interfaces/IRentalMapper.ts";
+import type { IRentalItemMapper, IRentalItemResponseDto } from "./interfaces/IRentalMapper";
 export class RentalItemMapper implements IRentalItemMapper {
   fromDto(dto: CreateRentalItemDTO): Partial<IRentalItem> {
     return {

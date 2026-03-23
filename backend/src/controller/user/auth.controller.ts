@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import type { IAuthController } from "../../interfaces/controllers/IauthController.ts";
-import type { IAuthService } from "../../interfaces/services/IAuthService.ts";
+import type { IAuthController } from "../../interfaces/controllers/IauthController";
+import type { IAuthService } from "../../interfaces/services/IAuthService";
 import {
   ForgetPasswordDto,
   LoginDto,
@@ -10,14 +10,14 @@ import {
   SignupDto,
   VerifyOtpDto,
   VerifyResetOtpDto,
-} from "../../dto/auth.dto.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { ENV } from "../../constants/env.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { UserMapper } from "../../mappers/user.mapper.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+} from "../../dto/auth.dto";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { ENV } from "../../constants/env";
+import { AppError } from "../../utils/AppError";
+import { UserMapper } from "../../mappers/user.mapper";
+import { handleError } from "../../utils/errorHandler";
 
 export class AuthController implements IAuthController {
   private readonly _authService: IAuthService;

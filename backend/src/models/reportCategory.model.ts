@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IReportCategory } from "../interfaces/models/IReportCategory.ts";
+import { IReportCategory } from "../interfaces/models/IReportCategory";
 
 const ReportCategorySchema: Schema = new Schema(
   {

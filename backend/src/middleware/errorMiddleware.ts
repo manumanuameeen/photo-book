@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import logger from "../config/logger.ts";
-import { AppError } from "../utils/AppError.ts";
+import logger from "../config/logger";
+import { AppError } from "../utils/AppError";
 
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) {

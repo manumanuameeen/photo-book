@@ -1,5 +1,5 @@
-import { IBookingPackage } from "../../models/bookingPackage.model.ts";
-import { IBaseRepository } from "./IBaseRepository.ts";
+import { IBookingPackage } from "../../models/bookingPackage.model";
+import { IBaseRepository } from "./IBaseRepository";
 
 export interface IPackageRepository extends IBaseRepository<IBookingPackage> {
   create(data: Partial<IBookingPackage>): Promise<IBookingPackage>;

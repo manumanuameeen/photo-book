@@ -2,13 +2,13 @@ import {
   ICategoryService,
   ICategoryQuery,
   ICategoryPagination,
-} from "../../interfaces/services/ICategoryService.ts";
-import { CategoryRepository } from "../../repositories/implementation/common/CategoryRepository.ts";
-import { ICategory, CategoryType } from "../../models/category.model.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { IMessageService } from "../../interfaces/services/IMessageService.ts";
+} from "../../interfaces/services/ICategoryService";
+import { CategoryRepository } from "../../repositories/implementation/common/CategoryRepository";
+import { ICategory, CategoryType } from "../../models/category.model";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { IMessageService } from "../../interfaces/services/IMessageService";
 import mongoose from "mongoose";
 
 export class CategoryService implements ICategoryService {

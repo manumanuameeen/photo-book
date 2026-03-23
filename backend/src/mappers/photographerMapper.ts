@@ -1,5 +1,5 @@
-import { IPhotographer } from "../models/photographer.model.ts";
-import { PhotographerResponseDto } from "../dto/photographer.dto.ts";
+import { IPhotographer } from "../models/photographer.model";
+import { PhotographerResponseDto } from "../dto/photographer.dto";
 
 export class PhotographerMapper {
   static toResponse(data: IPhotographer): PhotographerResponseDto {

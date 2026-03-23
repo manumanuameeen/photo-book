@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { IBookingController } from "../../interfaces/controllers/IBookingController.ts";
-import { IBookingService } from "../../interfaces/services/IBookingService.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { Messages } from "../../constants/messages.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IBookingController } from "../../interfaces/controllers/IBookingController";
+import { IBookingService } from "../../interfaces/services/IBookingService";
+import { HttpStatus } from "../../constants/httpStatus";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { ApiResponse } from "../../utils/response";
+import { AppError } from "../../utils/AppError";
+import { Messages } from "../../constants/messages";
+import { handleError } from "../../utils/errorHandler";
 import {
   CreateBookingSchema,
   BookingRescheduleRequestSchema,
   BookingRescheduleResponseSchema,
-} from "../../dto/booking.dto.ts";
+} from "../../dto/booking.dto";
 
 export class BookingController implements IBookingController {
   private _bookingService: IBookingService;

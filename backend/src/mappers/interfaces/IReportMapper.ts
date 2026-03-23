@@ -1,6 +1,6 @@
-import type { CreateReportDTO, ApplyPenaltyDTO } from "../../dto/report.dto.ts";
-import type { IReport } from "../../models/report.model.ts";
-import type { IMapper } from "./IMapper.ts";
+import type { CreateReportDTO, ApplyPenaltyDTO } from "../../dto/report.dto";
+import type { IReport } from "../../models/report.model";
+import type { IMapper } from "./IMapper";
 export interface IReportResponseDto {
   id: string;
   reporterId: string;

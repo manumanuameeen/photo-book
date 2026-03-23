@@ -1,7 +1,7 @@
-import { IReportCategoryService } from "../../../interfaces/services/IReportCategoryService.ts";
-import { IReportCategoryRepository } from "../../../interfaces/repositories/IReportCategoryRepository.ts";
-import { IReportCategory } from "../../../interfaces/models/IReportCategory.ts";
-import { CreateReportCategoryDTO, UpdateReportCategoryDTO } from "../../../dto/report.dto.ts";
+import { IReportCategoryService } from "../../../interfaces/services/IReportCategoryService";
+import { IReportCategoryRepository } from "../../../interfaces/repositories/IReportCategoryRepository";
+import { IReportCategory } from "../../../interfaces/models/IReportCategory";
+import { CreateReportCategoryDTO, UpdateReportCategoryDTO } from "../../../dto/report.dto";
 
 export class ReportCategoryService implements IReportCategoryService {
   private _repository: IReportCategoryRepository;

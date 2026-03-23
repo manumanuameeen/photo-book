@@ -1,13 +1,13 @@
 import type { Response } from "express";
-import type { AuthRequest } from "../../middleware/authMiddleware.ts";
-import type { IUserController } from "../../interfaces/controllers/IUserController.ts";
-import type { IUserService } from "../../interfaces/services/IUserService.ts";
-import { UpdateProfileDtoType, ChangePasswordDtoType } from "../../dto/user.dto.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import type { AuthRequest } from "../../middleware/authMiddleware";
+import type { IUserController } from "../../interfaces/controllers/IUserController";
+import type { IUserService } from "../../interfaces/services/IUserService";
+import { UpdateProfileDtoType, ChangePasswordDtoType } from "../../dto/user.dto";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { AppError } from "../../utils/AppError";
+import { handleError } from "../../utils/errorHandler";
 
 export class UserController implements IUserController {
   private readonly _userService: IUserService;

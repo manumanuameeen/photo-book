@@ -2,10 +2,10 @@ import {
   ApplyPhtographerDtoType,
   PhotographerResponseDto,
   IPaginatedPhotographerResponse,
-} from "../../dto/photographer.dto.ts";
-import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto.ts";
-import { IBooking } from "../../models/booking.model.ts";
-import { IPhotographer } from "../../models/photographer.model.ts";
+} from "../../dto/photographer.dto";
+import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto";
+import { IBooking } from "../../models/booking.model";
+import { IPhotographer } from "../../models/photographer.model";
 
 export interface IPhotographerService {
   apply(userId: string, data: ApplyPhtographerDtoType): Promise<PhotographerResponseDto>;

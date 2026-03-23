@@ -1,10 +1,10 @@
 import type {
   BookingEmailDetails,
   IEmailService,
-} from "../../../interfaces/services/IEmailService.ts";
-import { AppError } from "../../../utils/AppError.ts";
-import { HttpStatus } from "../../../constants/httpStatus.ts";
-import { mailTransport } from "../../../config/email.ts";
+} from "../../../interfaces/services/IEmailService";
+import { AppError } from "../../../utils/AppError";
+import { HttpStatus } from "../../../constants/httpStatus";
+import { mailTransport } from "../../../config/email";
 
 export class NodeMailerService implements IEmailService {
   async sendOtp(email: string, otp: string, name: string): Promise<void> {

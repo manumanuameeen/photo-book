@@ -1,5 +1,5 @@
-import { IReportRepository } from "../../../interfaces/repositories/IReportRepository.ts";
-import { Report, IReport } from "../../../models/report.model.ts";
+import { IReportRepository } from "../../../interfaces/repositories/IReportRepository";
+import { Report, IReport } from "../../../models/report.model";
 
 export class ReportRepository implements IReportRepository {
   async create(data: Partial<IReport>): Promise<IReport> {

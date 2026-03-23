@@ -1,4 +1,4 @@
-import { IReportCategory } from "../models/IReportCategory.ts";
+import { IReportCategory } from "../models/IReportCategory";
 
 export interface IReportCategoryRepository {
   create(data: Partial<IReportCategory>): Promise<IReportCategory>;

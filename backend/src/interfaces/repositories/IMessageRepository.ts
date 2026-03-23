@@ -1,5 +1,5 @@
-import { IMessage } from "../../models/message.model.ts";
-import { IBaseRepository } from "./IBaseRepository.ts";
+import { IMessage } from "../../models/message.model";
+import { IBaseRepository } from "./IBaseRepository";
 
 export interface IMessageRepository extends IBaseRepository<IMessage> {
   findByPartnerId(

@@ -1,14 +1,14 @@
-import { BaseRepository } from "../../base/BaseRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
 import type {
   IPaginatedPhotographers,
   IPhotographerQuery,
   IPhotographerRepository,
   IPhotographerStats,
   IPublicPhotographer,
-} from "../../../interfaces/repositories/IPhotographerRepository.ts";
-import { IPaginatedPhotographerResponse } from "../../../dto/photographer.dto.ts";
-import { PhotographerModel } from "../../../models/photographer.model.ts";
-import type { IPhotographer } from "../../../models/photographer.model.ts";
+} from "../../../interfaces/repositories/IPhotographerRepository";
+import { IPaginatedPhotographerResponse } from "../../../dto/photographer.dto";
+import { PhotographerModel } from "../../../models/photographer.model";
+import type { IPhotographer } from "../../../models/photographer.model";
 import mongoose, { FilterQuery, PipelineStage } from "mongoose";
 
 export class PhotographerRepository

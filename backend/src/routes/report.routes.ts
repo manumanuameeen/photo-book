@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { verifyAccessToken, verifyAdmin, AuthRequest } from "../middleware/authMiddleware.ts";
-import { ROUTES } from "../constants/routes.ts";
-import { container } from "../di/container.ts";
-import { uploadMiddleware } from "../middleware/uploadMiddleware.ts";
+import { verifyAccessToken, verifyAdmin, AuthRequest } from "../middleware/authMiddleware";
+import { ROUTES } from "../constants/routes";
+import { container } from "../di/container";
+import { uploadMiddleware } from "../middleware/uploadMiddleware";
 
 const router = Router();
 const reportController = container.reportController;

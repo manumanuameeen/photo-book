@@ -1,20 +1,20 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
 import {
   CreateCategorySchema,
   GetCategoriesQueryDto,
   RejectCategorySchema,
   SuggestCategorySchema,
   UpdateCategorySchema,
-} from "../../dto/category.dto.ts";
-import { ICategoryController } from "../../interfaces/controllers/ICategoryController.ts";
-import { ICategoryService } from "../../interfaces/services/ICategoryService.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+} from "../../dto/category.dto";
+import { ICategoryController } from "../../interfaces/controllers/ICategoryController";
+import { ICategoryService } from "../../interfaces/services/ICategoryService";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { AppError } from "../../utils/AppError";
+import { ApiResponse } from "../../utils/response";
+import { handleError } from "../../utils/errorHandler";
 
 export class CategoryController implements ICategoryController {
   private readonly _service: ICategoryService;

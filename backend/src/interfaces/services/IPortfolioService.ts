@@ -1,4 +1,4 @@
-import { IPortfolioSection } from "../../models/portfolioSection.model.ts";
+import { IPortfolioSection } from "../../models/portfolioSection.model";
 
 export interface IPortfolioService {
   createSection(userId: string, title: string, coverImage?: string): Promise<IPortfolioSection>;

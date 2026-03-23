@@ -1,5 +1,5 @@
-import { IReportCategory } from "../models/IReportCategory.ts";
-import { CreateReportCategoryDTO, UpdateReportCategoryDTO } from "../../dto/report.dto.ts";
+import { IReportCategory } from "../models/IReportCategory";
+import { CreateReportCategoryDTO, UpdateReportCategoryDTO } from "../../dto/report.dto";
 
 export interface IReportCategoryService {
   createCategory(data: CreateReportCategoryDTO): Promise<IReportCategory>;

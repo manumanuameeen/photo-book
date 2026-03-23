@@ -1,5 +1,5 @@
-import { IHelpTopicRequest } from "../../models/helpTopicRequest.model.ts";
-import { IBaseRepository } from "./IBaseRepository.ts";
+import { IHelpTopicRequest } from "../../models/helpTopicRequest.model";
+import { IBaseRepository } from "./IBaseRepository";
 
 export interface IHelpTopicRequestRepository extends IBaseRepository<IHelpTopicRequest> {
   findAllWithUser(): Promise<IHelpTopicRequest[]>;

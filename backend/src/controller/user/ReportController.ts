@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import { IReportService } from "../../interfaces/services/IReportService.ts";
-import { Messages } from "../../constants/messages.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IReportController } from "../../interfaces/controllers/IReportController.ts";
-import { CreateReportDTOSchema, ApplyPenaltyDTOSchema } from "../../dto/report.dto.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IReportService } from "../../interfaces/services/IReportService";
+import { Messages } from "../../constants/messages";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { IReportController } from "../../interfaces/controllers/IReportController";
+import { CreateReportDTOSchema, ApplyPenaltyDTOSchema } from "../../dto/report.dto";
+import { AppError } from "../../utils/AppError";
+import { handleError } from "../../utils/errorHandler";
 
 export class ReportController implements IReportController {
   private readonly _reportService: IReportService;

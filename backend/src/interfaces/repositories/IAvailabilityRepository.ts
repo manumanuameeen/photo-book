@@ -1,4 +1,4 @@
-import { IAvailability } from "../../models/availability.model.ts";
+import { IAvailability } from "../../models/availability.model";
 
 export interface IAvailabilityRepository {
   create(data: Partial<IAvailability>): Promise<IAvailability>;

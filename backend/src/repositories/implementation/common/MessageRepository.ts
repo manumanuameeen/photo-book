@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { MessageModel, IMessage } from "../../../models/message.model.ts";
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { IMessageRepository } from "../../../interfaces/repositories/IMessageRepository.ts";
+import { MessageModel, IMessage } from "../../../models/message.model";
+import { BaseRepository } from "../../base/BaseRepository";
+import { IMessageRepository } from "../../../interfaces/repositories/IMessageRepository";
 
 export class MessageRepository extends BaseRepository<IMessage> implements IMessageRepository {
   constructor() {

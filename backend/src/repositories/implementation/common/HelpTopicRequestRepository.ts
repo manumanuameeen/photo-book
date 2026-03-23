@@ -1,6 +1,6 @@
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { IHelpTopicRequest, HelpTopicRequestModel } from "../../../models/helpTopicRequest.model.ts";
-import { IHelpTopicRequestRepository } from "../../../interfaces/repositories/IHelpTopicRequestRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
+import { IHelpTopicRequest, HelpTopicRequestModel } from "../../../models/helpTopicRequest.model";
+import { IHelpTopicRequestRepository } from "../../../interfaces/repositories/IHelpTopicRequestRepository";
 
 export class HelpTopicRequestRepository
   extends BaseRepository<IHelpTopicRequest>

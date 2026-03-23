@@ -1,18 +1,18 @@
-import { IBookingRepository } from "../../../interfaces/repositories/IBookingRepository.ts";
-import { IBookingService } from "../../../interfaces/services/IBookingService.ts";
-import { IEmailService } from "../../../interfaces/services/IEmailService.ts";
-import { IMessageService } from "../../../interfaces/services/IMessageService.ts";
-import { IAvailabilityService } from "../../../interfaces/services/IPackageAvailabilityService.ts";
-import { IBookingPaymentService } from "../../../interfaces/services/booking/IBookingPaymentService.ts";
-import { BookingStatus, IBooking, PaymentStatus } from "../../../models/booking.model.ts";
-import { BookingQueueService } from "../../common/BookingQueueService.ts";
+import { IBookingRepository } from "../../../interfaces/repositories/IBookingRepository";
+import { IBookingService } from "../../../interfaces/services/IBookingService";
+import { IEmailService } from "../../../interfaces/services/IEmailService";
+import { IMessageService } from "../../../interfaces/services/IMessageService";
+import { IAvailabilityService } from "../../../interfaces/services/IPackageAvailabilityService";
+import { IBookingPaymentService } from "../../../interfaces/services/booking/IBookingPaymentService";
+import { BookingStatus, IBooking, PaymentStatus } from "../../../models/booking.model";
+import { BookingQueueService } from "../../common/BookingQueueService";
 import mongoose from "mongoose";
 import {
   CreateBookingDTO,
   BookingRescheduleRequestDTO,
   BookingRescheduleResponseDTO,
-} from "../../../dto/booking.dto.ts";
-import { SetAvailabilityDto } from "../../../dto/package-availability.dto.ts";
+} from "../../../dto/booking.dto";
+import { SetAvailabilityDto } from "../../../dto/package-availability.dto";
 
 type MongoReference = string | mongoose.Types.ObjectId | { _id: string | mongoose.Types.ObjectId };
 

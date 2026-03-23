@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IModerationLog } from "../interfaces/models/IModerationLog.ts";
+import { IModerationLog } from "../interfaces/models/IModerationLog";
 
 const ModerationLogSchema: Schema = new Schema(
   {

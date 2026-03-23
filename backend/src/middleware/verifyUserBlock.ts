@@ -1,9 +1,9 @@
 import type { Response, NextFunction } from "express";
-import { User } from "../models/user.model.ts";
-import { Messages } from "../constants/messages.ts";
-import { HttpStatus } from "../constants/httpStatus.ts";
+import { User } from "../models/user.model";
+import { Messages } from "../constants/messages";
+import { HttpStatus } from "../constants/httpStatus";
 
-import { AuthRequest } from "./authMiddleware.ts";
+import { AuthRequest } from "./authMiddleware";
 
 export const verifyUserNotBlocked = async (
   req: AuthRequest,

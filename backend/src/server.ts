@@ -16,26 +16,26 @@ process.on("unhandledRejection", (reason, promise) => {
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./config/db.ts";
-import morganLogger from "./middleware/morganLogger.ts";
-import authRoutes from "./routes/auth.routes.ts";
-import adminRoute from "./routes/admin.route.ts";
-import userRoute from "./routes/user.routes.ts";
-import photoRoute from "./routes/photographer.routes.ts";
-import bookingRoute from "./routes/booking.routes.ts";
-import messageRoute from "./routes/message.routes.ts";
-import walletRoute from "./routes/wallet.routes.ts";
-import rentalRoute from "./routes/rental.routes.ts";
-import reviewRoute from "./routes/review.routes.ts";
-import reportRoute from "./routes/report.routes.ts";
-import reportCategoryRoute from "./routes/reportCategory.routes.ts";
-import { helpRoutes } from "./routes/help.routes.ts";
-import { helpRequestRoutes } from "./routes/helpTopicRequest.routes.ts";
-import { ruleRoutes } from "./routes/rule.routes.ts";
-import aiRoutes from "./routes/ai.routes.ts";
-import { container } from "./di/container.ts";
-import { errorHandler } from "./middleware/errorMiddleware.ts";
-import { ROUTES } from "./constants/routes.ts";
+import { connectDB } from "./config/db";
+import morganLogger from "./middleware/morganLogger";
+import authRoutes from "./routes/auth.routes";
+import adminRoute from "./routes/admin.route";
+import userRoute from "./routes/user.routes";
+import photoRoute from "./routes/photographer.routes";
+import bookingRoute from "./routes/booking.routes";
+import messageRoute from "./routes/message.routes";
+import walletRoute from "./routes/wallet.routes";
+import rentalRoute from "./routes/rental.routes";
+import reviewRoute from "./routes/review.routes";
+import reportRoute from "./routes/report.routes";
+import reportCategoryRoute from "./routes/reportCategory.routes";
+import { helpRoutes } from "./routes/help.routes";
+import { helpRequestRoutes } from "./routes/helpTopicRequest.routes";
+import { ruleRoutes } from "./routes/rule.routes";
+import aiRoutes from "./routes/ai.routes";
+import { container } from "./di/container";
+import { errorHandler } from "./middleware/errorMiddleware";
+import { ROUTES } from "./constants/routes";
 
 const app = express();
 const PORT = 5000;
@@ -82,10 +82,10 @@ app.use(ROUTES.V1.AI.BASE, aiRoutes);
 console.log("✅ Routes mounted.");
 
 console.log("➡️ Initializing CronService...");
-import { CronService } from "./services/common/CronService.ts";
+import { CronService } from "./services/common/CronService";
 
 try {
-  const { container } = await import("./di/container.ts");
+  const { container } = await import("./di/container");
   CronService.init(container.bookingService);
   console.log("✅ CronService initialized.");
 } catch (error) {
@@ -99,7 +99,7 @@ app.get("/", (req, res) => {
 });
 
 import { createServer } from "http";
-import { SocketService } from "./services/messaging/SocketService.ts";
+import { SocketService } from "./services/messaging/SocketService";
 
 console.log("➡️ Starting Server...");
 const httpServer = createServer(app);

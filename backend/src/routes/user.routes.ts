@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { verifyAccessToken } from "../middleware/authMiddleware.ts";
-import { ROUTES } from "../constants/routes.ts";
-import { container } from "../di/container.ts";
-import { verifyUserNotBlocked } from "../middleware/verifyUserBlock.ts";
-import { checkTokenBlacklist } from "../middleware/checkTokenBlacklist.ts";
-import { uploadMiddleware } from "../middleware/uploadMiddleware.ts";
+import { verifyAccessToken } from "../middleware/authMiddleware";
+import { ROUTES } from "../constants/routes";
+import { container } from "../di/container";
+import { verifyUserNotBlocked } from "../middleware/verifyUserBlock";
+import { checkTokenBlacklist } from "../middleware/checkTokenBlacklist";
+import { uploadMiddleware } from "../middleware/uploadMiddleware";
 const router = Router();
 const userController = container.userController;
 

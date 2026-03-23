@@ -1,18 +1,18 @@
-import { IBookingPaymentService } from "../../interfaces/services/booking/IBookingPaymentService.ts";
-import { IBookingRepository } from "../../interfaces/repositories/IBookingRepository.ts";
-import { IStripeService } from "../../interfaces/services/IStripeService.ts";
-import { IPaymentService } from "../../interfaces/services/IPaymentService.ts";
-import { IWalletService } from "../../interfaces/services/IWalletService.ts";
-import { IEmailService } from "../../interfaces/services/IEmailService.ts";
+import { IBookingPaymentService } from "../../interfaces/services/booking/IBookingPaymentService";
+import { IBookingRepository } from "../../interfaces/repositories/IBookingRepository";
+import { IStripeService } from "../../interfaces/services/IStripeService";
+import { IPaymentService } from "../../interfaces/services/IPaymentService";
+import { IWalletService } from "../../interfaces/services/IWalletService";
+import { IEmailService } from "../../interfaces/services/IEmailService";
 import {
   BookingStatus,
   IBooking,
   IPopulatedUser,
   PaymentStatus,
-} from "../../models/booking.model.ts";
+} from "../../models/booking.model";
 import mongoose from "mongoose";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
 
 export class BookingPaymentService implements IBookingPaymentService {
   private readonly _CANCELLATION_THRESHOLD_HOURS = 48;

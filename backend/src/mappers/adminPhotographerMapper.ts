@@ -1,5 +1,5 @@
-import { IPhotographer } from "../models/photographer.model.ts";
-import { IPhotographerResponse } from "../interfaces/services/IAdminPhotographerService.ts";
+import { IPhotographer } from "../models/photographer.model";
+import { IPhotographerResponse } from "../interfaces/services/IAdminPhotographerService";
 
 export class AdminPhotographerMapper {
   static toResponse(photographer: IPhotographer): IPhotographerResponse {

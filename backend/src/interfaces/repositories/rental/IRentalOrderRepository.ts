@@ -1,5 +1,5 @@
-import { IRentalOrder } from "../../../models/rentalOrder.model.ts";
-import { IRecentActivity } from "../../services/rental/IRentalOrderService.ts";
+import { IRentalOrder } from "../../../models/rentalOrder.model";
+import { IRecentActivity } from "../../services/rental/IRentalOrderService";
 
 export interface IRentalOrderRepository {
   createOrder(data: Partial<IRentalOrder>): Promise<IRentalOrder>;

@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { IRentalItem } from "../../models/rentalItem.model.ts";
-import { IRentalItemService } from "../../interfaces/services/rental/IRentalItemService.ts";
-import { IRentalItemRepository } from "../../interfaces/repositories/rental/IRentalItemRepository.ts";
-import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository.ts";
+import { HttpStatus } from "../../constants/httpStatus";
+import { AppError } from "../../utils/AppError";
+import { IRentalItem } from "../../models/rentalItem.model";
+import { IRentalItemService } from "../../interfaces/services/rental/IRentalItemService";
+import { IRentalItemRepository } from "../../interfaces/repositories/rental/IRentalItemRepository";
+import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository";
 
-import { CreateRentalItemDTO, UpdateRentalItemDTO } from "../../dto/rental.dto.ts";
+import { CreateRentalItemDTO, UpdateRentalItemDTO } from "../../dto/rental.dto";
 
 export class RentalItemService implements IRentalItemService {
   private readonly _itemRepository: IRentalItemRepository;

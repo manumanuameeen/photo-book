@@ -1,5 +1,5 @@
 import morgan from "morgan";
-import { httpLogStream } from "../config/logger.ts";
+import { httpLogStream } from "../config/logger";
 
 const skip = () => process.env.NODE_ENV === "test";
 

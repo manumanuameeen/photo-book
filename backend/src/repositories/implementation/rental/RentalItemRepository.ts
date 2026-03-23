@@ -1,6 +1,6 @@
-import { RentalItemModel, IRentalItem } from "../../../models/rentalItem.model.ts";
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { IRentalItemRepository } from "../../../interfaces/repositories/rental/IRentalItemRepository.ts";
+import { RentalItemModel, IRentalItem } from "../../../models/rentalItem.model";
+import { BaseRepository } from "../../base/BaseRepository";
+import { IRentalItemRepository } from "../../../interfaces/repositories/rental/IRentalItemRepository";
 import { FilterQuery } from "mongoose";
 
 export class RentalItemRepository

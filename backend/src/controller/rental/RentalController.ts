@@ -1,19 +1,19 @@
 import { Request, Response } from "express";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { IRentalController } from "../../interfaces/controllers/IRentalController.ts";
-import { IFileService } from "../../interfaces/services/IFileService.ts";
-import { IRentalService } from "../../interfaces/services/IRentalService.ts";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { IRentalController } from "../../interfaces/controllers/IRentalController";
+import { IFileService } from "../../interfaces/services/IFileService";
+import { IRentalService } from "../../interfaces/services/IRentalService";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { AppError } from "../../utils/AppError";
+import { ApiResponse } from "../../utils/response";
+import { handleError } from "../../utils/errorHandler";
 import {
   CreateRentalItemDTO,
   UpdateRentalItemDTO,
   RentItemDTO,
   BlockDatesDTO,
-} from "../../dto/rental.dto.ts";
+} from "../../dto/rental.dto";
 
 export class RentalController implements IRentalController {
   constructor(

@@ -7,7 +7,7 @@ import { WalletModel } from "../../models/wallet.model";
 import { ReviewModel } from "../../models/review.model";
 import { Report } from "../../models/report.model";
 import { AdminDashboardStatsDto } from "../../dto/admin.dashboard.dto";
-import { IAdminDashboardService } from "../../interfaces/services/IAdminDashboardService.ts";
+import { IAdminDashboardService } from "../../interfaces/services/IAdminDashboardService";
 
 export class AdminDashboardService implements IAdminDashboardService {
   async getDashboardStats(startDate?: Date, endDate?: Date): Promise<AdminDashboardStatsDto> {

@@ -1,14 +1,14 @@
-import type { IUser } from "../../../models/user.model.ts";
-import type { IUserRepository } from "../../../interfaces/repositories/IUserRepository.ts";
-import { AppError } from "../../../utils/AppError.ts";
-import { HttpStatus } from "../../../constants/httpStatus.ts";
-import redisClient from "../../../config/redis.ts";
-import { createAccessToken, createRefreshToken } from "../../../utils/token.ts";
+import type { IUser } from "../../../models/user.model";
+import type { IUserRepository } from "../../../interfaces/repositories/IUserRepository";
+import { AppError } from "../../../utils/AppError";
+import { HttpStatus } from "../../../constants/httpStatus";
+import redisClient from "../../../config/redis";
+import { createAccessToken, createRefreshToken } from "../../../utils/token";
 import dotenv from "dotenv";
 dotenv.config();
-import type { IAuthService } from "../../../interfaces/services/IAuthService.ts";
-import type { IEmailService } from "../../../interfaces/services/IEmailService.ts";
-import type { IOtpService } from "../otp/IOtpservice.ts";
+import type { IAuthService } from "../../../interfaces/services/IAuthService";
+import type { IEmailService } from "../../../interfaces/services/IEmailService";
+import type { IOtpService } from "../otp/IOtpservice";
 import type {
   ForgetPasswordDtoType,
   LoginDtoType,
@@ -16,14 +16,14 @@ import type {
   ResetPasswordDtoType,
   SignupDtoType,
   VerifyOtpDtoType,
-} from "../../../dto/auth.dto.ts";
-import type { IWalletService } from "../../../interfaces/services/IWalletService.ts";
-import { Messages } from "../../../constants/messages.ts";
-import { AuthMapper } from "../../../mappers/auth.mapper.ts";
+} from "../../../dto/auth.dto";
+import type { IWalletService } from "../../../interfaces/services/IWalletService";
+import { Messages } from "../../../constants/messages";
+import { AuthMapper } from "../../../mappers/auth.mapper";
 import bcrypt from "bcrypt";
-import { tokenBlacklistService } from "../../token/tokenBlacklist.service.ts";
+import { tokenBlacklistService } from "../../token/tokenBlacklist.service";
 import jwt from "jsonwebtoken";
-import logger from "../../../config/logger.ts";
+import logger from "../../../config/logger";
 import { OAuth2Client } from "google-auth-library";
 
 export class AuthService implements IAuthService {

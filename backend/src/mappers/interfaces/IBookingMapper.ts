@@ -1,6 +1,6 @@
-import type { CreateBookingDTO, BookingRescheduleRequestDTO } from "../../dto/booking.dto.ts";
-import type { IBooking } from "../../models/booking.model.ts";
-import type { IMapper } from "./IMapper.ts";
+import type { CreateBookingDTO, BookingRescheduleRequestDTO } from "../../dto/booking.dto";
+import type { IBooking } from "../../models/booking.model";
+import type { IMapper } from "./IMapper";
 export interface IBookingResponseDto {
   id: string;
   userId: string;

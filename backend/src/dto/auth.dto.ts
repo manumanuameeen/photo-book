@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Messages } from "../constants/messages.ts";
+import { Messages } from "../constants/messages";
 
 export const SignupDto = z.object({
   name: z.string().min(2).trim(),

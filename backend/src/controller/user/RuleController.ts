@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { IRuleService } from "../../services/implementation/admin/RuleService.ts";
-import { Messages } from "../../constants/messages.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { IRuleController } from "../../interfaces/controllers/IRuleController.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { IRuleService } from "../../services/implementation/admin/RuleService";
+import { Messages } from "../../constants/messages";
+import { HttpStatus } from "../../constants/httpStatus";
+import { ApiResponse } from "../../utils/response";
+import { IRuleController } from "../../interfaces/controllers/IRuleController";
+import { AppError } from "../../utils/AppError";
+import { handleError } from "../../utils/errorHandler";
 
 export class RuleController implements IRuleController {
   constructor(private readonly _ruleService: IRuleService) {}

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-import { JWTPayload } from "../middleware/authMiddleware.ts";
+import { JWTPayload } from "../middleware/authMiddleware";
 export const createAccessToken = (payload: JWTPayload): string => {
   return jwt.sign(
     { ...payload },

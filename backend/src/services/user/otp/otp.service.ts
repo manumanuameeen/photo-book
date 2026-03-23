@@ -1,5 +1,5 @@
 import { randomInt } from "crypto";
-import type { IOtpService } from "./IOtpservice.ts";
+import type { IOtpService } from "./IOtpservice";
 
 export class OtpService implements IOtpService {
   private readonly _OTP_LENGTH = 6;

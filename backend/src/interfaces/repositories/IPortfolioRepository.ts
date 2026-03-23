@@ -1,5 +1,5 @@
-import { IPortfolioSection } from "../../models/portfolioSection.model.ts";
-import { IBaseRepository } from "./IBaseRepository.ts";
+import { IPortfolioSection } from "../../models/portfolioSection.model";
+import { IBaseRepository } from "./IBaseRepository";
 
 export interface IPortfolioRepository extends IBaseRepository<IPortfolioSection> {
   findByPhotographerId(photographerId: string): Promise<IPortfolioSection[]>;

@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository.ts";
-import { IRentalItem } from "../../models/rentalItem.model.ts";
-import { RentalStatus } from "../../models/rentalOrder.model.ts";
-import { IRentalAvailabilityService } from "../../interfaces/services/rental/IRentalAvailabilityService.ts";
+import { HttpStatus } from "../../constants/httpStatus";
+import { AppError } from "../../utils/AppError";
+import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository";
+import { IRentalItem } from "../../models/rentalItem.model";
+import { RentalStatus } from "../../models/rentalOrder.model";
+import { IRentalAvailabilityService } from "../../interfaces/services/rental/IRentalAvailabilityService";
 
 export class RentalAvailabilityService implements IRentalAvailabilityService {
   constructor(private readonly _rentalRepository: IRentalRepository) {}

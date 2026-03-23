@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { verifyAdmin } from "../middleware/verifyAdmin.ts";
-import { verifyAccessToken } from "../middleware/authMiddleware.ts";
-import { ROUTES } from "../constants/routes.ts";
-import { container } from "../di/container.ts";
+import { verifyAdmin } from "../middleware/verifyAdmin";
+import { verifyAccessToken } from "../middleware/authMiddleware";
+import { ROUTES } from "../constants/routes";
+import { container } from "../di/container";
 
 const route = Router();
 const adminController = container.adminController;

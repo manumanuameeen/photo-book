@@ -1,9 +1,9 @@
 import { Router } from "express";
 const router = Router();
-import { container } from "../di/container.ts";
-import { ROUTES } from "../constants/routes.ts";
-import { verifyAccessToken } from "../middleware/authMiddleware.ts";
-import { uploadMiddleware } from "../middleware/uploadMiddleware.ts";
+import { container } from "../di/container";
+import { ROUTES } from "../constants/routes";
+import { verifyAccessToken } from "../middleware/authMiddleware";
+import { uploadMiddleware } from "../middleware/uploadMiddleware";
 
 const photographerController = container.photographerController;
 const packageAvailabilityController = container.packageAvailabilityController;

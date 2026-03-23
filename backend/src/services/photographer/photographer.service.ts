@@ -4,17 +4,17 @@ import {
   IPaginatedPhotographerResponse,
   IPublicPhotographer,
   IPublicReview,
-} from "../../dto/photographer.dto.ts";
-import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto.ts";
+} from "../../dto/photographer.dto";
+import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto";
 import mongoose from "mongoose";
-import { BookingModel } from "../../models/booking.model.ts";
-import type { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository.ts";
+import { BookingModel } from "../../models/booking.model";
+import type { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository";
 import type {
   IPhotographerCreate,
   IDashboardBooking,
   IPendingRequest,
   IUpcomingBooking,
-} from "./photographer.types.ts";
+} from "./photographer.types";
 
 export interface IBookingMapped {
   _id: string;
@@ -38,15 +38,15 @@ export interface IPagination {
   limit: number;
   totalPages: number;
 }
-import type { IPhotographerService } from "../../interfaces/services/IPhotographerService.ts";
-import { PhotographerMapper } from "../../mappers/photographerMapper.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { Messages } from "../../constants/messages.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
+import type { IPhotographerService } from "../../interfaces/services/IPhotographerService";
+import { PhotographerMapper } from "../../mappers/photographerMapper";
+import { AppError } from "../../utils/AppError";
+import { Messages } from "../../constants/messages";
+import { HttpStatus } from "../../constants/httpStatus";
 
-import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import { ReviewModel, IReview } from "../../models/review.model.ts";
-import { IPhotographer } from "../../models/photographer.model.ts";
+import { IMessageService } from "../../interfaces/services/IMessageService";
+import { ReviewModel, IReview } from "../../models/review.model";
+import { IPhotographer } from "../../models/photographer.model";
 
 interface IReviewer {
   _id: mongoose.Types.ObjectId;

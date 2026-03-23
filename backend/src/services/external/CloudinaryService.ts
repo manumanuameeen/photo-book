@@ -1,8 +1,8 @@
-import { IFileService } from "../../interfaces/services/IFileService.ts";
-import cloudinary from "../../config/cloudinary.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
+import { IFileService } from "../../interfaces/services/IFileService";
+import cloudinary from "../../config/cloudinary";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
 
 export class CloudinaryService implements IFileService {
   async uploadFile(file: Express.Multer.File): Promise<string> {

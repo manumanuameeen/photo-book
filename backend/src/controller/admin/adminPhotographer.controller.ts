@@ -1,12 +1,12 @@
 import { Response } from "express";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IAdminPhotographerController } from "../../interfaces/controllers/IAdminPhotographerController.ts";
-import { IAdminPhotographerService } from "../../interfaces/services/IAdminPhotographerService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { IAdminPhotographerController } from "../../interfaces/controllers/IAdminPhotographerController";
+import { IAdminPhotographerService } from "../../interfaces/services/IAdminPhotographerService";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { AppError } from "../../utils/AppError";
+import { handleError } from "../../utils/errorHandler";
 import {
   GetPhotographersQueryDto,
   BlockPhotographerDto,

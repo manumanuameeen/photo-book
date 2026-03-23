@@ -1,7 +1,7 @@
 import express from "express";
-import { container } from "../di/container.ts";
-import { verifyAccessToken as authMiddleware } from "../middleware/authMiddleware.ts";
-import { ROUTES } from "../constants/routes.ts";
+import { container } from "../di/container";
+import { verifyAccessToken as authMiddleware } from "../middleware/authMiddleware";
+import { ROUTES } from "../constants/routes";
 
 const router = express.Router();
 const messageController = container.messageController;

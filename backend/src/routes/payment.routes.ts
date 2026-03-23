@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { ROUTES } from "../constants/routes.ts";
-import { container } from "../di/container.ts";
-import { verifyAccessToken } from "../middleware/authMiddleware.ts";
+import { ROUTES } from "../constants/routes";
+import { container } from "../di/container";
+import { verifyAccessToken } from "../middleware/authMiddleware";
 
 const router = Router();
 const paymentController = container.paymentController;

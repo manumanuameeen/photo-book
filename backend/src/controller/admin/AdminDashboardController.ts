@@ -1,13 +1,13 @@
 import { Response } from "express";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
-import { IAdminDashboardService } from "../../interfaces/services/IAdminDashboardService.ts";
-import { IAdminDashboardController } from "../../interfaces/controllers/IAdminDashboardController.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
+import { AuthRequest } from "../../middleware/authMiddleware";
+import { IAdminDashboardService } from "../../interfaces/services/IAdminDashboardService";
+import { IAdminDashboardController } from "../../interfaces/controllers/IAdminDashboardController";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
 
-import { AppError } from "../../utils/AppError.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+import { AppError } from "../../utils/AppError";
+import { handleError } from "../../utils/errorHandler";
 
 export class AdminDashboardController implements IAdminDashboardController {
   private readonly _dashboardService: IAdminDashboardService;

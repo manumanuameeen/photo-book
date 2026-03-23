@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { IReportCategoryController } from "../../interfaces/controllers/IReportCategoryController.ts";
-import { IReportCategoryService } from "../../interfaces/services/IReportCategoryService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { CreateReportCategoryDTOSchema, UpdateReportCategoryDTOSchema } from "../../dto/report.dto.ts";
+import { IReportCategoryController } from "../../interfaces/controllers/IReportCategoryController";
+import { IReportCategoryService } from "../../interfaces/services/IReportCategoryService";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { CreateReportCategoryDTOSchema, UpdateReportCategoryDTOSchema } from "../../dto/report.dto";
 
 export class ReportCategoryController implements IReportCategoryController {
   private _service: IReportCategoryService;

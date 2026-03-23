@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
-import { IPaymentService } from "../../../interfaces/services/IPaymentService.ts";
-import { IWalletService } from "../../../interfaces/services/IWalletService.ts";
-import { IMessageService } from "../../../interfaces/services/IMessageService.ts";
-import { IEmailService } from "../../../interfaces/services/IEmailService.ts";
-import { IStripeService } from "../../../interfaces/services/IStripeService.ts";
-import { IRentalRepository } from "../../../interfaces/repositories/IRentalRepository.ts";
-import { IBookingRepository } from "../../../interfaces/repositories/IBookingRepository.ts";
-import { AppError } from "../../../utils/AppError.ts";
-import { HttpStatus } from "../../../constants/httpStatus.ts";
+import { IPaymentService } from "../../../interfaces/services/IPaymentService";
+import { IWalletService } from "../../../interfaces/services/IWalletService";
+import { IMessageService } from "../../../interfaces/services/IMessageService";
+import { IEmailService } from "../../../interfaces/services/IEmailService";
+import { IStripeService } from "../../../interfaces/services/IStripeService";
+import { IRentalRepository } from "../../../interfaces/repositories/IRentalRepository";
+import { IBookingRepository } from "../../../interfaces/repositories/IBookingRepository";
+import { AppError } from "../../../utils/AppError";
+import { HttpStatus } from "../../../constants/httpStatus";
 
 // types used within this service to avoid casting to `any`
 type MaybePopulated<T> = T | mongoose.Types.ObjectId;

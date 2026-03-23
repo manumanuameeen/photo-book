@@ -1,6 +1,6 @@
-import type { IPhotographerStats } from "../repositories/IPhotographerRepository.ts";
-import { IBookingPackage } from "../../models/bookingPackage.model.ts";
-import { Populated } from "../../types/common.types.ts";
+import type { IPhotographerStats } from "../repositories/IPhotographerRepository";
+import { IBookingPackage } from "../../models/bookingPackage.model";
+import { Populated } from "../../types/common.types";
 
 export interface IGetPhotographersQuery {
   page?: string;

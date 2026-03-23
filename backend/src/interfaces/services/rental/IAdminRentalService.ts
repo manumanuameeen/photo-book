@@ -1,5 +1,5 @@
-import { IRentalItem } from "../../../models/rentalItem.model.ts";
-import { IRentalOrder } from "../../../models/rentalOrder.model.ts";
+import { IRentalItem } from "../../../models/rentalItem.model";
+import { IRentalOrder } from "../../../models/rentalOrder.model";
 
 export interface IAdminRentalService {
   getAdminRentalItems(

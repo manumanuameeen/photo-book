@@ -1,4 +1,4 @@
-import { IHelpTopicRequest } from "../../models/helpTopicRequest.model.ts";
+import { IHelpTopicRequest } from "../../models/helpTopicRequest.model";
 
 export interface IHelpTopicRequestService {
   createRequest(data: Partial<IHelpTopicRequest>): Promise<IHelpTopicRequest>;

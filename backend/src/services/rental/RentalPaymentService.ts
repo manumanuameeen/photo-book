@@ -1,15 +1,15 @@
-import { IRentalPaymentService } from "../../interfaces/services/rental/IRentalPaymentService.ts";
-import { IRentalOrder, RentalStatus } from "../../models/rentalOrder.model.ts";
-import { IPopulatedUser } from "../../models/booking.model.ts";
-import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository.ts";
-import { IPaymentService } from "../../interfaces/services/IPaymentService.ts";
-import { IWalletService } from "../../interfaces/services/IWalletService.ts";
-import { StripeService } from "../implementation/booking/StripeService.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { IEmailService } from "../../interfaces/services/IEmailService.ts";
+import { IRentalPaymentService } from "../../interfaces/services/rental/IRentalPaymentService";
+import { IRentalOrder, RentalStatus } from "../../models/rentalOrder.model";
+import { IPopulatedUser } from "../../models/booking.model";
+import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository";
+import { IPaymentService } from "../../interfaces/services/IPaymentService";
+import { IWalletService } from "../../interfaces/services/IWalletService";
+import { StripeService } from "../implementation/booking/StripeService";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { IEmailService } from "../../interfaces/services/IEmailService";
 
-import { IPdfService } from "../../interfaces/services/IPdfService.ts";
+import { IPdfService } from "../../interfaces/services/IPdfService";
 
 export class RentalPaymentService implements IRentalPaymentService {
   private readonly _orderRepo: IRentalOrderRepository;

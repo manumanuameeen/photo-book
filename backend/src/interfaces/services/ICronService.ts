@@ -1,4 +1,4 @@
-import { IBookingService } from "./IBookingService.ts";
+import { IBookingService } from "./IBookingService";
 
 export interface ICronService {
   init(bookingService: IBookingService): void;

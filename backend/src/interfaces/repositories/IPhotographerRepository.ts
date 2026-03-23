@@ -1,5 +1,5 @@
-import type { IPhotographer } from "../../models/photographer.model.ts";
-import { IPaginatedPhotographerResponse } from "../../dto/photographer.dto.ts";
+import type { IPhotographer } from "../../models/photographer.model";
+import { IPaginatedPhotographerResponse } from "../../dto/photographer.dto";
 
 export interface IPhotographerQuery {
   page: number;

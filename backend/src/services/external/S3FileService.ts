@@ -1,9 +1,9 @@
-import type { IFileService } from "../../interfaces/services/IFileService.ts";
+import type { IFileService } from "../../interfaces/services/IFileService";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
 
 export class S3FileService implements IFileService {
   private _s3Client: S3Client;

@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { BaseRepository } from "../../base/BaseRepository.ts";
-import { ReviewModel } from "../../../models/review.model.ts";
-import type { IReview } from "../../../models/review.model.ts";
-import { IReviewRepository } from "../../../interfaces/repositories/IReviewRepository.ts";
+import { BaseRepository } from "../../base/BaseRepository";
+import { ReviewModel } from "../../../models/review.model";
+import type { IReview } from "../../../models/review.model";
+import { IReviewRepository } from "../../../interfaces/repositories/IReviewRepository";
 
 export class ReviewRepository extends BaseRepository<IReview> implements IReviewRepository {
   constructor() {

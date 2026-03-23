@@ -1,5 +1,5 @@
-import { IBooking } from "../../models/booking.model.ts";
-import { IBaseRepository } from "./IBaseRepository.ts";
+import { IBooking } from "../../models/booking.model";
+import { IBaseRepository } from "./IBaseRepository";
 
 export interface IBookingRepository extends IBaseRepository<IBooking> {
   findById(id: string): Promise<IBooking | null>;

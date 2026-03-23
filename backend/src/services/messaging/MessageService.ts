@@ -1,8 +1,8 @@
-import { IMessageRepository } from "../../interfaces/repositories/IMessageRepository.ts";
-import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import { IMessage } from "../../models/message.model.ts";
+import { IMessageRepository } from "../../interfaces/repositories/IMessageRepository";
+import { IMessageService } from "../../interfaces/services/IMessageService";
+import { IMessage } from "../../models/message.model";
 import mongoose from "mongoose";
-import { AppError } from "../../utils/AppError.ts";
+import { AppError } from "../../utils/AppError";
 
 export class MessageService implements IMessageService {
   private readonly _repository: IMessageRepository;
@@ -38,7 +38,7 @@ export class MessageService implements IMessageService {
         { path: "senderId", select: "name role profileImage" },
         { path: "receiverId", select: "name role profileImage" },
       ]);
-      const { SocketService } = await import("./SocketService.ts");
+      const { SocketService } = await import("./SocketService");
       SocketService.getInstance().emitToUser(receiverId, "new_message", populatedMessage);
       return populatedMessage;
     } catch (error: unknown) {
@@ -76,7 +76,7 @@ export class MessageService implements IMessageService {
     const message = await this._repository.markAsRead(messageId);
     if (message && message.senderId) {
       try {
-        const { SocketService } = await import("./SocketService.ts");
+        const { SocketService } = await import("./SocketService");
         const senderId = this._getUserId(message.senderId);
         SocketService.getInstance().emitToUser(senderId, "message_read", message);
       } catch (error: unknown) {
@@ -123,7 +123,7 @@ export class MessageService implements IMessageService {
     await message.save();
 
     try {
-      const { SocketService } = await import("./SocketService.ts");
+      const { SocketService } = await import("./SocketService");
       const receiverId = this._getUserId(message.receiverId);
       SocketService.getInstance().emitToUser(receiverId, "message_updated", message);
       SocketService.getInstance().emitToUser(senderId, "message_updated", message);
@@ -164,7 +164,7 @@ export class MessageService implements IMessageService {
     await message.save();
 
     try {
-      const { SocketService } = await import("./SocketService.ts");
+      const { SocketService } = await import("./SocketService");
       const receiverId = this._getUserId(message.receiverId);
       SocketService.getInstance().emitToUser(receiverId, "message_updated", message);
     } catch (error: unknown) {
@@ -208,7 +208,7 @@ export class MessageService implements IMessageService {
         { path: "receiverId", select: "name role profileImage" },
         { path: "replyTo", select: "content senderId attachment" },
       ]);
-      const { SocketService } = await import("./SocketService.ts");
+      const { SocketService } = await import("./SocketService");
       SocketService.getInstance().emitToUser(receiverId, "new_message", populatedMessage);
       return populatedMessage;
     } catch (error: unknown) {
@@ -222,7 +222,7 @@ export class MessageService implements IMessageService {
 
     if (updatedMessage) {
       try {
-        const { SocketService } = await import("./SocketService.ts");
+        const { SocketService } = await import("./SocketService");
         const receiverId = this._getUserId(updatedMessage.receiverId);
         const senderId = this._getUserId(updatedMessage.senderId);
 

@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { verifyAccessToken } from "../middleware/authMiddleware.ts";
-import { ROUTES } from "../constants/routes.ts";
-import { container } from "../di/container.ts";
+import { verifyAccessToken } from "../middleware/authMiddleware";
+import { ROUTES } from "../constants/routes";
+import { container } from "../di/container";
 
 const router = Router();
 const bookingController = container.bookingController;

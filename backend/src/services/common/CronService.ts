@@ -1,8 +1,8 @@
-import { BookingModel, BookingStatus } from "../../models/booking.model.ts";
-import { RentalStatus } from "../../models/rentalOrder.model.ts";
+import { BookingModel, BookingStatus } from "../../models/booking.model";
+import { RentalStatus } from "../../models/rentalOrder.model";
 
-import { IBookingService } from "../../interfaces/services/IBookingService.ts";
-import { ICronService } from "../../interfaces/services/ICronService.ts";
+import { IBookingService } from "../../interfaces/services/IBookingService";
+import { ICronService } from "../../interfaces/services/ICronService";
 
 export class CronService {
   private static _bookingService: IBookingService;
@@ -39,7 +39,7 @@ export class CronService {
 
         const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
-        const { RentalOrderModel } = await import("../../models/rentalOrder.model.ts");
+        const { RentalOrderModel } = await import("../../models/rentalOrder.model");
 
         const expiredRentals = await RentalOrderModel.find({
           status: RentalStatus.WAITING_FOR_DEPOSIT,

@@ -1,4 +1,4 @@
-import { IHelpContent } from "../../models/helpContent.model.ts";
+import { IHelpContent } from "../../models/helpContent.model";
 
 export interface IHelpService {
   getAllHelpContent(): Promise<IHelpContent[]>;

@@ -1,11 +1,11 @@
-import { IPortfolioService } from "../../interfaces/services/IPortfolioService.ts";
-import { IPortfolioRepository } from "../../interfaces/repositories/IPortfolioRepository.ts";
-import { IPortfolioSection } from "../../models/portfolioSection.model.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
+import { IPortfolioService } from "../../interfaces/services/IPortfolioService";
+import { IPortfolioRepository } from "../../interfaces/repositories/IPortfolioRepository";
+import { IPortfolioSection } from "../../models/portfolioSection.model";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
 
-import { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository.ts";
+import { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository";
 
 export class PortfolioService implements IPortfolioService {
   private readonly _repository: IPortfolioRepository;

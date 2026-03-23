@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
-import { AuthRequest } from "../../middleware/authMiddleware.ts";
+import { AuthRequest } from "../../middleware/authMiddleware";
 import {
   IPackageService,
   IAvailabilityService,
-} from "../../interfaces/services/IPackageAvailabilityService.ts";
-import { ApiResponse } from "../../utils/response.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { Messages } from "../../constants/messages.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { handleError } from "../../utils/errorHandler.ts";
+} from "../../interfaces/services/IPackageAvailabilityService";
+import { ApiResponse } from "../../utils/response";
+import { HttpStatus } from "../../constants/httpStatus";
+import { Messages } from "../../constants/messages";
+import { AppError } from "../../utils/AppError";
+import { handleError } from "../../utils/errorHandler";
 
-import { IPackageAvailabilityController } from "../../interfaces/controllers/IPackageAvailabilityController.ts";
+import { IPackageAvailabilityController } from "../../interfaces/controllers/IPackageAvailabilityController";
 
-import { IFileService } from "../../interfaces/services/IFileService.ts";
+import { IFileService } from "../../interfaces/services/IFileService";
 
 export class PackageAvailabilityController implements IPackageAvailabilityController {
   private _packageService: IPackageService;
@@ -193,7 +193,7 @@ export class PackageAvailabilityController implements IPackageAvailabilityContro
         throw new AppError(Messages.DATE_RANGE_REQUIRED, HttpStatus.BAD_REQUEST);
       }
 
-      const { PhotographerModel } = await import("../../models/photographer.model.ts");
+      const { PhotographerModel } = await import("../../models/photographer.model");
       const mongoose = (await import("mongoose")).default;
 
       let targetUserId = "";

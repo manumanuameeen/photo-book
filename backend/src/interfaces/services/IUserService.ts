@@ -1,5 +1,5 @@
-import { UserProfileResponseDto } from "../../dto/user.dto.ts";
-import type { UpdateProfileDtoType, ChangePasswordDtoType } from "../../dto/user.dto.ts";
+import { UserProfileResponseDto } from "../../dto/user.dto";
+import type { UpdateProfileDtoType, ChangePasswordDtoType } from "../../dto/user.dto";
 
 export interface IUserService {
   getProfile(userId: string): Promise<UserProfileResponseDto>;

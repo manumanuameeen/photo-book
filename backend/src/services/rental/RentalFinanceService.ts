@@ -1,21 +1,21 @@
-import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository.ts";
+import { IRentalRepository } from "../../interfaces/repositories/IRentalRepository";
 import {
   IRentalOrder,
   RentalStatus,
   IRentalOrderPopulated,
   IRentalPopulatedItem,
-} from "../../models/rentalOrder.model.ts";
-import { IPopulatedUser } from "../../models/booking.model.ts";
+} from "../../models/rentalOrder.model";
+import { IPopulatedUser } from "../../models/booking.model";
 import mongoose from "mongoose";
-import { StripeService } from "../implementation/booking/StripeService.ts";
-import { IWalletService } from "../../interfaces/services/IWalletService.ts";
-import { IPaymentService } from "../../interfaces/services/IPaymentService.ts";
-import { PdfService } from "../implementation/common/PdfService.ts";
-import { AppError } from "../../utils/AppError.ts";
-import { HttpStatus } from "../../constants/httpStatus.ts";
-import { IEmailService } from "../../interfaces/services/IEmailService.ts";
-import { IRentalFinanceService } from "../../interfaces/services/rental/IRentalFinanceService.ts";
-import { IRentalAvailabilityService } from "../../interfaces/services/rental/IRentalAvailabilityService.ts";
+import { StripeService } from "../implementation/booking/StripeService";
+import { IWalletService } from "../../interfaces/services/IWalletService";
+import { IPaymentService } from "../../interfaces/services/IPaymentService";
+import { PdfService } from "../implementation/common/PdfService";
+import { AppError } from "../../utils/AppError";
+import { HttpStatus } from "../../constants/httpStatus";
+import { IEmailService } from "../../interfaces/services/IEmailService";
+import { IRentalFinanceService } from "../../interfaces/services/rental/IRentalFinanceService";
+import { IRentalAvailabilityService } from "../../interfaces/services/rental/IRentalAvailabilityService";
 
 export interface IRentalFinanceDashboardStats {
   hosting: {

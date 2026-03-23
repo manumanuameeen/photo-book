@@ -1,9 +1,9 @@
 import { Response } from "express";
 import { z } from "zod";
-import { AppError } from "./AppError.ts";
-import { ApiResponse } from "./response.ts";
-import { HttpStatus } from "../constants/httpStatus.ts";
-import { Messages } from "../constants/messages.ts";
+import { AppError } from "./AppError";
+import { ApiResponse } from "./response";
+import { HttpStatus } from "../constants/httpStatus";
+import { Messages } from "../constants/messages";
 
 export const handleError = (res: Response, error: unknown) => {
   if (error instanceof z.ZodError) {
