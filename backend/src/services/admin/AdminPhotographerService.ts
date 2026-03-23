@@ -14,7 +14,7 @@ import { IMessageService } from "../../interfaces/services/IMessageService.ts";
 import { AdminPhotographerMapper } from "../../mappers/adminPhotographerMapper.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { Populated } from "../../types/common.types.ts";
-import { IBookingPackage } from "../../model/bookingPackageModel.ts";
+import { IBookingPackage } from "../../models/bookingPackage.model.ts";
 import mongoose from "mongoose";
 
 export class AdminPhotographerService implements IAdminPhotographerService {
@@ -128,7 +128,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     limit: number;
     totalPages: number;
   }> {
-    const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
+    const { BookingPackageModel } = await import("../../models/bookingPackage.model.ts");
 
     const page = Number.parseInt(query.page || "1");
     const limit = Number.parseInt(query.limit || "10");
@@ -173,7 +173,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
   }
 
   async approvePackage(id: string, adminId?: string): Promise<void> {
-    const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
+    const { BookingPackageModel } = await import("../../models/bookingPackage.model.ts");
     const pkg = await BookingPackageModel.findByIdAndUpdate(id, {
       status: "APPROVED",
       isActive: true,
@@ -188,7 +188,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
   }
 
   async rejectPackage(id: string, reason: string, adminId?: string): Promise<void> {
-    const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
+    const { BookingPackageModel } = await import("../../models/bookingPackage.model.ts");
     const pkg = await BookingPackageModel.findByIdAndUpdate(id, {
       status: "REJECTED",
       rejectionReason: reason,
@@ -204,7 +204,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
   }
 
   async blockPackage(id: string, reason: string, adminId?: string): Promise<void> {
-    const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
+    const { BookingPackageModel } = await import("../../models/bookingPackage.model.ts");
     const pkg = await BookingPackageModel.findByIdAndUpdate(id, {
       status: "REJECTED",
       rejectionReason: reason,
@@ -220,7 +220,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
   }
 
   async unblockPackage(id: string, adminId?: string): Promise<void> {
-    const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
+    const { BookingPackageModel } = await import("../../models/bookingPackage.model.ts");
     const pkg = await BookingPackageModel.findByIdAndUpdate(id, {
       status: "APPROVED",
       rejectionReason: undefined,
@@ -241,9 +241,9 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     updatedPackages: number;
     updatedPortfolios: number;
   }> {
-    const { BookingPackageModel } = await import("../../model/bookingPackageModel.ts");
-    const { PortfolioSectionModel } = await import("../../model/portfolioSectionModel.ts");
-    const { PhotographerModel } = await import("../../model/photographerModel.ts");
+    const { BookingPackageModel } = await import("../../models/bookingPackage.model.ts");
+    const { PortfolioSectionModel } = await import("../../models/portfolioSection.model.ts");
+    const { PhotographerModel } = await import("../../models/photographer.model.ts");
 
     const photographers = await PhotographerModel.find({});
     let updatedPackages = 0;

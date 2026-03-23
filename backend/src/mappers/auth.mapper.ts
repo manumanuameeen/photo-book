@@ -1,5 +1,5 @@
 import type { SignupDtoType } from "../dto/auth.dto.ts";
-import type { IUser } from "../model/userModel.ts";
+import type { IUser } from "../models/user.model.ts";
 
 export class AuthMapper {
   static toUserFromSignup(dto: SignupDtoType): Partial<IUser> {

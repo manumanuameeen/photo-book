@@ -2,10 +2,10 @@ import {
   IRentalOrderService,
   IRentalDashboardStats,
 } from "../../interfaces/services/rental/IRentalOrderService.ts";
-import { IRentalOrder, RentalStatus } from "../../model/rentalOrderModel.ts";
-import { BookingModel } from "../../model/bookingModel.ts";
-import { ReviewModel } from "../../model/reviewModel.ts";
-import { IRentalItem } from "../../model/rentalItemModel.ts";
+import { IRentalOrder, RentalStatus } from "../../models/rentalOrder.model.ts";
+import { BookingModel } from "../../models/booking.model.ts";
+import { ReviewModel } from "../../models/review.model.ts";
+import { IRentalItem } from "../../models/rentalItem.model.ts";
 import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository.ts";
 import { IRentalItemRepository } from "../../interfaces/repositories/rental/IRentalItemRepository.ts";
 import { IRentalPaymentService } from "../../interfaces/services/rental/IRentalPaymentService.ts";
@@ -13,7 +13,7 @@ import { IUserRepository } from "../../interfaces/repositories/IUserRepository.t
 import { IRentalItemService } from "../../interfaces/services/rental/IRentalItemService.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
-import { StripeService } from "../implementaion/StripeService.ts";
+import { StripeService } from "../implementation/booking/StripeService.ts";
 import mongoose from "mongoose";
 
 export class RentalOrderService implements IRentalOrderService {

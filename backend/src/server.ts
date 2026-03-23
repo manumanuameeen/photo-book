@@ -32,6 +32,7 @@ import reportCategoryRoute from "./routes/reportCategory.routes.ts";
 import { helpRoutes } from "./routes/help.routes.ts";
 import { helpRequestRoutes } from "./routes/helpTopicRequest.routes.ts";
 import { ruleRoutes } from "./routes/rule.routes.ts";
+import aiRoutes from "./routes/ai.routes.ts";
 import { container } from "./di/container.ts";
 import { errorHandler } from "./middleware/errorMiddleware.ts";
 import { ROUTES } from "./constants/routes.ts";
@@ -77,6 +78,7 @@ app.use(ROUTES.V1.HELP.BASE, helpRoutes(container.helpController));
 app.use(ROUTES.V1.HELP_TOPIC_REQUEST.BASE, helpRequestRoutes(container.helpTopicRequestController));
 app.use(ROUTES.V1.RULE.BASE, ruleRoutes(container.ruleController));
 app.use(ROUTES.V1.WALLET.BASE, walletRoute);
+app.use(ROUTES.V1.AI.BASE, aiRoutes);
 console.log("✅ Routes mounted.");
 
 console.log("➡️ Initializing CronService...");

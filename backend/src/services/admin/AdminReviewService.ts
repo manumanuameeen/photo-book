@@ -1,8 +1,8 @@
 import { IAdminReviewService } from "../../interfaces/services/IAdminReviewService.ts";
-import { ReviewModel, IReview, IEnrichedReview } from "../../model/reviewModel.ts";
-import { PhotographerModel } from "../../model/photographerModel.ts";
-import { RentalItemModel } from "../../model/rentalItemModel.ts";
-import { BookingPackageModel } from "../../model/bookingPackageModel.ts";
+import { ReviewModel, IReview, IEnrichedReview } from "../../models/review.model.ts";
+import { PhotographerModel } from "../../models/photographer.model.ts";
+import { RentalItemModel } from "../../models/rentalItem.model.ts";
+import { BookingPackageModel } from "../../models/bookingPackage.model.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import mongoose from "mongoose";

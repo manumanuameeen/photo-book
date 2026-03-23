@@ -4,8 +4,8 @@ import {
   IPaginatedPhotographerResponse,
 } from "../../dto/photographer.dto.ts";
 import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto.ts";
-import { IBooking } from "../../model/bookingModel.ts";
-import { IPhotographer } from "../../model/photographerModel.ts";
+import { IBooking } from "../../models/booking.model.ts";
+import { IPhotographer } from "../../models/photographer.model.ts";
 
 export interface IPhotographerService {
   apply(userId: string, data: ApplyPhtographerDtoType): Promise<PhotographerResponseDto>;

@@ -1,6 +1,6 @@
 import { IPortfolioService } from "../../interfaces/services/IPortfolioService.ts";
 import { IPortfolioRepository } from "../../interfaces/repositories/IPortfolioRepository.ts";
-import { IPortfolioSection } from "../../model/portfolioSectionModel.ts";
+import { IPortfolioSection } from "../../models/portfolioSection.model.ts";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";
 import { Messages } from "../../constants/messages.ts";
@@ -66,7 +66,7 @@ export class PortfolioService implements IPortfolioService {
     if (!deleted) throw new AppError("Failed to delete section", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  async addImage(userId: string, sectionId: string, imageUrl: string): Promise<IPortfolioSection> {
+  async addImage(userId: string, sectionId: string, imageUrl: string, caption?: string, tags?: string[], embedding?: number[]): Promise<IPortfolioSection> {
     const section = await this._repository.findById(sectionId);
     if (!section) throw new AppError(Messages.DATA_NOT_FOUND, HttpStatus.NOT_FOUND);
 
@@ -79,7 +79,7 @@ export class PortfolioService implements IPortfolioService {
       throw new AppError(Messages.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     }
 
-    const updated = await this._repository.addImage(sectionId, imageUrl);
+    const updated = await this._repository.addImage(sectionId, imageUrl, caption, tags, embedding);
     if (!updated) throw new AppError("Failed to add image", HttpStatus.INTERNAL_SERVER_ERROR);
     return updated;
   }

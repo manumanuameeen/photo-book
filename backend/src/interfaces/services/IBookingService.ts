@@ -1,4 +1,4 @@
-import { IBooking } from "../../model/bookingModel.ts";
+import { IBooking } from "../../models/booking.model.ts";
 import {
   CreateBookingDTO,
   BookingRescheduleRequestDTO,

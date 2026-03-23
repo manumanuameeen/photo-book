@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Calendar, Clock, List, ShoppingBag, User, Wallet, Star } from 'lucide-react';
+import { Bell, Calendar, Clock, Grid, List, ShoppingBag, User, Wallet, Star } from 'lucide-react';
 import { type BookingDetails, bookingApi } from '../../../services/api/bookingApi';
 import { rentalApi } from '../../../services/api/rentalApi';
 import { messageApi } from '../../../services/api/messageApi';
@@ -12,7 +12,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from '../../../constants/routes';
 import { toast } from 'sonner';
 import type { IRentalOrder } from '../../../types/rental';
-// import { useRentalDashboard } from '../../../hooks/useRentalDashboard';
+import { useRentalDashboard } from '../../../hooks/useRentalDashboard';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 // import { DashboardOverview } from '../components/dashboard/DashboardOverview';
 import { UserBookingsTab } from '../components/dashboard/UserBookingsTab';
@@ -22,6 +22,7 @@ import { UserWalletTab } from '../components/dashboard/UserWalletTab';
 
 import { UserNotificationsTab } from '../components/dashboard/UserNotificationsTab';
 import { UserReviewsTab } from '../components/dashboard/UserReviewsTab';
+import { DashboardOverview } from '../components/dashboard/DashboardOverview';
 import { useUserActions } from '../hooks/useUserBookings';
 
 const UserDashboard = () => {
@@ -40,7 +41,7 @@ const UserDashboard = () => {
         }
     }, [activeTab]);
 
-    // const { stats, isLoading: statsLoading, period, setPeriod } = useRentalDashboard()
+    const { stats, isLoading: statsLoading, period, setPeriod } = useRentalDashboard();
     const { user } = useAuthStore();
     const { confirmEndWork, confirmDelivery } = useUserActions();
 
@@ -344,7 +345,7 @@ const UserDashboard = () => {
 
                             <nav className="space-y-2">
                                 {[
-                                    // { id: 'overview', label: 'Dashboard', icon: Grid },
+                                    { id: 'overview', label: 'Dashboard', icon: Grid },
                                     { id: 'bookings', label: 'My Bookings', icon: Calendar },
                                     { id: 'rentals', label: 'My Rentals', icon: ShoppingBag },
                                     { id: 'listings', label: 'My Listings', icon: List },
@@ -424,18 +425,18 @@ const UserDashboard = () => {
                         </div>
 
                         <AnimatePresence mode="wait">
-                            {/* {activeTab === 'overview' && (
+                            {activeTab === 'overview' && (
                                 <DashboardOverview
                                     bookings={bookings}
-                                    stats={stats}
+                                    stats={stats || { hosting: {}, renting: {} }}
                                     statsLoading={statsLoading}
                                     onViewBookings={() => setActiveTab('bookings')}
-                                    walletData={walletData}
+                                    walletData={walletData || { balance: 0 }}
                                     rentalRequests={rentalRequests}
                                     period={period}
                                     onPeriodChange={setPeriod}
                                 />
-                            )} */}
+                            )}
                             {activeTab === 'bookings' && (
                                 <UserBookingsTab
                                     bookings={bookings}

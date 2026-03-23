@@ -1,7 +1,9 @@
 import Jwt from "jsonwebtoken";
-import { PhotographerModel } from "../model/photographerModel.ts";
+import { PhotographerModel } from "../models/photographer.model.ts";
 import { HttpStatus } from "../constants/httpStatus.ts";
 import type { Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
+dotenv.config();
 
 export interface JWTPayload {
   userId: string;
@@ -13,8 +15,6 @@ export interface AuthRequest extends Request {
   user?: JWTPayload;
   role?: string;
   userId?: string;
-  file?: Express.Multer.File;
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
 }
 
 export const verifyAccessToken = async (

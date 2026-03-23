@@ -1,4 +1,4 @@
-import { ICategory, CategoryType } from "../../model/categoryModel.ts";
+import { ICategory, CategoryType } from "../../models/category.model.ts";
 
 export interface ICategoryQuery {
   page: number;

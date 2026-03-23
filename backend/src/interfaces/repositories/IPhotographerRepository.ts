@@ -1,4 +1,4 @@
-import type { IPhotographer } from "../../model/photographerModel.ts";
+import type { IPhotographer } from "../../models/photographer.model.ts";
 import { IPaginatedPhotographerResponse } from "../../dto/photographer.dto.ts";
 
 export interface IPhotographerQuery {

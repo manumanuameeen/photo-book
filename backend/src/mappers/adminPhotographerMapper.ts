@@ -1,4 +1,4 @@
-import { IPhotographer } from "../model/photographerModel.ts";
+import { IPhotographer } from "../models/photographer.model.ts";
 import { IPhotographerResponse } from "../interfaces/services/IAdminPhotographerService.ts";
 
 export class AdminPhotographerMapper {

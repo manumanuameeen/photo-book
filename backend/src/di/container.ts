@@ -1,62 +1,62 @@
-import { UserRepository } from "../repositories/implementaion/user/user.repository.ts";
-import { AdminRepository } from "../repositories/implementaion/admin/admin.repository.ts";
-import { PhotographerRepository } from "../repositories/implementaion/photographer/PhotographerRepository.ts";
+import { UserRepository } from "../repositories/implementation/user/user.repository.ts";
+import { AdminRepository } from "../repositories/implementation/admin/admin.repository.ts";
+import { PhotographerRepository } from "../repositories/implementation/photographer/PhotographerRepository.ts";
 import { AuthService } from "../services/user/auth/auth.service.ts";
-import { AdminServices } from "../services/admin/implementaion/admin.service.ts";
+import { AdminServices } from "../services/admin/implementation/admin.service.ts";
 import { NodeMailerService } from "../services/user/email/nodemailer.service.ts";
 import { OtpService } from "../services/user/otp/otp.service.ts";
-import { TokenBlacklistService } from "../services/token/tokenBalcklist.service.ts";
-import { UserService } from "../services/user/user.service/user.service.ts";
-import { PhotographerService } from "../services/photographer/photograher.service.ts";
+import { TokenBlacklistService } from "../services/token/tokenBlacklist.service.ts";
+import { UserService } from "../services/user/user.service.ts";
+import { PhotographerService } from "../services/photographer/photographer.service.ts";
 import { AdminPhotographerService } from "../services/admin/AdminPhotographerService.ts";
 import { IAdminPhotographerService } from "../interfaces/services/IAdminPhotographerService.ts";
 import { S3FileService } from "../services/external/S3FileService.ts";
-import { AuthController } from "../controller/auth.controller.ts";
+import { AuthController } from "../controller/user/auth.controller.ts";
 import { AdminController } from "../controller/admin/adminUser.controller.ts";
-import { UserController } from "../controller/user.controller.ts";
-import { PhotographerController } from "../controller/photographer.controller.ts";
+import { UserController } from "../controller/user/user.controller.ts";
+import { PhotographerController } from "../controller/user/photographer.controller.ts";
 
 import { AdminPhotographerController } from "../controller/admin/adminPhotographer.controller.ts";
-import { PackageRepository } from "../repositories/implementaion/PackageRepository.ts";
-import { AvailabilityRepository } from "../repositories/implementaion/AvailabilityRepository.ts";
+import { PackageRepository } from "../repositories/implementation/photographer/PackageRepository.ts";
+import { AvailabilityRepository } from "../repositories/implementation/photographer/AvailabilityRepository.ts";
 import { PackageService } from "../services/photographer/package.service.ts";
 import { AvailabilityService } from "../services/photographer/availability.service.ts";
-import { PackageAvailabilityController } from "../controller/packageAvailability.controller.ts";
-import { PortfolioRepository } from "../repositories/implementaion/PortfolioRepository.ts";
+import { PackageAvailabilityController } from "../controller/user/packageAvailability.controller.ts";
+import { PortfolioRepository } from "../repositories/implementation/photographer/PortfolioRepository.ts";
 import { PortfolioService } from "../services/photographer/PortfolioService.ts";
-import { PortfolioController } from "../controller/portfolio.controller.ts";
+import { PortfolioController } from "../controller/user/portfolio.controller.ts";
 import { IPortfolioController } from "../interfaces/controllers/IPortfolioController.ts";
-import { CategoryRepository } from "../repositories/implementaion/CategoryRepository.ts";
-import { MessageRepository } from "../repositories/implementaion/MessageRepository.ts";
+import { CategoryRepository } from "../repositories/implementation/common/CategoryRepository.ts";
+import { MessageRepository } from "../repositories/implementation/common/MessageRepository.ts";
 import { CategoryService } from "../services/common/CategoryService.ts";
 import { MessageService } from "../services/messaging/MessageService.ts";
-import { CategoryController } from "../controller/CategoryController.ts";
+import { CategoryController } from "../controller/user/CategoryController.ts";
 import { ICategoryController } from "../interfaces/controllers/ICategoryController.ts";
-import { BookingRepository } from "../repositories/implementaion/booking/BookingRepository.ts";
-import { BookingService } from "../services/implementaion/BookingService.ts";
-import { BookingController } from "../controller/BookingController.ts";
+import { BookingRepository } from "../repositories/implementation/booking/BookingRepository.ts";
+import { BookingService } from "../services/implementation/booking/BookingService.ts";
+import { BookingController } from "../controller/user/BookingController.ts";
 import { IBookingController } from "../interfaces/controllers/IBookingController.ts";
-import { MessageController } from "../controller/MessageController.ts";
+import { MessageController } from "../controller/user/MessageController.ts";
 import { IMessageController } from "../interfaces/controllers/IMessageController.ts";
-import { WalletRepository } from "../repositories/implementaion/wallet/WalletRepository.ts";
-import { WalletService } from "../services/implementaion/WalletService.ts";
+import { WalletRepository } from "../repositories/implementation/wallet/WalletRepository.ts";
+import { WalletService } from "../services/implementation/wallet/WalletService.ts";
 import { BookingQueueService } from "../services/common/BookingQueueService.ts";
-import { StripeService } from "../services/implementaion/StripeService.ts";
-import { WalletController } from "../controller/WalletController.ts";
-import { PaymentController } from "../controller/PaymentController.ts";
-import { PaymentService } from "../services/implementaion/PaymentService.ts";
-import { RentalRepository } from "../repositories/implementaion/rental/RentalRepository.ts";
-import { PdfService } from "../services/implementaion/PdfService.ts";
+import { StripeService } from "../services/implementation/booking/StripeService.ts";
+import { WalletController } from "../controller/user/WalletController.ts";
+import { PaymentController } from "../controller/user/PaymentController.ts";
+import { PaymentService } from "../services/implementation/booking/PaymentService.ts";
+import { RentalRepository } from "../repositories/implementation/rental/RentalRepository.ts";
+import { PdfService } from "../services/implementation/common/PdfService.ts";
 import { BookingPaymentService } from "../services/booking/BookingPaymentService.ts";
 
-import { RentalItemRepository } from "../repositories/rental/RentalItemRepository.ts";
-import { RentalOrderRepository } from "../repositories/rental/RentalOrderRepository.ts";
+import { RentalItemRepository } from "../repositories/implementation/rental/RentalItemRepository.ts";
+import { RentalOrderRepository } from "../repositories/implementation/rental/RentalOrderRepository.ts";
 import { RentalItemService } from "../services/rental/RentalItemService.ts";
 import { RentalOrderService } from "../services/rental/RentalOrderService.ts";
 import { RentalPaymentService } from "../services/rental/RentalPaymentService.ts";
 import { RentalAvailabilityService } from "../services/rental/RentalAvailabilityService.ts";
 import { RentalFinanceService } from "../services/rental/RentalFinanceService.ts";
-import { RentalService } from "../services/implementaion/RentalService.ts";
+import { RentalService } from "../services/implementation/rental/RentalService.ts";
 import { AdminRentalService } from "../services/rental/AdminRentalService.ts";
 import { AdminRentalController } from "../controller/admin/AdminRentalController.ts";
 import { AdminDashboardService } from "../services/admin/AdminDashboardService.ts";
@@ -66,32 +66,29 @@ import { IReviewRepository } from "../interfaces/repositories/IReviewRepository.
 import { IReviewService } from "../interfaces/services/IReviewService.ts";
 import { IHelpRepository } from "../interfaces/repositories/IHelpRepository.ts";
 import { IHelpService } from "../interfaces/services/IHelpService.ts";
-import { ReviewRepository } from "../repositories/implementaion/ReviewRepository.ts";
-import { ReviewService } from "../services/implementaion/ReviewService.ts";
-import { ReviewController } from "../controller/ReviewController.ts";
+import { ReviewRepository } from "../repositories/implementation/common/ReviewRepository.ts";
+import { ReviewService } from "../services/implementation/common/ReviewService.ts";
+import { ReviewController } from "../controller/user/ReviewController.ts";
 import { IReviewController } from "../interfaces/controllers/IReviewController.ts";
-import { HelpRepository } from "../repositories/implementaion/HelpRepository.ts";
-import { HelpService } from "../services/implementaion/HelpService.ts";
-import { HelpController } from "../controller/HelpController.ts";
+import { HelpRepository } from "../repositories/implementation/common/HelpRepository.ts";
+import { HelpService } from "../services/implementation/common/HelpService.ts";
+import { HelpController } from "../controller/user/HelpController.ts";
 import { IHelpController } from "../interfaces/controllers/IHelpController.ts";
 import { IEmailService } from "../interfaces/services/IEmailService.ts";
-import { ReportService } from "../services/implementaion/ReportService.ts";
-import { ReportController } from "../controller/ReportController.ts";
-import { ReportRepository } from "../repositories/implementaion/ReportRepository.ts";
-import { ReportCategoryRepository } from "../repositories/implementaion/ReportCategoryRepository.ts";
-import { ReportCategoryService } from "../services/implementaion/ReportCategoryService.ts";
-import { ReportCategoryController } from "../controller/ReportCategoryController.ts";
-import { RuleRepository } from "../repositories/implementaion/admin/RuleRepository.ts";
-import { RuleService } from "../services/implementaion/admin/RuleService.ts";
-import { RuleController } from "../controller/ruleController.ts";
+import { ReportService } from "../services/implementation/common/ReportService.ts";
+import { ReportController } from "../controller/user/ReportController.ts";
+import { ReportRepository } from "../repositories/implementation/common/ReportRepository.ts";
+import { ReportCategoryRepository } from "../repositories/implementation/common/ReportCategoryRepository.ts";
+import { ReportCategoryService } from "../services/implementation/common/ReportCategoryService.ts";
+import { ReportCategoryController } from "../controller/user/ReportCategoryController.ts";
+import { RuleRepository } from "../repositories/implementation/admin/RuleRepository.ts";
+import { RuleService } from "../services/implementation/admin/RuleService.ts";
+import { RuleController } from "../controller/user/RuleController.ts";
 import { IRentalAvailabilityService } from "../interfaces/services/rental/IRentalAvailabilityService.ts";
 import { IRentalFinanceService } from "../interfaces/services/rental/IRentalFinanceService.ts";
-import { IRentalItemService } from "../interfaces/services/rental/IRentalItemService.ts";
-import { IRentalOrderService } from "../interfaces/services/rental/IRentalOrderService.ts";
-import { IRentalPaymentService } from "../interfaces/services/rental/IRentalPaymentService.ts";
-import { HelpTopicRequestRepository } from "../repositories/implementaion/HelpTopicRequestRepository.ts";
-import { HelpTopicRequestService } from "../services/implementaion/HelpTopicRequestService.ts";
-import { HelpTopicRequestController } from "../controller/HelpTopicRequestController.ts";
+import { HelpTopicRequestRepository } from "../repositories/implementation/common/HelpTopicRequestRepository.ts";
+import { HelpTopicRequestService } from "../services/implementation/common/HelpTopicRequestService.ts";
+import { HelpTopicRequestController } from "../controller/user/HelpTopicRequestController.ts";
 import { IHelpTopicRequestRepository } from "../interfaces/repositories/IHelpTopicRequestRepository.ts";
 import { IHelpTopicRequestService } from "../interfaces/services/IHelpTopicRequestService.ts";
 import { IHelpTopicRequestController } from "../interfaces/controllers/IHelpTopicRequestController.ts";
@@ -358,7 +355,7 @@ class DIContainer {
     return this._walletService;
   }
 
-  get rentalItemService(): IRentalItemService {
+  get rentalItemService(): RentalItemService {
     this._rentalItemService ??= new RentalItemService(
       this.rentalItemRepository,
       this.rentalOrderRepository,
@@ -366,7 +363,7 @@ class DIContainer {
     return this._rentalItemService;
   }
 
-  get rentalPaymentService(): IRentalPaymentService {
+  get rentalPaymentService(): RentalPaymentService {
     this._rentalPaymentService ??= new RentalPaymentService(
       this.rentalOrderRepository,
       this.paymentService,
@@ -378,7 +375,7 @@ class DIContainer {
     return this._rentalPaymentService;
   }
 
-  get rentalOrderService(): IRentalOrderService {
+  get rentalOrderService(): RentalOrderService {
     this._rentalOrderService ??= new RentalOrderService(
       this.rentalOrderRepository,
       this.rentalItemRepository,
@@ -539,12 +536,7 @@ class DIContainer {
   }
 
   get rentalController(): RentalController {
-    this._rentalController ??= new RentalController(
-      this.rentalItemService,
-      this.rentalOrderService,
-      this.rentalPaymentService,
-      this.fileService,
-    );
+    this._rentalController ??= new RentalController(this.rentalService, this.fileService);
     return this._rentalController;
   }
 

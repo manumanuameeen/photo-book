@@ -1,4 +1,4 @@
-import { IPhotographer } from "../model/photographerModel.ts";
+import { IPhotographer } from "../models/photographer.model.ts";
 import { PhotographerResponseDto } from "../dto/photographer.dto.ts";
 
 export class PhotographerMapper {

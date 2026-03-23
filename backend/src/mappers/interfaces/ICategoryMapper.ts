@@ -1,5 +1,5 @@
 import type { CreateCategoryDto, UpdateCategoryDto } from "../../dto/category.dto.ts";
-import type { ICategory } from "../../model/categoryModel.ts";
+import type { ICategory } from "../../models/category.model.ts";
 import type { IMapper } from "./IMapper.ts";
 export interface ICategoryResponseDto {
   id: string;

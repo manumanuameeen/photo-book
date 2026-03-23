@@ -1,0 +1,91 @@
+src/controller/user/MessageController.ts(186,50): error TS2307: Cannot find module '../services/external/CloudinaryService.ts' or its corresponding type declarations.
+src/controller/user/packageAvailability.controller.ts(196,50): error TS2307: Cannot find module '../models/photographer.model' or its corresponding type declarations.
+src/di/container.ts(286,7): error TS2345: Argument of type 'UserRepository' is not assignable to parameter of type 'IUserRepository'.
+src/di/container.ts(300,43): error TS2345: Argument of type 'UserRepository' is not assignable to parameter of type 'IUserRepository'.
+src/di/container.ts(306,7): error TS2345: Argument of type 'PhotographerRepository' is not assignable to parameter of type 'IPhotographerRepository'.
+src/di/container.ts(314,7): error TS2345: Argument of type 'PhotographerRepository' is not assignable to parameter of type 'IPhotographerRepository'.
+src/di/container.ts(325,7): error TS2345: Argument of type 'PhotographerRepository' is not assignable to parameter of type 'IPhotographerRepository'.
+src/di/container.ts(338,7): error TS2345: Argument of type 'PhotographerRepository' is not assignable to parameter of type 'IPhotographerRepository'.
+src/di/container.ts(354,47): error TS2345: Argument of type 'WalletRepository' is not assignable to parameter of type 'IWalletRepository'.
+src/di/container.ts(384,7): error TS2345: Argument of type 'UserRepository' is not assignable to parameter of type 'IUserRepository'.
+src/di/container.ts(410,7): error TS2345: Argument of type 'BookingRepository' is not assignable to parameter of type 'IBookingRepository'.
+src/di/container.ts(421,7): error TS2345: Argument of type 'BookingRepository' is not assignable to parameter of type 'IBookingRepository'.
+src/di/container.ts(498,7): error TS2345: Argument of type 'BookingRepository' is not assignable to parameter of type 'IBookingRepository'.
+src/di/container.ts(510,71): error TS2345: Argument of type 'RentalRepository' is not assignable to parameter of type 'IRentalRepository'.
+src/di/container.ts(516,7): error TS2345: Argument of type 'RentalRepository' is not assignable to parameter of type 'IRentalRepository'.
+src/di/container.ts(529,7): error TS2345: Argument of type 'RentalRepository' is not assignable to parameter of type 'IRentalRepository'.
+src/di/container.ts(554,7): error TS2345: Argument of type 'RentalRepository' is not assignable to parameter of type 'IRentalRepository'.
+src/interfaces/repositories/IAdminRepository.ts(7,8): error TS2307: Cannot find module '../admin/IAdminUser.interface.ts' or its corresponding type declarations.
+src/interfaces/services/IAdminService.ts(5,8): error TS2307: Cannot find module '../admin/IAdminUser.interface.ts' or its corresponding type declarations.
+src/repositories/implementation/booking/BookingRepository.ts(2,40): error TS2307: Cannot find module '../../../../models/booking.model.ts' or its corresponding type declarations.
+src/repositories/implementation/booking/BookingRepository.ts(3,32): error TS2307: Cannot find module '../../../base/BaseRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/booking/BookingRepository.ts(4,36): error TS2307: Cannot find module '../../../../interfaces/repositories/IBookingRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/booking/BookingRepository.ts(12,23): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(20,23): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(28,23): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(53,30): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(54,33): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(87,30): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(88,33): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(119,30): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(120,33): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/booking/BookingRepository.ts(137,30): error TS2339: Property '_model' does not exist on type 'BookingRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(1,32): error TS2307: Cannot find module '../../../base/BaseRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/photographer/PhotographerRepository.ts(8,8): error TS2307: Cannot find module '../../../../interfaces/repositories/IPhotographerRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/photographer/PhotographerRepository.ts(9,48): error TS2307: Cannot find module '../../../../dto/photographer.dto.ts' or its corresponding type declarations.
+src/repositories/implementation/photographer/PhotographerRepository.ts(10,35): error TS2307: Cannot find module '../../../../models/photographer.model.ts' or its corresponding type declarations.
+src/repositories/implementation/photographer/PhotographerRepository.ts(11,36): error TS2307: Cannot find module '../../../../models/photographer.model.ts' or its corresponding type declarations.
+src/repositories/implementation/photographer/PhotographerRepository.ts(23,23): error TS2339: Property 'findOne' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(49,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(50,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(51,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(52,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(53,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(69,23): error TS2339: Property 'update' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(72,23): error TS2339: Property 'update' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(76,23): error TS2339: Property 'update' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(83,23): error TS2339: Property 'update' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(91,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(92,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(93,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(94,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(95,12): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(254,31): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/photographer/PhotographerRepository.ts(413,31): error TS2339: Property '_model' does not exist on type 'PhotographerRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(1,46): error TS2307: Cannot find module '../../../../models/rentalItem.model.ts' or its corresponding type declarations.
+src/repositories/implementation/rental/RentalRepository.ts(2,48): error TS2307: Cannot find module '../../../../models/rentalOrder.model.ts' or its corresponding type declarations.
+src/repositories/implementation/rental/RentalRepository.ts(3,32): error TS2307: Cannot find module '../../../base/BaseRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/rental/RentalRepository.ts(5,35): error TS2307: Cannot find module '../../../../interfaces/repositories/IRentalRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/rental/RentalRepository.ts(13,23): error TS2339: Property 'create' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(23,12): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(24,12): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(30,23): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(34,23): error TS2339: Property 'update' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(38,23): error TS2339: Property 'delete' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(48,12): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(49,12): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(55,23): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(85,32): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(94,34): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/repositories/implementation/rental/RentalRepository.ts(137,30): error TS2339: Property '_model' does not exist on type 'RentalRepository'.
+src/repositories/implementation/rental/RentalRepository.ts(138,32): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/repositories/implementation/user/user.repository.ts(1,22): error TS2307: Cannot find module '../../../../models/user.model.ts' or its corresponding type declarations.
+src/repositories/implementation/user/user.repository.ts(2,28): error TS2307: Cannot find module '../../../../models/user.model.ts' or its corresponding type declarations.
+src/repositories/implementation/user/user.repository.ts(3,38): error TS2307: Cannot find module '../../../../interfaces/repositories/IUserRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/user/user.repository.ts(4,32): error TS2307: Cannot find module '../../../base/BaseRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/user/user.repository.ts(12,29): error TS2339: Property 'findOne' does not exist on type 'UserRepository'.
+src/repositories/implementation/wallet/WalletRepository.ts(2,52): error TS2307: Cannot find module '../../../../models/wallet.model.ts' or its corresponding type declarations.
+src/repositories/implementation/wallet/WalletRepository.ts(3,32): error TS2307: Cannot find module '../../../base/BaseRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/wallet/WalletRepository.ts(4,35): error TS2307: Cannot find module '../../../../interfaces/repositories/IWalletRepository.ts' or its corresponding type declarations.
+src/repositories/implementation/wallet/WalletRepository.ts(12,23): error TS2339: Property '_model' does not exist on type 'WalletRepository'.
+src/repositories/implementation/wallet/WalletRepository.ts(16,23): error TS2339: Property '_model' does not exist on type 'WalletRepository'.
+src/repositories/implementation/wallet/WalletRepository.ts(20,23): error TS2339: Property '_model' does not exist on type 'WalletRepository'.
+src/repositories/implementation/wallet/WalletRepository.ts(24,32): error TS2339: Property '_model' does not exist on type 'WalletRepository'.
+src/repositories/implementation/wallet/WalletRepository.ts(36,23): error TS2339: Property '_model' does not exist on type 'WalletRepository'.
+src/repositories/implementation/wallet/WalletRepository.ts(48,23): error TS2339: Property '_model' does not exist on type 'WalletRepository'.
+src/repositories/implementation/wallet/WalletRepository.ts(85,31): error TS2339: Property '_model' does not exist on type 'WalletRepository'.
+src/services/implementation/wallet/WalletService.ts(33,37): error TS2307: Cannot find module '../../models/user.model.ts' or its corresponding type declarations.
+src/services/rental/RentalFinanceService.ts(10,31): error TS2307: Cannot find module '../implementation/StripeService.ts' or its corresponding type declarations.
+src/services/rental/RentalFinanceService.ts(13,28): error TS2307: Cannot find module '../implementation/PdfService.ts' or its corresponding type declarations.
+src/services/rental/RentalOrderService.ts(16,31): error TS2307: Cannot find module '../implementation/StripeService.ts' or its corresponding type declarations.
+src/services/rental/RentalPaymentService.ts(7,31): error TS2307: Cannot find module '../implementation/StripeService.ts' or its corresponding type declarations.

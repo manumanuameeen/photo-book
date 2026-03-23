@@ -9,7 +9,7 @@ import {
   IBooking,
   IPopulatedUser,
   PaymentStatus,
-} from "../../model/bookingModel.ts";
+} from "../../models/booking.model.ts";
 import mongoose from "mongoose";
 import { AppError } from "../../utils/AppError.ts";
 import { HttpStatus } from "../../constants/httpStatus.ts";

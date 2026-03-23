@@ -1,6 +1,6 @@
 import { IMessageRepository } from "../../interfaces/repositories/IMessageRepository.ts";
 import { IMessageService } from "../../interfaces/services/IMessageService.ts";
-import { IMessage } from "../../model/messageModel.ts";
+import { IMessage } from "../../models/message.model.ts";
 import mongoose from "mongoose";
 import { AppError } from "../../utils/AppError.ts";
 
@@ -54,6 +54,14 @@ export class MessageService implements IMessageService {
     limit = 50,
   ): Promise<{ messages: IMessage[]; total: number }> {
     return await this._repository.findByPartnerId(userId, partnerId, page, limit);
+  }
+
+  async getSystemMessages(
+    userId: string,
+    page = 1,
+    limit = 50,
+  ): Promise<{ messages: IMessage[]; total: number }> {
+    return await this._repository.getSystemMessages(userId, page, limit);
   }
 
   async getConversations(userId: string): Promise<Record<string, unknown>[]> {

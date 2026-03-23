@@ -1,10 +1,15 @@
-import { IMessage } from "../../model/messageModel.ts";
+import { IMessage } from "../../models/message.model.ts";
 import { IBaseRepository } from "./IBaseRepository.ts";
 
 export interface IMessageRepository extends IBaseRepository<IMessage> {
   findByPartnerId(
     userId: string,
     partnerId: string,
+    page?: number,
+    limit?: number,
+  ): Promise<{ messages: IMessage[]; total: number }>;
+  getSystemMessages(
+    userId: string,
     page?: number,
     limit?: number,
   ): Promise<{ messages: IMessage[]; total: number }>;

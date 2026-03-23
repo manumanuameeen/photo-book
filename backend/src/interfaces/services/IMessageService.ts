@@ -1,4 +1,4 @@
-import { IMessage } from "../../model/messageModel.ts";
+import { IMessage } from "../../models/message.model.ts";
 
 export interface IMessageService {
   sendSystemMessage(
@@ -10,6 +10,11 @@ export interface IMessageService {
   getMessages(
     userId: string,
     partnerId: string,
+    page?: number,
+    limit?: number,
+  ): Promise<{ messages: IMessage[]; total: number }>;
+  getSystemMessages(
+    userId: string,
     page?: number,
     limit?: number,
   ): Promise<{ messages: IMessage[]; total: number }>;

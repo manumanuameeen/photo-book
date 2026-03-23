@@ -42,8 +42,16 @@ const stats = [
 ];
 
 const HomePage = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [featuredPhotographers, setFeaturedPhotographers] = useState<any[]>([]);
+  interface FeaturedPhotographer {
+    _id?: string;
+    id?: string;
+    name?: string;
+    image?: string;
+    category?: string;
+    rating?: number;
+    reviews?: number;
+  }
+  const [featuredPhotographers, setFeaturedPhotographers] = useState<FeaturedPhotographer[]>([]);
 
   useEffect(() => {
     const fetchPhotographers = async () => {

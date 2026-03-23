@@ -3,6 +3,7 @@ import { AuthRequest } from "../../middleware/authMiddleware.ts";
 
 export interface IMessageController {
   getMessages(req: AuthRequest, res: Response): Promise<void>;
+  getSystemMessages(req: AuthRequest, res: Response): Promise<void>;
   getConversations(req: AuthRequest, res: Response): Promise<void>;
   markAsRead(req: Request, res: Response): Promise<void>;
   deleteMessageForMe(req: AuthRequest, res: Response): Promise<void>;

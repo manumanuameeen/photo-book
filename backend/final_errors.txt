@@ -1,0 +1,3 @@
+﻿src/controller/user/MessageController.ts(186,50): error TS2307: Cannot find module '../services/external/CloudinaryService.ts' or its corresponding type declarations.
+src/controller/user/packageAvailability.controller.ts(196,50): error TS2307: Cannot find module '../models/photographer.model' or its corresponding type declarations.
+src/services/implementation/wallet/WalletService.ts(33,37): error TS2307: Cannot find module '../../models/user.model.ts' or its corresponding type declarations.
