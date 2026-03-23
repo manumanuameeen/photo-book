@@ -1,4 +1,4 @@
-import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest, IForgetPassword, IVerifyResetOtp, IResetPassword } from "types/auth.types";
+import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest, IForgetPassword, IVerifyResetOtp, IResetPassword } from "@/modules/auth/types/auth.types";
 
 export interface IAuthService {
   signup(data: ISignupRequest): Promise<IAuthResponse>;

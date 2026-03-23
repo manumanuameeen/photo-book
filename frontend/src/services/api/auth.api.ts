@@ -1,6 +1,6 @@
-import { authRepository } from "repositories/implementation/authRepository";
-import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest, IForgetPassword, IVerifyResetOtp, IResetPassword } from "types/auth.types";
-import type { IAuthService } from "./IAuthsevice";
+import { authRepository } from "@/modules/auth/repositories/implementation/authRepository";
+import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest, IForgetPassword, IVerifyResetOtp, IResetPassword } from "@/modules/auth/types/auth.types";
+import type { IAuthService } from "@/interfaces/services/IAuthService";
 
 class AuthService implements IAuthService {
 

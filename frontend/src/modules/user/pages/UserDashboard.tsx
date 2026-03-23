@@ -428,10 +428,10 @@ const UserDashboard = () => {
                             {activeTab === 'overview' && (
                                 <DashboardOverview
                                     bookings={bookings}
-                                    stats={stats || { hosting: {}, renting: {} }}
+                                    stats={stats}
                                     statsLoading={statsLoading}
                                     onViewBookings={() => setActiveTab('bookings')}
-                                    walletData={walletData || { balance: 0 }}
+                                    walletData={walletData}
                                     rentalRequests={rentalRequests}
                                     period={period}
                                     onPeriodChange={setPeriod}

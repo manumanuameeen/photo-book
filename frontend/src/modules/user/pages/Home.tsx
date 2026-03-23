@@ -202,7 +202,7 @@ const HomePage = () => {
               </div>
               <Link
                 to={ROUTES.USER.PHOTOGRAPHER_DETAILS}
-                params={{ id: p.id || p._id }}
+                params={{ id: (p.id || p._id)! }}
                 className="w-full"
               >
                 <MagneticButton
