@@ -1,10 +1,32 @@
-version: "3.9"
+# version: "3.9"
 
+# services:
+#   backend:
+#     build:
+#       context: ./backend
+#       target: production
+#     container_name: photobook-backend-prod
+#     ports:
+#       - "5000:5000"
+#     env_file:
+#       - ./backend/.env
+#     environment:
+#       - NODE_ENV=production
+#     restart: always
+
+#   frontend:
+#     build:
+#       context: ./frontend
+#       target: production
+#     container_name: photobook-frontend-prod
+#     ports:
+#       - "80:80"
+#     depends_on:
+#       - backend
+#     restart: always
 services:
   backend:
-    build:
-      context: ./backend
-      target: production
+    image: ameenwork/photo-book-backend:latest
     container_name: photobook-backend-prod
     ports:
       - "5000:5000"
@@ -12,15 +34,27 @@ services:
       - ./backend/.env
     environment:
       - NODE_ENV=production
+    depends_on:
+      - redis
     restart: always
 
   frontend:
-    build:
-      context: ./frontend
-      target: production
+    image: ameenwork/photo-book-frontend:latest
     container_name: photobook-frontend-prod
     ports:
       - "80:80"
     depends_on:
       - backend
     restart: always
+
+  redis:
+    image: redis:alpine
+    container_name: photobook-redis
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
