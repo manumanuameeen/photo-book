@@ -47,7 +47,7 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(
     cors({
-      origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : true,
+      origin:[ "https://main.d27f9jvazqn4mr.amplifyapp.com","http://localhost:5173"],
       credentials: true,
     })
   );
