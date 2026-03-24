@@ -182,14 +182,14 @@ export class AuthController implements IAuthController {
     res.cookie("accessToken", access, {
       httpOnly: true,
       secure: isProd,
-      sameSite: "lax",
+      sameSite: isProd ? "none" : "lax",
       maxAge: ENV.ACCESS_TOKEN_MAX_AGE,
     });
 
     res.cookie("refreshToken", refresh, {
       httpOnly: true,
       secure: isProd,
-      sameSite: "lax",
+      sameSite: isProd ? "none" : "lax",
       maxAge: ENV.REFRESH_TOKEN_MAX_AGE,
     });
 

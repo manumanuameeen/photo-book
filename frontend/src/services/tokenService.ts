@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAuthStore } from "../modules/auth/store/useAuthStore";
 
 const rawClient = axios.create({
-    baseURL: "http://localhost:5000/api/v1",
+    baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1"),
     withCredentials: true,
 });
 

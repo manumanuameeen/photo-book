@@ -7,7 +7,7 @@ import { useAuthStore } from "../modules/auth/store/useAuthStore";
 import { ROUTES } from "../constants/routes";
 
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
+    baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1"),
     withCredentials: true,
 });
 

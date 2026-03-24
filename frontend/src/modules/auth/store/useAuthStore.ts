@@ -63,7 +63,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           console.log("🚪 Logout initiated");
 
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/logout`, {
             method: "POST",
             credentials: "include",
             headers: {
@@ -110,7 +110,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           console.log("🔄 Attempting token refresh for rehydration...");
 
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh-token`, {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/refresh-token`, {
             method: "POST",
             credentials: "include",
             headers: {
