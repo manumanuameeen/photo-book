@@ -8,6 +8,8 @@ import { verifyAccessToken } from "../middleware/authMiddleware";
 import { rankPhotosByQuery } from "../services/external/aiSearchService";
 import { suggestAlbumName } from "../services/external/albumNameService";
 import { PortfolioSectionModel } from "../models/portfolioSection.model";
+import { getChatbotResponse, ChatMessage } from "../services/external/chatbotService";
+import { ROUTES } from "../constants/routes";
 
 const router = Router();
 
@@ -98,6 +100,30 @@ router.post("/album/:albumId/suggest-name", verifyAccessToken, async (req: Reque
   } catch (error) {
     console.error("[AI Album Name Route] Error:", error);
     return res.status(500).json({ message: "Album name suggestion failed" });
+  }
+});
+
+/**
+ * POST /api/ai/chatbot
+ * Handles AI chatbot messages
+ */
+router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: Response) => {
+  try {
+    const { messages } = req.body as { messages: ChatMessage[] };
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ message: "Chat history is required" });
+    }
+
+    const result = await getChatbotResponse(messages);
+
+    return res.status(200).json({
+      success: result.success,
+      message: result.message,
+    });
+  } catch (error) {
+    console.error("[AI Chatbot Route] Error:", error);
+    return res.status(500).json({ message: "Chatbot interaction failed" });
   }
 });
 

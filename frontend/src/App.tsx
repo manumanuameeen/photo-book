@@ -7,6 +7,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useEffect } from "react";
 import { useAuthStore } from "./modules/auth/store/useAuthStore";
 import { socketService } from "./modules/chat/services/socketService";
+import AIChatbot from "./components/common/AIChatbot";
 
 export default function App() {
   const { rehydrateUser, user } = useAuthStore();
@@ -63,6 +64,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <Toaster richColors position="top-center" />
         <RouterProvider router={router} context={{ auth: useAuthStore.getState() }} />
+        <AIChatbot />
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

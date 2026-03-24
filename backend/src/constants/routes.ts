@@ -223,6 +223,7 @@ export const ROUTES = {
       BASE: "/api/v1/ai",
       SEARCH: "/search",
       ALBUM_SUGGEST_NAME: "/album/:albumId/suggest-name",
+      CHATBOT: "/chatbot",
     },
   },
 } as const;
