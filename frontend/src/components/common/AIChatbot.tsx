@@ -11,13 +11,16 @@ interface Message {
 
 /**
  * AIChatbot Component
- * A floating chat bubble that opens a chat window with AI assistance.
+ * A floating chat bubble that opens a chat window with Shutter - the Photo-book AI booking assistant.
  */
 const AIChatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hi there! 👋 I am the PhotoBook AI Assistant. How can I help you today?' }
+    { 
+      role: 'assistant', 
+      content: 'Hi there! 👋 I\'m Shutter, your Photo-book booking assistant. I\'m here to help you find the perfect photographer for your special moments. Whether you\'re planning a wedding, looking for a portrait session, or need event coverage, I\'ve got you covered! What brings you here today?' 
+    }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -98,14 +101,14 @@ const AIChatbot: React.FC = () => {
             className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-green-600 p-4 text-white flex justify-between items-center shrink-0">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <div className="bg-white/20 p-1.5 rounded-lg">
                   <Bot size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">PhotoBook AI</h3>
-                  <p className="text-[10px] text-white/80">Online & Ready to help</p>
+                  <h3 className="font-bold text-sm">Shutter</h3>
+                  <p className="text-[10px] text-white/80">Photo-book Booking Assistant</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -135,13 +138,13 @@ const AIChatbot: React.FC = () => {
                     >
                       <div className={`flex gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                         <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                          msg.role === 'user' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+                          msg.role === 'user' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
                         }`}>
                           {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                         </div>
                         <div className={`p-3 rounded-2xl text-sm ${
                           msg.role === 'user' 
-                            ? 'bg-green-600 text-white rounded-tr-none' 
+                            ? 'bg-indigo-600 text-white rounded-tr-none' 
                             : 'bg-white text-gray-800 border border-gray-100 shadow-sm rounded-tl-none'
                         }`}>
                           {msg.content}
@@ -152,7 +155,7 @@ const AIChatbot: React.FC = () => {
                   {isLoading && (
                     <div className="flex justify-start">
                       <div className="flex gap-2 max-w-[85%]">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
                           <Bot size={16} />
                         </div>
                         <div className="p-3 rounded-2xl text-sm bg-white text-gray-800 border border-gray-100 shadow-sm rounded-tl-none flex items-center gap-2">
@@ -172,12 +175,12 @@ const AIChatbot: React.FC = () => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 bg-gray-50 border-none focus:ring-2 focus:ring-green-500 rounded-xl px-4 py-2 text-sm outline-none transition-all"
+                    className="flex-1 bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 rounded-xl px-4 py-2 text-sm outline-none transition-all"
                   />
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading}
-                    className="bg-green-600 text-white p-2 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md active:scale-95"
+                    className="bg-indigo-600 text-white p-2 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md active:scale-95"
                   >
                     <Send size={18} />
                   </button>
@@ -197,7 +200,7 @@ const AIChatbot: React.FC = () => {
           setIsMinimized(false);
         }}
         className={`p-4 rounded-full shadow-2xl flex items-center justify-center transition-all ${
-          isOpen ? 'bg-white text-green-600' : 'bg-green-600 text-white'
+          isOpen ? 'bg-white text-indigo-600' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
         }`}
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
