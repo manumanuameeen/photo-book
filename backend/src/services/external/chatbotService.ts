@@ -1,11 +1,9 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
-import { BufferMemory } from "langchain/memory";
-import { LLMChain } from "langchain/chains";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 /**
- * Chatbot Service (LangChain Version)
- * Uses LangChain for better prompt management and conversation memory.
+ * Chatbot Service (LangChain + Google Gemini)
+ * Uses LangChain with Google Gemini 1.5 Flash for FREE AI responses.
  * Implements "Shutter" - the Photo-book AI booking assistant
  */
 export interface ChatMessage {
@@ -134,17 +132,18 @@ Always end responses with a clear next step or open question that moves the conv
 Remember: You are Shutter, and your mission is to connect people with the photographers who will capture their most meaningful moments.`;
 
 /**
- * Processes a chat request using LangChain
+ * Processes a chat request using LangChain with Google Gemini 1.5 Flash
  * @param messages - Array of previous messages for context
  * @returns AI's response message
  */
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
   try {
-    // 1. Initialize the LLM (using GPT-4o-mini for low cost/free tier)
-    const model = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+    // 1. Initialize the Gemini model (completely FREE with generous rate limits)
+    const model = new ChatGoogleGenerativeAI({
+      modelName: "gemini-1.5-flash",
+      apiKey: process.env.GEMINI_API_KEY,
       temperature: 0.7,
-      openAIApiKey: process.env.OPENAI_API_KEY,
+      maxOutputTokens: 1024,
     });
 
     // 2. Create the prompt template with a placeholder for history
@@ -154,8 +153,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
       ["human", "{input}"],
     ]);
 
-    // 3. Setup Memory (Optional: In a real app, you'd store this in Redis/DB per user)
-    // For this implementation, we pass the history manually from the frontend
+    // 3. Setup conversation history from messages
     const history = messages.slice(0, -1).map(m => {
         if (m.role === "user") return ["human", m.content];
         return ["ai", m.content];
@@ -179,7 +177,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
       message: response.content.toString(),
     };
   } catch (error) {
-    console.error("[Chatbot Service] LangChain Error:", error);
+    console.error("[Chatbot Service] Gemini Error:", error);
     return {
       success: false,
       message: "I'm sorry, I'm having trouble connecting right now. Please try again later.",
