@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User, Minimize2, Maximize2, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../../modules/auth/store/useAuthStore';
-import { getErrorMessage } from '../../utils/errorhandler';
+// import { getErrorMessage } from '../../utils/errorhandler';
 
 interface Message {
   role: 'user' | 'assistant';

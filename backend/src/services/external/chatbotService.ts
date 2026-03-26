@@ -140,10 +140,10 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
   try {
     // 1. Initialize the Gemini model (completely FREE with generous rate limits)
     const model = new ChatGoogleGenerativeAI({
-      modelName: "gemini-1.5-flash",
+      model: "gemini-1.5-flash",
       apiKey: process.env.GEMINI_API_KEY,
       temperature: 0.7,
-      maxOutputTokens: 1024,
+      maxOutputTokens: 1000,
     });
 
     // 2. Create the prompt template with a placeholder for history
@@ -155,15 +155,15 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
 
     // 3. Setup conversation history from messages
     const history = messages.slice(0, -1).map(m => {
-        if (m.role === "user") return ["human", m.content];
-        return ["ai", m.content];
+      if (m.role === "user") return ["human", m.content];
+      return ["ai", m.content];
     }) as [string, string][];
 
     const lastMessage = messages[messages.length - 1].content;
 
     // 4. Create and run the chain
     const chain = prompt.pipe(model);
-    
+
     const response = await chain.invoke({
       input: lastMessage,
       history: history.map(([role, content]) => {
