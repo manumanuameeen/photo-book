@@ -25,14 +25,13 @@ const AIChatbot: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, accessToken } = useAuthStore();
 
-  // Debug logging
+ 
   useEffect(() => {
     console.log("🤖 AIChatbot: User status:", { user, isAuthenticated });
   }, [user, isAuthenticated]);
 
-  // Scroll to bottom whenever messages change
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -57,7 +56,7 @@ const AIChatbot: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.accessToken}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({
           messages: [...messages, userMessage]
@@ -86,8 +85,7 @@ const AIChatbot: React.FC = () => {
     }
   };
 
-  // We keep the check but ensure it's robust. 
-  // If the user is logged in as "nidhal", the user object should exist.
+  
   if (!user && !isAuthenticated) {
     return null;
   }
