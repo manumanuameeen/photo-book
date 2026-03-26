@@ -183,7 +183,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     console.error("[Chatbot Service] Gemini Error:", error);
     return {
       success: false,
-      message: "I'm sorry, I'm having trouble connecting right now. Please try again later.",
+      message: "I'm sorry, I'm having trouble connecting right now. Please try again later."+error,
     };
   }
 };
