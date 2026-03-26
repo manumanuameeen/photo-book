@@ -137,11 +137,22 @@ Remember: You are Shutter, and your mission is to connect people with the photog
  * @returns AI's response message
  */
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
+  // Abort if Gemini takes longer than 90 seconds
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90_000);
+
   try {
-        if (!process.env.GEMINI_API_KEY) {
-      console.error("[Chatbot Service] CRITICAL: GEMINI_API_KEY is missing from environment variables");
+    if (!process.env.GEMINI_API_KEY) {
+      console.error(
+        "[Chatbot Service] CRITICAL: GEMINI_API_KEY is missing from environment variables",
+      );
+      return {
+        success: false,
+        message: "The AI assistant is not configured. Please contact support.",
+      };
     }
-    // 1. Initialize the Gemini model (completely FREE with generous rate limits)
+
+    // 1. Initialize the Gemini model
     const model = new ChatGoogleGenerativeAI({
       model: "gemini-2.0-flash",
       apiKey: process.env.GEMINI_API_KEY,
@@ -157,7 +168,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     ]);
 
     // 3. Setup conversation history from messages
-    const history = messages.slice(0, -1).map(m => {
+    const history = messages.slice(0, -1).map((m) => {
       if (m.role === "user") return ["human", m.content];
       return ["ai", m.content];
     }) as [string, string][];
@@ -175,15 +186,20 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
       }),
     });
 
+    clearTimeout(timeoutId);
     return {
       success: true,
       message: response.content.toString(),
     };
-  } catch (error) {
-    console.error("[Chatbot Service] Gemini Error:", error);
+  } catch (error: unknown) {
+    clearTimeout(timeoutId);
+    const isTimeout = error instanceof Error && error.name === "AbortError";
+    console.error("[Chatbot Service] Error:", isTimeout ? "Request timed out" : error);
     return {
       success: false,
-      message: "I'm sorry, I'm having trouble connecting right now. Please try again later."+error,
+      message: isTimeout
+        ? "I took too long to respond. Please try again in a moment."
+        : "I'm sorry, I'm having trouble connecting right now. Please try again later.",
     };
   }
 };
