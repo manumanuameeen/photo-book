@@ -25,6 +25,7 @@ import { tokenBlacklistService } from "../../token/tokenBlacklist.service";
 import jwt from "jsonwebtoken";
 import logger from "../../../config/logger";
 import { OAuth2Client } from "google-auth-library";
+import { ENV } from "../../../constants/env";
 
 export class AuthService implements IAuthService {
   private readonly _userRepo: IUserRepository;
@@ -97,7 +98,7 @@ export class AuthService implements IAuthService {
 
     await redisClient.setEx(
       `otp:${data.email}`,
-      Number(process.env.OTP_EXPIRY_SECONDS),
+      Number(process.env.OTP_EXPIRY_SECONDS || 120),
       JSON.stringify({ ...payload, otp: newOtp }),
     );
     await this._emailService.sendOtp(data.email, newOtp, payload.name);
@@ -122,11 +123,22 @@ export class AuthService implements IAuthService {
 
   async refresh(refreshToken: string) {
     const userId = await redisClient.get(`rt:${refreshToken}`);
-    if (!userId) throw new Error(Messages.INVALID_REFRESH_TOKEN);
+    if (!userId) {
+      console.error(`[AuthService] Refresh token not found in Redis: rt:${refreshToken}`);
+      throw new AppError(Messages.INVALID_REFRESH_TOKEN, HttpStatus.UNAUTHORIZED);
+    }
 
     const user = await this._userRepo.findById(userId);
-    if (!user || user.isBlocked) throw new Error(Messages.USER_BLOCKED);
+    if (!user) {
+      console.error(`[AuthService] User not found for ID: ${userId}`);
+      throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
+    }
+    
+    if (user.isBlocked) {
+      throw new AppError(Messages.USER_BLOCKED, HttpStatus.FORBIDDEN);
+    }
 
+    // Optional: Rotate refresh token by deleting the old one
     await redisClient.del(`rt:${refreshToken}`);
     return this._issueTokens(user);
   }
@@ -138,7 +150,9 @@ export class AuthService implements IAuthService {
         ? decoded.exp - Math.floor(Date.now() / 1000)
         : 7 * 24 * 60 * 60;
 
-      await tokenBlacklistService.addToBlackList(refreshToken, expiresIn);
+      if (expiresIn > 0) {
+        await tokenBlacklistService.addToBlackList(refreshToken, expiresIn);
+      }
       await redisClient.del(`rt:${refreshToken}`);
     } catch (error) {
       logger.error("logout error", { error });
@@ -249,9 +263,12 @@ export class AuthService implements IAuthService {
       role: user.role,
     });
 
+    // Use ENV.REFRESH_TOKEN_MAX_AGE / 1000 for Redis (seconds)
+    const expirySeconds = Math.floor(ENV.REFRESH_TOKEN_MAX_AGE / 1000);
+
     await redisClient.setEx(
       `rt:${refreshToken}`,
-      Number(process.env.REFRESH_TOKEN_MAX_AGE),
+      expirySeconds,
       String(user._id),
     );
 
