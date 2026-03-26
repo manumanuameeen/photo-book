@@ -16,6 +16,7 @@ CMD ["npm", "run", "dev", "--", "--host"]
 # ─── Stage 2: Builder ────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
+ARG NODE_OPTIONS="--max-old-space-size=1024"
 WORKDIR /app
 
 COPY package*.json ./
@@ -23,7 +24,7 @@ RUN npm install
 
 COPY . .
 
-RUN NODE_OPTIONS="--max-old-space-size=1024" npm run build
+RUN npm run build
 
 
 # ─── Stage 3: Production (served with nginx) ─────────────────────────────────
