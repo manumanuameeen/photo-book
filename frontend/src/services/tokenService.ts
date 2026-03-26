@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useAuthStore } from "../modules/auth/store/useAuthStore";
 import { router } from "../router";
 import { ROUTES } from "../constants/routes";
@@ -26,7 +27,7 @@ class TokenService {
         }
 
         this.refreshPromise = rawClient.post("/auth/refresh-token")
-            .then(res => {
+            .then((res: any) => {
                 this.failureCount = 0; // Reset on success
                 if (res.data?.data?.user) {
                     const cache = {
@@ -37,7 +38,7 @@ class TokenService {
                 }
                 return res.data;
             })
-            .catch(error => {
+            .catch((error: any) => {
                 this.failureCount++;
                 sessionStorage.removeItem("auth-cache");
                 
