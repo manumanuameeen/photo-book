@@ -137,9 +137,9 @@ Remember: You are Shutter, and your mission is to connect people with the photog
  * @returns AI's response message
  */
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
-  // Abort if Gemini takes longer than 45 seconds (fixes 504s from external reverse proxies)
+  // Abort if Gemini takes longer than 85 seconds (stays under Nginx 90s)
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 45_000);
+  const timeoutId = setTimeout(() => controller.abort(), 85_000);
 
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -152,9 +152,9 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
       };
     }
 
-    // 1. Initialize the Gemini model
+    // 1. Initialize the Gemini model (using 1.5-flash for stability)
     const model = new ChatGoogleGenerativeAI({
-      model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
       apiKey: process.env.GEMINI_API_KEY,
       temperature: 0.7,
       maxOutputTokens: 1000,
@@ -197,7 +197,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
           const err = new Error("AbortError");
           err.name = "AbortError";
           reject(err);
-        }, 45_000),
+        }, 85_000),
       ),
     ]) as { content: string };
 
