@@ -137,9 +137,9 @@ Remember: You are Shutter, and your mission is to connect people with the photog
  * @returns AI's response message
  */
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
-  // Abort if Gemini takes longer than 90 seconds
+  // Abort if Gemini takes longer than 45 seconds (fixes 504s from external reverse proxies)
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 90_000);
+  const timeoutId = setTimeout(() => controller.abort(), 45_000);
 
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -179,16 +179,27 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     // 4. Create and run the chain
     const chain = prompt.pipe(model);
 
-    const response = await chain.invoke(
-      {
-        input: lastMessage,
-        history: history.map(([role, content]) => {
-          if (role === "human") return { role: "user", content };
-          return { role: "assistant", content };
-        }),
-      },
-      { signal: controller.signal }
-    );
+    // Use Promise.race to guarantee a timeout even if Langchain ignores the AbortSignal
+    const response = await Promise.race([
+      chain.invoke(
+        {
+          input: lastMessage,
+          history: history.map(([role, content]) => {
+            if (role === "human") return { role: "user", content };
+            return { role: "assistant", content };
+          }),
+        },
+        { signal: controller.signal },
+      ),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => {
+          controller.abort();
+          const err = new Error("AbortError");
+          err.name = "AbortError";
+          reject(err);
+        }, 45_000),
+      ),
+    ]) as { content: string };
 
     clearTimeout(timeoutId);
     return {

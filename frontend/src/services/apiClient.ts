@@ -69,9 +69,17 @@ apiClient.interceptors.response.use(
                     useAuthStore.getState().setUser(data.user as never);
                 }
 
+                // Process queue
+                failedQueue.forEach(prom => prom.resolve());
+                failedQueue.length = 0;
+
                 return apiClient(original);
 
             } catch (err) {
+                // Reject queue
+                failedQueue.forEach(prom => prom.reject(err));
+                failedQueue.length = 0;
+
                 const wasAuthenticated = useAuthStore.getState().isAuthenticated;
                 useAuthStore.getState().clearUser();
                 sessionStorage.removeItem("auth-cache");

@@ -16,6 +16,10 @@ export class MessageService implements IMessageService {
     senderId?: string,
     reportId?: string,
   ): Promise<IMessage> {
+    if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+      throw new AppError("Invalid receiver ID format", 400);
+    }
+
     const messageData: Partial<IMessage> = {
       receiverId: new mongoose.Types.ObjectId(receiverId),
       content,
@@ -24,10 +28,16 @@ export class MessageService implements IMessageService {
     };
 
     if (reportId) {
+      if (!mongoose.Types.ObjectId.isValid(reportId)) {
+        throw new AppError("Invalid report ID format", 400);
+      }
       messageData.reportId = new mongoose.Types.ObjectId(reportId);
     }
 
     if (senderId) {
+      if (!mongoose.Types.ObjectId.isValid(senderId)) {
+        throw new AppError("Invalid sender ID format", 400);
+      }
       messageData.senderId = new mongoose.Types.ObjectId(senderId);
     }
 
@@ -182,6 +192,13 @@ export class MessageService implements IMessageService {
     replyToId?: string,
     type: "DIRECT" | "SYSTEM" = "DIRECT",
   ): Promise<IMessage> {
+    if (!mongoose.Types.ObjectId.isValid(senderId)) {
+      throw new AppError("Invalid sender ID format", 400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+      throw new AppError("Invalid receiver ID format", 400);
+    }
+
     const messageData: Partial<IMessage> = {
       senderId: new mongoose.Types.ObjectId(senderId),
       receiverId: new mongoose.Types.ObjectId(receiverId),
@@ -192,6 +209,9 @@ export class MessageService implements IMessageService {
     };
 
     if (replyToId) {
+      if (!mongoose.Types.ObjectId.isValid(replyToId)) {
+        throw new AppError("Invalid replyTo ID format", 400);
+      }
       messageData.replyTo = new mongoose.Types.ObjectId(replyToId);
 
       const parentMessage = await this._repository.findById(replyToId);
