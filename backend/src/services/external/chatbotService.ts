@@ -153,6 +153,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     }
 
     // 1. Initialize the Gemini model (using 1.5-flash for stability)
+    console.log(`[Chatbot Service] Initializing with key starting with: ${process.env.GEMINI_API_KEY?.substring(0, 5)}...`);
     const model = new ChatGoogleGenerativeAI({
       model: "gemini-1.5-flash",
       apiKey: process.env.GEMINI_API_KEY,
