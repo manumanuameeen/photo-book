@@ -41,8 +41,8 @@ export const verifyAccessToken = async (
         "isBlock",
       );
       if (photographer?.isBlock) {
-        res.clearCookie("accessToken");
-        res.clearCookie("refreshToken");
+        res.clearCookie("accessToken", { secure: true, sameSite: "none" });
+        res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
         return res.status(HttpStatus.FORBIDDEN).json({
           success: false,
           message: "Your account has been suspended. Please contact support.",

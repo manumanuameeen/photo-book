@@ -32,8 +32,8 @@ export const verifyUserNotBlocked = async (
     }
 
     if (user.isBlocked) {
-      res.clearCookie("accessToken");
-      res.clearCookie("refreshToken");
+      res.clearCookie("accessToken", { secure: true, sameSite: "none" });
+      res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
 
       res.status(HttpStatus.FORBIDDEN).json({
         success: false,

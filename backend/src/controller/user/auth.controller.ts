@@ -127,8 +127,8 @@ export class AuthController implements IAuthController {
     } catch (error: unknown) {
       console.error("❌ Refresh error:", error);
 
-      res.clearCookie("accessToken");
-      res.clearCookie("refreshToken");
+      res.clearCookie("accessToken", { secure: true, sameSite: "none" });
+      res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
 
       handleError(res, error);
     }
@@ -138,7 +138,8 @@ export class AuthController implements IAuthController {
     try {
       const refreshToken = req.cookies.refreshToken;
       if (refreshToken) await this._authService.logout(refreshToken);
-      res.clearCookie("accessToken").clearCookie("refreshToken");
+      res.clearCookie("accessToken", { secure: true, sameSite: "none" })
+        .clearCookie("refreshToken", { secure: true, sameSite: "none" });
       ApiResponse.success(res, null, Messages.LOGOUT_SUCCESS);
     } catch (error: unknown) {
       handleError(res, error);
@@ -181,15 +182,15 @@ export class AuthController implements IAuthController {
 
     res.cookie("accessToken", access, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: ENV.ACCESS_TOKEN_MAX_AGE,
     });
 
     res.cookie("refreshToken", refresh, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: ENV.REFRESH_TOKEN_MAX_AGE,
     });
 
