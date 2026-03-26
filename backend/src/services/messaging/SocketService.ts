@@ -20,8 +20,9 @@ export class SocketService implements ISocketService {
   public init(httpServer: HttpServer): void {
     this._io = new Server(httpServer, {
       cors: {
-        origin: "http://localhost:5173",
+        origin: ["https://main.d27f9jvazqn4mr.amplifyapp.com", "http://localhost:5173"],
         credentials: true,
+        methods: ["GET", "POST"],
       },
     });
 
