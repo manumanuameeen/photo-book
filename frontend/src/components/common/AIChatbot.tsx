@@ -50,17 +50,14 @@ const AIChatbot: React.FC = () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1");
       
+      console.log('Sending request to:', `${apiUrl}/ai/chatbot`);
       const response = await fetch(`${apiUrl}/ai/chatbot`, {
         method: 'POST',
-        credentials: 'include', // Crucial for sending HTTP-only cookies
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage]
-        }),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
       });
-
+      console.log('Chatbot response status:', response.status);
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('Your session has expired. Please log in again.');
@@ -69,6 +66,7 @@ const AIChatbot: React.FC = () => {
       }
 
       const data = await response.json();
+      console.log('Chatbot response data:', data);
       
       if (data.success) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);

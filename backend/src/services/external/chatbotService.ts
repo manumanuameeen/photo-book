@@ -138,6 +138,9 @@ Remember: You are Shutter, and your mission is to connect people with the photog
  */
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
   try {
+        if (!process.env.GEMINI_API_KEY) {
+      console.error("[Chatbot Service] CRITICAL: GEMINI_API_KEY is missing from environment variables");
+    }
     // 1. Initialize the Gemini model (completely FREE with generous rate limits)
     const model = new ChatGoogleGenerativeAI({
       model: "gemini-1.5-flash",
