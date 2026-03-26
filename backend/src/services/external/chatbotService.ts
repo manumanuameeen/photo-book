@@ -167,8 +167,9 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
       ["human", "{input}"],
     ]);
 
-    // 3. Setup conversation history from messages
-    const history = messages.slice(0, -1).map((m) => {
+    // 3. Setup conversation history from recent messages (limit to last 10 to prevent bloat)
+    const recentHistory = messages.slice(0, -1).slice(-10);
+    const history = recentHistory.map((m) => {
       if (m.role === "user") return ["human", m.content];
       return ["ai", m.content];
     }) as [string, string][];
@@ -178,13 +179,16 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     // 4. Create and run the chain
     const chain = prompt.pipe(model);
 
-    const response = await chain.invoke({
-      input: lastMessage,
-      history: history.map(([role, content]) => {
-        if (role === "human") return { role: "user", content };
-        return { role: "assistant", content };
-      }),
-    });
+    const response = await chain.invoke(
+      {
+        input: lastMessage,
+        history: history.map(([role, content]) => {
+          if (role === "human") return { role: "user", content };
+          return { role: "assistant", content };
+        }),
+      },
+      { signal: controller.signal }
+    );
 
     clearTimeout(timeoutId);
     return {
