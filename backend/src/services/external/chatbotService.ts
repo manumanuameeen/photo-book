@@ -143,7 +143,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     }
     // 1. Initialize the Gemini model (completely FREE with generous rate limits)
     const model = new ChatGoogleGenerativeAI({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       apiKey: process.env.GEMINI_API_KEY,
       temperature: 0.7,
       maxOutputTokens: 1000,
