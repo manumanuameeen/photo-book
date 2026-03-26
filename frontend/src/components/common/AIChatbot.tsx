@@ -27,12 +27,7 @@ const AIChatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated } = useAuthStore();
 
-  // Debug logging
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("🤖 AIChatbot: User status:", { user, isAuthenticated });
-    }
-  }, [user, isAuthenticated]);
+
 
   // Scroll to bottom whenever messages change
   const scrollToBottom = () => {
