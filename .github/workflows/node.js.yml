@@ -87,9 +87,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           command_timeout: 10m
           script: |
-            docker pull ameenwork/photo-book-backend:latest
-            docker pull ameenwork/photo-book-frontend:latest
             cd /home/ubuntu/photo-book
             git pull origin main
-            docker compose down
-            docker compose up -d
+            sudo docker compose -f docker-compose.prod.yml up -d --build

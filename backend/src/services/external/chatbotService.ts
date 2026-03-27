@@ -1,5 +1,7 @@
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 import { ChatGroq } from "@langchain/groq";
+import { CategoryModel } from "../../models/category.model";
+import { PhotographerModel } from "../../models/photographer.model";
 
 /**
  * Chatbot Service (LangChain + Google Gemini)
@@ -11,8 +13,31 @@ export interface ChatMessage {
   content: string;
 }
 
-// System prompt defining Shutter's personality and role
-const SYSTEM_PROMPT = `=== SHUTTER: PHOTO-BOOK BOOKING ASSISTANT ===
+/**
+ * Processes a chat request using LangChain with Groq
+ * @param messages - Array of previous messages for context
+ * @returns AI's response message
+ */
+export const getChatbotResponse = async (messages: ChatMessage[]) => {
+  // Abort if Groq takes longer than 85 seconds (Groq is usually < 2s)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 85_000);
+
+  try {
+    // 0. Fetch real platform context
+    const activeCategories = await CategoryModel.find({
+      isActive: true,
+      suggestionStatus: "APPROVED",
+    }).select("name").lean();
+
+    const categoriesList = activeCategories.length > 0 
+      ? activeCategories.map((c) => c.name).join(", ")
+      : "Wedding, Portrait, Event, Product, Nikah Ceremony, Intimate Wedding, General";
+
+    const photographerCount = await PhotographerModel.countDocuments({ status: "APPROVED" });
+
+    // Define Shutter's persona with real platform data
+    const shutterPersona = `=== SHUTTER: PHOTO-BOOK BOOKING ASSISTANT ===
 
 ## IDENTITY
 
@@ -25,7 +50,7 @@ You combine the warmth of a friendly concierge with the precision of a professio
 Photo-book is a photography booking platform. Clients browse photographer profiles, view portfolios, check availability, compare pricing, and book sessions directly. Photographers are vetted professionals who have passed a quality review before being listed.
 
 Available photographer categories on the platform:
-Wedding, Portrait, Event, Product, Real Estate, Fashion, Sports, Wildlife, Landscape, Food, Newborn, Maternity, Corporate, Pets, Architecture, Cars, Nikah Ceremony, Intimate Wedding, General.
+${categoriesList}.
 
 ## YOUR CORE RESPONSIBILITIES
 
@@ -129,9 +154,6 @@ Always end responses with a clear next step or open question that moves the conv
 
 ---
 
-Remember: You are Shutter, and your mission is to connect people with the photographers who will capture their most meaningful moments.`;
-
-/**
  * Processes a chat request using LangChain with Groq
  * @param messages - Array of previous messages for context
  * @returns AI's response message
@@ -142,6 +164,33 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
   const timeoutId = setTimeout(() => controller.abort(), 85_000);
 
   try {
+    // 0. Fetch real platform context
+    const activeCategories = await CategoryModel.find({
+      isActive: true,
+      suggestionStatus: "APPROVED",
+    }).select("name").lean();
+
+    const categoriesList = activeCategories.length > 0 
+      ? activeCategories.map((c) => c.name).join(", ")
+      : "Wedding, Portrait, Event, Product, Nikah Ceremony, Intimate Wedding, General";
+
+    const photographerCount = await PhotographerModel.countDocuments({ status: "APPROVED" });
+
+    // Define Shutter's persona with real platform data
+    const shutterPersona = `=== SHUTTER: PHOTO-BOOK BOOKING ASSISTANT ===
+
+    IDENTITY:
+    You are Shutter, the official AI booking assistant for Photo-book.
+    Currently, we have ${photographerCount} professional photographers vetted and active on the platform.
+
+    PLATFORM REAL DATA:
+    - Active Categories: ${categoriesList}
+    - Currency: PKR (Rs.)
+    - Mission: Connect clients with photographers in Pakistan and beyond for Nikah, Weddings, and more.
+
+    ... (Rest of personality from previous prompt) ...
+    `;
+
     if (!process.env.GROQ_API_KEY) {
       console.error(
         "[Chatbot Service] CRITICAL: GROQ_API_KEY is missing from environment variables",
@@ -163,7 +212,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
 
     // 2. Create the prompt template with a placeholder for history
     const prompt = ChatPromptTemplate.fromMessages([
-      ["system", SYSTEM_PROMPT],
+      ["system", shutterPersona],
       new MessagesPlaceholder("history"),
       ["human", "{input}"],
     ]);
