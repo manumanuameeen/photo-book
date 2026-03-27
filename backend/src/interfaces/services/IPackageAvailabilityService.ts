@@ -3,7 +3,7 @@ import {
   CreatePackageDto,
   UpdatePackageDto,
   SetAvailabilityDto,
-} from "../../dto/package-availability.dto";
+} from "../../dto/packageAvailability.dto";
 import { IAvailability } from "../../models/availability.model";
 
 export interface IPackageService {

@@ -1,4 +1,4 @@
-import type { AdminDashboardStatsDto } from "../../dto/admin.dashboard.dto";
+import type { AdminDashboardStatsDto } from "../../dto/adminDashboard.dto";
 
 export interface IAdminDashboardService {
   getDashboardStats(startDate?: Date, endDate?: Date): Promise<AdminDashboardStatsDto>;

@@ -8,9 +8,9 @@ import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
 import { Messages } from "../../constants/messages";
 import { handleError } from "../../utils/errorHandler";
-import { generateCaption } from "../../services/external/aiCaptionService";
-import { generateTags } from "../../services/external/aiTagService";
-import { getImageEmbedding } from "../../services/external/aiSearchService";
+import { generateCaption } from "../../services/external/aiCaption.service";
+import { generateTags } from "../../services/external/aiTag.service";
+import { getImageEmbedding } from "../../services/external/aiSearch.service";
 
 export class PortfolioController implements IPortfolioController {
   private _service: IPortfolioService;
@@ -101,7 +101,14 @@ export class PortfolioController implements IPortfolioController {
         if (embeddingResult.status === "fulfilled") aiEmbedding = embeddingResult.value.embedding;
       }
 
-      const result = await this._service.addImage(userId, id, imageUrl, aiCaption, aiTags, aiEmbedding);
+      const result = await this._service.addImage(
+        userId,
+        id,
+        imageUrl,
+        aiCaption,
+        aiTags,
+        aiEmbedding,
+      );
       ApiResponse.success(res, result, Messages.IMAGE_ADDED_TO_SECTION);
     } catch (error) {
       handleError(res, error);

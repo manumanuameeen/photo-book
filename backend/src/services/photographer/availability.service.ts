@@ -1,6 +1,6 @@
 import { IAvailabilityService } from "../../interfaces/services/IPackageAvailabilityService";
 import { IAvailabilityRepository } from "../../interfaces/repositories/IAvailabilityRepository";
-import { SetAvailabilityDto } from "../../dto/package-availability.dto";
+import { SetAvailabilityDto } from "../../dto/packageAvailability.dto";
 import { IAvailability } from "../../models/availability.model";
 import { BookingModel } from "../../models/booking.model";
 import { PhotographerModel } from "../../models/photographer.model";

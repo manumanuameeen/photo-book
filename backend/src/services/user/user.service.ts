@@ -11,7 +11,7 @@ import { UserMapper } from "../../mappers/user.mapper";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
 import { Messages } from "../../constants/messages";
-import { S3FileService } from "../external/S3FileService";
+import { S3FileService } from "../external/s3File.service";
 import { NodeMailerService } from "./email/nodemailer.service";
 import { OtpService } from "./otp/otp.service";
 

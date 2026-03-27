@@ -22,12 +22,14 @@ const PortfolioSectionSchema: Schema = new Schema(
     photographerId: { type: Schema.Types.ObjectId, ref: "Photographer", required: true },
     title: { type: String, required: true },
     coverImage: { type: String },
-    images: [{
-      url: { type: String, required: true },
-      caption: { type: String, default: "" },
-      tags: { type: [String], default: [] },
-      embedding: { type: [Number], default: [] },
-    }],
+    images: [
+      {
+        url: { type: String, required: true },
+        caption: { type: String, default: "" },
+        tags: { type: [String], default: [] },
+        embedding: { type: [Number], default: [] },
+      },
+    ],
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true },

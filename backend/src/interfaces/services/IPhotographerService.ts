@@ -3,7 +3,7 @@ import {
   PhotographerResponseDto,
   IPaginatedPhotographerResponse,
 } from "../../dto/photographer.dto";
-import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto";
+import { PhotographerDashboardStatsDto } from "../../dto/photographerDashboard.dto";
 import { IBooking } from "../../models/booking.model";
 import { IPhotographer } from "../../models/photographer.model";
 

@@ -26,8 +26,8 @@ import aiRoutes from "./routes/ai.routes";
 import { errorHandler } from "./middleware/errorMiddleware";
 import { ROUTES } from "./constants/routes";
 import { createServer } from "http";
-import { SocketService } from "./services/messaging/SocketService";
-import { CronService } from "./services/common/CronService";
+import { SocketService } from "./services/messaging/socket.service";
+import { CronService } from "./services/common/cron.service";
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
@@ -47,15 +47,12 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(
     cors({
-      origin: [
-        "https://main.d27f9jvazqn4mr.amplifyapp.com",
-        "http://localhost:5173"
-      ],
+      origin: ["https://main.d27f9jvazqn4mr.amplifyapp.com", "http://localhost:5173"],
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-      exposedHeaders: ["set-cookie"]
-    })
+      exposedHeaders: ["set-cookie"],
+    }),
   );
   app.use(express.json());
 
@@ -87,7 +84,10 @@ async function startServer() {
   app.use(ROUTES.V1.REPORT.BASE, reportRoute);
   app.use(ROUTES.V1.REPORT_CATEGORY.BASE, reportCategoryRoute);
   app.use(ROUTES.V1.HELP.BASE, helpRoutes(container.helpController));
-  app.use(ROUTES.V1.HELP_TOPIC_REQUEST.BASE, helpRequestRoutes(container.helpTopicRequestController));
+  app.use(
+    ROUTES.V1.HELP_TOPIC_REQUEST.BASE,
+    helpRequestRoutes(container.helpTopicRequestController),
+  );
   app.use(ROUTES.V1.RULE.BASE, ruleRoutes(container.ruleController));
   app.use(ROUTES.V1.WALLET.BASE, walletRoute);
   app.use(ROUTES.V1.AI.BASE, aiRoutes);

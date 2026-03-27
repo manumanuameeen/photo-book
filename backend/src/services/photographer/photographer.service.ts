@@ -5,7 +5,7 @@ import {
   IPublicPhotographer,
   IPublicReview,
 } from "../../dto/photographer.dto";
-import { PhotographerDashboardStatsDto } from "../../dto/photographer.dashboard.dto";
+import { PhotographerDashboardStatsDto } from "../../dto/photographerDashboard.dto";
 import mongoose from "mongoose";
 import { BookingModel } from "../../models/booking.model";
 import type { IPhotographerRepository } from "../../interfaces/repositories/IPhotographerRepository";

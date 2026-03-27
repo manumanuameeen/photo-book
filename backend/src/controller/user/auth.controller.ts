@@ -138,7 +138,8 @@ export class AuthController implements IAuthController {
     try {
       const refreshToken = req.cookies.refreshToken;
       if (refreshToken) await this._authService.logout(refreshToken);
-      res.clearCookie("accessToken", { secure: true, sameSite: "none" })
+      res
+        .clearCookie("accessToken", { secure: true, sameSite: "none" })
         .clearCookie("refreshToken", { secure: true, sameSite: "none" });
       ApiResponse.success(res, null, Messages.LOGOUT_SUCCESS);
     } catch (error: unknown) {

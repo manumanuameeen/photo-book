@@ -133,7 +133,7 @@ export class AuthService implements IAuthService {
       console.error(`[AuthService] User not found for ID: ${userId}`);
       throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
     }
-    
+
     if (user.isBlocked) {
       throw new AppError(Messages.USER_BLOCKED, HttpStatus.FORBIDDEN);
     }
@@ -266,11 +266,7 @@ export class AuthService implements IAuthService {
     // Use ENV.REFRESH_TOKEN_MAX_AGE / 1000 for Redis (seconds)
     const expirySeconds = Math.floor(ENV.REFRESH_TOKEN_MAX_AGE / 1000);
 
-    await redisClient.setEx(
-      `rt:${refreshToken}`,
-      expirySeconds,
-      String(user._id),
-    );
+    await redisClient.setEx(`rt:${refreshToken}`, expirySeconds, String(user._id));
 
     return { accessToken, refreshToken, user };
   }

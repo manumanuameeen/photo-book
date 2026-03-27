@@ -13,7 +13,7 @@ import {
   ApprovedApplicationDto,
   RejectedApplicationDto,
   GetPackagesQueryDto,
-} from "../../dto/admin-photographer.dto";
+} from "../../dto/adminPhotographer.dto";
 
 export class AdminPhotographerController implements IAdminPhotographerController {
   private readonly _service: IAdminPhotographerService;

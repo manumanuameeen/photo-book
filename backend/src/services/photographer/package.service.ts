@@ -1,6 +1,6 @@
 import { IPackageService } from "../../interfaces/services/IPackageAvailabilityService";
 import { IPackageRepository } from "../../interfaces/repositories/IPackageRepository";
-import { CreatePackageDto, UpdatePackageDto } from "../../dto/package-availability.dto";
+import { CreatePackageDto, UpdatePackageDto } from "../../dto/packageAvailability.dto";
 import { IBookingPackage, BookingPackageModel } from "../../models/bookingPackage.model";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";

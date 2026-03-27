@@ -8,7 +8,7 @@ export class RentalItemMapper implements IRentalItemMapper {
       name: dto.name,
       description: dto.description,
       category: dto.category,
-      condition: "Good", 
+      condition: "Good",
       pricePerDay: dto.pricePerDay,
       securityDeposit: dto.securityDeposit,
       minRentalPeriod: dto.minRentalPeriod,
@@ -16,8 +16,8 @@ export class RentalItemMapper implements IRentalItemMapper {
       images: dto.images || [],
       status: "AVAILABLE",
       ownerId: dto.ownerId ? new mongoose.Types.ObjectId(dto.ownerId) : undefined,
-      quantity: 1, 
-      stock: 1, 
+      quantity: 1,
+      stock: 1,
     };
   }
   toResponse(item: IRentalItem): IRentalItemResponseDto {
@@ -30,7 +30,7 @@ export class RentalItemMapper implements IRentalItemMapper {
       securityDeposit: item.securityDeposit,
       minRentalPeriod: item.minRentalPeriod,
       location: item.pickupLocation,
-      features: [], 
+      features: [],
       images: item.images || [],
       status: item.status,
       ownerId: item.ownerId?.toString() || "",
