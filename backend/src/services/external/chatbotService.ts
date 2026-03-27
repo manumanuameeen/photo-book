@@ -1,5 +1,5 @@
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatGroq } from "@langchain/groq";
 
 /**
  * Chatbot Service (LangChain + Google Gemini)
@@ -132,19 +132,19 @@ Always end responses with a clear next step or open question that moves the conv
 Remember: You are Shutter, and your mission is to connect people with the photographers who will capture their most meaningful moments.`;
 
 /**
- * Processes a chat request using LangChain with Google Gemini 1.5 Flash
+ * Processes a chat request using LangChain with Groq
  * @param messages - Array of previous messages for context
  * @returns AI's response message
  */
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
-  // Abort if Gemini takes longer than 85 seconds (stays under Nginx 90s)
+  // Abort if Groq takes longer than 85 seconds (Groq is usually < 2s)
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 85_000);
 
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GROQ_API_KEY) {
       console.error(
-        "[Chatbot Service] CRITICAL: GEMINI_API_KEY is missing from environment variables",
+        "[Chatbot Service] CRITICAL: GROQ_API_KEY is missing from environment variables",
       );
       return {
         success: false,
@@ -152,13 +152,13 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
       };
     }
 
-    // 1. Initialize the Gemini model (gemini-pro is the most globally recognized name)
-    console.log(`[Chatbot Service] Initializing with key: ${process.env.GEMINI_API_KEY?.substring(0, 5)}...`);
-    const model = new ChatGoogleGenerativeAI({
-      model: "gemini-pro",
-      apiKey: process.env.GEMINI_API_KEY,
+    // 1. Initialize the Groq model
+    console.log("`[Chatbot Service] Initializing with Groq LLaMA 3...`");
+    const model = new ChatGroq({
+      model: "llama-3.3-70b-versatile",
+      apiKey: process.env.GROQ_API_KEY,
       temperature: 0.7,
-      maxOutputTokens: 1000,
+      maxTokens: 1000,
     });
 
     // 2. Create the prompt template with a placeholder for history
