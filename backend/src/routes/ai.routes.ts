@@ -9,6 +9,7 @@ import { rankPhotosByQuery } from "../services/external/aiSearch.service";
 import { suggestAlbumName } from "../services/external/albumName.service";
 import { PortfolioSectionModel } from "../models/portfolioSection.model";
 import { getChatbotResponse, ChatMessage } from "../services/external/chatbot.service";
+import { ChatHistoryModel } from "../models/chatHistory.model";
 import { ROUTES } from "../constants/routes";
 
 const router = Router();
@@ -108,27 +109,55 @@ router.post(
 );
 
 /**
+ * GET /api/ai/chatbot/history
+ * Retrieves chat history for a session
+ */
+router.get("/chatbot/history", verifyAccessToken, async (req: Request, res: Response) => {
+  try {
+    const { sessionId } = req.query as { sessionId?: string };
+    const userId = (req as any).userId;
+
+    const chatHistory = await ChatHistoryModel.findOne({ 
+      userId, 
+      sessionId: sessionId || "default" 
+    });
+
+    return res.status(200).json({
+      success: true,
+      messages: chatHistory ? chatHistory.messages : [],
+    });
+  } catch (error) {
+    console.error("[AI Chatbot History Route] Error:", error);
+    return res.status(500).json({ message: "Failed to load chat history" });
+  }
+});
+
+/**
  * POST /api/ai/chatbot
  * Handles AI chatbot messages
  */
 router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: Response) => {
+
   try {
-    const { messages } = req.body as { messages: ChatMessage[] };
+    const { messages, sessionId } = req.body as { messages: ChatMessage[]; sessionId?: string };
+    const userId = (req as any).userId;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ message: "Chat history is required" });
     }
 
-    const result = await getChatbotResponse(messages);
+    const result = await getChatbotResponse(messages, userId, sessionId || "default");
 
     return res.status(200).json({
       success: result.success,
       message: result.message,
+      structuredData: (result as any).structuredData,
     });
   } catch (error) {
     console.error("[AI Chatbot Route] Error:", error);
     return res.status(500).json({ message: "Chatbot interaction failed" });
   }
 });
+
 
 export default router;

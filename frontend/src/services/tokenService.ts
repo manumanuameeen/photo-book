@@ -1,8 +1,9 @@
-import axios from "axios";
+import axios, { type AxiosResponse, AxiosError } from "axios";
 import { useAuthStore } from "../modules/auth/store/useAuthStore";
 import { router } from "../router";
 import { ROUTES } from "../constants/routes";
 import { authService } from "./api/auth.api";
+import type { IAuthResponse } from "../modules/auth/types/auth.types";
 
 const rawClient = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
@@ -11,7 +12,7 @@ const rawClient = axios.create({
 
 
 class TokenService {
-    private refreshPromise: Promise<any> | null = null;
+    private refreshPromise: Promise<IAuthResponse> | null = null;
     private failureCount = 0;
     private readonly MAX_FAILURES = 3;
 
@@ -26,8 +27,8 @@ class TokenService {
             return this.refreshPromise;
         }
 
-        this.refreshPromise = rawClient.post("/auth/refresh-token")
-            .then((res: any) => {
+        this.refreshPromise = rawClient.post<IAuthResponse>("/auth/refresh-token")
+            .then((res: AxiosResponse<IAuthResponse>) => {
                 this.failureCount = 0; // Reset on success
                 if (res.data?.data?.user) {
                     const cache = {
@@ -38,7 +39,7 @@ class TokenService {
                 }
                 return res.data;
             })
-            .catch((error: any) => {
+            .catch((error: AxiosError) => {
                 this.failureCount++;
                 sessionStorage.removeItem("auth-cache");
                 
