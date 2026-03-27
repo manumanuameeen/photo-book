@@ -8,6 +8,7 @@ import { PhotographerModel } from "../../models/photographer.model";
  * Uses LangChain with Google Gemini 1.5 Flash for FREE AI responses.
  * Implements "Shutter" - the Photo-book AI booking assistant
  */
+
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
@@ -18,6 +19,7 @@ export interface ChatMessage {
  * @param messages - Array of previous messages for context
  * @returns AI's response message
  */
+
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
   // Abort if Groq takes longer than 85 seconds (Groq is usually < 2s)
   const controller = new AbortController();
