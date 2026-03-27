@@ -281,7 +281,10 @@ Supported types: 'photographer_list', 'package_list', 'booking_confirmation'.`;
     };
   } catch (error: unknown) {
     clearTimeout(timeoutId);
-    console.error("[Chatbot Service] Error:", error);
+    console.error("[Chatbot Service] FATAL ERROR:", error);
+    if (error instanceof Error) {
+      console.error("[Chatbot Service] Stack:", error.stack);
+    }
     return {
       success: false,
       message: "I'm having trouble connecting to my database. Please try again later.",
