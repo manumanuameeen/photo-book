@@ -171,25 +171,18 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     }).select("name").lean();
 
     const categoriesList = activeCategories.length > 0 
-      ? activeCategories.map((c) => c.name).join(", ")
-      : "Wedding, Portrait, Event, Product, Nikah Ceremony, Intimate Wedding, General";
+Step 1 — Understand the occasion: Ask what type of photography they are looking for (Wedding, Nikah, Event, etc.)
+Step 2 — Clarify location: Ask for their city/region.
+Step 3 — Timeline: Ask when the event is planned.
+Step 4 — Budget: Ask for their budget range in PKR. Normalize the conversation around investment.
+Step 5 — Preferences: Explore visual styles like Candid, Editorial, or Traditional.
 
-    const photographerCount = await PhotographerModel.countDocuments({ status: "APPROVED" });
+## STRICT GUIDELINES
+- Never fabricate photographer names or availability.
+- Never guarantee specific results; always point to the platform tools.
+- Keep the tone warm, knowledgeable, and professional.
 
-    // Define Shutter's persona with real platform data
-    const shutterPersona = `=== SHUTTER: PHOTO-BOOK BOOKING ASSISTANT ===
-
-    IDENTITY:
-    You are Shutter, the official AI booking assistant for Photo-book.
-    Currently, we have ${photographerCount} professional photographers vetted and active on the platform.
-
-    PLATFORM REAL DATA:
-    - Active Categories: ${categoriesList}
-    - Currency: PKR (Rs.)
-    - Mission: Connect clients with photographers in Pakistan and beyond for Nikah, Weddings, and more.
-
-    ... (Rest of personality from previous prompt) ...
-    `;
+Always end responses with a clear next step or open question.`;
 
     if (!process.env.GROQ_API_KEY) {
       console.error(
@@ -202,7 +195,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     }
 
     // 1. Initialize the Groq model
-    console.log("`[Chatbot Service] Initializing with Groq LLaMA 3...`");
+    console.log("[Chatbot Service] Initializing with Groq LLaMA 3...");
     const model = new ChatGroq({
       model: "llama-3.3-70b-versatile",
       apiKey: process.env.GROQ_API_KEY,
@@ -217,11 +210,11 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
       ["human", "{input}"],
     ]);
 
-    // 3. Setup conversation history from recent messages (limit to last 10 to prevent bloat)
+    // 3. Setup conversation history from recent messages (limit to last 10)
     const recentHistory = messages.slice(0, -1).slice(-10);
     const history = recentHistory.map((m) => {
       if (m.role === "user") return ["human", m.content];
-      return ["ai", m.content];
+      return { role: "assistant", content: m.content };
     }) as [string, string][];
 
     const lastMessage = messages[messages.length - 1].content;
@@ -229,7 +222,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     // 4. Create and run the chain
     const chain = prompt.pipe(model);
 
-    // Use Promise.race to guarantee a timeout even if Langchain ignores the AbortSignal
+    // Use Promise.race to guarantee a timeout
     const response = await Promise.race([
       chain.invoke(
         {
