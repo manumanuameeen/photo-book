@@ -12,7 +12,7 @@ A comprehensive platform for photographers and clients, featuring booking system
 - **Communication**: Socket.io (Real-time chat), Nodemailer
 
 ## 📁 Project Structure
-
+a
 The project follows a clean architecture with categorized subfolders for better maintainability.
 
 ### Backend (`/backend`)

@@ -65,8 +65,8 @@ apiClient.interceptors.response.use(
             try {
                 const data = await tokenService.refreshAccessToken();
 
-                if (data?.user) {
-                    useAuthStore.getState().setUser(data.user as never);
+                if (data?.data.user) {
+                    useAuthStore.getState().setUser(data.data.user as never);
                 }
 
                 // Process queue
