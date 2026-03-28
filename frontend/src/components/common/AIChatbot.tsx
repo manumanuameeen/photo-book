@@ -5,7 +5,8 @@ import { useAuthStore } from '../../modules/auth/store/useAuthStore';
 import { PhotographerList, PackageList, BookingConfirmation } from './ChatRenderers';
 import type { PhotographerData, PackageData } from './ChatRenderers';
 import { useNavigate } from '@tanstack/react-router';
-import { ROUTES } from '../../../constants/routes';
+
+import {ROUTES} from "../../constants/routes"
 
 interface Message {
   role: 'user' | 'assistant';
