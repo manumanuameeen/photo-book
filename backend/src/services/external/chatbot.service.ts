@@ -178,7 +178,7 @@ Available categories: ${categoriesList}.
 If you want the frontend to render special UI components (lists, cards), you should output a separate JSON object strictly in a markdown code block labeled 'structured-data' at the END of your message. 
 Format:
 \`\`\`structured-data
-{ "type": "photographer_list", "data": [...] }
+{{ "type": "photographer_list", "data": [...] }}
 \`\`\`
 Supported types: 'photographer_list', 'package_list', 'booking_confirmation'.`;
 
