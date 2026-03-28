@@ -72,10 +72,11 @@ export const PhotographerList: React.FC<PhotographerListProps> = ({ photographer
 
 interface PackageListProps {
   packages: PackageData[];
-  onSelect: (pkg: PackageData) => void;
+  photographerId?: string;
+  onSelect: (pkg: PackageData, photographerId?: string) => void;
 }
 
-export const PackageList: React.FC<PackageListProps> = ({ packages, onSelect }) => {
+export const PackageList: React.FC<PackageListProps> = ({ packages, photographerId, onSelect }) => {
   return (
     <div className="space-y-3 my-2">
       {packages.map((pkg, idx) => (
@@ -98,7 +99,7 @@ export const PackageList: React.FC<PackageListProps> = ({ packages, onSelect }) 
             ))}
           </div>
           <button 
-            onClick={() => onSelect(pkg)}
+            onClick={() => onSelect(pkg, photographerId)}
             className="w-full bg-indigo-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors"
           >
             Select Package

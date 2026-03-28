@@ -4,12 +4,15 @@ import { MessageCircle, X, Send, Bot, User, Minimize2, Maximize2, Loader2, Rotat
 import { useAuthStore } from '../../modules/auth/store/useAuthStore';
 import { PhotographerList, PackageList, BookingConfirmation } from './ChatRenderers';
 import type { PhotographerData, PackageData } from './ChatRenderers';
+import { useNavigate } from '@tanstack/react-router';
+import { ROUTES } from '../../../constants/routes';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   structuredData?: {
     type: 'photographer_list' | 'package_list' | 'booking_confirmation';
+    photographerId?: string;
     data?: (PhotographerData | PackageData)[];
     bookingId?: string;
   };
@@ -42,6 +45,7 @@ const AIChatbot: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
 
   const apiUrl = import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1");
 
@@ -140,8 +144,13 @@ const AIChatbot: React.FC = () => {
     handleSendMessage(`I'm interested in booking ${name}. What packages do they offer? (Photographer ID: ${id})`);
   };
 
-  const onSelectPackage = (pkg: PackageData) => {
-    handleSendMessage(`I'd like to select the "${pkg.name}" package. How do we proceed with the date and location? (Package ID: ${pkg._id})`);
+  const onSelectPackage = (pkg: PackageData, photographerId?: string) => {
+    if (photographerId) {
+      navigate({ to: ROUTES.USER.BOOKING, search: { photographerId, packageId: pkg._id } });
+      setIsOpen(false); // Close chat to focus on booking wizard
+    } else {
+      handleSendMessage(`I'd like to select the "${pkg.name}" package. How do we proceed with the date and location? (Package ID: ${pkg._id})`);
+    }
   };
 
   if (!user && !isAuthenticated) return null;
@@ -206,6 +215,7 @@ const AIChatbot: React.FC = () => {
                             {msg.structuredData.type === 'package_list' && msg.structuredData.data && (
                               <PackageList
                                 packages={msg.structuredData.data as PackageData[]}
+                                photographerId={msg.structuredData.photographerId}
                                 onSelect={onSelectPackage}
                               />
                             )}

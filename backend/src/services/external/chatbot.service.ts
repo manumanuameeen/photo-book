@@ -63,7 +63,7 @@ const fetchPackages = tool(
     try {
       const packages = await BookingPackageModel.find({
         photographer: new mongoose.Types.ObjectId(photographerId),
-        status: "ACTIVE",
+        status: { $in: ["APPROVED", "ACTIVE"] },
       }).lean();
 
       return JSON.stringify(packages);
@@ -180,7 +180,10 @@ Format:
 \`\`\`structured-data
 {{ "type": "photographer_list", "data": [...] }}
 \`\`\`
-Supported types: 'photographer_list', 'package_list', 'booking_confirmation'.`;
+Supported types: 'photographer_list', 'package_list', 'booking_confirmation'.
+For 'package_list', you must include the photographerId inside the JSON:
+{{ "type": "package_list", "photographerId": "...", "data": [...] }}
+`;
 
     if (!process.env.GROQ_API_KEY) {
       return { success: false, message: "AI Assistant not configured." };
