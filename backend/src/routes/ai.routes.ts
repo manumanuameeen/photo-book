@@ -152,6 +152,7 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
       success: result.success,
       message: result.message,
       structuredData: (result as any).structuredData,
+      conversationPhase: (result as any).conversationPhase,
     });
   } catch (error) {
     console.error("[AI Chatbot Route] Error:", error);

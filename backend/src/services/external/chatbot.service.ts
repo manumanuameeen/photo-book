@@ -1,6 +1,6 @@
-import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
+import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
 import { ChatGroq } from "@langchain/groq";
-import { tool, StructuredTool } from "@langchain/core/tools";
+import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { CategoryModel } from "../../models/category.model";
 import { PhotographerModel } from "../../models/photographer.model";
@@ -11,8 +11,26 @@ import { ReviewModel } from "../../models/review.model";
 import mongoose from "mongoose";
 
 /**
- * Chatbot Service (LangChain + Groq)
- * Implements "Shutter" - the Photo-book AI booking assistant with Tool Calling
+ * ============================================================================
+ * REFACTORED CHATBOT SERVICE WITH PROPER AGENT ARCHITECTURE
+ * ============================================================================
+ * 
+ * KEY IMPROVEMENTS:
+ * 1. Structured conversation state tracking
+ * 2. Domain-aware tools with validation
+ * 3. Deterministic error handling
+ * 4. Proper JSON escaping via tool returns (not embedded in strings)
+ * 5. Multi-stage booking flow with data collection
+ * 
+ * CONVERSATION STATES:
+ * - GREETING: Initial interaction, determine user intent
+ * - BROWSING: User is searching/filtering photographers
+ * - COMPARING: User is looking at specific photographer packages
+ * - BOOKING_INITIATED: User has selected package, collecting booking details
+ * - BOOKING_PENDING: Waiting for date/location/contact info
+ * - BOOKING_CONFIRMED: Booking created, providing confirmation
+ * 
+ * ============================================================================
  */
 
 export interface ChatMessage {
@@ -20,58 +38,148 @@ export interface ChatMessage {
   content: string;
 }
 
-interface PhotographerQuery {
-  status: string;
-  "professionalDetails.specialties"?: { $regex: string; $options: string };
-  "personalInfo.location"?: { $regex: string; $options: string };
+interface ConversationState {
+  phase: "GREETING" | "BROWSING" | "COMPARING" | "BOOKING_INITIATED" | "BOOKING_PENDING" | "BOOKING_CONFIRMED";
+  selectedPhotographer?: string;
+  selectedPackage?: string;
+  bookingDetails?: {
+    eventDate?: string;
+    startTime?: string;
+    location?: string;
+    eventType?: string;
+    contactName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+  };
 }
 
+// ============================================================================
+// DOMAIN KNOWLEDGE: This gets injected into the model's context
+// ============================================================================
+
+const getDomainKnowledge = async () => {
+  const categories = await CategoryModel.find({
+    isActive: true,
+    suggestionStatus: "APPROVED",
+  }).select("name description").lean();
+
+  const categoryList = categories.map(c => `"${c.name}"`).join(", ");
+
+  return `
+=== PHOTO-BOOK PLATFORM DOMAIN KNOWLEDGE ===
+
+## AVAILABLE PHOTOGRAPHY CATEGORIES (EXACT VALUES):
+${categoryList}
+
+**CRITICAL**: When searching photographers, you MUST use these exact category names.
+Users may say things like:
+- "wedding pics" → map to "Wedding Photography"
+- "portraits" → map to "Portrait Photography"
+- "nature shots" → map to "Nature Photography"
+
+## DATABASE STRUCTURE:
+- Photographer.professionalDetails.specialties: Array of categories (from above list)
+- Photographer.personalInfo.location: Free text (city/region)
+- BookingPackage.status: MUST be "APPROVED" or "ACTIVE" to show users
+- BookingPackage.price OR baseprice: Package pricing (prefer price if available)
+
+## BOOKING WORKFLOW:
+1. User expresses interest in photography → Search photographers
+2. User selects photographer → Show packages for that photographer
+3. User selects package → Initiate booking data collection
+4. Collect: eventDate (YYYY-MM-DD), startTime (HH:MM AM/PM), location, eventType, contact details
+5. Create booking ONLY when ALL required data is present
+
+## SEARCH STRATEGY:
+- If user gives vague category → map to closest match from category list
+- If user gives no location → search ALL locations (omit location filter)
+- If NO EXACT matches found → fetch top 3 approved photographers as recommendations
+- ALWAYS return structured data via tool outputs, never invent fake results
+
+## ERROR HANDLING:
+- Tool returns empty → Inform user politely, offer alternatives
+- Missing booking info → Ask specific follow-up questions (one at a time)
+- Tool fails → Apologize, suggest manual booking via profile page
+
+=== END DOMAIN KNOWLEDGE ===
+`;
+};
+
+// ============================================================================
+// STRUCTURED TOOL DEFINITIONS WITH VALIDATION
+// ============================================================================
+
 /**
- * Tool to fetch photographers based on category and location
+ * Tool 1: Search Photographers
+ * Returns structured JSON that frontend can parse directly
  */
-const fetchPhotographers = tool(
-  async ({ category, location }) => {
+const searchPhotographers = tool(
+  async ({ category, location, limit = 3 }) => {
     try {
-      const query: PhotographerQuery = { status: "APPROVED" };
-      if (category) query["professionalDetails.specialties"] = { $regex: category, $options: "i" };
-      if (location) query["personalInfo.location"] = { $regex: location, $options: "i" };
+      // Build query with validated category mapping
+      const query: any = { status: "APPROVED" };
+      
+      if (category) {
+        // Category should already be mapped by model from domain knowledge
+        query["professionalDetails.specialties"] = { 
+          $regex: category, 
+          $options: "i" 
+        };
+      }
+      
+      if (location) {
+        query["personalInfo.location"] = { 
+          $regex: location, 
+          $options: "i" 
+        };
+      }
 
       let photographers = await PhotographerModel.find(query)
         .select("personalInfo businessInfo professionalDetails portfolio.portfolioImages")
-        .limit(3)
+        .limit(limit)
         .lean();
 
-      let fallbackTriggered = false;
+      let fallbackUsed = false;
+      
+      // Fallback: If no matches, get top rated photographers
       if (photographers.length === 0) {
-        // Fallback: Fetch any 3 approved photographers as recommendations
         photographers = await PhotographerModel.find({ status: "APPROVED" })
           .select("personalInfo businessInfo professionalDetails portfolio.portfolioImages")
-          .limit(3)
+          .limit(limit)
           .lean();
-        fallbackTriggered = true;
+        fallbackUsed = true;
       }
 
-      const enrichedPhotographers = await Promise.all(
+      // Enrich with packages and ratings
+      const enriched = await Promise.all(
         photographers.map(async (p) => {
           const packages = await BookingPackageModel.find({
             photographer: p._id,
             status: { $in: ["APPROVED", "ACTIVE"] },
           })
             .select("name price baseprice features deliveryTime")
+            .limit(5)
             .lean();
 
           const reviewAgg = await ReviewModel.aggregate([
             { $match: { targetId: p._id } },
-            { $group: { _id: null, avgRating: { $avg: "$rating" }, totalReviews: { $sum: 1 } } }
+            { 
+              $group: { 
+                _id: null, 
+                avgRating: { $avg: "$rating" }, 
+                totalReviews: { $sum: 1 } 
+              } 
+            }
           ]);
+          
           const rating = reviewAgg.length > 0 ? Number(reviewAgg[0].avgRating.toFixed(1)) : 0;
           const reviewsCount = reviewAgg.length > 0 ? reviewAgg[0].totalReviews : 0;
 
           return {
             ...p,
-            rating: rating,
+            rating,
             reviews: reviewsCount,
-            packages: packages.map((pkg) => ({
+            packages: packages.map(pkg => ({
               id: pkg._id,
               name: pkg.name,
               price: pkg.price || pkg.baseprice,
@@ -82,66 +190,155 @@ const fetchPhotographers = tool(
         })
       );
 
-      if (enrichedPhotographers.length === 0) {
-        return JSON.stringify({ message: "No photographers are currently available on the platform at all." });
-      }
+      // Return structured response
+      return JSON.stringify({
+        success: true,
+        fallbackUsed,
+        searchCriteria: { category, location },
+        count: enriched.length,
+        photographers: enriched,
+      });
+    } catch (error) {
+      console.error("Search photographers error:", error);
+      return JSON.stringify({
+        success: false,
+        error: "Database error occurred while searching photographers",
+      });
+    }
+  },
+  {
+    name: "search_photographers",
+    description: `Search for approved photographers on the platform. 
+    
+Returns structured JSON with photographer profiles including:
+- Personal info (name, location, specialties)
+- Business info (business name, bio)
+- Rating and review count
+- Available packages with pricing
 
-      if (fallbackTriggered) {
+**Usage Guidelines**:
+- Map user's category input to exact category name from domain knowledge
+- Omit location if user doesn't specify one (searches all locations)
+- If no results, fallbackUsed=true and returns top photographers as recommendations`,
+    schema: z.object({
+      category: z.string().optional().describe("Exact photography category from domain knowledge list"),
+      location: z.string().optional().describe("City or region to filter by"),
+      limit: z.number().optional().describe("Max results to return (default 3, max 5)"),
+    }),
+  }
+);
+
+/**
+ * Tool 2: Get Photographer Packages
+ * Fetches detailed package info for a specific photographer
+ */
+const getPhotographerPackages = tool(
+  async ({ photographerId }) => {
+    try {
+      // Validate photographer exists
+      const photographer = await PhotographerModel.findById(photographerId)
+        .select("businessInfo.businessName personalInfo.name")
+        .lean();
+
+      if (!photographer) {
         return JSON.stringify({
-          message: `No exact matches found for category='${category || "any"}' and location='${location || "any"}'. However, here are our top recommended photographers you can present to the user instead.`,
-          photographers: enrichedPhotographers
+          success: false,
+          error: "Photographer not found",
         });
       }
 
-      return JSON.stringify({ photographers: enrichedPhotographers });
-    } catch {
-      return "Error fetching photographers.";
-    }
-  },
-  {
-    name: "fetch_photographers",
-    description: "Search for photographers based on category (e.g., Wedding, Portrait) and location.",
-    schema: z.object({
-      category: z.string().optional().describe("The type of photography (e.g., Wedding, Event)"),
-      location: z.string().optional().describe("The city or region"),
-    }),
-  }
-);
-
-/**
- * Tool to fetch packages for a specific photographer
- */
-const fetchPackages = tool(
-  async ({ photographerId }) => {
-    try {
       const packages = await BookingPackageModel.find({
         photographer: new mongoose.Types.ObjectId(photographerId),
         status: { $in: ["APPROVED", "ACTIVE"] },
-      }).lean();
+      })
+        .select("name description price baseprice features deliveryTime editedPhoto")
+        .lean();
 
-      return JSON.stringify(packages);
-    } catch {
-      return "Error fetching packages for this photographer.";
+      if (packages.length === 0) {
+        return JSON.stringify({
+          success: false,
+          error: "No packages available for this photographer",
+        });
+      }
+
+      return JSON.stringify({
+        success: true,
+        photographerName: photographer.businessInfo?.businessName || photographer.personalInfo?.name,
+        packages: packages.map(pkg => ({
+          id: pkg._id,
+          name: pkg.name,
+          description: pkg.description,
+          price: pkg.price || pkg.baseprice,
+          features: pkg.features,
+          deliveryTime: pkg.deliveryTime,
+          editedPhotos: pkg.editedPhoto,
+        })),
+      });
+    } catch (error) {
+      console.error("Get packages error:", error);
+      return JSON.stringify({
+        success: false,
+        error: "Error fetching packages",
+      });
     }
   },
   {
-    name: "fetch_packages",
-    description: "Get the pricing packages and services offered by a specific photographer.",
+    name: "get_photographer_packages",
+    description: `Fetch all available packages for a specific photographer.
+
+Returns structured JSON with package details including:
+- Name and description
+- Pricing
+- Features list
+- Delivery timeline
+- Number of edited photos included
+
+Use this when user shows interest in a specific photographer from search results.`,
     schema: z.object({
-      photographerId: z.string().describe("The MongoDB ID of the photographer"),
+      photographerId: z.string().describe("MongoDB ObjectId of the photographer"),
     }),
   }
 );
 
 /**
- * Tool to create a booking (simulated/initiated by AI)
+ * Tool 3: Create Booking
+ * ONLY call this when ALL required fields are collected
  */
 const createBooking = tool(
-  async ({ photographerId, packageId, eventDate, startTime, location, eventType, contactDetails, userId }) => {
+  async ({ 
+    photographerId, 
+    packageId, 
+    eventDate, 
+    startTime, 
+    location, 
+    eventType, 
+    contactName,
+    contactEmail,
+    contactPhone,
+    userId 
+  }) => {
     try {
-      // Fetch package details to populate the booking
+      // Validate package exists
       const pkg = await BookingPackageModel.findById(packageId);
-      if (!pkg) return "Selected package not found.";
+      if (!pkg) {
+        return JSON.stringify({
+          success: false,
+          error: "Package not found or no longer available",
+        });
+      }
+
+      // Validate photographer exists and is approved
+      const photographer = await PhotographerModel.findById(photographerId);
+      if (!photographer || photographer.status !== "APPROVED") {
+        return JSON.stringify({
+          success: false,
+          error: "Photographer not available for booking",
+        });
+      }
+
+      // Create booking
+      const totalAmount = pkg.price || pkg.baseprice;
+      const depositRequired = totalAmount * 0.2; // 20% deposit
 
       const booking = new BookingModel({
         userId: new mongoose.Types.ObjectId(userId),
@@ -150,47 +347,168 @@ const createBooking = tool(
         packageDetails: pkg,
         eventDate: new Date(eventDate),
         startTime,
-        depositeRequired: (pkg.price || pkg.baseprice) * 0.2, // Default 20% deposit
-        totalAmount: pkg.price || pkg.baseprice,
+        depositeRequired: depositRequired,
+        totalAmount,
         location,
         eventType,
-        contactDetails,
+        contactDetails: {
+          name: contactName,
+          email: contactEmail,
+          phone: contactPhone,
+        },
         status: "pending",
         paymentStatus: "pending",
       });
 
       await booking.save();
-      return `Booking successfully initiated! Booking ID: ${booking.bookingId}. You can view it in your dashboard.`;
+
+      return JSON.stringify({
+        success: true,
+        bookingId: booking.bookingId,
+        totalAmount,
+        depositRequired,
+        photographerName: photographer.businessInfo?.businessName || photographer.personalInfo?.name,
+        packageName: pkg.name,
+        eventDate,
+        startTime,
+      });
     } catch (error) {
-      console.error("Create Booking Error:", error);
-      return "Error creating booking. Please try booking manually through the profile.";
+      console.error("Create booking error:", error);
+      return JSON.stringify({
+        success: false,
+        error: "Failed to create booking. Please try again or book manually.",
+      });
     }
   },
   {
     name: "create_booking",
-    description: "Create a new booking for a user with a photographer and selected package.",
+    description: `Create a new booking for a user.
+
+**CRITICAL**: Only call this tool when ALL of these fields have been collected:
+- photographerId (from search results)
+- packageId (from package selection)
+- eventDate (YYYY-MM-DD format)
+- startTime (e.g., "10:00 AM")
+- location (event venue/address)
+- eventType (e.g., "Wedding", "Birthday", "Corporate Event")
+- contactName (user's full name)
+- contactEmail (valid email)
+- contactPhone (phone number)
+
+If ANY field is missing, ask the user for it before calling this tool.
+Returns booking confirmation with booking ID and payment details.`,
     schema: z.object({
-      photographerId: z.string(),
-      packageId: z.string(),
-      eventDate: z.string().describe("Date of the event (YYYY-MM-DD)"),
-      startTime: z.string().describe("Starting time (e.g., 10:00 AM)"),
-      location: z.string(),
-      eventType: z.string(),
-      contactDetails: z.object({
-        name: z.string(),
-        email: z.string(),
-        phone: z.string(),
-      }),
-      userId: z.string(),
+      photographerId: z.string().describe("MongoDB ObjectId of photographer"),
+      packageId: z.string().describe("MongoDB ObjectId of selected package"),
+      eventDate: z.string().describe("Event date in YYYY-MM-DD format"),
+      startTime: z.string().describe("Event start time (e.g., '10:00 AM')"),
+      location: z.string().describe("Event location/venue address"),
+      eventType: z.string().describe("Type of event (e.g., Wedding, Birthday)"),
+      contactName: z.string().describe("User's full name"),
+      contactEmail: z.string().email().describe("User's email address"),
+      contactPhone: z.string().describe("User's phone number"),
+      userId: z.string().describe("MongoDB ObjectId of the user"),
     }),
   }
 );
 
-const tools = [fetchPhotographers, fetchPackages, createBooking];
+const tools = [searchPhotographers, getPhotographerPackages, createBooking];
 
-/**
- * Processes a chat request using LangChain with Groq and Tool Calling
- */
+// ============================================================================
+// SYSTEM PROMPTS FOR DIFFERENT CONVERSATION PHASES
+// ============================================================================
+
+const getSystemPromptForPhase = (phase: ConversationState["phase"], domainKnowledge: string) => {
+  const basePrompt = `You are Shutter, the AI booking assistant for Photo-book.
+
+${domainKnowledge}
+
+## YOUR CAPABILITIES:
+You have access to three tools:
+1. search_photographers: Find photographers by category and location
+2. get_photographer_packages: Get packages for a specific photographer
+3. create_booking: Create a booking (ONLY when all required info collected)
+
+## CORE BEHAVIOR RULES:
+- NEVER invent photographer names, packages, or data
+- ALWAYS use tools to fetch real data from the database
+- Return structured data in your tool calls (frontend will render it)
+- If tools fail or return no results, acknowledge it and offer alternatives
+- Ask ONE clarifying question at a time (don't overwhelm users)
+- Track what information you've collected and what's still missing
+
+## ANTI-HALLUCINATION RULES:
+- If user says "wedding photographer in Delhi", map "wedding" to exact category "Wedding Photography"
+- If no location given, search ALL locations (don't assume)
+- If tool returns fallbackUsed=true, tell user no exact matches but show recommendations
+- NEVER say "I found X photographer named Y" without a tool call
+- If create_booking needs more info, ask for missing fields specifically
+
+## STRUCTURED DATA RESPONSES:
+When tools return photographer or package data, mention in your text response that 
+"interactive cards are appearing in the chat" - the frontend will render them automatically.
+DO NOT embed raw JSON in your text responses.`;
+
+  const phaseInstructions: Record<ConversationState["phase"], string> = {
+    GREETING: `
+## CURRENT PHASE: GREETING
+User just started conversation. Your goal:
+- Understand what they're looking for (category, location, event type)
+- If they give search criteria, call search_photographers tool
+- If they're vague ("I need a photographer"), ask: "What type of photography are you looking for?"
+- Keep tone warm and helpful`,
+
+    BROWSING: `
+## CURRENT PHASE: BROWSING
+User is viewing photographer search results. Your goal:
+- Help them compare photographers
+- If they ask about a specific photographer, prepare to call get_photographer_packages
+- If they want to refine search, call search_photographers again with new criteria`,
+
+    COMPARING: `
+## CURRENT PHASE: COMPARING
+User is looking at packages for a specific photographer. Your goal:
+- Explain package differences clearly
+- If they select a package, transition to BOOKING_INITIATED phase
+- Start collecting booking details: eventDate, startTime, location, eventType, contact info`,
+
+    BOOKING_INITIATED: `
+## CURRENT PHASE: BOOKING_INITIATED
+User has selected a photographer and package. Your goal:
+- Collect booking information systematically
+- Ask for ONE piece of info at a time:
+  1. Event date (YYYY-MM-DD)
+  2. Start time (e.g., 10:00 AM)
+  3. Event location/venue
+  4. Event type (Wedding, Birthday, etc.)
+  5. Contact details (name, email, phone)
+- Transition to BOOKING_PENDING as you collect info`,
+
+    BOOKING_PENDING: `
+## CURRENT PHASE: BOOKING_PENDING
+User is providing booking details. Your goal:
+- Validate each input (dates should be future, emails should be valid)
+- Keep track of what's collected and what's missing
+- ONLY call create_booking when ALL required fields are present
+- If user seems unsure, offer to save their progress`,
+
+    BOOKING_CONFIRMED: `
+## CURRENT PHASE: BOOKING_CONFIRMED
+Booking was successfully created. Your goal:
+- Congratulate user on successful booking
+- Provide booking ID and key details
+- Explain next steps (payment, confirmation email)
+- Ask if they need anything else
+- Offer to start a new search if they want more bookings`,
+  };
+
+  return basePrompt + "\n\n" + phaseInstructions[phase];
+};
+
+// ============================================================================
+// MAIN CHATBOT HANDLER WITH STATE MANAGEMENT
+// ============================================================================
+
 export const getChatbotResponse = async (
   messages: ChatMessage[],
   userId: string,
@@ -200,115 +518,93 @@ export const getChatbotResponse = async (
   const timeoutId = setTimeout(() => controller.abort(), 85_000);
 
   try {
-    // 1. Fetch data for persona
-    const activeCategories = await CategoryModel.find({
-      isActive: true,
-      suggestionStatus: "APPROVED",
-    }).select("name").lean();
+    // 1. Load domain knowledge and conversation state
+    const domainKnowledge = await getDomainKnowledge();
+    
+    let chatHistory = await ChatHistoryModel.findOne({ userId, sessionId });
+    if (!chatHistory) {
+      chatHistory = new ChatHistoryModel({ 
+        userId, 
+        sessionId, 
+        messages: [],
+        // Store state in a custom field (you'll need to add this to schema)
+        metadata: { 
+          state: { 
+            phase: "GREETING" as const 
+          } 
+        }
+      });
+    }
 
-    const categoriesList = activeCategories.length > 0
-      ? activeCategories.map((c: { name: string }) => c.name).join(", ")
-      : "Wedding, Portrait, Event, Nikah Ceremony, General";
+    // Extract current state (you'll need to persist this properly)
+    const conversationState: ConversationState = 
+      (chatHistory.metadata?.state as ConversationState) || { phase: "GREETING" };
 
-    const shutterPersona = `=== SHUTTER: PHOTO-BOOK BOOKING ASSISTANT ===
-
-## IDENTITY
-You are Shutter, the official AI booking assistant for Photo-book. You help clients find photographers and book sessions.
-
-## CAPABILITIES
-You can actually search our database and create bookings. If you need to show photographers or packages, use your tools. 
-When tools return data, describe it warmly and mention that the user can see interactive cards appearing in the chat.
-
-Available categories: ${categoriesList}.
-
-## GUIDELINES & ANTI-HALLUCINATION RULES
-- NEVER guess or invent any parameter for your tools. If the user does not explicitly provide a location or category, LEAVE THEM EMPTY.
-- If the tool returns a message saying "No exact matches found", kindly inform the user that their specific criteria wasn't met, but present the alternative recommended photographers exactly as returned by the tool.
-- NEVER invent fake photographer names, packages, locations, or demo data. Rely 100% on the backend tool responses.
-- Output the 'structured-data' markdown block if you are returning photographer recommendations so the UI can render them.
-- Use 'fetch_photographers' when the user explicitly provides search criteria.
-- Use 'fetch_packages' when the user is interested in a specific photographer.
-- Use 'create_booking' ONLY when the user has provided all details (photographer, package, date, location).
-- Always return a friendly text response. If you provide structured data for the UI, refer to it in your text.
-
-## RESPONSE FORMAT
-If you want the frontend to render special UI components (lists, cards), you should output a separate JSON object strictly in a markdown code block labeled 'structured-data' at the END of your message. 
-Format:
-\`\`\`structured-data
-{{ "type": "photographer_list", "data": [...] }}
-\`\`\`
-Supported types: 'photographer_list', 'package_list', 'booking_confirmation'.
-For 'package_list', you must include the photographerId inside the JSON:
-{{ "type": "package_list", "photographerId": "...", "data": [...] }}
-`;
-
+    // 2. Initialize model
     if (!process.env.GROQ_API_KEY) {
       return { success: false, message: "AI Assistant not configured." };
     }
 
-    // 2. Initialize Model with Tools
     const model = new ChatGroq({
       model: "llama-3.3-70b-versatile",
       apiKey: process.env.GROQ_API_KEY,
-      temperature: 0.2, // Lower temperature for tool stability
+      temperature: 0.1, // Lower temperature for more deterministic responses
+      maxRetries: 2,
     }).bindTools(tools);
 
-    // 3. Setup Prompt & History
-    const prompt = ChatPromptTemplate.fromMessages([
-      ["system", shutterPersona],
-      new MessagesPlaceholder("history"),
-      ["human", "{input}"],
-    ]);
-
-    // 4. Load persistent history from DB
-    let chatHistory = await ChatHistoryModel.findOne({ userId, sessionId });
-    if (!chatHistory) {
-      chatHistory = new ChatHistoryModel({ userId, sessionId, messages: [] });
-    }
-
+    // 3. Build prompt with current phase context
+    const systemPrompt = getSystemPromptForPhase(conversationState.phase, domainKnowledge);
+    
     const lastMessage = messages[messages.length - 1].content;
 
-    // Convert DB messages to LangChain format
+    // Convert history to LangChain format
     const langChainHistory = chatHistory.messages.map(m => {
-      if (m.role === "user") return ["human", m.content];
-      return ["ai", m.content];
+      if (m.role === "user") return new HumanMessage(m.content);
+      return new AIMessage(m.content);
     });
 
-    // 5. Invoke Chain
-    const chain = prompt.pipe(model);
-    let response = await chain.invoke(
-      {
-        input: lastMessage,
-        history: langChainHistory,
-      },
+    // 4. Invoke model
+    let response = await model.invoke(
+      [
+        new SystemMessage(systemPrompt),
+        ...langChainHistory,
+        new HumanMessage(lastMessage)
+      ],
       { signal: controller.signal }
     );
 
-    // 6. Handle Tool Calls
+    // 5. Handle tool calls
     let finalContent = "";
+    const toolResults: any[] = [];
+
     if (response.tool_calls && response.tool_calls.length > 0) {
       for (const toolCall of response.tool_calls) {
-        const toolMap: Record<string, StructuredTool> = {
-          fetch_photographers: fetchPhotographers,
-          fetch_packages: fetchPackages,
+        const toolMap: Record<string, any> = {
+          search_photographers: searchPhotographers,
+          get_photographer_packages: getPhotographerPackages,
           create_booking: createBooking,
         };
+        
         const selectedTool = toolMap[toolCall.name];
         if (selectedTool) {
-          // Provide userId to create_booking tool if needed
+          // Inject userId for booking tool
           const args = { ...toolCall.args, userId: userId.toString() };
-          // Cast invoke to a compatible signature to avoid union mismatch
-          const toolResult = await (selectedTool.invoke as (args: Record<string, unknown>) => Promise<string>)(args);
+          const toolResult = await selectedTool.invoke(args);
+          toolResults.push({ name: toolCall.name, result: JSON.parse(toolResult) });
           
           // Call model again with tool result
           const followUp = await model.invoke(
             [
-              ["system", shutterPersona],
-              ...langChainHistory.map(([r, c]) => [r, c]),
-              ["human", lastMessage],
+              new SystemMessage(systemPrompt),
+              ...langChainHistory,
+              new HumanMessage(lastMessage),
               response,
-              { role: "tool", content: toolResult, tool_call_id: toolCall.id },
-            ] as any,
+              {
+                role: "tool",
+                content: toolResult,
+                tool_call_id: toolCall.id,
+              } as any,
+            ],
             { signal: controller.signal }
           );
           response = followUp;
@@ -318,7 +614,45 @@ For 'package_list', you must include the photographerId inside the JSON:
 
     finalContent = response.content.toString();
 
-    // 7. Save to persistent history
+    // 6. Update conversation state based on tool results
+    if (toolResults.length > 0) {
+      for (const tr of toolResults) {
+        if (tr.name === "search_photographers" && tr.result.success) {
+          conversationState.phase = "BROWSING";
+        } else if (tr.name === "get_photographer_packages" && tr.result.success) {
+          conversationState.phase = "COMPARING";
+        } else if (tr.name === "create_booking" && tr.result.success) {
+          conversationState.phase = "BOOKING_CONFIRMED";
+        }
+      }
+    }
+
+    // 7. Format structured data for frontend
+    let structuredResponse = null;
+    
+    if (toolResults.length > 0) {
+      const lastTool = toolResults[toolResults.length - 1];
+      
+      if (lastTool.name === "search_photographers" && lastTool.result.success) {
+        structuredResponse = {
+          type: "photographer_list",
+          data: lastTool.result.photographers,
+        };
+      } else if (lastTool.name === "get_photographer_packages" && lastTool.result.success) {
+        structuredResponse = {
+          type: "package_list",
+          photographerId: lastTool.result.photographerId,
+          data: lastTool.result.packages,
+        };
+      } else if (lastTool.name === "create_booking" && lastTool.result.success) {
+        structuredResponse = {
+          type: "booking_confirmation",
+          bookingId: lastTool.result.bookingId,
+        };
+      }
+    }
+
+    // 8. Save to history with updated state
     chatHistory.messages.push({
       role: "user",
       content: lastMessage,
@@ -332,16 +666,30 @@ For 'package_list', you must include the photographerId inside the JSON:
     } as any);
     
     chatHistory.lastMessageAt = new Date();
+    chatHistory.metadata = { state: conversationState };
     await chatHistory.save();
 
     clearTimeout(timeoutId);
+
     return {
       success: true,
       message: finalContent,
+      structuredData: structuredResponse,
+      conversationPhase: conversationState.phase, // For debugging
     };
+
   } catch (error: unknown) {
     clearTimeout(timeoutId);
     console.error("[Chatbot Service] Error:", error);
+    
+    // Better error messages
+    if ((error as any).name === "AbortError") {
+      return {
+        success: false,
+        message: "Request timed out. The system is under heavy load. Please try again.",
+      };
+    }
+    
     return {
       success: false,
       message: "I'm having trouble connecting to my database. Please try again later.",
