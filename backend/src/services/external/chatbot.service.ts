@@ -1,8 +1,8 @@
 import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
-import { ChatGroq } from "@langchain/groq";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { callGroqWithRetry } from "../../utils/retryWithBackoff";
+import { retryWithBackoff } from "../../utils/retryWithBackoff";
 import { CategoryModel } from "../../models/category.model";
 import { PhotographerModel } from "../../models/photographer.model";
 import { BookingPackageModel } from "../../models/bookingPackage.model";
@@ -608,13 +608,13 @@ export const getChatbotResponse = async (
       (chatHistory.metadata?.state as ConversationState) || { phase: "GREETING" };
 
     // 2. Initialize model
-    if (!process.env.GROQ_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       return { success: false, message: "AI Assistant not configured." };
     }
 
-    const model = new ChatGroq({
-      model: "llama-3.1-8b-instant",
-      apiKey: process.env.GROQ_API_KEY,
+    const model = new ChatGoogleGenerativeAI({
+      model: "gemini-1.5-flash",
+      apiKey: process.env.GEMINI_API_KEY,
       temperature: 0.1,
       maxRetries: 2,
     }).bindTools(tools);
@@ -631,8 +631,8 @@ export const getChatbotResponse = async (
       return new AIMessage(m.content);
     });
 
-    // 4. Invoke model with retry logic for rate limits
-    let response = await callGroqWithRetry(() =>
+    // 4. Invoke model with retry logic
+    let response = await retryWithBackoff(() =>
       model.invoke(
         [
           new SystemMessage(systemPrompt),
