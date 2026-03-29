@@ -690,9 +690,10 @@ export const getChatbotResponse = async (
       };
     }
     
+    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     return {
       success: false,
-      message: "I'm having trouble connecting to my database. Please try again later.",
+      message: `Database/System Error: ${errorMessage}`,
     };
   }
 };
