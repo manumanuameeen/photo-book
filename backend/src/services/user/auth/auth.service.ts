@@ -242,8 +242,9 @@ export class AuthService implements IAuthService {
 
       await this._emailService.sendWelcomeEmail(user.email, user.name);
     } else if (user.authProvider !== "google") {
-      console.log("User already exists with different auth provider");
-      throw new Error(Messages.USER_EXISTS);
+      // User registered with local email/password previously, but verified their Google account.
+      // We seamlessly allow the login rather than throwing an "already exists" error to act like a true Login.
+      console.log("Local user logging in via Google - allowing authentication merge.");
     }
 
     if (user.isBlocked) throw new Error(Messages.USER_BLOCKED);

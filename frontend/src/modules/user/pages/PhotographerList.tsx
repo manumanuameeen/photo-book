@@ -13,7 +13,7 @@ import {
 import { toast } from 'sonner';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { userPhotographerApi, type PhotographerFilter } from '../../../services/api/userPhotographerApi';
-import apiClient from '../../../services/apiClient';
+
 import { ROUTES } from '../../../constants/routes';
 import Loader from '../../../components/Loader';
 import { ReportModal } from '../../../components/common/ReportModal';
@@ -47,10 +47,7 @@ const PhotographerSearch = () => {
 
     const [reportTarget, setReportTarget] = useState<{ id: string, type: 'photographer' | 'package', name: string } | null>(null);
 
-    // AI Search States
-    const [aiSearchQuery, setAiSearchQuery] = useState('');
-    const [aiSearchResults, setAiSearchResults] = useState<{ photoId?: string, url?: string, image?: string }[]>([]);
-    const [isAiSearching, setIsAiSearching] = useState(false);
+
 
     const [searchQuery, setSearchQuery] = useState('');
     const [location, setLocation] = useState('All Locations');
@@ -96,25 +93,7 @@ const PhotographerSearch = () => {
         }
     }, [location, userLocation]);
 
-    const handleAiSearch = async () => {
-        if (!aiSearchQuery.trim()) return;
 
-        setIsAiSearching(true);
-        try {
-            const response = await apiClient.get(`/ai/search?q=${encodeURIComponent(aiSearchQuery)}`);
-            const data = response.data;
-            if (data.success || response.status === 200) {
-                setAiSearchResults(data.results || data.data || []);
-            } else {
-                toast.error('AI search failed');
-            }
-        } catch (error) {
-            console.error('AI search error:', error);
-            toast.error('AI search failed');
-        } finally {
-            setIsAiSearching(false);
-        }
-    };
 
     useEffect(() => {
         if (location !== 'All Locations') {
@@ -234,62 +213,7 @@ const PhotographerSearch = () => {
                     </div>
                 </motion.div>
 
-                {/* AI Search Bar */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                    className="bg-green-900/20 border border-green-500/20 backdrop-blur-xl rounded-2xl md:rounded-[2.5rem] p-4 mb-10 shadow-xl relative overflow-hidden group"
-                >
-                    <div className="flex flex-col md:flex-row gap-4 items-center relative z-10">
-                        <div className="grow w-full relative flex items-center bg-black/40 border border-white/5 rounded-full px-6 py-4 focus-within:border-green-500/50 transition-colors">
-                            <Search className="text-green-500" size={22} />
-                            <input
-                                type="text"
-                                placeholder="Describe the photo you need... e.g. 'sunset beach wedding'"
-                                value={aiSearchQuery}
-                                onChange={(e) => setAiSearchQuery(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAiSearch()}
-                                className="w-full pl-4 bg-transparent border-none text-white focus:ring-0 outline-none placeholder-green-300/50 text-base font-light"
-                            />
-                        </div>
-                        <MagneticButton
-                            className={`w-full md:w-auto px-8 py-4 font-bold rounded-full transition-all duration-300 shadow-lg ${isAiSearching
-                                ? 'bg-gray-800 text-gray-400 cursor-not-allowed border border-white/5'
-                                : 'bg-green-600 hover:bg-green-500 text-white shadow-[0_0_20px_rgba(22,163,74,0.4)]'
-                                }`}
-                            onClick={isAiSearching ? undefined : handleAiSearch}
-                        >
-                            <span className="flex items-center gap-2 uppercase tracking-wide text-sm font-mono">
-                                {isAiSearching ? 'Analyzing...' : 'Neural Search'}
-                            </span>
-                        </MagneticButton>
-                    </div>
-                    {aiSearchResults.length > 0 && (
-                        <div className="mt-6 p-6 bg-black/30 border border-white/5 rounded-2xl backdrop-blur-md">
-                            <div className="flex justify-between items-center mb-4">
-                                <p className="text-green-400 text-xs font-mono uppercase tracking-widest text-[10px]">Neural Pattern Match</p>
-                                <span className="text-gray-500 text-xs font-mono">{aiSearchResults.length} Artifacts</span>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                {aiSearchResults.slice(0, 8).map((result: { photoId?: string, url?: string, image?: string }, i) => (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: i * 0.1 }}
-                                        key={result.photoId || i}
-                                        className="aspect-square bg-[#111] rounded-xl overflow-hidden border border-white/10 relative group/img cursor-pointer"
-                                    >
-                                        <img src={result.url || result.image} alt="AI search result" className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110" />
-                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                            <Search size={20} className="text-white" />
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </motion.div>
+
 
                 <div className="flex gap-8 mb-8 border-b border-white/10">
                     <button
