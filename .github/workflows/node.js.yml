@@ -22,7 +22,7 @@ jobs:
       - name: Install backend dependencies
         run: |
           cd backend
-          npm install
+          npm install --legacy-peer-deps
 
       - name: Build backend
         env:
@@ -34,14 +34,14 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd frontend
-          npm install
+          npm install --legacy-peer-deps
 
       - name: Build frontend
         env:
           NODE_OPTIONS: "--max-old-space-size=1024"
         run: |
           cd frontend
-          npm install
+          npm install --legacy-peer-deps
           npm run build
 
   # 🐳 Docker - Build and Push to Docker Hub
