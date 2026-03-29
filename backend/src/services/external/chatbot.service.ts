@@ -1,4 +1,4 @@
-import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { ChatGroq } from "@langchain/groq";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
@@ -11,27 +11,14 @@ import { ChatHistoryModel } from "../../models/chatHistory.model";
 import { ReviewModel } from "../../models/review.model";
 import { AvailabilityModel } from "../../models/availability.model";
 import mongoose from "mongoose";
+import { ConversationSummaryBufferMemory } from "langchain/memory";
+import { ChatMessageHistory } from "langchain/stores/message/in_memory";
+import { AgentExecutor, createToolCallingAgent } from "langchain/agents";
+import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 
 /**
  * ============================================================================
- * REFACTORED CHATBOT SERVICE WITH PROPER AGENT ARCHITECTURE
- * ============================================================================
- * 
- * KEY IMPROVEMENTS:
- * 1. Structured conversation state tracking
- * 2. Domain-aware tools with validation
- * 3. Deterministic error handling
- * 4. Proper JSON escaping via tool returns (not embedded in strings)
- * 5. Multi-stage booking flow with data collection
- * 
- * CONVERSATION STATES:
- * - GREETING: Initial interaction, determine user intent
- * - BROWSING: User is searching/filtering photographers
- * - COMPARING: User is looking at specific photographer packages
- * - BOOKING_INITIATED: User has selected package, collecting booking details
- * - BOOKING_PENDING: Waiting for date/location/contact info
- * - BOOKING_CONFIRMED: Booking created, providing confirmation
- * 
+ * LANGCHAIN-POWERED CHATBOT WITH AUTOMATIC MEMORY MANAGEMENT
  * ============================================================================
  */
 
@@ -55,37 +42,33 @@ interface ConversationState {
   };
 }
 
+// In-memory cache for conversation memories
+const memoryCache = new Map<string, ConversationSummaryBufferMemory>();
+
+// Ultra-minimal system prompt
+const SYSTEM_PROMPT = `You are Shutter, Photo-book's AI booking agent.
+
+WORKFLOW (strict order):
+GREETING → search_photographers → get_photographer_packages → [optional] get_photographer_availability → create_booking
+
+RULES:
+- Use tools for ALL data. Never invent results.
+- Ask ONE question at a time.
+- Only call create_booking when you have ALL 9 fields: photographerId, packageId, eventDate (YYYY-MM-DD), startTime, location, eventType, contactName, contactEmail, contactPhone.
+- Map user input: "wedding"→"Wedding Photography", "portrait"→"Portrait Photography", "event"→"Event Photography"
+
+Current conversation phase: {phase}`;
+
 // ============================================================================
-// DOMAIN KNOWLEDGE: This gets injected into the model's context
+// TOOL DEFINITIONS (With any casts to bypass Zod/LangChain type mismatches)
 // ============================================================================
 
-// Minimal domain knowledge — no DB query needed, keeps tokens low
-const getDomainKnowledge = async () => {
-  return `You are Shutter, Photo-book's booking AI.
-Rules: Use tools for real data. Never invent results. Ask ONE question at a time.
-Workflow: search_photographers → get_photographer_packages → (optional) get_photographer_availability → create_booking.
-Only call create_booking when you have: photographerId, packageId, eventDate (YYYY-MM-DD), startTime, location, eventType, contactName, contactEmail, contactPhone.
-Map vague categories: "wedding" → "Wedding Photography", "portrait" → "Portrait Photography", etc.
-Interactive cards render automatically — never embed JSON in messages.`;
-};
-
-
-// ============================================================================
-// STRUCTURED TOOL DEFINITIONS WITH VALIDATION
-// ============================================================================
-
-/**
- * Tool 1: Search Photographers
- * Returns structured JSON that frontend can parse directly
- */
-const searchPhotographers = tool(
+const searchPhotographers: any = tool(
   async ({ category, location, limit = 3 }) => {
     try {
-      // Build query with validated category mapping
-      const query: any = { status: "APPROVED" };
+      const query: any = { status: "APPROVED", isBlock: false };
       
       if (category) {
-        // Category should already be mapped by model from domain knowledge
         query["professionalDetails.specialties"] = { 
           $regex: category, 
           $options: "i" 
@@ -106,7 +89,6 @@ const searchPhotographers = tool(
 
       let fallbackUsed = false;
       
-      // Fallback: If no matches, get top rated photographers
       if (photographers.length === 0) {
         photographers = await PhotographerModel.find({ status: "APPROVED", isBlock: false })
           .select("personalInfo businessInfo professionalDetails portfolio status userId")
@@ -115,7 +97,6 @@ const searchPhotographers = tool(
         fallbackUsed = true;
       }
 
-      // Enrich with packages and ratings
       const enriched = await Promise.all(
         photographers.map(async (p) => {
           const packages = await BookingPackageModel.find({
@@ -157,7 +138,6 @@ const searchPhotographers = tool(
         })
       );
 
-      // Return structured response
       return JSON.stringify({
         success: true,
         fallbackUsed,
@@ -175,100 +155,18 @@ const searchPhotographers = tool(
   },
   {
     name: "search_photographers",
-    description: `Search for approved photographers on the platform. 
-    
-Returns structured JSON with photographer profiles including:
-- Personal info (name, location, specialties)
-- Business info (business name, bio)
-- Rating and review count
-- Available packages with pricing
-
-**Usage Guidelines**:
-- Map user's category input to exact category name from domain knowledge
-- Omit location if user doesn't specify one (searches all locations)
-- If no results, fallbackUsed=true and returns top photographers as recommendations`,
+    description: `Search for approved photographers on the platform. Returns structured JSON with photographer profiles including personal info, business info, rating, review count, and available packages.`,
     schema: z.object({
-      category: z.string().optional().describe("Exact photography category from domain knowledge list"),
+      category: z.string().optional().describe("Photography category (e.g., 'Wedding Photography', 'Portrait Photography')"),
       location: z.string().optional().describe("City or region to filter by"),
       limit: z.number().optional().describe("Max results to return (default 3, max 5)"),
     }),
-  }
+  } as any
 );
 
-/**
- * Tool 2.5: Get Photographer Availability
- * Fetches available dates and times for a photographer
- */
-const getPhotographerAvailability = tool(
-  async ({ photographerId, days = 30 }) => {
-    try {
-      const photographer = await PhotographerModel.findById(photographerId).select("userId").lean();
-      if (!photographer) return JSON.stringify({ success: false, error: "Photographer not found" });
-
-      const startDate = new Date();
-      startDate.setHours(0,0,0,0);
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + days);
-
-      // Query availability entries
-      const availability = await AvailabilityModel.find({
-        photographer: new mongoose.Types.ObjectId(photographerId),
-        date: { $gte: startDate, $lte: endDate }
-      }).lean();
-
-      // Query existing bookings to mark slots as booked
-      const bookings = await BookingModel.find({
-        photographerId: photographer.userId,
-        eventDate: { $gte: startDate, $lte: endDate },
-        status: { $in: ["pending", "accepted", "waiting_for_deposit", "work_started"] }
-      }).select("eventDate startTime").lean();
-
-      // Format for AI and Frontend
-      const formattedAvailability = availability.map((a) => ({
-        date: a.date.toISOString().split("T")[0],
-        isFullDay: a.isFullDayAvailable,
-        slots: a.slots
-          .filter((s) => s.status === "AVAILABLE")
-          .map((s) => s.startTime),
-      }));
-
-      // Add bookings as blocked dates if not already in availability
-      const bookedDates = bookings.map((b) =>
-        b.eventDate.toISOString().split("T")[0],
-      );
-
-      return JSON.stringify({
-        success: true,
-        photographerId,
-        availableSlots: formattedAvailability,
-        bookedDates: [...new Set(bookedDates)],
-      });
-    } catch (error) {
-      console.error("Get availability error:", error);
-      return JSON.stringify({
-        success: false,
-        error: "Error fetching availability",
-      });
-    }
-  },
-  {
-    name: "get_photographer_availability",
-    description: "Get available dates and time slots for a photographer for the next 30 days.",
-    schema: z.object({
-      photographerId: z.string().describe("MongoDB ObjectId of the photographer"),
-      days: z.number().optional().describe("Number of days to check (default 30)"),
-    }),
-  }
-);
-
-/**
- * Tool 2: Get Photographer Packages
- * Fetches detailed package info for a specific photographer
- */
-const getPhotographerPackages = tool(
+const getPhotographerPackages: any = tool(
   async ({ photographerId }) => {
     try {
-      // Validate photographer exists
       const photographer = await PhotographerModel.findById(photographerId)
         .select("businessInfo.businessName personalInfo.name userId")
         .lean();
@@ -297,6 +195,7 @@ const getPhotographerPackages = tool(
 
       return JSON.stringify({
         success: true,
+        photographerId,
         photographerName: photographer.businessInfo?.businessName || photographer.personalInfo?.name,
         packages: packages.map(pkg => ({
           _id: pkg._id,
@@ -319,27 +218,72 @@ const getPhotographerPackages = tool(
   },
   {
     name: "get_photographer_packages",
-    description: `Fetch all available packages for a specific photographer.
-
-Returns structured JSON with package details including:
-- Name and description
-- Pricing
-- Features list
-- Delivery timeline
-- Number of edited photos included
-
-Use this when user shows interest in a specific photographer from search results.`,
+    description: `Fetch all available packages for a specific photographer. Returns structured JSON with package details including pricing, features, and delivery timeline.`,
     schema: z.object({
       photographerId: z.string().describe("MongoDB ObjectId of the photographer"),
     }),
-  }
+  } as any
 );
 
-/**
- * Tool 3: Create Booking
- * ONLY call this when ALL required fields are collected
- */
-const createBooking = tool(
+const getPhotographerAvailability: any = tool(
+  async ({ photographerId, days = 30 }) => {
+    try {
+      const photographer = await PhotographerModel.findById(photographerId).select("userId").lean();
+      if (!photographer) return JSON.stringify({ success: false, error: "Photographer not found" });
+
+      const startDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + days);
+
+      const availability = await AvailabilityModel.find({
+        photographer: new mongoose.Types.ObjectId(photographerId),
+        date: { $gte: startDate, $lte: endDate }
+      }).lean();
+
+      const bookings = await BookingModel.find({
+        photographerId: photographer.userId,
+        eventDate: { $gte: startDate, $lte: endDate },
+        status: { $in: ["pending", "accepted", "waiting_for_deposit", "work_started"] }
+      }).select("eventDate startTime").lean();
+
+      const formattedAvailability = availability.map((a) => ({
+        date: a.date.toISOString().split("T")[0],
+        isFullDay: a.isFullDayAvailable,
+        slots: a.slots
+          .filter((s) => s.status === "AVAILABLE")
+          .map((s) => s.startTime),
+      }));
+
+      const bookedDates = bookings.map((b) =>
+        b.eventDate.toISOString().split("T")[0],
+      );
+
+      return JSON.stringify({
+        success: true,
+        photographerId,
+        availableSlots: formattedAvailability,
+        bookedDates: [...new Set(bookedDates)],
+      });
+    } catch (error) {
+      console.error("Get availability error:", error);
+      return JSON.stringify({
+        success: false,
+        error: "Error fetching availability",
+      });
+    }
+  },
+  {
+    name: "get_photographer_availability",
+    description: "Get available dates and time slots for a photographer for the next 30 days.",
+    schema: z.object({
+      photographerId: z.string().describe("MongoDB ObjectId of the photographer"),
+      days: z.number().optional().describe("Number of days to check (default 30)"),
+    }),
+  } as any
+);
+
+const createBooking: any = tool(
   async ({ 
     photographerId, 
     packageId, 
@@ -353,7 +297,6 @@ const createBooking = tool(
     userId 
   }) => {
     try {
-      // Validate package exists
       const pkg = await BookingPackageModel.findById(packageId);
       if (!pkg) {
         return JSON.stringify({
@@ -362,7 +305,6 @@ const createBooking = tool(
         });
       }
 
-      // Validate photographer exists and is approved
       const photographer = await PhotographerModel.findById(photographerId);
       if (!photographer || photographer.status !== "APPROVED") {
         return JSON.stringify({
@@ -371,9 +313,8 @@ const createBooking = tool(
         });
       }
 
-      // Check availability for the specific date/time
       const checkDate = new Date(eventDate);
-      checkDate.setHours(0,0,0,0);
+      checkDate.setHours(0, 0, 0, 0);
       
       const existingBooking = await BookingModel.findOne({
         photographerId: photographer.userId,
@@ -389,9 +330,8 @@ const createBooking = tool(
         });
       }
 
-      // Create booking
       const totalAmount = pkg.price || pkg.baseprice;
-      const depositRequired = totalAmount * 0.2; // 20% deposit
+      const depositRequired = totalAmount * 0.2;
 
       const booking = new BookingModel({
         userId: new mongoose.Types.ObjectId(userId),
@@ -435,21 +375,7 @@ const createBooking = tool(
   },
   {
     name: "create_booking",
-    description: `Create a new booking for a user.
-
-**CRITICAL**: Only call this tool when ALL of these fields have been collected:
-- photographerId (from search results)
-- packageId (from package selection)
-- eventDate (YYYY-MM-DD format)
-- startTime (e.g., "10:00 AM")
-- location (event venue/address)
-- eventType (e.g., "Wedding", "Birthday", "Corporate Event")
-- contactName (user's full name)
-- contactEmail (valid email)
-- contactPhone (phone number)
-
-If ANY field is missing, ask the user for it before calling this tool.
-Returns booking confirmation with booking ID and payment details.`,
+    description: `Create a new booking. ONLY call this when ALL 9 required fields are collected: photographerId, packageId, eventDate (YYYY-MM-DD), startTime, location, eventType, contactName, contactEmail, contactPhone.`,
     schema: z.object({
       photographerId: z.string().describe("MongoDB ObjectId of photographer"),
       packageId: z.string().describe("MongoDB ObjectId of selected package"),
@@ -462,24 +388,18 @@ Returns booking confirmation with booking ID and payment details.`,
       contactPhone: z.string().describe("User's phone number"),
       userId: z.string().describe("MongoDB ObjectId of the user"),
     }),
-  }
+  } as any
 );
 
-const tools = [searchPhotographers, getPhotographerPackages, getPhotographerAvailability, createBooking];
+const tools = [
+  searchPhotographers, 
+  getPhotographerPackages, 
+  getPhotographerAvailability, 
+  createBooking
+] as any[];
 
 // ============================================================================
-// SYSTEM PROMPTS FOR DIFFERENT CONVERSATION PHASES
-// ============================================================================
-
-// Single concise prompt for all phases (saves hundreds of tokens vs per-phase prompts)
-const getSystemPromptForPhase = (phase: ConversationState["phase"], domainKnowledge: string) => {
-  return `${domainKnowledge}
-Current phase: ${phase}. Guide the user through: GREETING→BROWSING→COMPARING→BOOKING_INITIATED→BOOKING_PENDING→BOOKING_CONFIRMED.`;
-};
-
-
-// ============================================================================
-// MAIN CHATBOT HANDLER WITH STATE MANAGEMENT
+// MAIN CHATBOT HANDLER WITH LANGCHAIN MEMORY
 // ============================================================================
 
 export const getChatbotResponse = async (
@@ -491,29 +411,58 @@ export const getChatbotResponse = async (
   const timeoutId = setTimeout(() => controller.abort(), 85_000);
 
   try {
-    // 1. Load domain knowledge and conversation state
-    const domainKnowledge = await getDomainKnowledge();
-    
+    // 1. Load conversation state from database
     let chatHistory = await ChatHistoryModel.findOne({ userId, sessionId });
     if (!chatHistory) {
       chatHistory = new ChatHistoryModel({ 
         userId, 
         sessionId, 
         messages: [],
-        // Store state in a custom field (you'll need to add this to schema)
-        metadata: { 
-          state: { 
-            phase: "GREETING" as const 
-          } 
-        }
+        metadata: { state: { phase: "GREETING" } }
       });
     }
 
-    // Extract current state (you'll need to persist this properly)
     const conversationState: ConversationState = 
       (chatHistory.metadata?.state as ConversationState) || { phase: "GREETING" };
 
-    // 2. Initialize model
+    // 2. Get or create LangChain memory for this session
+    const memoryKey = `${userId}_${sessionId}`;
+    let memory = memoryCache.get(memoryKey);
+
+    if (!memory) {
+      // Initialize memory from database history
+      const messageHistory = new ChatMessageHistory();
+      
+      // Load last 6 messages from DB into memory
+      const recentMessages = chatHistory.messages.slice(-6);
+      for (const msg of recentMessages) {
+        if (msg.role === "user") {
+          await (messageHistory as any).addMessage(new HumanMessage(msg.content));
+        } else if (msg.role === "assistant") {
+          await (messageHistory as any).addMessage(new AIMessage(msg.content));
+        }
+      }
+
+      // Create memory with auto-summarization
+      const summarizerModel = new ChatGroq({
+        model: "llama-3.1-8b-instant",
+        apiKey: process.env.GROQ_API_KEY,
+        temperature: 0,
+        maxTokens: 256,
+      });
+
+      memory = new ConversationSummaryBufferMemory({
+        llm: summarizerModel as any,
+        chatHistory: messageHistory,
+        memoryKey: "chat_history",
+        maxTokenLimit: 800,
+        returnMessages: true,
+      });
+
+      memoryCache.set(memoryKey, memory);
+    }
+
+    // 3. Initialize main LLM
     if (!process.env.GROQ_API_KEY) {
       return { success: false, message: "AI Assistant not configured." };
     }
@@ -522,166 +471,165 @@ export const getChatbotResponse = async (
       model: "llama-3.1-8b-instant",
       apiKey: process.env.GROQ_API_KEY,
       temperature: 0.1,
-      maxRetries: 2,
-    }).bindTools(tools);
-
-    // 3. Build prompt with current phase context
-    const systemPrompt = getSystemPromptForPhase(conversationState.phase, domainKnowledge);
-    
-    const lastMessage = messages[messages.length - 1].content;
-
-    // Convert history to LangChain format (limit to last 4 to minimize tokens)
-    const recentMessages = chatHistory.messages.slice(-4);
-    const langChainHistory = recentMessages.map(m => {
-      if (m.role === "user") return new HumanMessage(m.content);
-      return new AIMessage(m.content);
+      maxRetries: 0,
+      maxTokens: 1024,
     });
 
-    // 4. Invoke model with retry logic
-    let response = await retryWithBackoff(() =>
-      model.invoke(
-        [
-          new SystemMessage(systemPrompt),
-          ...langChainHistory,
-          new HumanMessage(lastMessage)
-        ],
+    // 4. Create prompt template with memory placeholder
+    const prompt = ChatPromptTemplate.fromMessages([
+      ["system", SYSTEM_PROMPT.replace("{phase}", conversationState.phase)],
+      new MessagesPlaceholder("chat_history"),
+      ["human", "{input}"],
+      new MessagesPlaceholder("agent_scratchpad"),
+    ]);
+
+    // 5. Create agent with tools
+    const agent = await createToolCallingAgent({
+      llm: model as any,
+      tools: tools as any,
+      prompt: prompt as any,
+    } as any);
+
+    const agentExecutor = new AgentExecutor({
+      agent: agent as any,
+      tools: tools as any[],
+      memory,
+      verbose: false,
+      maxIterations: 3,
+    });
+
+    // 6. Get last user message
+    const lastMessage = messages[messages.length - 1].content;
+
+    // 7. Invoke agent with retry logic
+    const response = (await retryWithBackoff(
+      () => agentExecutor.invoke(
+        { input: lastMessage },
         { signal: controller.signal }
-      )
+      ),
+      {
+        maxRetries: 3,
+        initialDelayMs: 2000,
+        shouldRetry: (error: any) => {
+          return (
+            error?.response?.status === 429 ||
+            error?.response?.data?.error?.code === "rate_limit_exceeded" ||
+            error?.code === "ETIMEDOUT" ||
+            error?.response?.status === 503
+          );
+        }
+      }
+    )) as any;
+
+    const finalContent = response.output;
+
+    // 8. Extract structured data from agent's intermediate steps
+    let structuredResponse = null;
+    const intermediateSteps = response.intermediateSteps || [];
+
+    for (const step of intermediateSteps) {
+      const toolName = step.action?.tool;
+      const toolOutput = step.observation;
+
+      if (!toolOutput) continue;
+
+      try {
+        const parsed = JSON.parse(toolOutput);
+
+        if (toolName === "search_photographers" && parsed.success) {
+          conversationState.phase = "BROWSING";
+          structuredResponse = {
+            type: "photographer_list",
+            data: parsed.photographers,
+          };
+        } else if (toolName === "get_photographer_packages" && parsed.success) {
+          conversationState.phase = "COMPARING";
+          structuredResponse = {
+            type: "package_list",
+            photographerId: parsed.photographerId,
+            data: parsed.packages,
+          };
+        } else if (toolName === "get_photographer_availability" && parsed.success) {
+          structuredResponse = {
+            type: "availability_picker",
+            photographerId: parsed.photographerId,
+            data: {
+              availableSlots: parsed.availableSlots,
+              bookedDates: parsed.bookedDates
+            },
+          };
+        } else if (toolName === "create_booking" && parsed.success) {
+          conversationState.phase = "BOOKING_CONFIRMED";
+          structuredResponse = {
+            type: "booking_confirmation",
+            bookingId: parsed.bookingId,
+          };
+        }
+      } catch (e) {
+        console.error("Failed to parse tool output:", e);
+      }
+    }
+
+    // 9. Save to database
+    chatHistory.messages.push(
+      { role: "user", content: lastMessage, timestamp: new Date() } as any,
+      { role: "assistant", content: finalContent, timestamp: new Date() } as any
     );
 
-    // 5. Handle tool calls
-    let finalContent = "";
-    const toolResults: any[] = [];
-
-    if (response.tool_calls && response.tool_calls.length > 0) {
-      for (const toolCall of response.tool_calls) {
-        const toolMap: Record<string, any> = {
-          search_photographers: searchPhotographers,
-          get_photographer_packages: getPhotographerPackages,
-          get_photographer_availability: getPhotographerAvailability,
-          create_booking: createBooking,
-        };
-        
-        const selectedTool = toolMap[toolCall.name];
-        if (selectedTool) {
-          // Inject userId for booking tool
-          const args = { ...toolCall.args, userId: userId.toString() };
-          const toolResult = await selectedTool.invoke(args);
-          toolResults.push({ name: toolCall.name, result: JSON.parse(toolResult) });
-          
-          // Call model again with tool result
-          const followUp = await model.invoke(
-            [
-              new SystemMessage(systemPrompt),
-              ...langChainHistory,
-              new HumanMessage(lastMessage),
-              response,
-              {
-                role: "tool",
-                content: toolResult,
-                tool_call_id: toolCall.id,
-              } as any,
-            ],
-            { signal: controller.signal }
-          );
-          response = followUp;
-        }
-      }
+    if (chatHistory.messages.length > 10) {
+      chatHistory.messages = chatHistory.messages.slice(-10);
     }
 
-    finalContent = response.content.toString();
-
-    // 6. Update conversation state based on tool results
-    if (toolResults.length > 0) {
-      for (const tr of toolResults) {
-        if (tr.name === "search_photographers" && tr.result.success) {
-          conversationState.phase = "BROWSING";
-        } else if (tr.name === "get_photographer_packages" && tr.result.success) {
-          conversationState.phase = "COMPARING";
-        } else if (tr.name === "get_photographer_availability" && tr.result.success) {
-          // Stay in current phase but tool is called
-        } else if (tr.name === "create_booking" && tr.result.success) {
-          conversationState.phase = "BOOKING_CONFIRMED";
-        }
-      }
-    }
-
-    // 7. Format structured data for frontend
-    let structuredResponse = null;
-    
-    if (toolResults.length > 0) {
-      const lastTool = toolResults[toolResults.length - 1];
-      
-      if (lastTool.name === "search_photographers" && lastTool.result.success) {
-        structuredResponse = {
-          type: "photographer_list",
-          data: lastTool.result.photographers,
-        };
-      } else if (lastTool.name === "get_photographer_packages" && lastTool.result.success) {
-        structuredResponse = {
-          type: "package_list",
-          photographerId: lastTool.result.photographerId,
-          data: lastTool.result.packages,
-        };
-      } else if (lastTool.name === "get_photographer_availability" && lastTool.result.success) {
-        structuredResponse = {
-          type: "availability_picker",
-          photographerId: lastTool.result.photographerId,
-          data: {
-            availableSlots: lastTool.result.availableSlots,
-            bookedDates: lastTool.result.bookedDates
-          },
-        };
-      } else if (lastTool.name === "create_booking" && lastTool.result.success) {
-        structuredResponse = {
-          type: "booking_confirmation",
-          bookingId: lastTool.result.bookingId,
-        };
-      }
-    }
-
-    // 8. Save to history with updated state
-    chatHistory.messages.push({
-      role: "user",
-      content: lastMessage,
-      timestamp: new Date()
-    } as any);
-    
-    chatHistory.messages.push({
-      role: "assistant",
-      content: finalContent,
-      timestamp: new Date()
-    } as any);
-    
     chatHistory.lastMessageAt = new Date();
     chatHistory.metadata = { state: conversationState };
-    await chatHistory.save();
+    
+    chatHistory.save().catch(err => 
+      console.error("Failed to save chat history:", err)
+    );
 
     clearTimeout(timeoutId);
-
+    
     return {
       success: true,
       message: finalContent,
       structuredData: structuredResponse,
-      conversationPhase: conversationState.phase, // For debugging
+      conversationPhase: conversationState.phase,
     };
 
   } catch (error: unknown) {
     clearTimeout(timeoutId);
     console.error("[Chatbot Service] Error:", error);
-    
-    // Better error messages
+
     if ((error as any).name === "AbortError") {
       return {
         success: false,
-        message: "Request timed out. The system is under heavy load. Please try again.",
+        message: "Request timed out. Please try again in a few seconds.",
       };
     }
-    
-    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+
+    if ((error as any)?.response?.status === 429 || 
+        (error as any)?.response?.data?.error?.code === "rate_limit_exceeded") {
+      return {
+        success: false,
+        message: "I'm receiving too many requests right now. Please wait 10 seconds and try again.",
+        error: { type: "RATE_LIMIT", retryAfter: 10 }
+      };
+    }
+
     return {
       success: false,
-      message: `Database/System Error: ${errorMessage}`,
+      message: `Service temporarily unavailable. Please try again.`,
     };
   }
 };
+
+// Memory cleanup
+export const clearInactiveMemories = () => {
+  const cacheSize = memoryCache.size;
+  if (cacheSize > 100) {
+    console.log(`[Memory Cleanup] Clearing ${cacheSize} cached memories`);
+    memoryCache.clear();
+  }
+};
+
+setInterval(clearInactiveMemories, 30 * 60 * 1000);

@@ -1,6 +1,6 @@
 /**
- * Retry utility with exponential backoff
- * Handles rate limit (429) and temporary errors with automatic retries
+ * Enhanced retry utility with exponential backoff
+ * Handles Groq rate limits specifically
  */
 
 export interface RetryOptions {
@@ -13,27 +13,24 @@ export interface RetryOptions {
 
 const DEFAULT_OPTIONS: Required<RetryOptions> = {
   maxRetries: 3,
-  initialDelayMs: 1000,
-  maxDelayMs: 30000,
+  initialDelayMs: 2000,
+  maxDelayMs: 60000,
   backoffMultiplier: 2,
   shouldRetry: (error: any) => {
-    // Retry on rate limit (429), server errors (5xx), and timeout
-    return (
-      error?.response?.status === 429 ||
-      error?.response?.status === 503 ||
-      error?.response?.status === 504 ||
-      error?.code === "ETIMEDOUT" ||
-      error?.code === "ECONNREFUSED"
-    );
+    // Rate limit errors - ALWAYS retry
+    if (error?.response?.status === 429) return true;
+    if (error?.response?.data?.error?.code === "rate_limit_exceeded") return true;
+    
+    // Network/server errors - retry
+    if (error?.response?.status === 503) return true;
+    if (error?.response?.status === 504) return true;
+    if (error?.code === "ETIMEDOUT") return true;
+    if (error?.code === "ECONNREFUSED") return true;
+    
+    return false;
   },
 };
 
-/**
- * Execute a function with exponential backoff retry logic
- * @param fn - Async function to execute
- * @param options - Retry configuration
- * @returns Promise with function result
- */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {}
@@ -47,53 +44,34 @@ export async function retryWithBackoff<T>(
     } catch (error) {
       lastError = error;
 
-      // Check if we should retry this error
-      if (!config.shouldRetry(error)) {
+      if (!config.shouldRetry(error) || attempt === config.maxRetries) {
         throw error;
       }
 
-      // Don't retry after max attempts
-      if (attempt === config.maxRetries) {
-        throw error;
-      }
-
-      // Calculate delay with exponential backoff
-      const delayMs = Math.min(
+      let delayMs = Math.min(
         config.initialDelayMs * Math.pow(config.backoffMultiplier, attempt),
         config.maxDelayMs
       );
 
-      // Extract retry-after header if available (for rate limits)
-      const err = error as Record<string, any>;
-      const retryAfter = err?.response?.headers?.["retry-after"];
-      const actualDelayMs = retryAfter
-        ? parseInt(retryAfter) * 1000
-        : delayMs;
+      // Extract retry-after from Groq's error message
+      const errorMessage = (error as any)?.response?.data?.error?.message || "";
+      const retryMatch = errorMessage.match(/try again in ([\d.]+)s/);
+      if (retryMatch) {
+        delayMs = Math.ceil(parseFloat(retryMatch[1]) * 1000) + 500;
+      }
 
-      console.log(
-        `[Retry] Attempt ${attempt + 1}/${config.maxRetries} failed. ` +
-        `Retrying in ${actualDelayMs}ms...`,
-        err?.response?.status || err?.code
-      );
+      const retryAfter = (error as any)?.response?.headers?.["retry-after"];
+      if (retryAfter) {
+        delayMs = Math.max(delayMs, parseInt(retryAfter as string, 10) * 1000);
+      }
 
-      // Wait before retrying
-      await new Promise((resolve) => setTimeout(resolve, actualDelayMs));
+      console.log(`[Retry] Attempt ${attempt + 1}/${config.maxRetries} failed.`);
+      console.log(`[Retry] Error: ${errorMessage || (error as any).message}`);
+      console.log(`[Retry] Waiting ${delayMs}ms before retry...`);
+      
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 
   throw lastError;
-}
-
-/**
- * Wrapper for Groq API calls with automatic retry on rate limit
- * @param fn - Async function that calls Groq API
- * @returns Promise with function result
- */
-export async function callGroqWithRetry<T>(fn: () => Promise<T>): Promise<T> {
-  return retryWithBackoff(fn, {
-    maxRetries: 3,
-    initialDelayMs: 2000, // Start with 2 seconds for Groq
-    maxDelayMs: 60000, // Max 60 seconds
-    backoffMultiplier: 2,
-  });
 }

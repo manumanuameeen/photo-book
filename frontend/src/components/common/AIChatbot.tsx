@@ -126,8 +126,8 @@ const AIChatbot: React.FC = () => {
 
     const userMessage: Message = { 
       role: 'user', 
-      content: textToSend,
-      timestamp: new Date(),
+      content: textToSend, 
+      timestamp: new Date() 
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -141,9 +141,9 @@ const AIChatbot: React.FC = () => {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-          sessionId
+        body: JSON.stringify({ 
+          messages: [...messages, userMessage], 
+          sessionId 
         }),
       });
 
@@ -157,28 +157,34 @@ const AIChatbot: React.FC = () => {
           timestamp: new Date(),
         }]);
       } else {
-        setError({
-          message: data.message || 'Unknown error',
-          details: data.error,
-        });
+        // Handle rate limit specifically
+        if (data.error?.type === 'RATE_LIMIT') {
+          const retryAfter = data.error.retryAfter || 10;
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: `⏳ I'm processing a lot of requests right now. Please wait ${retryAfter} seconds and try again.`,
+            timestamp: new Date(),
+            isError: true,
+          }]);
+          
+          setIsLoading(false);
+          return;
+        }
+
+        // Generic error
+        setError({ message: data.message || 'Unknown error', details: data.error });
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: "I'm having trouble connecting right now. Please try again in a moment.",
+          content: data.message || "I'm having trouble connecting right now. Please try again.",
           timestamp: new Date(),
           isError: true,
         }]);
       }
     } catch (err) {
-      console.error('Chat error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      
-      setError({
-        message: errorMessage,
-        details: (err as any)?.details,
-      });
+      console.error('Network error:', err);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "I'm having trouble connecting right now. Please try again in a moment.",
+        content: "Network connection error. Please check your internet and try again.",
         timestamp: new Date(),
         isError: true,
       }]);

@@ -23,6 +23,7 @@ import { helpRoutes } from "./routes/help.routes";
 import { helpRequestRoutes } from "./routes/helpTopicRequest.routes";
 import { ruleRoutes } from "./routes/rule.routes";
 import aiRoutes from "./routes/ai.routes";
+import { clearInactiveMemories } from "./services/external/chatbot.service";
 import { errorHandler } from "./middleware/errorMiddleware";
 import { ROUTES } from "./constants/routes";
 import { createServer } from "http";
@@ -92,6 +93,14 @@ async function startServer() {
   app.use(ROUTES.V1.WALLET.BASE, walletRoute);
   app.use(ROUTES.V1.AI.BASE, aiRoutes);
   console.log("✅ Routes mounted.");
+
+  // Initialize Chatbot Memory Cleanup (already has internal setInterval)
+  try {
+    clearInactiveMemories();
+    console.log("✅ Chatbot memory cleanup initialized.");
+  } catch (error) {
+    console.error("❌ Chatbot memory cleanup initialization failed:", error);
+  }
 
   // Initialize CronService
   try {
