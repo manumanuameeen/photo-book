@@ -239,7 +239,7 @@ const getPhotographerPackages = tool(
     try {
       // Validate photographer exists
       const photographer = await PhotographerModel.findById(photographerId)
-        .select("businessInfo.businessName personalInfo.name")
+        .select("businessInfo.businessName personalInfo.name userId")
         .lean();
 
       if (!photographer) {
@@ -422,35 +422,13 @@ const tools = [searchPhotographers, getPhotographerPackages, createBooking];
 // ============================================================================
 
 const getSystemPromptForPhase = (phase: ConversationState["phase"], domainKnowledge: string) => {
-  const basePrompt = `You are Shutter, the AI booking assistant for Photo-book.
-
+  const basePrompt = `You are Shutter, Photo-book's AI assistant. 
 ${domainKnowledge}
-
-## YOUR CAPABILITIES:
-You have access to three tools:
-1. search_photographers: Find photographers by category and location
-2. get_photographer_packages: Get packages for a specific photographer
-3. create_booking: Create a booking (ONLY when all required info collected)
-
-## CORE BEHAVIOR RULES:
-- NEVER invent photographer names, packages, or data
-- ALWAYS use tools to fetch real data from the database
-- Return structured data in your tool calls (frontend will render it)
-- If tools fail or return no results, acknowledge it and offer alternatives
-- Ask ONE clarifying question at a time (don't overwhelm users)
-- Track what information you've collected and what's still missing
-
-## ANTI-HALLUCINATION RULES:
-- If user says "wedding photographer in Delhi", map "wedding" to exact category "Wedding Photography"
-- If no location given, search ALL locations (don't assume)
-- If tool returns fallbackUsed=true, tell user no exact matches but show recommendations
-- NEVER say "I found X photographer named Y" without a tool call
-- If create_booking needs more info, ask for missing fields specifically
-
-## STRUCTURED DATA RESPONSES:
-When tools return photographer or package data, mention in your text response that 
-"interactive cards are appearing in the chat" - the frontend will render them automatically.
-DO NOT embed raw JSON in your text responses.`;
+## RULES:
+- Use tools for real data; NEVER invent results.
+- interactive cards appear automatically; don't embed JSON.
+- Ask ONE question at a time.
+- If tools fail, suggest manual booking on profile.`;
 
   const phaseInstructions: Record<ConversationState["phase"], string> = {
     GREETING: `
@@ -560,8 +538,9 @@ export const getChatbotResponse = async (
     
     const lastMessage = messages[messages.length - 1].content;
 
-    // Convert history to LangChain format
-    const langChainHistory = chatHistory.messages.map(m => {
+    // Convert history to LangChain format (limit to last 10 for TPM overhead)
+    const recentMessages = chatHistory.messages.slice(-10);
+    const langChainHistory = recentMessages.map(m => {
       if (m.role === "user") return new HumanMessage(m.content);
       return new AIMessage(m.content);
     });
