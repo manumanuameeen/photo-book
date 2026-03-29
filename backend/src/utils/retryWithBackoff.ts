@@ -64,7 +64,8 @@ export async function retryWithBackoff<T>(
       );
 
       // Extract retry-after header if available (for rate limits)
-      const retryAfter = error?.response?.headers?.["retry-after"];
+      const err = error as Record<string, any>;
+      const retryAfter = err?.response?.headers?.["retry-after"];
       const actualDelayMs = retryAfter
         ? parseInt(retryAfter) * 1000
         : delayMs;
@@ -72,7 +73,7 @@ export async function retryWithBackoff<T>(
       console.log(
         `[Retry] Attempt ${attempt + 1}/${config.maxRetries} failed. ` +
         `Retrying in ${actualDelayMs}ms...`,
-        error?.response?.status || error?.code
+        err?.response?.status || err?.code
       );
 
       // Wait before retrying
