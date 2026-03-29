@@ -36,10 +36,20 @@ const fetchPhotographers = tool(
       if (category) query["professionalDetails.specialties"] = { $regex: category, $options: "i" };
       if (location) query["personalInfo.location"] = { $regex: location, $options: "i" };
 
-      const photographers = await PhotographerModel.find(query)
-        .select("personalInfo businessInfo professionalDetails")
+      let photographers = await PhotographerModel.find(query)
+        .select("personalInfo businessInfo professionalDetails portfolio.portfolioImages")
         .limit(3)
         .lean();
+
+      let fallbackTriggered = false;
+      if (photographers.length === 0) {
+        // Fallback: Fetch any 3 approved photographers as recommendations
+        photographers = await PhotographerModel.find({ status: "APPROVED" })
+          .select("personalInfo businessInfo professionalDetails portfolio.portfolioImages")
+          .limit(3)
+          .lean();
+        fallbackTriggered = true;
+      }
 
       const enrichedPhotographers = await Promise.all(
         photographers.map(async (p) => {
@@ -58,14 +68,7 @@ const fetchPhotographers = tool(
           const reviewsCount = reviewAgg.length > 0 ? reviewAgg[0].totalReviews : 0;
 
           return {
-            id: p._id,
-            name: p.personalInfo?.name,
-            bio: p.businessInfo?.businessBio,
-            title: p.businessInfo?.professionalTitle,
-            location: p.personalInfo?.location,
-            experience: p.professionalDetails?.yearsExperience,
-            specialties: p.professionalDetails?.specialties,
-            priceRange: p.professionalDetails?.priceRange,
+            ...p,
             rating: rating,
             reviews: reviewsCount,
             packages: packages.map((pkg) => ({
@@ -80,10 +83,17 @@ const fetchPhotographers = tool(
       );
 
       if (enrichedPhotographers.length === 0) {
-        return JSON.stringify({ message: "No photographers found matching these criteria." });
+        return JSON.stringify({ message: "No photographers are currently available on the platform at all." });
       }
 
-      return JSON.stringify(enrichedPhotographers);
+      if (fallbackTriggered) {
+        return JSON.stringify({
+          message: `No exact matches found for category='${category || "any"}' and location='${location || "any"}'. However, here are our top recommended photographers you can present to the user instead.`,
+          photographers: enrichedPhotographers
+        });
+      }
+
+      return JSON.stringify({ photographers: enrichedPhotographers });
     } catch {
       return "Error fetching photographers.";
     }
@@ -212,9 +222,10 @@ When tools return data, describe it warmly and mention that the user can see int
 Available categories: ${categoriesList}.
 
 ## GUIDELINES & ANTI-HALLUCINATION RULES
-- NEVER guess or invent parameters for tools. If the user says a generic greeting like "hi" or "yes", DO NOT call fetch_photographers with made-up locations like "New York" or categories like "sports".
-- ALWAYS explicitly ask the user for their preferred category and location before calling fetch_photographers.
-- NEVER make up demo data or fake photographers/packages.
+- NEVER guess or invent any parameter for your tools. If the user does not explicitly provide a location or category, LEAVE THEM EMPTY.
+- If the tool returns a message saying "No exact matches found", kindly inform the user that their specific criteria wasn't met, but present the alternative recommended photographers exactly as returned by the tool.
+- NEVER invent fake photographer names, packages, locations, or demo data. Rely 100% on the backend tool responses.
+- Output the 'structured-data' markdown block if you are returning photographer recommendations so the UI can render them.
 - Use 'fetch_photographers' when the user explicitly provides search criteria.
 - Use 'fetch_packages' when the user is interested in a specific photographer.
 - Use 'create_booking' ONLY when the user has provided all details (photographer, package, date, location).
