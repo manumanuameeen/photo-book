@@ -2,9 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    build:
-      context: ./backend
-      target: production
+    image: ameenwork/photo-book-backend:latest
     container_name: photobook-backend-prod
     ports:
       - "5000:5000"
@@ -26,9 +24,7 @@ services:
       - redis_data:/data
 
   frontend:
-    build:
-      context: ./frontend
-      target: production
+    image: ameenwork/photo-book-frontend:latest
     container_name: photobook-frontend-prod
     ports:
       - "8080:80"
