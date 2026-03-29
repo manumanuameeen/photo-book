@@ -1,5 +1,5 @@
 import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatGroq } from "@langchain/groq";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { retryWithBackoff } from "../../utils/retryWithBackoff";
@@ -59,53 +59,16 @@ interface ConversationState {
 // DOMAIN KNOWLEDGE: This gets injected into the model's context
 // ============================================================================
 
+// Minimal domain knowledge — no DB query needed, keeps tokens low
 const getDomainKnowledge = async () => {
-  const categories = await CategoryModel.find({
-    isActive: true,
-    suggestionStatus: "APPROVED",
-  }).select("name description").lean();
-
-  const categoryList = categories.map(c => `"${c.name}"`).join(", ");
-
-  return `
-=== PHOTO-BOOK PLATFORM DOMAIN KNOWLEDGE ===
-
-## AVAILABLE PHOTOGRAPHY CATEGORIES (EXACT VALUES):
-${categoryList}
-
-**CRITICAL**: When searching photographers, you MUST use these exact category names.
-Users may say things like:
-- "wedding pics" → map to "Wedding Photography"
-- "portraits" → map to "Portrait Photography"
-- "nature shots" → map to "Nature Photography"
-
-## DATABASE STRUCTURE:
-- Photographer.professionalDetails.specialties: Array of categories (from above list)
-- Photographer.personalInfo.location: Free text (city/region)
-- BookingPackage.status: MUST be "APPROVED" or "ACTIVE" to show users
-- BookingPackage.price OR baseprice: Package pricing (prefer price if available)
-
-## BOOKING WORKFLOW:
-1. User expresses interest in photography → Search photographers
-2. User selects photographer → Show packages for that photographer
-3. User selects package → Initiate booking data collection
-4. Collect: eventDate (YYYY-MM-DD), startTime (HH:MM AM/PM), location, eventType, contact details
-5. Create booking ONLY when ALL required data is present
-
-## SEARCH STRATEGY:
-- If user gives vague category → map to closest match from category list
-- If user gives no location → search ALL locations (omit location filter)
-- If NO EXACT matches found → fetch top 3 approved photographers as recommendations
-- ALWAYS return structured data via tool outputs, never invent fake results
-
-## ERROR HANDLING:
-- Tool returns empty → Inform user politely, offer alternatives
-- Missing booking info → Ask specific follow-up questions (one at a time)
-- Tool fails → Apologize, suggest manual booking via profile page
-
-=== END DOMAIN KNOWLEDGE ===
-`;
+  return `You are Shutter, Photo-book's booking AI.
+Rules: Use tools for real data. Never invent results. Ask ONE question at a time.
+Workflow: search_photographers → get_photographer_packages → (optional) get_photographer_availability → create_booking.
+Only call create_booking when you have: photographerId, packageId, eventDate (YYYY-MM-DD), startTime, location, eventType, contactName, contactEmail, contactPhone.
+Map vague categories: "wedding" → "Wedding Photography", "portrait" → "Portrait Photography", etc.
+Interactive cards render automatically — never embed JSON in messages.`;
 };
+
 
 // ============================================================================
 // STRUCTURED TOOL DEFINITIONS WITH VALIDATION
@@ -507,70 +470,12 @@ const tools = [searchPhotographers, getPhotographerPackages, getPhotographerAvai
 // SYSTEM PROMPTS FOR DIFFERENT CONVERSATION PHASES
 // ============================================================================
 
+// Single concise prompt for all phases (saves hundreds of tokens vs per-phase prompts)
 const getSystemPromptForPhase = (phase: ConversationState["phase"], domainKnowledge: string) => {
-  const basePrompt = `You are Shutter, Photo-book's AI assistant. 
-${domainKnowledge}
-## RULES:
-- Use tools for real data; NEVER invent results.
-- interactive cards appear automatically; don't embed JSON.
-- Ask ONE question at a time.
-- If tools fail, suggest manual booking on profile.`;
-
-  const phaseInstructions: Record<ConversationState["phase"], string> = {
-    GREETING: `
-## CURRENT PHASE: GREETING
-User just started conversation. Your goal:
-- Understand what they're looking for (category, location, event type)
-- If they give search criteria, call search_photographers tool
-- If they're vague ("I need a photographer"), ask: "What type of photography are you looking for?"
-- Keep tone warm and helpful`,
-
-    BROWSING: `
-## CURRENT PHASE: BROWSING
-User is viewing photographer search results. Your goal:
-- Help them compare photographers
-- If they ask about a specific photographer, prepare to call get_photographer_packages
-- If they want to refine search, call search_photographers again with new criteria`,
-
-    COMPARING: `
-## CURRENT PHASE: COMPARING
-User is looking at packages for a specific photographer. Your goal:
-- Explain package differences clearly
-- If they select a package, transition to BOOKING_INITIATED phase
-- Start collecting booking details: eventDate, startTime, location, eventType, contact info`,
-
-    BOOKING_INITIATED: `
-## CURRENT PHASE: BOOKING_INITIATED
-User has selected a photographer and package. Your goal:
-- Collect booking information systematically
-- Ask for ONE piece of info at a time:
-  1. Event date (YYYY-MM-DD)
-  2. Start time (e.g., 10:00 AM)
-  3. Event location/venue
-  4. Event type (Wedding, Birthday, etc.)
-  5. Contact details (name, email, phone)
-- Transition to BOOKING_PENDING as you collect info`,
-
-    BOOKING_PENDING: `
-## CURRENT PHASE: BOOKING_PENDING
-User is providing booking details. Your goal:
-- Validate each input (dates should be future, emails should be valid)
-- Keep track of what's collected and what's missing
-- ONLY call create_booking when ALL required fields are present
-- If user seems unsure, offer to save their progress`,
-
-    BOOKING_CONFIRMED: `
-## CURRENT PHASE: BOOKING_CONFIRMED
-Booking was successfully created. Your goal:
-- Congratulate user on successful booking
-- Provide booking ID and key details
-- Explain next steps (payment, confirmation email)
-- Ask if they need anything else
-- Offer to start a new search if they want more bookings`,
-  };
-
-  return basePrompt + "\n\n" + phaseInstructions[phase];
+  return `${domainKnowledge}
+Current phase: ${phase}. Guide the user through: GREETING→BROWSING→COMPARING→BOOKING_INITIATED→BOOKING_PENDING→BOOKING_CONFIRMED.`;
 };
+
 
 // ============================================================================
 // MAIN CHATBOT HANDLER WITH STATE MANAGEMENT
@@ -608,13 +513,13 @@ export const getChatbotResponse = async (
       (chatHistory.metadata?.state as ConversationState) || { phase: "GREETING" };
 
     // 2. Initialize model
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GROQ_API_KEY) {
       return { success: false, message: "AI Assistant not configured." };
     }
 
-    const model = new ChatGoogleGenerativeAI({
-      model: "gemini-2.0-flash",
-      apiKey: process.env.GEMINI_API_KEY,
+    const model = new ChatGroq({
+      model: "llama-3.3-70b-versatile",
+      apiKey: process.env.GROQ_API_KEY,
       temperature: 0.1,
       maxRetries: 2,
     }).bindTools(tools);
@@ -624,8 +529,8 @@ export const getChatbotResponse = async (
     
     const lastMessage = messages[messages.length - 1].content;
 
-    // Convert history to LangChain format (limit to last 10 for TPM overhead)
-    const recentMessages = chatHistory.messages.slice(-10);
+    // Convert history to LangChain format (limit to last 4 to minimize tokens)
+    const recentMessages = chatHistory.messages.slice(-4);
     const langChainHistory = recentMessages.map(m => {
       if (m.role === "user") return new HumanMessage(m.content);
       return new AIMessage(m.content);
