@@ -104,7 +104,7 @@ export class AdminDashboardService implements IAdminDashboardService {
 
     const activities: Activity[] = [
       ...recentUsers.map((u) => ({
-        id: (u._id as string).toString(),
+        id: String(u._id),
         icon: "fas fa-user-plus",
         title: "New user registration",
         detail: `${u.name} joined`,

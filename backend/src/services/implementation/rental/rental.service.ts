@@ -278,7 +278,7 @@ export class RentalService implements IRentalService {
     }
 
     const isAvailable = await this._availabilityService.checkItemAvailability(
-      item._id as string,
+      String(item._id),
       startDate,
       endDate,
     );

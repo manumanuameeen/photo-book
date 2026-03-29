@@ -16,7 +16,7 @@ export interface IReview extends Document {
   createdAt: Date;
 }
 
-export interface IEnrichedReview extends Partial<IReview> {
+export interface IEnrichedReview extends Omit<Partial<IReview>, "_id"> {
   _id: string;
   reviewerId: mongoose.Types.ObjectId;
   targetId: mongoose.Types.ObjectId;
