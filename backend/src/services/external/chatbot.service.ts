@@ -7,6 +7,7 @@ import { PhotographerModel } from "../../models/photographer.model";
 import { BookingPackageModel } from "../../models/bookingPackage.model";
 import { BookingModel } from "../../models/booking.model";
 import { ChatHistoryModel } from "../../models/chatHistory.model";
+import { ReviewModel } from "../../models/review.model";
 import mongoose from "mongoose";
 
 /**
@@ -36,11 +37,53 @@ const fetchPhotographers = tool(
       if (location) query["personalInfo.location"] = { $regex: location, $options: "i" };
 
       const photographers = await PhotographerModel.find(query)
-        .select("personalInfo businessInfo professionalDetails portfolio.portfolioImages")
-        .limit(5)
+        .select("personalInfo businessInfo professionalDetails")
+        .limit(3)
         .lean();
 
-      return JSON.stringify(photographers);
+      const enrichedPhotographers = await Promise.all(
+        photographers.map(async (p) => {
+          const packages = await BookingPackageModel.find({
+            photographer: p._id,
+            status: { $in: ["APPROVED", "ACTIVE"] },
+          })
+            .select("name price baseprice features deliveryTime")
+            .lean();
+
+          const reviewAgg = await ReviewModel.aggregate([
+            { $match: { targetId: p._id } },
+            { $group: { _id: null, avgRating: { $avg: "$rating" }, totalReviews: { $sum: 1 } } }
+          ]);
+          const rating = reviewAgg.length > 0 ? Number(reviewAgg[0].avgRating.toFixed(1)) : 0;
+          const reviewsCount = reviewAgg.length > 0 ? reviewAgg[0].totalReviews : 0;
+
+          return {
+            id: p._id,
+            name: p.personalInfo?.name,
+            bio: p.businessInfo?.businessBio,
+            title: p.businessInfo?.professionalTitle,
+            location: p.personalInfo?.location,
+            experience: p.professionalDetails?.yearsExperience,
+            specialties: p.professionalDetails?.specialties,
+            priceRange: p.professionalDetails?.priceRange,
+            rating: rating,
+            reviews: reviewsCount,
+            packages: packages.map((pkg) => ({
+              id: pkg._id,
+              name: pkg.name,
+              price: pkg.price || pkg.baseprice,
+              features: pkg.features,
+              deliveryTime: pkg.deliveryTime,
+            })),
+          };
+        })
+      );
+
+      if (enrichedPhotographers.length === 0) {
+        return JSON.stringify({ message: "No photographers found matching these criteria." });
+      }
+
+      return JSON.stringify(enrichedPhotographers);
     } catch {
       return "Error fetching photographers.";
     }
