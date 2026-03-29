@@ -27,6 +27,8 @@ export interface PackageData {
   price?: number;
   baseprice: number;
   features: string[];
+  deliveryTime?: string;
+  editedPhoto?: number;
 }
 
 interface PhotographerListProps {
@@ -97,6 +99,18 @@ export const PackageList: React.FC<PackageListProps> = ({ packages, photographer
                 <span>{f}</span>
               </div>
             ))}
+            {pkg.editedPhoto && (
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                <Check size={10} className="text-indigo-500" />
+                <span>{pkg.editedPhoto} Edited Photos</span>
+              </div>
+            )}
+            {pkg.deliveryTime && (
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                <Check size={10} className="text-indigo-500" />
+                <span>Delivery: {pkg.deliveryTime}</span>
+              </div>
+            )}
           </div>
           <button 
             onClick={() => onSelect(pkg, photographerId)}

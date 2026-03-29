@@ -135,17 +135,17 @@ const searchPhotographers = tool(
       }
 
       let photographers = await PhotographerModel.find(query)
-        .select("personalInfo businessInfo professionalDetails portfolio.portfolioImages")
-        .limit(limit)
+        .select("personalInfo businessInfo professionalDetails portfolio status userId")
+        .limit(limit || 3)
         .lean();
 
       let fallbackUsed = false;
       
       // Fallback: If no matches, get top rated photographers
       if (photographers.length === 0) {
-        photographers = await PhotographerModel.find({ status: "APPROVED" })
-          .select("personalInfo businessInfo professionalDetails portfolio.portfolioImages")
-          .limit(limit)
+        photographers = await PhotographerModel.find({ status: "APPROVED", isBlock: false })
+          .select("personalInfo businessInfo professionalDetails portfolio status userId")
+          .limit(limit || 3)
           .lean();
         fallbackUsed = true;
       }
@@ -154,10 +154,11 @@ const searchPhotographers = tool(
       const enriched = await Promise.all(
         photographers.map(async (p) => {
           const packages = await BookingPackageModel.find({
-            photographer: p._id,
+            photographer: { $in: [p._id, p.userId] },
             status: { $in: ["APPROVED", "ACTIVE"] },
+            isActive: true,
           })
-            .select("name price baseprice features deliveryTime")
+            .select("name price baseprice features deliveryTime editedPhoto")
             .limit(5)
             .lean();
 
@@ -185,6 +186,7 @@ const searchPhotographers = tool(
               price: pkg.price || pkg.baseprice,
               features: pkg.features,
               deliveryTime: pkg.deliveryTime,
+              editedPhoto: pkg.editedPhoto,
             })),
           };
         })
@@ -248,8 +250,9 @@ const getPhotographerPackages = tool(
       }
 
       const packages = await BookingPackageModel.find({
-        photographer: new mongoose.Types.ObjectId(photographerId),
+        photographer: { $in: [new mongoose.Types.ObjectId(photographerId), photographer.userId] },
         status: { $in: ["APPROVED", "ACTIVE"] },
+        isActive: true,
       })
         .select("name description price baseprice features deliveryTime editedPhoto")
         .lean();
@@ -271,7 +274,7 @@ const getPhotographerPackages = tool(
           price: pkg.price || pkg.baseprice,
           features: pkg.features,
           deliveryTime: pkg.deliveryTime,
-          editedPhotos: pkg.editedPhoto,
+          editedPhoto: pkg.editedPhoto,
         })),
       });
     } catch (error) {
@@ -342,7 +345,7 @@ const createBooking = tool(
 
       const booking = new BookingModel({
         userId: new mongoose.Types.ObjectId(userId),
-        photographerId: new mongoose.Types.ObjectId(photographerId),
+        photographerId: photographer.userId,
         packageId: new mongoose.Types.ObjectId(packageId),
         packageDetails: pkg,
         eventDate: new Date(eventDate),
