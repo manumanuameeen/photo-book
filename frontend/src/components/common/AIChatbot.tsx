@@ -16,7 +16,7 @@ interface Message {
   structuredData?: {
     type: 'photographer_list' | 'package_list' | 'booking_confirmation' | 'availability_picker';
     photographerId?: string;
-    data?: (PhotographerData | PackageData | AvailabilityData);
+    data?: PhotographerData[] | PackageData[] | AvailabilityData;
     bookingId?: string;
   };
   timestamp?: Date;
@@ -28,7 +28,7 @@ interface ChatbotApiResponse {
   structuredData?: {
     type: 'photographer_list' | 'package_list' | 'booking_confirmation' | 'availability_picker';
     photographerId?: string;
-    data?: (PhotographerData | PackageData | AvailabilityData);
+    data?: PhotographerData[] | PackageData[] | AvailabilityData;
     bookingId?: string;
   };
   conversationPhase?: string;
@@ -352,7 +352,7 @@ const AIChatbot: React.FC = () => {
                         </div>
 
                         {/* ========== STRUCTURED DATA RENDERERS ========== */}
-                        {msg.structuredData && (
+                         {msg.structuredData && (
                           <div className="mt-2 w-full pl-10 pr-2">
                             {msg.structuredData.type === 'photographer_list' && msg.structuredData.data && (
                               <PhotographerList
