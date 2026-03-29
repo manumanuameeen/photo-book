@@ -299,10 +299,11 @@ const getPhotographerPackages = tool(
         success: true,
         photographerName: photographer.businessInfo?.businessName || photographer.personalInfo?.name,
         packages: packages.map(pkg => ({
-          id: pkg._id,
+          _id: pkg._id,
           name: pkg.name,
           description: pkg.description,
           price: pkg.price || pkg.baseprice,
+          baseprice: pkg.baseprice,
           features: pkg.features,
           deliveryTime: pkg.deliveryTime,
           editedPhoto: pkg.editedPhoto,
@@ -518,7 +519,7 @@ export const getChatbotResponse = async (
     }
 
     const model = new ChatGroq({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       apiKey: process.env.GROQ_API_KEY,
       temperature: 0.1,
       maxRetries: 2,
