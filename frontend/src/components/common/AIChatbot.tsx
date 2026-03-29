@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageCircle, X, Send, Bot, User, Minimize2, Maximize2, 
-  Loader2, RotateCcw, AlertCircle 
+  Loader2, RotateCcw
 } from 'lucide-react';
 import { useAuthStore } from '../../modules/auth/store/useAuthStore';
 import { PhotographerList, PackageList, BookingConfirmation, AvailabilityPicker } from './ChatRenderers';
 import type { PhotographerData, PackageData, AvailabilityData } from './ChatRenderers';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from "../../constants/routes";
+import ErrorCard from './ErrorCard';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -20,6 +21,7 @@ interface Message {
     bookingId?: string;
   };
   timestamp?: Date;
+  isError?: boolean;
 }
 
 interface ChatbotApiResponse {
@@ -30,6 +32,13 @@ interface ChatbotApiResponse {
     photographerId?: string;
     data?: PhotographerData[] | PackageData[] | AvailabilityData;
     bookingId?: string;
+  };
+  error?: {
+    type?: string;
+    provider?: string;
+    message?: string;
+    code?: string;
+    retryAfter?: string;
   };
   conversationPhase?: string;
 }
@@ -51,7 +60,9 @@ const AIChatbot: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; details?: any } | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [lastUserMessage, setLastUserMessage] = useState<string>('');
   const [sessionId] = useState(() => `session_${Math.random().toString(36).substring(2, 11)}`);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -64,10 +75,6 @@ const AIChatbot: React.FC = () => {
       ? "http://localhost:5000/api/v1" 
       : "/api/v1");
 
-  /**
-   * Load conversation history from backend
-   * This preserves context across sessions
-   */
   const loadChatHistory = useCallback(async () => {
     if (!isAuthenticated) return;
 
@@ -89,18 +96,16 @@ const AIChatbot: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to load history:', err);
-      setError('Could not load chat history');
+      setError({ message: 'Could not load chat history' });
     }
   }, [apiUrl, sessionId, isAuthenticated]);
 
-  // Load history when chat opens
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       loadChatHistory();
     }
   }, [isOpen, isAuthenticated, loadChatHistory]);
 
-  // Auto-scroll to bottom on new messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -109,17 +114,12 @@ const AIChatbot: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Focus input when chat opens
   useEffect(() => {
     if (isOpen && !isMinimized) {
       inputRef.current?.focus();
     }
   }, [isOpen, isMinimized]);
 
-  /**
-   * Send message to chatbot backend
-   * No more parsing markdown JSON blocks - backend returns clean structured data
-   */
   const handleSendMessage = useCallback(async (textOverride?: string) => {
     const textToSend = textOverride || input;
     if (!textToSend.trim() || isLoading) return;
@@ -131,6 +131,7 @@ const AIChatbot: React.FC = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    setLastUserMessage(textToSend);
     setInput('');
     setIsLoading(true);
     setError(null);
@@ -146,43 +147,46 @@ const AIChatbot: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
       const data: ChatbotApiResponse = await response.json();
 
       if (data.success) {
-        // Backend now returns clean message and separate structuredData
-        // No need to parse embedded JSON anymore!
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: data.message,
           structuredData: data.structuredData,
           timestamp: new Date(),
         }]);
-
       } else {
-        throw new Error(data.message || 'Unknown error');
+        setError({
+          message: data.message || 'Unknown error',
+          details: data.error,
+        });
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: "I'm having trouble connecting right now. Please try again in a moment.",
+          timestamp: new Date(),
+          isError: true,
+        }]);
       }
     } catch (err) {
       console.error('Chat error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       
-      setError(errorMessage);
+      setError({
+        message: errorMessage,
+        details: (err as any)?.details,
+      });
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: "I'm having trouble connecting right now. Please try again in a moment.",
         timestamp: new Date(),
+        isError: true,
       }]);
     } finally {
       setIsLoading(false);
     }
   }, [apiUrl, input, isLoading, messages, sessionId]);
 
-  /**
-   * Handle keyboard shortcuts
-   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -190,9 +194,6 @@ const AIChatbot: React.FC = () => {
     }
   };
 
-  /**
-   * Handle photographer selection from list
-   */
   const onSelectPhotographer = (photographer: PhotographerData) => {
     const id = photographer._id;
     const name = photographer.businessInfo?.businessName || photographer.personalInfo?.name;
@@ -201,36 +202,24 @@ const AIChatbot: React.FC = () => {
     );
   };
 
-  /**
-   * Handle package selection
-   * Routes to booking wizard if possible, otherwise continues chat flow
-   */
   const onSelectPackage = (pkg: PackageData, photographerId?: string) => {
     if (photographerId) {
-      // Direct route to booking wizard
       navigate({ 
         to: ROUTES.USER.BOOKING, 
         search: { photographerId, packageId: pkg._id } 
       });
       setIsOpen(false);
     } else {
-      // Continue in chat
       handleSendMessage(
         `I'd like to book the "${pkg.name}" package. What information do you need from me? (Package ID: ${pkg._id})`
       );
     }
   };
 
-  /**
-   * Handle availability selection
-   */
   const onSelectAvailability = (date: string, time: string) => {
     handleSendMessage(`I'd like to book for ${date} at ${time}.`);
   };
 
-  /**
-   * Reset conversation
-   */
   const handleReset = () => {
     setMessages([{
       role: 'assistant',
@@ -241,7 +230,15 @@ const AIChatbot: React.FC = () => {
     setInput('');
   };
 
-  // Don't render if user not authenticated
+  const handleRetry = useCallback(async () => {
+    if (!lastUserMessage) return;
+    setIsRetrying(true);
+    setError(null);
+    setMessages(prev => prev.slice(0, -1));
+    await handleSendMessage(lastUserMessage);
+    setIsRetrying(false);
+  }, [lastUserMessage, handleSendMessage]);
+
   if (!user || !isAuthenticated) return null;
 
   return (
@@ -260,7 +257,7 @@ const AIChatbot: React.FC = () => {
             transition={{ duration: 0.2 }}
             className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
           >
-            {/* ========== HEADER ========== */}
+            {/* HEADER */}
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <div className="bg-white/20 p-1.5 rounded-lg">
@@ -282,13 +279,6 @@ const AIChatbot: React.FC = () => {
                   <RotateCcw size={14} />
                 </button>
                 <button 
-                  onClick={loadChatHistory} 
-                  title="Refresh chat"
-                  className="hover:bg-white/20 p-1 rounded transition-colors"
-                >
-                  <RotateCcw size={14} />
-                </button>
-                <button 
                   onClick={() => setIsMinimized(!isMinimized)}
                   className="hover:bg-white/20 p-1 rounded transition-colors"
                 >
@@ -305,24 +295,20 @@ const AIChatbot: React.FC = () => {
 
             {!isMinimized && (
               <>
-                {/* ========== ERROR BANNER ========== */}
+                {/* ERROR CARD */}
                 {error && (
-                  <div className="bg-red-50 border-b border-red-200 p-3 flex items-start gap-2">
-                    <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
-                    <div className="flex-1 text-xs text-red-800">
-                      <p className="font-semibold">Connection Error</p>
-                      <p>{error}</p>
-                    </div>
-                    <button 
-                      onClick={() => setError(null)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <X size={14} />
-                    </button>
+                  <div className="p-4 border-b border-red-200 bg-red-50">
+                    <ErrorCard
+                      title="Connection Error"
+                      message={error.message}
+                      error={error.details}
+                      onRetry={handleRetry}
+                      isRetrying={isRetrying}
+                    />
                   </div>
                 )}
 
-                {/* ========== MESSAGES ========== */}
+                {/* MESSAGES */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
                   {messages.map((msg, index) => (
                     <div 
@@ -330,9 +316,7 @@ const AIChatbot: React.FC = () => {
                       className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div className={`flex flex-col max-w-[90%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                        {/* Message bubble */}
                         <div className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                          {/* Avatar */}
                           <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                             msg.role === 'user' 
                               ? 'bg-blue-100 text-blue-600' 
@@ -341,7 +325,6 @@ const AIChatbot: React.FC = () => {
                             {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                           </div>
 
-                          {/* Message content */}
                           <div className={`p-3 rounded-2xl text-sm ${
                             msg.role === 'user'
                               ? 'bg-indigo-600 text-white rounded-tr-none'
@@ -351,8 +334,8 @@ const AIChatbot: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* ========== STRUCTURED DATA RENDERERS ========== */}
-                         {msg.structuredData && (
+                        {/* STRUCTURED DATA RENDERERS */}
+                        {msg.structuredData && (
                           <div className="mt-2 w-full pl-10 pr-2">
                             {msg.structuredData.type === 'photographer_list' && msg.structuredData.data && (
                               <PhotographerList
@@ -384,7 +367,6 @@ const AIChatbot: React.FC = () => {
                     </div>
                   ))}
 
-                  {/* Loading indicator */}
                   {isLoading && (
                     <div className="flex justify-start">
                       <div className="flex gap-2 max-w-[85%]">
@@ -402,51 +384,41 @@ const AIChatbot: React.FC = () => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* ========== INPUT ========== */}
-                <form 
-                  onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} 
-                  className="p-4 bg-white border-t border-gray-100 flex gap-2"
-                >
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Type your message..."
-                    disabled={isLoading}
-                    className="flex-1 bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 rounded-xl px-4 py-2 text-sm outline-none transition-all disabled:opacity-50"
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={!input.trim() || isLoading} 
-                    className="bg-indigo-600 text-white p-2 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    <Send size={18} />
-                  </button>
-                </form>
+                {/* INPUT */}
+                <div className="border-t border-gray-200 p-3 bg-white shrink-0">
+                  <div className="flex gap-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Ask me anything..."
+                      disabled={isLoading}
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 text-sm"
+                    />
+                    <button
+                      onClick={() => handleSendMessage()}
+                      disabled={isLoading || !input.trim()}
+                      className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
+                    >
+                      <Send size={16} />
+                    </button>
+                  </div>
+                </div>
               </>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ========== FAB BUTTON ========== */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => { 
-          setIsOpen(!isOpen); 
-          setIsMinimized(false); 
-        }}
-        className={`p-4 rounded-full shadow-2xl flex items-center justify-center transition-all ${
-          isOpen 
-            ? 'bg-white text-indigo-600 border-2 border-indigo-600' 
-            : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
-        }`}
+      {/* FLOATING BUTTON */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-lg text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-      </motion.button>
+      </button>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages
 import { ChatGroq } from "@langchain/groq";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
+import { callGroqWithRetry } from "../../utils/retryWithBackoff";
 import { CategoryModel } from "../../models/category.model";
 import { PhotographerModel } from "../../models/photographer.model";
 import { BookingPackageModel } from "../../models/bookingPackage.model";
@@ -630,14 +631,16 @@ export const getChatbotResponse = async (
       return new AIMessage(m.content);
     });
 
-    // 4. Invoke model
-    let response = await model.invoke(
-      [
-        new SystemMessage(systemPrompt),
-        ...langChainHistory,
-        new HumanMessage(lastMessage)
-      ],
-      { signal: controller.signal }
+    // 4. Invoke model with retry logic for rate limits
+    let response = await callGroqWithRetry(() =>
+      model.invoke(
+        [
+          new SystemMessage(systemPrompt),
+          ...langChainHistory,
+          new HumanMessage(lastMessage)
+        ],
+        { signal: controller.signal }
+      )
     );
 
     // 5. Handle tool calls

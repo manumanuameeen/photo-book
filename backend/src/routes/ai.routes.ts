@@ -154,9 +154,62 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
       structuredData: (result as any).structuredData,
       conversationPhase: (result as any).conversationPhase,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("[AI Chatbot Route] Error:", error);
-    return res.status(500).json({ message: "Chatbot interaction failed" });
+    
+    // Extract detailed error information
+    let statusCode = 500;
+    let errorMessage = "Chatbot interaction failed";
+    let errorDetails: any = {};
+    
+    // Handle Groq rate limit errors (429)
+    if (error?.response?.status === 429) {
+      statusCode = 429;
+      const groqError = error.response.data?.error || {};
+      errorMessage = "Rate limit reached. Please wait before trying again.";
+      errorDetails = {
+        type: "RATE_LIMIT",
+        provider: "Groq",
+        message: groqError.message || "Too many requests",
+        code: "rate_limit_exceeded",
+      };
+    }
+    // Handle network/connection errors
+    else if (error?.code === "ECONNREFUSED" || error?.code === "ENOTFOUND") {
+      statusCode = 503;
+      errorMessage = "Unable to connect to AI service. Please try again later.";
+      errorDetails = {
+        type: "CONNECTION_ERROR",
+        provider: "Groq",
+        message: "Service temporarily unavailable",
+      };
+    }
+    // Handle timeout errors
+    else if (error?.code === "ETIMEDOUT" || error?.message?.includes("timeout")) {
+      statusCode = 504;
+      errorMessage = "Request timed out. The AI service is taking too long to respond.";
+      errorDetails = {
+        type: "TIMEOUT",
+        provider: "Groq",
+        message: "Request timeout",
+      };
+    }
+    // Handle authentication errors
+    else if (error?.response?.status === 401 || error?.message?.includes("Unauthorized")) {
+      statusCode = 401;
+      errorMessage = "Authentication failed. Please check API credentials.";
+      errorDetails = {
+        type: "AUTH_ERROR",
+        provider: "Groq",
+        message: "Invalid or expired credentials",
+      };
+    }
+    
+    return res.status(statusCode).json({
+      success: false,
+      message: errorMessage,
+      error: errorDetails,
+    });
   }
 });
 
