@@ -5,8 +5,8 @@ import {
   Loader2, RotateCcw, AlertCircle 
 } from 'lucide-react';
 import { useAuthStore } from '../../modules/auth/store/useAuthStore';
-import { PhotographerList, PackageList, BookingConfirmation } from './ChatRenderers';
-import type { PhotographerData, PackageData } from './ChatRenderers';
+import { PhotographerList, PackageList, BookingConfirmation, AvailabilityPicker } from './ChatRenderers';
+import type { PhotographerData, PackageData, AvailabilityData } from './ChatRenderers';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from "../../constants/routes";
 
@@ -14,9 +14,9 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   structuredData?: {
-    type: 'photographer_list' | 'package_list' | 'booking_confirmation';
+    type: 'photographer_list' | 'package_list' | 'booking_confirmation' | 'availability_picker';
     photographerId?: string;
-    data?: (PhotographerData | PackageData)[];
+    data?: (PhotographerData | PackageData | AvailabilityData);
     bookingId?: string;
   };
   timestamp?: Date;
@@ -26,9 +26,9 @@ interface ChatbotApiResponse {
   success: boolean;
   message: string;
   structuredData?: {
-    type: 'photographer_list' | 'package_list' | 'booking_confirmation';
+    type: 'photographer_list' | 'package_list' | 'booking_confirmation' | 'availability_picker';
     photographerId?: string;
-    data?: (PhotographerData | PackageData)[];
+    data?: (PhotographerData | PackageData | AvailabilityData);
     bookingId?: string;
   };
   conversationPhase?: string;
@@ -222,6 +222,13 @@ const AIChatbot: React.FC = () => {
   };
 
   /**
+   * Handle availability selection
+   */
+  const onSelectAvailability = (date: string, time: string) => {
+    handleSendMessage(`I'd like to book for ${date} at ${time}.`);
+  };
+
+  /**
    * Reset conversation
    */
   const handleReset = () => {
@@ -363,6 +370,12 @@ const AIChatbot: React.FC = () => {
                             {msg.structuredData.type === 'booking_confirmation' && msg.structuredData.bookingId && (
                               <BookingConfirmation
                                 bookingId={msg.structuredData.bookingId}
+                              />
+                            )}
+                            {msg.structuredData.type === 'availability_picker' && msg.structuredData.data && (
+                              <AvailabilityPicker
+                                data={msg.structuredData.data as AvailabilityData}
+                                onSelect={onSelectAvailability}
                               />
                             )}
                           </div>

@@ -8,6 +8,7 @@ import { BookingPackageModel } from "../../models/bookingPackage.model";
 import { BookingModel } from "../../models/booking.model";
 import { ChatHistoryModel } from "../../models/chatHistory.model";
 import { ReviewModel } from "../../models/review.model";
+import { AvailabilityModel } from "../../models/availability.model";
 import mongoose from "mongoose";
 
 /**
@@ -231,6 +232,72 @@ Returns structured JSON with photographer profiles including:
 );
 
 /**
+ * Tool 2.5: Get Photographer Availability
+ * Fetches available dates and times for a photographer
+ */
+const getPhotographerAvailability = tool(
+  async ({ photographerId, days = 30 }) => {
+    try {
+      const photographer = await PhotographerModel.findById(photographerId).select("userId").lean();
+      if (!photographer) return JSON.stringify({ success: false, error: "Photographer not found" });
+
+      const startDate = new Date();
+      startDate.setHours(0,0,0,0);
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + days);
+
+      // Query availability entries
+      const availability = await AvailabilityModel.find({
+        photographer: new mongoose.Types.ObjectId(photographerId),
+        date: { $gte: startDate, $lte: endDate }
+      }).lean();
+
+      // Query existing bookings to mark slots as booked
+      const bookings = await BookingModel.find({
+        photographerId: photographer.userId,
+        eventDate: { $gte: startDate, $lte: endDate },
+        status: { $in: ["pending", "accepted", "waiting_for_deposit", "work_started"] }
+      }).select("eventDate startTime").lean();
+
+      // Format for AI and Frontend
+      const formattedAvailability = availability.map((a) => ({
+        date: a.date.toISOString().split("T")[0],
+        isFullDay: a.isFullDayAvailable,
+        slots: a.slots
+          .filter((s) => s.status === "AVAILABLE")
+          .map((s) => s.startTime),
+      }));
+
+      // Add bookings as blocked dates if not already in availability
+      const bookedDates = bookings.map((b) =>
+        b.eventDate.toISOString().split("T")[0],
+      );
+
+      return JSON.stringify({
+        success: true,
+        photographerId,
+        availableSlots: formattedAvailability,
+        bookedDates: [...new Set(bookedDates)],
+      });
+    } catch (error) {
+      console.error("Get availability error:", error);
+      return JSON.stringify({
+        success: false,
+        error: "Error fetching availability",
+      });
+    }
+  },
+  {
+    name: "get_photographer_availability",
+    description: "Get available dates and time slots for a photographer for the next 30 days.",
+    schema: z.object({
+      photographerId: z.string().describe("MongoDB ObjectId of the photographer"),
+      days: z.number().optional().describe("Number of days to check (default 30)"),
+    }),
+  }
+);
+
+/**
  * Tool 2: Get Photographer Packages
  * Fetches detailed package info for a specific photographer
  */
@@ -339,6 +406,24 @@ const createBooking = tool(
         });
       }
 
+      // Check availability for the specific date/time
+      const checkDate = new Date(eventDate);
+      checkDate.setHours(0,0,0,0);
+      
+      const existingBooking = await BookingModel.findOne({
+        photographerId: photographer.userId,
+        eventDate: checkDate,
+        startTime,
+        status: { $in: ["pending", "accepted", "waiting_for_deposit"] }
+      });
+
+      if (existingBooking) {
+        return JSON.stringify({
+          success: false,
+          error: `The slot ${eventDate} at ${startTime} is already booked. Please choose another time.`
+        });
+      }
+
       // Create booking
       const totalAmount = pkg.price || pkg.baseprice;
       const depositRequired = totalAmount * 0.2; // 20% deposit
@@ -415,7 +500,7 @@ Returns booking confirmation with booking ID and payment details.`,
   }
 );
 
-const tools = [searchPhotographers, getPhotographerPackages, createBooking];
+const tools = [searchPhotographers, getPhotographerPackages, getPhotographerAvailability, createBooking];
 
 // ============================================================================
 // SYSTEM PROMPTS FOR DIFFERENT CONVERSATION PHASES
@@ -527,9 +612,9 @@ export const getChatbotResponse = async (
     }
 
     const model = new ChatGroq({
-      model: "llama-3.3-70b-versatile",
+      model: "mixtral-8x7b-32768",
       apiKey: process.env.GROQ_API_KEY,
-      temperature: 0.1, // Lower temperature for more deterministic responses
+      temperature: 0.1,
       maxRetries: 2,
     }).bindTools(tools);
 
@@ -564,6 +649,7 @@ export const getChatbotResponse = async (
         const toolMap: Record<string, any> = {
           search_photographers: searchPhotographers,
           get_photographer_packages: getPhotographerPackages,
+          get_photographer_availability: getPhotographerAvailability,
           create_booking: createBooking,
         };
         
@@ -603,6 +689,8 @@ export const getChatbotResponse = async (
           conversationState.phase = "BROWSING";
         } else if (tr.name === "get_photographer_packages" && tr.result.success) {
           conversationState.phase = "COMPARING";
+        } else if (tr.name === "get_photographer_availability" && tr.result.success) {
+          // Stay in current phase but tool is called
         } else if (tr.name === "create_booking" && tr.result.success) {
           conversationState.phase = "BOOKING_CONFIRMED";
         }
@@ -625,6 +713,15 @@ export const getChatbotResponse = async (
           type: "package_list",
           photographerId: lastTool.result.photographerId,
           data: lastTool.result.packages,
+        };
+      } else if (lastTool.name === "get_photographer_availability" && lastTool.result.success) {
+        structuredResponse = {
+          type: "availability_picker",
+          photographerId: lastTool.result.photographerId,
+          data: {
+            availableSlots: lastTool.result.availableSlots,
+            bookedDates: lastTool.result.bookedDates
+          },
         };
       } else if (lastTool.name === "create_booking" && lastTool.result.success) {
         structuredResponse = {

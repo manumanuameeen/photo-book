@@ -31,6 +31,15 @@ export interface PackageData {
   editedPhoto?: number;
 }
 
+export interface AvailabilityData {
+  availableSlots: {
+    date: string;
+    isFullDay: boolean;
+    slots: string[];
+  }[];
+  bookedDates: string[];
+}
+
 interface PhotographerListProps {
   photographers: PhotographerData[];
   onSelect: (photographer: PhotographerData) => void;
@@ -135,6 +144,74 @@ export const BookingConfirmation: React.FC<{ bookingId: string }> = ({ bookingId
       <button className="mt-3 flex items-center gap-1 mx-auto text-[10px] font-bold text-indigo-600 hover:text-indigo-700">
         View in Dashboard <ExternalLink size={10} />
       </button>
+    </div>
+  );
+};
+
+export const AvailabilityPicker: React.FC<{ 
+  data: AvailabilityData; 
+  onSelect: (date: string, time: string) => void 
+}> = ({ data, onSelect }) => {
+  const [selectedDate, setSelectedDate] = React.useState<string | null>(
+    data.availableSlots[0]?.date || null
+  );
+
+  const currentSlots = data.availableSlots.find(s => s.date === selectedDate);
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm my-2">
+      <h4 className="font-bold text-gray-900 text-xs mb-3 flex items-center gap-2">
+        <div className="w-1 h-3 bg-indigo-600 rounded-full"></div>
+        Select Available Date & Time
+      </h4>
+      
+      {/* Date Selector */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {data.availableSlots.map((slot, idx) => {
+          const dateObj = new Date(slot.date);
+          const isSelected = selectedDate === slot.date;
+          return (
+            <button
+              key={idx}
+              onClick={() => setSelectedDate(slot.date)}
+              className={`flex flex-col items-center justify-center min-w-[50px] p-2 rounded-lg transition-all border ${
+                isSelected 
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
+                  : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-indigo-50'
+              }`}
+            >
+              <span className="text-[8px] uppercase font-bold opacity-80">
+                {dateObj.toLocaleDateString('en-US', { weekday: 'short' })}
+              </span>
+              <span className="text-sm font-bold">{dateObj.getDate()}</span>
+              <span className="text-[8px] opacity-80">
+                {dateObj.toLocaleDateString('en-US', { month: 'short' })}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Time Slots */}
+      <div className="mt-3">
+        <p className="text-[10px] text-gray-400 font-medium mb-2 uppercase tracking-wider">Available Slots</p>
+        <div className="grid grid-cols-3 gap-2">
+          {currentSlots?.slots.map((time, idx) => (
+            <button
+              key={idx}
+              onClick={() => onSelect(selectedDate!, time)}
+              className="bg-indigo-50 text-indigo-600 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100"
+            >
+              {time}
+            </button>
+          ))}
+          {(!currentSlots || currentSlots.slots.length === 0) && (
+            <p className="col-span-3 text-center py-4 text-[10px] text-gray-400 italic bg-gray-50 rounded-lg">
+              No specific slots available. Contact photographer.
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
