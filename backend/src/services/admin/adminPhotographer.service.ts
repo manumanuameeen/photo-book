@@ -16,6 +16,7 @@ import { AppError } from "../../utils/AppError";
 import { Populated } from "../../types/common.types";
 import { IBookingPackage } from "../../models/bookingPackage.model";
 import mongoose from "mongoose";
+import redisClient from "../../config/redis";
 
 export class AdminPhotographerService implements IAdminPhotographerService {
   private readonly _photographerRepo: IPhotographerRepository;
@@ -72,6 +73,8 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
+    // Set Redis block flag so auth middleware can check without DB hit
+    await redisClient.set(`blocked:${photographer.userId.toString()}`, "true");
   }
 
   async unblockPhotographer(photographerId: string): Promise<void> {
@@ -79,6 +82,8 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
+    // Remove Redis block flag
+    await redisClient.del(`blocked:${photographer.userId.toString()}`);
   }
 
   async getApplications(query: IGetPhotographersQuery): Promise<IPaginatedPhotographersResponse> {

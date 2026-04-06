@@ -1,85 +1,57 @@
-import React, { useState, } from 'react';
-import { Eye, EyeOff, Lock } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Eye, EyeOff, Lock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useResetPassword } from "../../hooks/useAuth";
-import toast, { Toaster } from "react-hot-toast";
+import { toast } from "sonner";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { ROUTES } from '../../../../constants/routes';
-
-const Colors = {
-  darkGreen: "#2e4a2d",
-};
-
-interface ResetPasswordError {
-  response?: {
-    data?: {
-      message?: string
-    };
-  };
-}
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const resetPasswordMutation = useResetPassword();
 
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
 
-  const getEmail = (): string => {
-    return sessionStorage.getItem('resetPasswordEmail') || "";
-  };
+  const email = sessionStorage.getItem('resetPasswordEmail') || "";
 
-  const email = getEmail();
-
-  const validateForm = () => {
-    const newErrors: { password?: string; confirmPassword?: string } = {};
-
-    if (!password) {
-      newErrors.password = "Password is required.";
-    } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long.";
+  useEffect(() => {
+    if (!email) {
+      toast.error("No active reset session found.", { id: "no-reset-session" });
+      const timeoutId = setTimeout(() => {
+        navigate({ to: ROUTES.AUTH.FORGOT_PASSWORD });
+      }, 2000);
+      return () => clearTimeout(timeoutId);
     }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password.";
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }, [email, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      toast.error("Please fix the form errors.");
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match.", { id: "pass-mismatch" });
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.", { id: "pass-too-short" });
       return;
     }
 
     resetPasswordMutation.mutate(
-      {
-        email,
-        newPassword: password,
-        confirmPassword,
-      },
+      { email, newPassword: password, confirmPassword },
       {
         onSuccess: (response) => {
-          toast.success(response.message || "Password reset successful!");
-
+          toast.success(response.message || "Password reset successfully! Please login.", { id: "reset-success" });
           sessionStorage.removeItem('resetPasswordEmail');
-          navigate({ to: ROUTES.AUTH.LOGIN });
-
+          setTimeout(() => {
+            navigate({ to: ROUTES.AUTH.LOGIN });
+          }, 2000);
         },
-        onError: (error: unknown) => {
-          const typedError = error as ResetPasswordError
-          const errorMessage = typedError.response?.data?.message || "Failed to reset password. Please try again.";
-          toast.error(errorMessage);
-          console.error("Reset password error:", error);
+        onError: () => {
+          // apiClient handles this
         },
       }
     );
@@ -89,7 +61,7 @@ const ResetPassword: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Redirecting...</p>
+          <p className="text-gray-600 animate-pulse">Redirecting...</p>
         </div>
       </div>
     );
@@ -97,135 +69,90 @@ const ResetPassword: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3">
-      <Toaster position="top-center" reverseOrder={false} />
-      <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
-
+      <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden min-h-[500px]">
         <div
-          className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
-          style={{ backgroundColor: Colors.darkGreen }}
+          className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none relative overflow-hidden"
+          style={{ backgroundColor: "#006039" }}
         >
-          <div>
-            <h2 className="text-3xl leading-snug mt-8 mb-2">
-              Reset Your
-              <br />
-              <span className="italic font-bold text-amber-300 font-serif">
-                Password
-              </span>
+          <div className="relative z-10">
+            <button 
+              onClick={() => navigate({ to: ROUTES.AUTH.LOGIN })}
+              className="flex items-center text-white/80 hover:text-white mb-8 transition-colors group"
+            >
+              <ArrowLeft size={18} className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
+              Abandon Reset
+            </button>
+            <h2 className="text-3xl leading-snug mb-2 font-light">
+              Secure Your<br />
+              <span className="italic font-bold text-amber-300 font-serif">New Password</span>
             </h2>
             <p className="text-sm leading-relaxed max-w-xs opacity-90">
-              Enter your new password below.
+              Create a strong, unique password to keep your photography journey safe.
             </p>
+          </div>
+          <div className="relative z-10 opacity-30">
+            <Lock size={120} strokeWidth={1} />
           </div>
         </div>
 
-        <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
-          <div className="flex items-center mb-4">
-            <img
-              src={photobookLogo}
-              alt="PhotoBook Logo"
-              style={{ width: 180, height: 120, marginRight: 20 }}
-            />
+        <div className="flex-1 bg-white p-6 sm:p-10 flex flex-col justify-center">
+          <div className="flex items-center mb-8">
+            <img src={photobookLogo} alt="Logo" className="h-12" />
           </div>
 
-          <div className="flex border-b mb-6 text-sm">
-            <div className="px-3 py-2 text-green-700 font-semibold border-b-2 border-green-700">
-              Reset Password
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                New Password
-              </label>
-              <div className="relative">
-                <div className={`w-full flex items-center border ${errors.password ? 'border-red-500' : 'border-gray-300 focus-within:border-green-500'} rounded-md bg-white transition`}>
-                  <div className="p-2 text-gray-400">
-                    <Lock size={16} />
-                  </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <div className="relative">
                   <input
-                    id="password"
-                    name="password"
                     type={passwordVisible ? "text" : "password"}
-                    required
                     value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setErrors(prev => ({ ...prev, password: undefined }));
-                    }}
-                    placeholder="Enter new password"
-                    className="w-full p-2 text-sm placeholder-gray-500 focus:outline-none bg-transparent"
-                    disabled={resetPasswordMutation.isPending}
-                  />
-                  <button
-                    type="button"
-                    className="p-2 text-gray-400 hover:text-gray-600"
-                    onClick={() => setPasswordVisible(!passwordVisible)}
-                  >
-                    {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.password}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm New Password
-              </label>
-              <div className="relative">
-                <div className={`w-full flex items-center border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300 focus-within:border-green-500'} rounded-md bg-white transition`}>
-                  <div className="p-2 text-gray-400">
-                    <Lock size={16} />
-                  </div>
-                  <input
-                    id="confirm-password"
-                    name="confirm-password"
-                    type={confirmPasswordVisible ? "text" : "password"}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      setErrors(prev => ({ ...prev, confirmPassword: undefined }));
-                    }}
-                    placeholder="Confirm new password"
-                    className="w-full p-2 text-sm placeholder-gray-500 focus:outline-none bg-transparent"
-                    disabled={resetPasswordMutation.isPending}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-green-600 focus:outline-none transition-colors pr-10"
+                    placeholder="Min 8 characters"
                   />
                   <button
                     type="button"
-                    className="p-2 text-gray-400 hover:text-gray-600"
-                    onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-
+                    {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{errors.confirmPassword}</p>
-                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <div className="relative">
+                  <input
+                    type={confirmPasswordVisible ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-green-600 focus:outline-none transition-colors pr-10"
+                    placeholder="Repeat password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {confirmPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={resetPasswordMutation.isPending || !password || !confirmPassword}
-              className="w-full bg-green-700 text-white py-2.5 rounded-lg font-semibold hover:bg-green-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed mt-6"
+              disabled={resetPasswordMutation.isPending}
+              className="w-full bg-green-700 text-white py-3.5 rounded-xl font-bold hover:bg-green-800 transition shadow-lg shadow-green-900/20 disabled:bg-gray-300 disabled:shadow-none"
             >
-              {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
+              {resetPasswordMutation.isPending ? "Updating Password..." : "Reset Password"}
             </button>
           </form>
-
-          <div className="text-center pt-4">
-            <button
-              onClick={() => navigate({ to: ROUTES.AUTH.LOGIN })}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150"
-            >
-              &larr; Back to Login
-            </button>
-          </div>
         </div>
       </div>
     </div>

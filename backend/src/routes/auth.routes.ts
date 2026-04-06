@@ -15,14 +15,9 @@ router.post(ROUTES.V1.AUTH.RESEND_OTP, AuthRateLimiter, authController.resendOtp
 
 router.post(ROUTES.V1.AUTH.LOGIN, authController.login);
 router.post(ROUTES.V1.AUTH.GOOGLE_LOGIN, authController.googleLogin);
-router.post(ROUTES.V1.AUTH.REFRESH, AuthRateLimiter, authController.refresh);
+router.post(ROUTES.V1.AUTH.REFRESH, authController.refresh);
 router.post(ROUTES.V1.AUTH.LOGOUT, verifyAccessToken, checkTokenBlacklist, authController.logout);
-router.post(
-  ROUTES.V1.AUTH.RESET_PASSWORD,
-  AuthRateLimiter,
-  verifyAccessToken,
-  authController.resetPassword,
-);
+router.post(ROUTES.V1.AUTH.RESET_PASSWORD, AuthRateLimiter, authController.resetPassword);
 router.post(ROUTES.V1.AUTH.FORGOT_PASSWORD, AuthRateLimiter, authController.forgetpassword);
 router.post(ROUTES.V1.AUTH.VERIFY_RESET_OTP, authController.verifyResetOtp);
 

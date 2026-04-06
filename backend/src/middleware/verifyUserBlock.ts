@@ -1,7 +1,7 @@
 import type { Response, NextFunction } from "express";
-import { User } from "../models/user.model";
 import { Messages } from "../constants/messages";
 import { HttpStatus } from "../constants/httpStatus";
+import redisClient from "../config/redis";
 
 import { AuthRequest } from "./authMiddleware";
 
@@ -20,18 +20,10 @@ export const verifyUserNotBlocked = async (
       return;
     }
 
-    const user = await User.findById(req.userId).select("isBlocked").lean();
+    // Use Redis cache instead of DB query — consistent with auth middleware
+    const isBlocked = await redisClient.get(`blocked:${req.userId}`);
 
-    if (!user) {
-      res.status(HttpStatus.NOT_FOUND).json({
-        success: false,
-        message: Messages.USER_NOTFOUND,
-        redirectTo: "/auth/login",
-      });
-      return;
-    }
-
-    if (user.isBlocked) {
+    if (isBlocked === "true") {
       res.clearCookie("accessToken", { secure: true, sameSite: "none" });
       res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
 

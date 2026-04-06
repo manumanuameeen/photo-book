@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Mail } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useForgetPassword } from "../../hooks/useAuth";
-import toast, { Toaster } from "react-hot-toast";
+import { toast } from "sonner";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 
 import { ROUTES } from '../../../../constants/routes';
@@ -57,7 +57,6 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3">
-      <Toaster position="top-center" reverseOrder={false} />
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
 
         <div

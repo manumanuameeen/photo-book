@@ -8,6 +8,8 @@ import { useEffect } from "react";
 import { useAuthStore } from "./modules/auth/store/useAuthStore";
 import { socketService } from "./modules/chat/services/socketService";
 import AIChatbot from "./components/common/AIChatbot";
+import { SmoothScroll } from "./components/common/SmoothScroll";
+import { ScrollProgressBar } from "./components/common/ScrollProgressBar";
 
 export default function App() {
   const { rehydrateUser, user } = useAuthStore();
@@ -67,10 +69,13 @@ export default function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
       <QueryClientProvider client={queryClient}>
-        <Toaster richColors position="top-center" />
-        <RouterProvider router={router} context={{ auth: useAuthStore.getState() }} />
-        {/* Shutter AI Chatbot - Global Component */}
-        <AIChatbot />
+        <ScrollProgressBar />
+        <SmoothScroll>
+          <Toaster richColors position="top-center" />
+          <RouterProvider router={router} context={{ auth: useAuthStore.getState() }} />
+          {/* Shutter AI Chatbot - Global Component */}
+          <AIChatbot />
+        </SmoothScroll>
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

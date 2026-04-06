@@ -8,7 +8,7 @@ import {
     MoreVertical
 } from 'lucide-react';
 import { adminReviewApi } from '../../../services/api/adminReviewApi';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const AdminReviewManagement: React.FC = () => {
     const [page, setPage] = useState(1);
@@ -35,7 +35,7 @@ const AdminReviewManagement: React.FC = () => {
             toast.success('Review deleted successfully');
         },
         onError: () => {
-            toast.error('Failed to delete review');
+            // apiClient handles this
         }
     });
 

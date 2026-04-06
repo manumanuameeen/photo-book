@@ -1,54 +1,40 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Mail } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import React, { useState, useEffect } from "react";
+import { Mail, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { useAuthStore } from "../../store/useAuthStore";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
-
 import { useNavigate } from '@tanstack/react-router'
 import { useVerifyOtp, useResendOtp } from "../../hooks/useAuth";
 import { ROUTES } from "../../../../constants/routes";
 
-interface VerifyOtpError {
-  response?: {
-    data?: {
-      message?: string
-    };
-  };
-  message?: string
-}
-
 const OTP_LENGTH = 6;
-const OTP_TIMER_DURATION = 10;
+const OTP_TIMER_DURATION = 30;
 
 const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
-  const { user, clearUser } = useAuthStore();
-
+  const { clearUser } = useAuthStore();
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
 
   const [isVerifying, setIsVerifying] = useState(false);
-
-  const email = user?.email || "";
-
   const [otp, setOtp] = useState<string[]>(new Array(OTP_LENGTH).fill(""));
   const [timer, setTimer] = useState<number>(OTP_TIMER_DURATION);
-  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  
+  // Use session storage as the source of truth for the pending email
+  const [email] = useState<string | null>(sessionStorage.getItem("pendingVerificationEmail"));
 
   const fullOtp = otp.join("");
   const fullOtpEntered = fullOtp.length === OTP_LENGTH;
 
   useEffect(() => {
-    if (isVerifying) return;
-
     if (!email) {
-      toast.error("No email found. Please sign up first.");
+      toast.error("No pending verification found. Please sign up again.", { id: "no-email" });
       const timeoutId = setTimeout(() => {
         navigate({ to: ROUTES.AUTH.SIGNUP });
-      }, 1500);
+      }, 2000);
       return () => clearTimeout(timeoutId);
     }
-  }, [email, navigate, isVerifying]);
+  }, [email, navigate]);
 
   useEffect(() => {
     if (timer <= 0) return;
@@ -60,12 +46,12 @@ const VerifyOtp: React.FC = () => {
     e.preventDefault();
 
     if (!fullOtpEntered) {
-      toast.error("Please enter a complete 6-digit OTP.");
+      toast.error("Please enter a complete 6-digit OTP.", { id: "otp-incomplete" });
       return;
     }
 
     if (!email) {
-      toast.error("Email is missing. Please sign up again.");
+      toast.error("Session expired. Please sign up again.", { id: "email-missing" });
       navigate({ to: ROUTES.AUTH.SIGNUP });
       return;
     }
@@ -76,53 +62,41 @@ const VerifyOtp: React.FC = () => {
       { email, otp: fullOtp },
       {
         onSuccess: () => {
-          toast.success("OTP verified successfully!");
+          toast.success("Account verified successfully! You can now login.", { id: "verify-success" });
           sessionStorage.removeItem("pendingVerificationEmail");
-          clearUser();
-          navigate({ to: ROUTES.AUTH.LOGIN })
+          clearUser(); // Ensure no partial state remains
+          setTimeout(() => {
+            navigate({ to: ROUTES.AUTH.LOGIN });
+          }, 1500);
         },
-        onError: (error: unknown) => {
+        onError: () => {
           setIsVerifying(false);
-          const typedError = error as VerifyOtpError;
-          const errorMessage = typedError.response?.data?.message || "OTP verification failed";
-          toast.error(errorMessage);
-          console.log("OTP verifaication error:", error);
+          // apiClient handles the error toast
         },
       }
     );
   };
 
   const handleResend = async () => {
-    if (timer > 0) return;
-
-    if (!email) {
-      toast.error("Email is missing. Please sign up again.");
-      navigate({ to:  ROUTES.AUTH.SIGNUP });
-      return;
-    }
+    if (timer > 0 || !email) return;
 
     resendOtpMutation.mutate(email, {
       onSuccess: (response) => {
-        toast.success(response.message || "OTP resent successfully!");
+        toast.success(response.message || "OTP resent successfully!", { id: "resend-success" });
         setOtp(new Array(OTP_LENGTH).fill(""));
         setTimer(OTP_TIMER_DURATION);
-        inputRefs.current[0]?.focus();
       },
-      onError: (error: unknown) => {
-        const typedError = error as VerifyOtpError;
-        const errorMessage =
-          typedError.response?.data?.message || "Failed to resend OTP";
-        toast.error(errorMessage);
+      onError: () => {
+        // apiClient handles the error toast
       },
     });
   };
-  const isLoading = verifyOtpMutation.isPending || resendOtpMutation.isPending;
 
-  if (!email && !isVerifying) {
+  if (!email) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Redirecting to signup...</p>
+          <p className="text-gray-600 animate-pulse">Redirecting to signup...</p>
         </div>
       </div>
     );
@@ -130,88 +104,94 @@ const VerifyOtp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-3">
-      <Toaster position="top-center" reverseOrder={false} />
-      <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
-
+      <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden min-h-[500px]">
         <div
-          className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none"
+          className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none relative overflow-hidden"
           style={{ backgroundColor: "#006039" }}
         >
-          <div>
-            <h2 className="text-3xl leading-snug mt-8 mb-2">
-              Verify Your
-              <br />
-              <span className="italic font-bold text-amber-300 font-serif">
-                Email OTP
-              </span>
+          <div className="relative z-10">
+            <button 
+              onClick={() => navigate({ to: ROUTES.AUTH.SIGNUP })}
+              className="flex items-center text-white/80 hover:text-white mb-8 transition-colors group"
+            >
+              <ArrowLeft size={18} className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
+              Back to Signup
+            </button>
+            <h2 className="text-3xl leading-snug mb-2 font-light">
+              Verify Your<br />
+              <span className="italic font-bold text-amber-300 font-serif">Email OTP</span>
             </h2>
             <p className="text-sm leading-relaxed max-w-xs opacity-90">
-              Enter the 6-digit OTP sent to your email to continue.
+              We've sent a secure code to your inbox. Enter it below to unlock your account.
             </p>
+          </div>
+          <div className="relative z-10 opacity-30">
+            <Mail size={120} strokeWidth={1} />
           </div>
         </div>
 
-        <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
-          <div className="flex items-center mb-4">
-            <img
-              src={photobookLogo}
-              alt="PhotoBook Logo"
-              style={{ width: 180, height: 120, marginRight: 20 }}
-            />
+        <div className="flex-1 bg-white p-6 sm:p-10 flex flex-col justify-center">
+          <div className="flex items-center mb-8">
+            <img src={photobookLogo} alt="Logo" className="h-12" />
           </div>
 
-          <div className="flex border-b mb-6 text-sm">
-            <div className="px-3 py-2 text-green-700 font-semibold border-b-2 border-green-700">
-              Verify OTP
-            </div>
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h3>
+            <p className="text-gray-500 text-sm">
+              We've sent a code to <span className="text-gray-900 font-medium">{email}</span>
+            </p>
           </div>
 
-          <p className="text-gray-600 mb-6 flex items-center">
-            <Mail size={18} className="mr-1" />
-            OTP sent to <span className="font-medium ml-1">{email}</span>
-          </p>
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Enter OTP
-              </label>
-              <input
-                type="text"
-                value={fullOtp}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, "").slice(0, OTP_LENGTH)
-                  setOtp(value.split(""))
-                }}
-                placeholder="Enter 6-digit OTP"
-                maxLength={OTP_LENGTH}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg text-center tracking-widest"
-                disabled={isLoading}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                autoComplete="off"
-              />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <div className="flex justify-between mb-4 gap-2">
+                {otp.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, "");
+                      const newOtp = [...otp];
+                      newOtp[idx] = val.slice(-1);
+                      setOtp(newOtp);
+                      if (val && idx < OTP_LENGTH - 1) {
+                        (e.target.nextElementSibling as HTMLInputElement)?.focus();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace" && !otp[idx] && idx > 0) {
+                        (e.currentTarget.previousElementSibling as HTMLInputElement)?.focus();
+                      }
+                    }}
+                    className="w-full h-12 text-center text-xl font-bold border-2 border-gray-200 rounded-lg focus:border-green-600 focus:outline-none transition-colors"
+                  />
+                ))}
+              </div>
             </div>
 
             <button
               type="submit"
-              disabled={isLoading || !fullOtpEntered}
-              className="w-full bg-green-700 text-white py-2.5 rounded-lg font-semibold hover:bg-green-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={isVerifying || verifyOtpMutation.isPending || !fullOtpEntered}
+              className="w-full bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 transition shadow-lg shadow-green-900/20 disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed"
             >
-              {verifyOtpMutation.isPending ? "Verifying..." : "Verify OTP"}
+              {isVerifying || verifyOtpMutation.isPending ? "Verifying..." : "Confirm Code"}
             </button>
           </form>
 
-          <div className="mt-4 text-center text-sm text-gray-600">
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm mb-2">Didn't receive the code?</p>
             {timer > 0 ? (
-              <p>
-                Resend OTP in <span className="font-semibold">{timer}s</span>
+              <p className="text-gray-400 text-xs">
+                You can resend in <span className="font-semibold text-gray-600">{timer}s</span>
               </p>
             ) : (
               <button
                 onClick={handleResend}
-                disabled={isLoading}
-                className="text-emerald-600 font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={resendOtpMutation.isPending}
+                className="text-green-700 font-semibold text-sm hover:underline hover:text-green-800 transition-colors"
               >
                 {resendOtpMutation.isPending ? "Sending..." : "Resend OTP"}
               </button>

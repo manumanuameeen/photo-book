@@ -1,13 +1,11 @@
-import React, { useState, memo } from "react";
+import React, { useState, memo, type ChangeEvent, type FormEvent, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import type { ChangeEvent, FormEvent } from "react";
 import { Eye, EyeOff, Mail, Lock, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
-import { getErrorMessage } from "../../../../utils/errorhandler";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { useLogin, useGoogleLogin } from "../../hooks/useAuth";
-import toast, { Toaster } from "react-hot-toast";
+import { toast } from "sonner";
 import { useAuthStore } from "../../store/useAuthStore";
 import { ROUTES } from "../../../../constants/routes";
 import { type IAuthResponse } from "../../types/auth.types";
@@ -137,7 +135,6 @@ interface FormPanelProps {
   googleLoading: boolean;
   navigate: ReturnType<typeof useNavigate>;
   handleGoogleSuccess: (credentialResponse: { credential?: string }) => void;
-
 }
 
 const FormPanel: React.FC<FormPanelProps> = ({
@@ -151,7 +148,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
   navigate,
   handleGoogleSuccess,
 }) => (
-  <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
+  <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none border-l border-gray-100">
     <div className="flex items-center mb-4">
       <img
         src={photobookLogo}
@@ -165,24 +162,23 @@ const FormPanel: React.FC<FormPanelProps> = ({
         Login
       </div>
       <div
-        className="px-3 py-2 text-gray-500 font-medium cursor-pointer"
+        className="px-3 py-2 text-gray-500 font-medium cursor-pointer hover:text-green-600 transition-colors"
         onClick={() => navigate({ to: ROUTES.AUTH.SIGNUP })}
       >
         Sign Up
       </div>
     </div>
 
-    <div className="mb-4 flex justify-center">
+    <div className="mb-6 flex justify-center">
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={() => {
-          console.log('Login Failed');
-          toast.error("Google Login Failed");
+          toast.error("Google Login Failed", { id: "google-failed" });
         }}
       />
     </div>
 
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <InputField
         Icon={Mail}
         placeholder="Email Address"
@@ -205,7 +201,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
         />
         <button
           type="button"
-          className="absolute right-3 top-3 text-gray-400 p-1"
+          className="absolute right-3 top-3 text-gray-400 p-1 hover:text-gray-600 transition-colors"
           onClick={() => setPasswordVisible(!passwordVisible)}
         >
           {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -217,7 +213,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
         whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={loading}
-        className="w-full bg-green-700 text-white font-semibold py-2.5 rounded-md shadow-md hover:bg-green-800 transition duration-200 mt-4 disabled:opacity-70 text-sm"
+        className="w-full bg-green-700 text-white font-semibold py-3 rounded-md shadow-md hover:bg-green-800 transition duration-200 mt-4 disabled:opacity-70 disabled:cursor-not-allowed text-sm"
       >
         {loading ? "Signing In..." : "Sign In"}
       </motion.button>
@@ -249,16 +245,16 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (search.message) {
       toast.error(search.message, { id: 'redirect-message' });
     }
   }, [search.message]);
 
-  React.useEffect(() => {
-    const { user } = useAuthStore.getState();
-    if (user) {
-      const redirectTo = user.role === "admin"
+  useEffect(() => {
+    const { isAuthenticated, role } = useAuthStore.getState();
+    if (isAuthenticated) {
+      const redirectTo = role === "admin"
         ? ROUTES.ADMIN.DASHBOARD
         : (search.redirect || ROUTES.USER.DASHBOARD);
       navigate({ to: redirectTo });
@@ -292,54 +288,52 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error("Please fill in all fields correctly.", { id: "login-validation" });
+      return;
+    }
 
     loginMutation.mutate(formData, {
       onSuccess: (response) => {
-        toast.success("Login successful! Welcome back.");
+        toast.success("Welcome back!", { id: "login-success" });
         const user = response.data.user
-        setUser(user);
+        setUser(user, response.data.accessToken, true);
 
         const redirectTo = user.role === "admin"
           ? ROUTES.ADMIN.DASHBOARD
           : (search.redirect || ROUTES.USER.DASHBOARD);
 
         navigate({ to: redirectTo });
-
         setFormData({ email: "", password: "" });
       },
-      onError: (error: unknown) => {
-        const msg = getErrorMessage(error);
-        toast.error(msg);
+      onError: () => {
+        // Redundant manual toast removed. apiClient interceptor handles this.
       },
     });
   };
 
   const handleGoogleSuccess = (credentialResponse: { credential?: string }) => {
-
     if (credentialResponse.credential) {
       googleLoginMutation.mutate(credentialResponse.credential, {
         onSuccess: (response: IAuthResponse) => {
-          toast.success("Google Login successful!");
+          toast.success("Google Login successful!", { id: "google-success" });
           const user = response.data.user;
-          setUser(user);
+          setUser(user, response.data.accessToken, true);
           const redirectTo = user.role === "admin"
             ? ROUTES.ADMIN.DASHBOARD
             : (search.redirect || ROUTES.USER.DASHBOARD);
 
           navigate({ to: redirectTo });
         },
-        onError: (error: unknown) => {
-          const msg = getErrorMessage(error);
-          toast.error(msg);
+        onError: () => {
+          // apiClient handles this
         }
       });
     }
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-3">
-      <Toaster position="top-center" reverseOrder={false} />
+    <div className="min-h-screen bg-white flex items-center justify-center p-3 font-sans">
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
         <GreenPanel />
         <FormPanel

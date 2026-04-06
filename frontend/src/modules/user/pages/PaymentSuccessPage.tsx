@@ -3,7 +3,7 @@ import { CheckCircle } from "lucide-react";
 import { ROUTES } from "../../../constants/routes";
 import { useEffect, useState } from "react";
 import { rentalApi } from "../../../services/api/rentalApi";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 export function PaymentSuccessPage() {
     const navigate = useNavigate();
@@ -23,12 +23,12 @@ export function PaymentSuccessPage() {
 
             try {
                 await rentalApi.payDeposit(orderId, sessionId);
-                toast.success('Payment confirmed! Your rental is now active.');
+                toast.success('Payment confirmed! Your rental is now active.', { id: "payment-success" });
                 setIsConfirming(false);
             } catch (error: unknown) {
                 console.error('Payment confirmation error:', error);
                 const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to confirm payment';
-                toast.error(errorMessage);
+                toast.error(errorMessage, { id: "payment-error" });
                 setIsConfirming(false);
             }
         };

@@ -165,7 +165,32 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
             let newActiveMessages = state.activeChatMessages;
             if (isChattingWithSender) {
-                if (!state.activeChatMessages.find(m => m._id === message._id)) {
+                // Avoid duplicates: check if message already exists by ID
+                const existingIndex = state.activeChatMessages.findIndex(m => m._id === message._id);
+                
+                if (existingIndex !== -1) {
+                    // Update existing message if needed (e.g., status or content updates)
+                    newActiveMessages = state.activeChatMessages.map(m => 
+                        m._id === message._id ? { ...m, ...message, status: 'sent' as const } : m
+                    );
+                } else if (isSender) {
+                    // If it's my message, check if a temporary version exists that hasn't been replaced
+                    const tempIndex = state.activeChatMessages.findIndex(m => 
+                        m._id.startsWith('temp_') && 
+                        m.content === message.content &&
+                        getIds(m.receiverId) === partnerId
+                    );
+
+                    if (tempIndex !== -1) {
+                        // Found a matching temp message, replace it!
+                        newActiveMessages = [...state.activeChatMessages];
+                        newActiveMessages[tempIndex] = { ...message, status: 'sent' as const };
+                    } else {
+                        // Message from another device or temp already gone/mismatched - add it
+                        newActiveMessages = [...state.activeChatMessages, message];
+                    }
+                } else {
+                    // Message from partner - append it
                     newActiveMessages = [...state.activeChatMessages, message];
                 }
             } else if (!isSender) {
@@ -406,7 +431,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     initSocket: () => {
         const { receiveMessage, setTyping, updateMessage } = get();
-        socketService.connect();
+        const { accessToken } = useAuthStore.getState();
+        
+        // Remove existing listeners if any
+        socketService.off("message_updated");
+        socketService.off("new_message");
+        socketService.off("message_read");
+        socketService.off("typing");
+        socketService.off("stop_typing");
+
+        socketService.connect(accessToken || undefined);
 
         socketService.on("message_updated", (data: unknown) => {
             const message = data as IMessage;

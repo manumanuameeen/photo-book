@@ -1,7 +1,7 @@
 import Jwt from "jsonwebtoken";
-import { PhotographerModel } from "../models/photographer.model";
 import { HttpStatus } from "../constants/httpStatus";
 import type { Request, Response, NextFunction } from "express";
+import redisClient from "../config/redis";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -36,19 +36,17 @@ export const verifyAccessToken = async (
 
     const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
 
-    if (decoded.role === "photographer") {
-      const photographer = await PhotographerModel.findOne({ userId: decoded.userId }).select(
-        "isBlock",
-      );
-      if (photographer?.isBlock) {
-        res.clearCookie("accessToken", { secure: true, sameSite: "none" });
-        res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
-        return res.status(HttpStatus.FORBIDDEN).json({
-          success: false,
-          message: "Your account has been suspended. Please contact support.",
-          code: "ACCOUNT_BLOCKED",
-        });
-      }
+    // Check block status from Redis cache (set when admin blocks/unblocks a user)
+    // Works for all roles uniformly — no per-request DB query needed
+    const isBlocked = await redisClient.get(`blocked:${decoded.userId}`);
+    if (isBlocked === "true") {
+      res.clearCookie("accessToken", { secure: true, sameSite: "none" });
+      res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
+      return res.status(HttpStatus.FORBIDDEN).json({
+        success: false,
+        message: "Your account has been suspended. Please contact support.",
+        code: "ACCOUNT_BLOCKED",
+      });
     }
 
     (req as AuthRequest).user = decoded;

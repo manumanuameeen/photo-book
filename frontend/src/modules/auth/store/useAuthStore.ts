@@ -1,13 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { IUser } from "../types/user.types";
-import { getErrorMessage } from "../../../utils/errorhandler";
 
 interface AuthState {
   user: Partial<IUser> | null;
   isAuthenticated: boolean;
+  isVerified: boolean;
   role: "user" | "admin" | "photographer" | null;
-  setUser: (user: IUser) => void;
+  accessToken: string | null;
+  setUser: (user: IUser, accessToken?: string, isVerified?: boolean) => void;
+  setVerified: (status: boolean) => void;
   clearUser: () => void;
   logout: () => Promise<void>;
   rehydrateUser: () => Promise<void>;
@@ -28,59 +30,69 @@ interface RefreshResponse {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
+      isVerified: false,
       role: null,
+      accessToken: null,
 
-      setUser: (user: IUser) => {
-        console.log("🔐 Setting user in store:", user);
+      setUser: (user: IUser, accessToken?: string, isVerified = true) => {
+        console.log("🔐 Setting user in store:", user, "Verified:", isVerified);
 
-        const cache: CacheData = {
-          user,
-          expires: Date.now() + 5 * 60 * 1000,
-        };
-        sessionStorage.setItem("auth-cache", JSON.stringify(cache));
+        if (isVerified) {
+          const cache: CacheData = {
+            user,
+            expires: Date.now() + 5 * 60 * 1000,
+          };
+          sessionStorage.setItem("auth-cache", JSON.stringify(cache));
+          if (accessToken) {
+            sessionStorage.setItem("access-token", accessToken);
+          }
+        }
 
         set({
           user,
-          isAuthenticated: true,
+          isAuthenticated: isVerified,
+          isVerified,
           role: user.role as "user" | "admin" | "photographer",
+          accessToken: accessToken || get().accessToken,
         });
+      },
+
+      setVerified: (status: boolean) => {
+        set((state) => ({
+          ...state,
+          isVerified: status,
+          isAuthenticated: status,
+        }));
       },
 
       clearUser: () => {
         console.log("🚪 Clearing user from store");
         sessionStorage.removeItem("auth-cache");
+        sessionStorage.removeItem("access-token");
         set({
           user: null,
           isAuthenticated: false,
+          isVerified: false,
           role: null,
+          accessToken: null,
         });
       },
 
       logout: async () => {
         try {
           console.log("🚪 Logout initiated");
-
-          const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/logout`, {
+          await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/logout`, {
             method: "POST",
             credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
           });
-
-          if (!res.ok) {
-            console.warn("⚠️ Logout API failed, but clearing local state anyway");
-          }
-
           console.log("✅ Logout successful");
         } catch (error: unknown) {
-          console.error("❌ Logout error:", getErrorMessage(error));
+          console.error("❌ Logout error:", error);
         } finally {
-          sessionStorage.removeItem("auth-cache");
-          set({ user: null, isAuthenticated: false, role: null });
+          get().clearUser();
         }
       },
 
@@ -88,6 +100,7 @@ export const useAuthStore = create<AuthState>()(
         console.log("🔄 Rehydrating user...");
 
         const cached = sessionStorage.getItem("auth-cache");
+        const cachedToken = sessionStorage.getItem("access-token");
         if (cached) {
           try {
             const { user, expires }: CacheData = JSON.parse(cached);
@@ -96,60 +109,37 @@ export const useAuthStore = create<AuthState>()(
               set({
                 user,
                 isAuthenticated: true,
+                isVerified: true,
                 role: user.role as "user" | "admin" | "photographer",
+                accessToken: cachedToken,
               });
               return;
             }
-            console.log("⚠️ Cache expired");
-          } catch (err: unknown) {
-            console.error("❌ Failed to parse cache:", getErrorMessage(err));
+          } catch {
             sessionStorage.removeItem("auth-cache");
+            sessionStorage.removeItem("access-token");
           }
         }
 
         try {
-          console.log("🔄 Attempting token refresh for rehydration...");
-
-          const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/refresh-token`, {
+          const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/refresh`, {
             method: "POST",
             credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
           });
 
-          console.log("📡 Rehydration refresh status:", res.status);
-
           if (!res.ok) {
-            console.log("❌ Refresh failed during rehydration");
-            set({ user: null, isAuthenticated: false, role: null });
+            get().clearUser();
             return;
           }
 
-          const data = (await res.json()) as RefreshResponse;
-
+          const data = (await res.json()) as RefreshResponse & { data?: { accessToken?: string } };
           if (data.success && data.data?.user) {
-            console.log("✅ Rehydration successful");
-
-            const cache: CacheData = {
-              user: data.data.user,
-              expires: Date.now() + 5 * 60 * 1000,
-            };
-            sessionStorage.setItem("auth-cache", JSON.stringify(cache));
-
-            set({
-              user: data.data.user,
-              isAuthenticated: true,
-              role: data.data.user.role as "user" | "admin" | "photographer",
-            });
+            get().setUser(data.data.user, data.data.accessToken, true);
           } else {
-            console.log("❌ Invalid response structure");
-            set({ user: null, isAuthenticated: false, role: null });
+            get().clearUser();
           }
-        } catch (err: unknown) {
-          console.error("❌ Failed to rehydrate user:", getErrorMessage(err));
-          sessionStorage.removeItem("auth-cache");
-          set({ user: null, isAuthenticated: false, role: null });
+        } catch {
+          get().clearUser();
         }
       },
     }),
@@ -158,7 +148,9 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        isVerified: state.isVerified,
         role: state.role,
+        accessToken: state.accessToken,
       }),
     }
   )

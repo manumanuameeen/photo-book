@@ -177,6 +177,7 @@ export class MessageService implements IMessageService {
       const { SocketService } = await import("./socket.service");
       const receiverId = this._getUserId(message.receiverId);
       SocketService.getInstance().emitToUser(receiverId, "message_updated", message);
+      SocketService.getInstance().emitToUser(senderId, "message_updated", message);
     } catch (error: unknown) {
       console.error("Socket emit failed", error);
     }
@@ -230,6 +231,7 @@ export class MessageService implements IMessageService {
       ]);
       const { SocketService } = await import("./socket.service");
       SocketService.getInstance().emitToUser(receiverId, "new_message", populatedMessage);
+      SocketService.getInstance().emitToUser(senderId, "new_message", populatedMessage);
       return populatedMessage;
     } catch (error: unknown) {
       console.error("Socket emit failed", error);

@@ -4,6 +4,7 @@ import { UserResponseDto, UserProfileResponseDto, AuthResponseDto } from "../dto
 export class UserMapper {
   static toUserResponse(user: IUser): UserResponseDto {
     const dto = new UserResponseDto();
+    dto._id = user.id || user._id;
     dto.id = user.id;
     dto.name = user.name;
     dto.email = user.email;
@@ -40,6 +41,7 @@ export class UserMapper {
 
   static toAuthResponse(user: IUser): AuthResponseDto["user"] {
     return {
+      _id: user.id || user._id, // Support both formats for frontend compatibility
       id: user.id,
       name: user.name,
       email: user.email,

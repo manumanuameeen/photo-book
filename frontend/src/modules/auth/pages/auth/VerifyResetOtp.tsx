@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Mail } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import { Lock, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { useNavigate } from '@tanstack/react-router';
 import { useVerifyResetOtp, useForgetPassword } from "../../hooks/useAuth";
@@ -9,50 +9,25 @@ import { ROUTES } from "../../../../constants/routes";
 const OTP_LENGTH = 6;
 const OTP_TIMER_DURATION = 30;
 
-interface ResetOtpError {
-  response?: {
-    data?: {
-      message?: string
-    };
-  };
-
-}
-
-interface ResendOtpError {
-  response?: {
-    data: {
-      message?: string
-    };
-  };
-}
-
 const VerifyResetOtp: React.FC = () => {
   const navigate = useNavigate();
   const verifyResetOtpMutation = useVerifyResetOtp();
   const resendOtpMutation = useForgetPassword();
 
   const [isVerifying, setIsVerifying] = useState(false);
-
-  const getEmail = (): string => {
-    const sessionEmail = sessionStorage.getItem('resetPasswordEmail');
-    if (sessionEmail) return sessionEmail;
-    return "";
-  };
-
-  const email = getEmail();
   const [otp, setOtp] = useState<string>("");
   const [timer, setTimer] = useState<number>(OTP_TIMER_DURATION);
+  
+  const email = sessionStorage.getItem('resetPasswordEmail') || "";
 
   const fullOtpEntered = otp.length === OTP_LENGTH;
 
   useEffect(() => {
-    if (isVerifying) return;
-
-    if (!email) {
-      toast.error("No email found. Please start the password reset process.");
+    if (!email && !isVerifying) {
+      toast.error("No active reset session found.", { id: "no-reset-session" });
       const timeoutId = setTimeout(() => {
-        navigate({ to: ROUTES.AUTH.RESET_PASSWORD });
-      }, 1500);
+        navigate({ to: ROUTES.AUTH.FORGOT_PASSWORD });
+      }, 2000);
       return () => clearTimeout(timeoutId);
     }
   }, [email, navigate, isVerifying]);
@@ -67,13 +42,7 @@ const VerifyResetOtp: React.FC = () => {
     e.preventDefault();
 
     if (!fullOtpEntered) {
-      toast.error("Please enter a complete 6-digit OTP.");
-      return;
-    }
-
-    if (!email) {
-      toast.error("Email is missing. Please start over.");
-      navigate({ to: ROUTES.AUTH.RESET_PASSWORD });
+      toast.error("Please enter the complete 6-digit code.", { id: "otp-incomplete" });
       return;
     }
 
@@ -83,55 +52,40 @@ const VerifyResetOtp: React.FC = () => {
       { email, otp },
       {
         onSuccess: (response) => {
-          toast.success(response.message || "OTP verified! Set your new password.");
-
+          toast.success(response.message || "Code verified! Now set your new password.", { id: "verify-success" });
           navigate({ to: ROUTES.AUTH.RESET_PASSWORD });
         },
-        onError: (error: unknown) => {
-          console.log("Reset OTP error")
-          const typedError = error as ResetOtpError
-          const errorMessage = typedError.response?.data?.message || "Reset Otp failed"
+        onError: () => {
           setIsVerifying(false);
-          toast.error(errorMessage);
-          console.error("OTP verification error:", error);
+          // apiClient handles the error toast
         },
       }
     );
   };
 
   const handleResend = async () => {
-    if (timer > 0) return;
-
-    if (!email) {
-      toast.error("Email is missing. Please start over.");
-      navigate({ to: ROUTES.AUTH.RESET_PASSWORD });
-      return;
-    }
+    if (timer > 0 || !email) return;
 
     resendOtpMutation.mutate(
       { email },
       {
         onSuccess: (response) => {
-          toast.success(response.message || "OTP resent successfully!");
+          toast.success(response.message || "New code sent to your email.", { id: "resend-success" });
           setOtp("");
           setTimer(OTP_TIMER_DURATION);
         },
-        onError: (error: unknown) => {
-          const typedError = error as ResendOtpError
-          const errorMessage = typedError.response?.data?.message || "Failed to resend OTP";
-          toast.error(errorMessage);
+        onError: () => {
+          // apiClient handles this
         },
       }
     );
   };
 
-  const isLoading = verifyResetOtpMutation.isPending || resendOtpMutation.isPending;
-
   if (!email && !isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Redirecting...</p>
+          <p className="text-gray-600 animate-pulse">Redirecting to forgot password...</p>
         </div>
       </div>
     );
@@ -145,42 +99,48 @@ const VerifyResetOtp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-3">
-      <Toaster position="top-center" reverseOrder={false} />
-      <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
-
-        <div className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none" style={{ backgroundColor: "#006039" }}>
-          <div>
-            <h2 className="text-3xl leading-snug mt-8 mb-2">
-              Verify Your
-              <br />
+      <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden min-h-[500px]">
+        <div 
+          className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none relative overflow-hidden" 
+          style={{ backgroundColor: "#006039" }}
+        >
+          <div className="relative z-10">
+            <button 
+              onClick={() => navigate({ to: ROUTES.AUTH.FORGOT_PASSWORD })}
+              className="flex items-center text-white/80 hover:text-white mb-8 transition-colors group"
+            >
+              <ArrowLeft size={18} className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
+              Change Email
+            </button>
+            <h2 className="text-3xl leading-snug mb-2 font-light">
+              Verify Your<br />
               <span className="italic font-bold text-amber-300 font-serif">Reset Code</span>
             </h2>
             <p className="text-sm leading-relaxed max-w-xs opacity-90">
-              Enter the 6-digit code sent to your email.
+              Enter the security code we sent to your email to verify your identity.
             </p>
+          </div>
+          <div className="relative z-10 opacity-30">
+            <Lock size={120} strokeWidth={1} />
           </div>
         </div>
 
-        <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
-          <div className="flex items-center mb-4">
-            <img src={photobookLogo} alt="PhotoBook Logo" style={{ width: 180, height: 120, marginRight: 20 }} />
+        <div className="flex-1 bg-white p-6 sm:p-10 flex flex-col justify-center">
+          <div className="flex items-center mb-8">
+            <img src={photobookLogo} alt="PhotoBook Logo" className="h-12" />
           </div>
 
-          <div className="flex border-b mb-6 text-sm">
-            <div className="px-3 py-2 text-green-700 font-semibold border-b-2 border-green-700">
-              Verify Code
-            </div>
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h3>
+            <p className="text-gray-500 text-sm">
+              We've sent a code to <span className="text-gray-900 font-medium">{email}</span>
+            </p>
           </div>
 
-          <p className="text-gray-600 mb-6 flex items-center">
-            <Mail size={18} className="mr-1" />
-            Code sent to <span className="font-medium ml-1">{email}</span>
-          </p>
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Enter Reset Code
+                Verification Code
               </label>
               <input
                 type="text"
@@ -189,48 +149,39 @@ const VerifyResetOtp: React.FC = () => {
                   const value = e.target.value.replace(/[^0-9]/g, "").slice(0, OTP_LENGTH);
                   setOtp(value);
                 }}
-                placeholder="Enter 6-digit code"
+                placeholder="6-digit code"
                 maxLength={OTP_LENGTH}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg text-center tracking-widest"
-                disabled={isLoading}
+                className="w-full h-14 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:outline-none text-2xl text-center tracking-[0.5em] font-mono transition-colors"
+                disabled={isVerifying || verifyResetOtpMutation.isPending}
                 inputMode="numeric"
-                pattern="[0-9]*"
                 autoComplete="off"
               />
             </div>
 
             <button
               type="submit"
-              disabled={isLoading || !fullOtpEntered}
-              className="w-full bg-green-700 text-white py-2.5 rounded-lg font-semibold hover:bg-green-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={isVerifying || verifyResetOtpMutation.isPending || !fullOtpEntered}
+              className="w-full bg-green-700 text-white py-3.5 rounded-xl font-semibold hover:bg-green-800 transition shadow-lg shadow-green-900/20 disabled:bg-gray-300 disabled:shadow-none"
             >
-              {verifyResetOtpMutation.isPending ? "Verifying..." : "Verify Code"}
+              {isVerifying || verifyResetOtpMutation.isPending ? "Verifying..." : "Verify Identity"}
             </button>
           </form>
 
-          <div className="mt-4 text-center text-sm text-gray-600">
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm mb-2">Code still didn't arrive?</p>
             {timer > 0 ? (
-              <p>
-                Resend code in <span className="font-semibold">{formatTime(timer)}</span>
+              <p className="text-gray-400 text-xs">
+                Resend available in <span className="font-semibold text-gray-600">{formatTime(timer)}</span>
               </p>
             ) : (
               <button
                 onClick={handleResend}
-                disabled={isLoading}
-                className="text-emerald-600 font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={resendOtpMutation.isPending}
+                className="text-green-700 font-semibold text-sm hover:underline hover:text-green-800 transition-colors"
               >
-                {resendOtpMutation.isPending ? "Sending..." : "Resend Code"}
+                {resendOtpMutation.isPending ? "Sending code..." : "Resend Security Code"}
               </button>
             )}
-          </div>
-
-          <div className="text-center pt-4">
-            <button
-              onClick={() => navigate({ to: ROUTES.AUTH.FORGOT_PASSWORD })}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition duration-150"
-            >
-              &larr; Back
-            </button>
           </div>
         </div>
       </div>

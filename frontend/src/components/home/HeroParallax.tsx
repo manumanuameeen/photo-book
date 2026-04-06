@@ -1,15 +1,104 @@
-import { useRef, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
+import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion';
 import { MagneticButton } from '../common/MagneticButton';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from '../../constants/routes';
 
 export const HeroParallax = () => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const { scrollY } = useScroll();
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    
+    // Hold preloaded image objects in memory to prevent DOM thrashing
+    const imagesRef = useRef<HTMLImageElement[]>([]);
+    const [imagesLoaded, setImagesLoaded] = useState(false);
 
-    // Gentle parallax effect for the beautiful background image
-    const y = useTransform(scrollY, [0, 1000], [0, 300]);
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start start", "end end"]
+    });
+
+    // Apply spring physics to smoothen the scroll scrubbing natively
+    const smoothProgress = useSpring(scrollYProgress, {
+        stiffness: 80,
+        damping: 25,
+        restDelta: 0.001
+    });
+
+    // Map the smoothed progress to our 180 frames (0-indexed array)
+    const frameIndex = useTransform(smoothProgress, [0, 1], [0, 179]);
+
+    const renderFrame = (index: number) => {
+        if (!canvasRef.current || !imagesRef.current[index]) return;
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+            const img = imagesRef.current[index];
+            const canvas = canvasRef.current;
+            
+            // Clear previous painted frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Mimic object-cover for canvas
+            const canvasRatio = canvas.width / canvas.height;
+            const imgRatio = img.width / img.height;
+            let drawWidth = canvas.width;
+            let drawHeight = canvas.height;
+            let offsetX = 0;
+            let offsetY = 0;
+
+            if (canvasRatio > imgRatio) {
+                drawHeight = canvas.width / imgRatio;
+                offsetY = (canvas.height - drawHeight) / 2;
+            } else {
+                drawWidth = canvas.height * imgRatio;
+                offsetX = (canvas.width - drawWidth) / 2;
+            }
+
+            // Apply cinematic brightness filter directly via canvas
+            ctx.filter = 'brightness(85%) contrast(105%)';
+            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        }
+    };
+
+    // Preload all 107 frames into memory as image objects
+    useEffect(() => {
+        const loadImages = async () => {
+            const loadedImages: HTMLImageElement[] = [];
+            for (let i = 1; i <= 180; i++) {
+                const img = new Image();
+                img.src = `/images/homepage/ezgif-frame-${String(i).padStart(3, '0')}.jpg`;
+                loadedImages.push(img);
+            }
+            imagesRef.current = loadedImages;
+            
+            // Render first frame immediately once it loads to prevent blank screen
+            loadedImages[0].onload = () => {
+                setImagesLoaded(true);
+            };
+        };
+        loadImages();
+    }, []);
+
+    // Canvas Resize Observer
+    useEffect(() => {
+        const handleResize = () => {
+            if (canvasRef.current && imagesLoaded) {
+                canvasRef.current.width = window.innerWidth;
+                canvasRef.current.height = window.innerHeight;
+                renderFrame(Math.max(0, Math.min(179, Math.floor(frameIndex.get()))));
+            }
+        };
+        handleResize(); // Initial setup
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [imagesLoaded]);
+
+    // Imperatively paint to Canvas to bypass React entirely for 60-120fps video playback
+    useMotionValueEvent(frameIndex, "change", (latest) => {
+        if (imagesLoaded) {
+            const index = Math.max(0, Math.min(179, Math.floor(latest)));
+            requestAnimationFrame(() => renderFrame(index));
+        }
+    });
 
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
@@ -21,114 +110,94 @@ export const HeroParallax = () => {
         });
     };
 
+    // Text Phase Opacities (Using smoothProgress instead of scrollYProgress to perfectly sync with images)
+    const opacity1 = useTransform(smoothProgress, [0, 0.15, 0.25], [1, 1, 0]);
+    const y1 = useTransform(smoothProgress, [0, 0.15, 0.25], [0, 0, -50]);
+
+    const opacity2 = useTransform(smoothProgress, [0.2, 0.3, 0.45, 0.55], [0, 1, 1, 0]);
+    const y2 = useTransform(smoothProgress, [0.2, 0.3, 0.45, 0.55], [50, 0, 0, -50]);
+
+    const opacity3 = useTransform(smoothProgress, [0.5, 0.6, 0.75, 0.85], [0, 1, 1, 0]);
+    const y3 = useTransform(smoothProgress, [0.5, 0.6, 0.75, 0.85], [50, 0, 0, -50]);
+
+    const opacity4 = useTransform(smoothProgress, [0.8, 0.9, 1], [0, 1, 1]);
+    const y4 = useTransform(smoothProgress, [0.8, 0.9, 1], [50, 0, 0]);
+
     return (
-        <div ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-green-950 pt-20 pb-12">
-
-            {/* Parallax Background Landscape */}
-            <motion.div
-                className="absolute inset-[-20%] bg-cover bg-center"
-                style={{
-                    backgroundImage: "url('/images/premium_landscape.png')",
-                    y: y
-                }}
-            />
-
-            {/* Rich Gradient Overlays for Brand matching and text readability */}
-            <div className="absolute inset-0 bg-green-950/50 mix-blend-multiply"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-950/60 to-green-950"></div>
-
-            {/* Main Content Area */}
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center justify-center text-center mt-6">
-
-                {/* floating badge */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-semibold tracking-wide uppercase mb-8 shadow-lg"
-                >
-                    <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
-                    Premium Photography Platform
-                </motion.div>
-
-                {/* Hero Headline */}
-                <motion.h1
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="text-5xl sm:text-6xl md:text-8xl font-black text-white mb-6 tracking-tight leading-[1.1] drop-shadow-xl"
-                >
-                    Capture <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500">Perfect</span> <br className="hidden md:block" /> Moments
-                </motion.h1>
-
-                {/* Hero Subtitle */}
-                <motion.p
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="text-lg md:text-xl text-gray-200 mb-12 max-w-2xl font-light drop-shadow-md"
-                >
-                    Connect with acclaimed professional photographers for weddings, events, and special occasions. Experience luxury service and stunning results.
-                </motion.p>
-
-                {/* Premium Glassmorphism Single Search Bar */}
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                    className="w-full max-w-3xl bg-white/10 backdrop-blur-xl p-3 rounded-full shadow-2xl border border-white/20 flex items-center pr-3"
-                >
-                    <div className="flex-1 px-6 py-2 flex items-center gap-4">
-                        <i className="fas fa-search text-gray-300 text-xl"></i>
-                        <input
-                            type="text"
-                            placeholder="Try 'Wedding Photographer in New York'..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="w-full bg-transparent border-none text-white text-lg focus:ring-0 outline-none p-0 placeholder-gray-400 font-medium"
-                        />
-                    </div>
-
-                    {/* Submit Button */}
-                    <MagneticButton
-                        onClick={handleSearch}
-                        className="px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-green-950 font-bold rounded-full transition-all duration-300 shadow-lg hover:shadow-yellow-500/25 flex items-center shrink-0"
-                    >
-                        <span className="flex items-center text-lg tracking-wide">
-                            Search
-                        </span>
-                    </MagneticButton>
-                </motion.div>
-
-                {/* Trust Indicators */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 1 }}
-                    className="mt-14 flex flex-wrap justify-center items-center gap-6 md:gap-10 text-sm md:text-base text-gray-300 bg-black/20 backdrop-blur-sm px-8 py-3 rounded-full border border-white/10"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="flex -space-x-3">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" className="w-10 h-10 rounded-full border-2 border-green-900 object-cover" alt="User" />
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" className="w-10 h-10 rounded-full border-2 border-green-900 object-cover" alt="User" />
-                            <img src="https://randomuser.me/api/portraits/women/68.jpg" className="w-10 h-10 rounded-full border-2 border-green-900 object-cover" alt="User" />
+        <div ref={containerRef} className="relative h-[400vh] bg-[#020202]">
+            <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+                
+                {/* Hardware Accelerated Canvas Sequence Background */}
+                <div className="absolute inset-0 w-full h-full bg-[#020202]">
+                    <canvas 
+                        ref={canvasRef}
+                        className="absolute inset-0 w-full h-full"
+                        style={{ display: imagesLoaded ? 'block' : 'none' }}
+                    />
+                    {!imagesLoaded && (
+                        <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
+                            <span className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin"></span>
+                            <span className="text-white/50 text-xs font-mono uppercase tracking-[0.2em]">INITIALIZING ASSETS</span>
                         </div>
-                        <span className="font-medium text-white shadow-sm">+20K Happy Clients</span>
-                    </div>
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/30 hidden sm:block"></div>
-                    <div className="flex items-center gap-2">
-                        <div className="flex text-yellow-500">
-                            <i className="fas fa-star"></i>
-                            <i className="fas fa-star"></i>
-                            <i className="fas fa-star"></i>
-                            <i className="fas fa-star"></i>
-                            <i className="fas fa-star"></i>
-                        </div>
-                        <span className="font-medium text-white shadow-sm">4.9/5 Average Rating</span>
-                    </div>
-                </motion.div>
+                    )}
+                    {/* Gradient Overlays for "Antigravity" integration */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#020202]/20 via-transparent to-[#020202] pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
+                </div>
 
+                {/* Content Layers */}
+                <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-4 sm:px-8">
+                    
+                    {/* Phase 1: Intro (Top Left / Center Left) */}
+                    <motion.div style={{ opacity: opacity1, y: y1 }} className="absolute top-[25%] md:top-[30%] left-6 md:left-12 flex flex-col items-start text-left w-full sm:w-[600px]">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase mb-6 shadow-2xl">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                            How It Works
+                        </div>
+                        <h1 className="text-5xl sm:text-6xl md:text-7xl font-light text-white mb-6 tracking-tight leading-[1.1]">
+                            THE <span className="font-bold">PLATFORM</span>
+                        </h1>
+                        <p className="text-base md:text-lg text-white max-w-md font-light tracking-wide bg-black/30 p-2 rounded-lg">
+                            We are an intelligent visual ecosystem designed to bridge the gap between creative talent and industry-standard equipment.
+                        </p>
+                    </motion.div>
+
+                    {/* Phase 2: Talents (Top Right) */}
+                    <motion.div style={{ opacity: opacity2, y: y2, pointerEvents: 'none' }} className="absolute top-[20%] right-6 md:right-12 flex flex-col items-end text-right w-full sm:w-[500px]">
+                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-2 bg-black/30 px-2 py-1 rounded">// FEATURE NO. 1 //</p>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight drop-shadow-xl">
+                            Photographer <br />
+                            <span className="font-bold italic text-white/90">Listings</span>
+                        </h2>
+                        <p className="mt-4 text-sm md:text-base text-gray-100 font-light max-w-sm drop-shadow-md bg-black/40 p-3 rounded-xl border border-white/10">
+                            Our primary module is a dedicated marketplace to discover and book vetted photographers. Browse their dynamic portfolios, read reviews, and hire the perfect visionary for your exact event.
+                        </p>
+                    </motion.div>
+
+                    {/* Phase 3: Gear (Bottom Left) */}
+                    <motion.div style={{ opacity: opacity3, y: y3, pointerEvents: 'none' }} className="absolute bottom-[20%] left-6 md:left-12 flex flex-col items-start text-left w-full sm:w-[500px]">
+                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-2 bg-black/30 px-2 py-1 rounded">// FEATURE NO. 2 //</p>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight drop-shadow-xl">
+                            Equipment <br />
+                            <span className="font-bold italic text-white/90">Marketplace</span>
+                        </h2>
+                        <p className="mt-4 text-sm md:text-base text-gray-100 font-light max-w-sm drop-shadow-md bg-black/40 p-3 rounded-xl border border-white/10">
+                            The secondary module acts as a peer-to-peer rental vault. Users can list their own expensive cameras and drones, or rent industry-standard gear from others without the massive upfront investment.
+                        </p>
+                    </motion.div>
+
+                    {/* Phase 4: Action (Bottom Center) */}
+                    <motion.div style={{ opacity: opacity4, y: y4 }} className="absolute bottom-[10%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-full sm:w-[600px] text-center px-4">
+                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-4 bg-black/30 px-4 py-1.5 rounded-full">// THE EXPERIENCE //</p>
+                        <h2 className="text-3xl md:text-5xl font-light text-white mb-6 drop-shadow-xl leading-tight">
+                            Built For <span className="font-bold italic text-gray-200">Creators</span>
+                        </h2>
+                        <p className="text-base md:text-lg text-gray-100 font-light drop-shadow-md bg-black/40 p-4 rounded-xl border border-white/10">
+                            Whether you need to hire a professional to capture your special moments, or you're a creator looking to rent top-tier lenses for a weekend shoot, everything is seamlessly managed right here.
+                        </p>
+                    </motion.div>
+
+                </div>
             </div>
         </div>
     );

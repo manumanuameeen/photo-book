@@ -190,7 +190,7 @@ const ChatWindow: React.FC = () => {
 
     useEffect(() => {
         if (selectedUser && activeChatMessages.length > 0) {
-            const unreadMessages = activeChatMessages.filter(m => !m.isRead && getUserId(m.senderId) !== currentUserId);
+            const unreadMessages = activeChatMessages.filter(m => !m.isRead && !m._id.startsWith('temp_') && getUserId(m.senderId) !== currentUserId);
             if (unreadMessages.length > 0) {
                 // Mark unread messages as read on the server and clear unread count locally
                 Promise.all(unreadMessages.map(msg => ChatApi.markAsRead(msg._id).catch(err => { console.error("Failed to mark read", err); })))

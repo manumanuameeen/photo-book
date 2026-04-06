@@ -21,8 +21,6 @@ import type { IWalletService } from "../../../interfaces/services/IWalletService
 import { Messages } from "../../../constants/messages";
 import { AuthMapper } from "../../../mappers/auth.mapper";
 import bcrypt from "bcrypt";
-import { tokenBlacklistService } from "../../token/tokenBlacklist.service";
-import jwt from "jsonwebtoken";
 import logger from "../../../config/logger";
 import { OAuth2Client } from "google-auth-library";
 import { ENV } from "../../../constants/env";
@@ -49,21 +47,38 @@ export class AuthService implements IAuthService {
     const existingUser = await this._userRepo.findByEmail(data.email);
     if (existingUser) throw new Error(Messages.USER_EXISTS);
 
+    // Prevent duplicate signup spam — reject if OTP is already pending
+    const pendingSignup = await redisClient.get(`otp:${data.email}`);
+    if (pendingSignup) {
+      throw new AppError(
+        "Signup already in progress. Check your email or wait for the OTP to expire.",
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
     const otp = this._otpService.generateOtp();
-    console.log("signup OTP:", otp);
     const expiry = this._otpService.getOtpExpire();
 
     const userData = AuthMapper.toUserFromSignup(data);
 
-    await redisClient.setEx(
-      `otp:${data.email}`,
-      Number.parseInt(process.env.OTP_EXPIRY_SECONDS || "120", 10),
-      JSON.stringify({ ...userData, otp, expiry }),
-    );
+    // Hash password before storing in Redis to avoid plaintext exposure
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const safeUserData = { ...userData, password: hashedPassword };
 
-    await this._emailService.sendOtp(data.email, otp, data.name);
+    try {
+      await redisClient.setEx(
+        `otp:${data.email}`,
+        Number.parseInt(process.env.OTP_EXPIRY_SECONDS || "120", 10),
+        JSON.stringify({ ...safeUserData, otp, expiry }),
+      );
 
-    return { message: Messages.OTP_SENT };
+      await this._emailService.sendOtp(data.email, otp, data.name);
+      return { message: Messages.OTP_SENT };
+    } catch (error) {
+      // Clean up Redis if email send fails
+      await redisClient.del(`otp:${data.email}`);
+      throw error;
+    }
   }
 
   async verifyOtp(data: VerifyOtpDtoType) {
@@ -75,12 +90,13 @@ export class AuthService implements IAuthService {
     const isValid = this._otpService.isOtpValidate(payload.otp, data.otp, payload.expiry);
     if (!isValid) throw new Error(Messages.INVALID_OTP);
 
+    // Password is already hashed from signup — model pre-save hook auto-detects bcrypt hashes
     const user = await this._userRepo.create(payload);
 
     try {
       await this._walletService.ensureWalletExists(String(user._id), user.role);
     } catch (error) {
-      console.error("Failed to create wallet for user:", user._id, error);
+      logger.error("Failed to create wallet for user:", { userId: user._id, error });
     }
 
     await redisClient.del(`otp:${data.email}`);
@@ -124,39 +140,37 @@ export class AuthService implements IAuthService {
   async refresh(refreshToken: string) {
     const userId = await redisClient.get(`rt:${refreshToken}`);
     if (!userId) {
-      console.error(`[AuthService] Refresh token not found in Redis: rt:${refreshToken}`);
       throw new AppError(Messages.INVALID_REFRESH_TOKEN, HttpStatus.UNAUTHORIZED);
     }
 
     const user = await this._userRepo.findById(userId);
     if (!user) {
-      console.error(`[AuthService] User not found for ID: ${userId}`);
+      await redisClient.del(`rt:${refreshToken}`);
       throw new AppError(Messages.USER_NOTFOUND, HttpStatus.NOT_FOUND);
     }
 
     if (user.isBlocked) {
+      await redisClient.del(`rt:${refreshToken}`);
       throw new AppError(Messages.USER_BLOCKED, HttpStatus.FORBIDDEN);
     }
 
-    // Optional: Rotate refresh token by deleting the old one
-    await redisClient.del(`rt:${refreshToken}`);
+    // Graceful rotation: keep old token valid for 30 seconds
+    // This prevents race conditions with multiple tabs or network retries
+    const GRACE_PERIOD_SECONDS = 30;
+    await redisClient.expire(`rt:${refreshToken}`, GRACE_PERIOD_SECONDS);
+
     return this._issueTokens(user);
   }
 
   async logout(refreshToken: string) {
     try {
-      const decoded = jwt.decode(refreshToken) as { exp?: number } | null;
-      const expiresIn = decoded?.exp
-        ? decoded.exp - Math.floor(Date.now() / 1000)
-        : 7 * 24 * 60 * 60;
-
-      if (expiresIn > 0) {
-        await tokenBlacklistService.addToBlackList(refreshToken, expiresIn);
-      }
+      // Just delete from Redis — no need for redundant blacklisting
+      // since Redis lookup will fail anyway after deletion
       await redisClient.del(`rt:${refreshToken}`);
+      logger.info("User logged out successfully");
     } catch (error) {
       logger.error("logout error", { error });
-      throw new Error("Logout failed");
+      // Don't throw — logout should always succeed from the user's perspective
     }
   }
 
@@ -210,13 +224,18 @@ export class AuthService implements IAuthService {
   }
 
   async googleLogin(token: string) {
+    console.log("🚀 Starting Google Login verification...");
     const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
-    if (!payload?.email) throw new Error("Invalid Google Token");
+    if (!payload?.email) {
+      console.error("❌ Google Token missing email payload");
+      throw new Error("Invalid Google Token");
+    }
+    console.log("✅ Google payload verified for:", payload.email);
 
     let user = await this._userRepo.findByEmail(payload.email);
     if (!user) {
@@ -244,7 +263,7 @@ export class AuthService implements IAuthService {
     } else if (user.authProvider !== "google") {
       // User registered with local email/password previously, but verified their Google account.
       // We seamlessly allow the login rather than throwing an "already exists" error to act like a true Login.
-      console.log("Local user logging in via Google - allowing authentication merge.");
+      logger.info("Local user logging in via Google - allowing authentication merge.");
     }
 
     if (user.isBlocked) throw new Error(Messages.USER_BLOCKED);

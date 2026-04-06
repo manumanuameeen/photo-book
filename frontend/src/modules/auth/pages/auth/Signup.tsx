@@ -1,14 +1,15 @@
-import React, { useState, memo } from "react";
-import type { ChangeEvent, FormEvent } from "react";
+import React, { useState, memo, type ChangeEvent, type FormEvent, useEffect } from "react";
 import { Eye, EyeOff, Mail, Phone, Lock, User, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import type { ISignupRequest } from "../../types/auth.types";
 import photobookLogo from "../../../../assets/photoBook-icon.png";
 import { useNavigate } from '@tanstack/react-router'
-import { useSignup } from "../../hooks/useAuth";
-import toast, { Toaster } from "react-hot-toast";
+import { useSignup, useGoogleLogin } from "../../hooks/useAuth";
+import { toast } from "sonner";
 import { useAuthStore } from "../../store/useAuthStore";
 import { ROUTES } from "../../../../constants/routes";
+import { GoogleLogin } from "@react-oauth/google";
+import type { IAuthResponse } from "../../types/auth.types";
 
 interface SignupFormData {
   name: string;
@@ -16,15 +17,6 @@ interface SignupFormData {
   phone: string;
   password: string;
   confirmPassword: string;
-}
-
-interface SignupError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-  message?: string
 }
 
 type ValidationErrors = Partial<Record<keyof SignupFormData, string>>;
@@ -145,6 +137,7 @@ interface FormPanelProps {
   setPasswordVisible: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
   navigate: ReturnType<typeof useNavigate>;
+  handleGoogleSuccess: (credentialResponse: { credential?: string }) => void;
 }
 
 const FormPanel: React.FC<FormPanelProps> = ({
@@ -156,6 +149,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
   setPasswordVisible,
   loading,
   navigate,
+  handleGoogleSuccess,
 }) => (
   <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
     <div className="flex items-center mb-4">
@@ -176,6 +170,16 @@ const FormPanel: React.FC<FormPanelProps> = ({
         Sign Up
       </div>
     </div>
+    
+    <div className="mb-6 flex justify-center">
+      <GoogleLogin
+        onSuccess={handleGoogleSuccess}
+        onError={() => {
+          toast.error("Google Login Failed", { id: "google-failed" });
+        }}
+      />
+    </div>
+
     <form onSubmit={handleSubmit} className="space-y-3">
       <InputField
         Icon={User}
@@ -246,7 +250,6 @@ const FormPanel: React.FC<FormPanelProps> = ({
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuthStore();
   const signupMutation = useSignup();
 
   const [formData, setFormData] = useState<SignupFormData>({
@@ -259,10 +262,10 @@ const Signup: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  React.useEffect(() => {
-    const { user } = useAuthStore.getState();
-    if (user) {
-      const redirectTo = user.role === "admin"
+  useEffect(() => {
+    const { isAuthenticated, role } = useAuthStore.getState();
+    if (isAuthenticated) {
+      const redirectTo = role === "admin"
         ? ROUTES.ADMIN.DASHBOARD
         : ROUTES.USER.HOME;
       navigate({ to: redirectTo });
@@ -320,7 +323,7 @@ const Signup: React.FC = () => {
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      toast.error("Please fix the form errors");
+      toast.error("Please fix the form errors", { id: "form-validation-error" });
       return;
     }
 
@@ -331,14 +334,8 @@ const Signup: React.FC = () => {
       password: formData.password,
     };
 
-    console.log("Submitting signup data:", signupData);
-
     signupMutation.mutate(signupData, {
-      onSuccess: (response) => {
-        console.log("✅ Signup successful:", response);
-
-        setUser(response.data.user);
-
+      onSuccess: () => {
         sessionStorage.setItem("pendingVerificationEmail", signupData.email);
         toast.success("Account created! Check your email for OTP.");
 
@@ -354,22 +351,37 @@ const Signup: React.FC = () => {
           navigate({ to: ROUTES.AUTH.VERIFY_OTP });
         }, 1000);
       },
-      onError: (error: unknown) => {
-        console.error("❌ Signup error:", error);
-        const typedError = error as SignupError;
-        const errorMessage =
-          typedError?.response?.data?.message ||
-          typedError?.message ||
-          "Signup failed. Please try again.";
-
-        toast.error(errorMessage);
+      onError: () => {
+        // apiClient interceptor handles the error toast
       },
     });
   };
 
+  const googleLoginMutation = useGoogleLogin();
+
+  const handleGoogleSuccess = (credentialResponse: { credential?: string }) => {
+    if (credentialResponse.credential) {
+      googleLoginMutation.mutate(credentialResponse.credential, {
+        onSuccess: (response: IAuthResponse) => {
+          toast.success("Google Login successful!", { id: "google-success" });
+          const user = response.data.user;
+          setUser(user, response.data.accessToken, true);
+
+          const redirectTo = user.role === "admin"
+            ? ROUTES.ADMIN.DASHBOARD
+            : ROUTES.USER.HOME;
+
+          navigate({ to: redirectTo });
+        },
+        onError: () => {
+          // apiClient handles this
+        }
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-3">
-      <Toaster position="top-center" reverseOrder={false} />
       <div className="flex flex-col lg:flex-row max-w-3xl w-full bg-white shadow-2xl rounded-xl overflow-hidden">
         <GreenPanel />
         <FormPanel
@@ -381,6 +393,7 @@ const Signup: React.FC = () => {
           setPasswordVisible={setPasswordVisible}
           loading={signupMutation.isPending}
           navigate={navigate}
+          handleGoogleSuccess={handleGoogleSuccess}
         />
       </div>
     </div>

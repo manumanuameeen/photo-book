@@ -7,13 +7,18 @@ dotenv.config();
 async function run() {
   await connectDB();
   const photog = await PhotographerModel.findOne({ status: "APPROVED" });
-  if (!photog) { console.log("No photographer found"); process.exit(1); }
-  
+  if (!photog) {
+    console.log("No photographer found");
+    process.exit(1);
+  }
+
   console.log("Testing fetch packages for:", photog.personalInfo?.name, photog._id);
-  const res = await getChatbotResponse([
-    { role: "user", content: `Show me the pricing packages for photographer ID: ${photog._id}` }
-  ], "69c24f818cfaf470d7cd8eea", "test_session_2");
-  
+  const res = await getChatbotResponse(
+    [{ role: "user", content: `Show me the pricing packages for photographer ID: ${photog._id}` }],
+    "69c24f818cfaf470d7cd8eea",
+    "test_session_2",
+  );
+
   console.log("\n--- CHATBOT RESPONSE ---");
   console.log(JSON.stringify(res, null, 2));
   process.exit(0);

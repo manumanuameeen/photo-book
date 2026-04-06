@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { helpApi, type IHelpContent } from '../../../services/api/helpApi';
 import { helpRequestApi, type IHelpTopicRequest } from '../../../services/api/helpRequestApi';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { MessageSquare, Check, Hourglass } from 'lucide-react';
 
 export default function AdminHelpManagement() {
@@ -35,8 +35,6 @@ export default function AdminHelpManagement() {
             ]);
             setSections(sectionsData);
             setRequests(requestsData);
-        } catch {
-            toast.error("Failed to load help data");
         } finally {
             setLoading(false);
         }
@@ -70,8 +68,7 @@ export default function AdminHelpManagement() {
             setIsModalOpen(false);
             fetchSections();
         } catch (error: unknown) {
-            const err = error as { message?: string };
-            toast.error(err.message || "Operation failed");
+            console.error("Operation failed:", error);
         }
     };
 
@@ -81,8 +78,8 @@ export default function AdminHelpManagement() {
             await helpApi.deleteHelpSection(id);
             toast.success("Deleted successfully");
             fetchSections();
-        } catch {
-            toast.error("Delete failed");
+        } catch (error: unknown) {
+            console.error("Delete failed:", error);
         }
     };
 
@@ -91,8 +88,8 @@ export default function AdminHelpManagement() {
             await helpRequestApi.updateStatus(id, status);
             toast.success(`Request marked as ${status}`);
             fetchSections();
-        } catch {
-            toast.error("Update failed");
+        } catch (error: unknown) {
+            console.error("Update failed:", error);
         }
     };
 

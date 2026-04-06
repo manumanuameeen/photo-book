@@ -24,6 +24,7 @@ export const ChangePasswordDto = z
   });
 
 export class UserResponseDto {
+  _id!: string;
   id!: string;
   name!: string;
   email!: string;
@@ -36,6 +37,7 @@ export class UserResponseDto {
 
 export class AuthResponseDto {
   user!: {
+    _id: string;
     id: string;
     name: string;
     email: string;

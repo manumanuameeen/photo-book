@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { helpApi, type IHelpContent } from '../../../services/api/helpApi';
 import { helpRequestApi } from '../../../services/api/helpRequestApi';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from "../../../constants/routes"
 

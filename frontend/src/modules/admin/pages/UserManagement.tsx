@@ -3,7 +3,6 @@ import type { Column } from "../../../components/tables/admin/admin.Table";
 import AdminDataTable from "../../../components/tables/admin/admin.Table";
 import { useAdminUser, useBlockUser, useUnblockUser } from "../hooks/useUser";
 import { toast } from "sonner";
-import { Toaster } from "react-hot-toast";
 import Loader from "../../../components/Loader";
 import type { IUser } from "../types/admin.type";
 import { Eye, Lock, Unlock } from "lucide-react";
@@ -29,7 +28,7 @@ const UserManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const debouncedSearch = useDebounce(searchTerm, 500);
-  const { data, isLoading, error, isError } = useAdminUser(currentPage, 10, debouncedSearch);
+  const { data, isLoading, isError, error } = useAdminUser(currentPage, 10, debouncedSearch);
   const blockUser = useBlockUser();
   const unblockUser = useUnblockUser();
 
@@ -81,22 +80,20 @@ const UserManagement: React.FC = () => {
   }));
 
   const handleBlock = (id: string) => {
-
     confirm(
       "Are you want to block this user?",
       () => {
         blockUser.mutate(id, {
           onSuccess: () => {
-            toast.success("User blocked successfully");
+            toast.success("User blocked successfully", { id: "block-success" });
           },
           onError: (error: unknown) => {
             const errorMessage = getErrorMessage(error);
-            toast.error(errorMessage);
+            toast.error(errorMessage, { id: errorMessage });
           },
         });
       }
     )
-
   };
 
   const handleUnblock = (id: string) => {
@@ -105,11 +102,11 @@ const UserManagement: React.FC = () => {
       () => {
         unblockUser.mutate(id, {
           onSuccess: () => {
-            toast.success("User unblocked successfully");
+            toast.success("User unblocked successfully", { id: "unblock-success" });
           },
           onError: (error: unknown) => {
             const errorMessage = getErrorMessage(error);
-            toast.error(errorMessage);
+            toast.error(errorMessage, { id: errorMessage });
           },
         });
       }
@@ -200,7 +197,6 @@ const UserManagement: React.FC = () => {
 
   return (
     <PageTransition>
-      <Toaster position="top-center" reverseOrder={false} />
       <div className="flex justify-between items-center mb-4">
         <SearchBar
           value={searchTerm}

@@ -15,13 +15,20 @@ class SocketService {
         return SocketService.instance;
     }
 
-    public connect(): void {
-        if (this.socket?.connected) return;
+    public connect(token?: string): void {
+        console.log("🔌 Connecting socket...", { token: token ? "provided" : "missing" });
+        
+        if (this.socket) {
+            console.log("🔌 Existing socket found, disconnecting...");
+            this.socket.disconnect();
+            this.socket = null;
+        }
 
         this.socket = io(SOCKET_URL, {
             withCredentials: true,
             transports: ["websocket"],
             autoConnect: true,
+            auth: token ? { token } : undefined,
         });
 
         this.socket.on("connect", () => {

@@ -117,9 +117,9 @@ router.get("/chatbot/history", verifyAccessToken, async (req: Request, res: Resp
     const { sessionId } = req.query as { sessionId?: string };
     const userId = (req as any).userId;
 
-    const chatHistory = await ChatHistoryModel.findOne({ 
-      userId, 
-      sessionId: sessionId || "default" 
+    const chatHistory = await ChatHistoryModel.findOne({
+      userId,
+      sessionId: sessionId || "default",
     });
 
     return res.status(200).json({
@@ -137,7 +137,6 @@ router.get("/chatbot/history", verifyAccessToken, async (req: Request, res: Resp
  * Handles AI chatbot messages
  */
 router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: Response) => {
-
   try {
     const { messages, sessionId } = req.body as { messages: ChatMessage[]; sessionId?: string };
     const userId = (req as any).userId;
@@ -151,17 +150,19 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
     return res.status(200).json({
       success: result.success,
       message: result.message,
-      structuredData: (result as any).structuredData,
-      conversationPhase: (result as any).conversationPhase,
+      structuredData: result.structuredData,
+      conversationPhase: result.conversationPhase,
+      stack: (result as any).stack, // Include stack if returned by service
+      error: (result as any).error,
     });
   } catch (error: any) {
     console.error("[AI Chatbot Route] Error:", error);
-    
+
     // Extract detailed error information
     let statusCode = 500;
     let errorMessage = "Chatbot interaction failed";
     let errorDetails: any = {};
-    
+
     // Handle Groq rate limit errors (429)
     if (error?.response?.status === 429) {
       statusCode = 429;
@@ -204,7 +205,7 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
         message: "Invalid or expired credentials",
       };
     }
-    
+
     return res.status(statusCode).json({
       success: false,
       message: errorMessage,
@@ -212,6 +213,5 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
     });
   }
 });
-
 
 export default router;

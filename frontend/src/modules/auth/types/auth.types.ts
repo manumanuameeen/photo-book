@@ -9,6 +9,7 @@ export interface IAuthResponse {
       phone: string;
       role: "user" | "admin" | "photographer";
     };
+    accessToken?: string;
   };
 }
 

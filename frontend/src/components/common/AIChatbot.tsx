@@ -33,12 +33,10 @@ interface ChatbotApiResponse {
     data?: PhotographerData[] | PackageData[] | AvailabilityData;
     bookingId?: string;
   };
-  error?: {
+  error?: string | {
     type?: string;
-    provider?: string;
+    retryAfter?: number;
     message?: string;
-    code?: string;
-    retryAfter?: string;
   };
   conversationPhase?: string;
 }
@@ -157,28 +155,27 @@ const AIChatbot: React.FC = () => {
           timestamp: new Date(),
         }]);
       } else {
+        const errorData = typeof data.error === 'object' ? data.error : { message: data.message };
+        
         // Handle rate limit specifically
-        if (data.error?.type === 'RATE_LIMIT') {
-          const retryAfter = data.error.retryAfter || 10;
+        if (errorData?.type === 'RATE_LIMIT') {
+          const retryAfter = errorData.retryAfter || 10;
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: `⏳ I'm processing a lot of requests right now. Please wait ${retryAfter} seconds and try again.`,
+            content: `⏳ I'm a bit overwhelmed with requests right now. Please wait about ${retryAfter} seconds and try again.`,
             timestamp: new Date(),
             isError: true,
           }]);
-          
-          setIsLoading(false);
-          return;
+        } else {
+          // Generic error
+          setError({ message: data.message || 'Assistant is temporarily unavailable', details: errorData });
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: data.message || "I'm having trouble connecting right now. Please try again soon.",
+            timestamp: new Date(),
+            isError: true,
+          }]);
         }
-
-        // Generic error
-        setError({ message: data.message || 'Unknown error', details: data.error });
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: data.message || "I'm having trouble connecting right now. Please try again.",
-          timestamp: new Date(),
-          isError: true,
-        }]);
       }
     } catch (err) {
       console.error('Network error:', err);

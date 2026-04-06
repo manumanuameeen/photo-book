@@ -54,6 +54,7 @@ export class AuthController implements IAuthController {
         res,
         {
           user: UserMapper.toAuthResponse(result.user),
+          accessToken: result.accessToken,
         },
         Messages.OTP_VERIFIED,
       );
@@ -74,13 +75,15 @@ export class AuthController implements IAuthController {
 
   login = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log("login controller", req.body);
       const input = this._validate(LoginDto, req.body);
       const result = await this._authService.login(input);
       this._setCookies(res, result.accessToken, result.refreshToken);
       ApiResponse.success(
         res,
-        { user: UserMapper.toAuthResponse(result.user) },
+        {
+          user: UserMapper.toAuthResponse(result.user),
+          accessToken: result.accessToken,
+        },
         Messages.LOGIN_SUCCESS,
       );
     } catch (error: unknown) {
@@ -97,7 +100,10 @@ export class AuthController implements IAuthController {
       this._setCookies(res, result.accessToken, result.refreshToken);
       ApiResponse.success(
         res,
-        { user: UserMapper.toAuthResponse(result.user) },
+        {
+          user: UserMapper.toAuthResponse(result.user),
+          accessToken: result.accessToken,
+        },
         Messages.LOGIN_SUCCESS,
       );
     } catch (error: unknown) {
@@ -109,27 +115,26 @@ export class AuthController implements IAuthController {
     try {
       const refreshToken = req.cookies.refreshToken;
 
-      console.log("🔄 Refresh token request received");
-      console.log("📝 Cookies:", req.cookies);
-
       if (!refreshToken) {
-        console.log("❌ No refresh token found in cookies");
         throw new AppError(Messages.REFRESH_TOKEN_MISSING, HttpStatus.UNAUTHORIZED);
       }
 
-      console.log("✅ Refresh token found, attempting refresh...");
       const result = await this._authService.refresh(refreshToken);
-
-      console.log("✅ Refresh successful, setting new cookies");
       this._setCookies(res, result.accessToken, result.refreshToken);
 
-      ApiResponse.success(res, { user: UserMapper.toAuthResponse(result.user) });
+      ApiResponse.success(res, {
+        user: UserMapper.toAuthResponse(result.user),
+        accessToken: result.accessToken,
+      });
     } catch (error: unknown) {
-      console.error("❌ Refresh error:", error);
-
-      res.clearCookie("accessToken", { secure: true, sameSite: "none" });
-      res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
-
+      // Only clear cookies if it's an authentication/authorization error
+      if (
+        error instanceof AppError &&
+        (error.statusCode === HttpStatus.UNAUTHORIZED || error.statusCode === HttpStatus.FORBIDDEN)
+      ) {
+        res.clearCookie("accessToken", { secure: true, sameSite: "none" });
+        res.clearCookie("refreshToken", { secure: true, sameSite: "none" });
+      }
       handleError(res, error);
     }
   };
@@ -159,7 +164,6 @@ export class AuthController implements IAuthController {
 
   verifyResetOtp = async (req: Request, res: Response): Promise<void> => {
     try {
-      console.log("reached");
       const input = this._validate(VerifyResetOtpDto, req.body);
       const result = await this._authService.verifyResetOtp(input);
       ApiResponse.success(res, null, result.message);
@@ -181,20 +185,20 @@ export class AuthController implements IAuthController {
   private _setCookies(res: Response, access: string, refresh: string): void {
     const isProd = process.env.NODE_ENV === "production";
 
-    res.cookie("accessToken", access, {
+    const cookieOptions = {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      sameSite: isProd ? ("none" as const) : ("lax" as const),
+    };
+
+    res.cookie("accessToken", access, {
+      ...cookieOptions,
       maxAge: ENV.ACCESS_TOKEN_MAX_AGE,
     });
 
     res.cookie("refreshToken", refresh, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      ...cookieOptions,
       maxAge: ENV.REFRESH_TOKEN_MAX_AGE,
     });
-
-    console.log("cookies set successfully");
   }
 }

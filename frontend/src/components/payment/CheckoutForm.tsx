@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
 import { paymentApi } from "../../services/api/payment.ts";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface CheckoutFormProps {
     amount: number;
@@ -31,7 +31,9 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, userId, onSu
         });
 
         if (error) {
-            setErrorMessage(error.message ?? "An error occurred");
+            const msg = error.message ?? "An error occurred";
+            setErrorMessage(msg);
+            toast.error(msg, { id: "stripe-error" });
             setIsProcessing(false);
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
             try {
@@ -40,11 +42,13 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, userId, onSu
                 } else {
                     await paymentApi.confirmPayment(paymentIntent.id, userId, amount);
                 }
-                toast.success("Payment successful!");
+                toast.success("Payment successful!", { id: "payment-success" });
                 onSuccess?.();
             } catch (err) {
-                setErrorMessage("Failed to confirm payment with server.");
-                console.log(err)
+                const msg = "Failed to confirm payment with server.";
+                setErrorMessage(msg);
+                toast.error(msg, { id: "server-confirm-error" });
+                console.error(err);
             }
             setIsProcessing(false);
         } else {
@@ -53,15 +57,23 @@ export const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, userId, onSu
     };
 
     return (
-        <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto p-4 border rounded shadow">
-            <PaymentElement />
-            {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+        <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto p-6 bg-white border border-gray-100 rounded-2xl shadow-xl space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Complete Payment</h3>
+            <PaymentElement className="mb-4" />
+            {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg">
+                    {errorMessage}
+                </div>
+            )}
             <button
                 disabled={!stripe || isProcessing}
-                className="w-full mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
+                className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
             >
-                {isProcessing ? "Processing..." : `Pay $${amount}`}
+                {isProcessing ? "Processing..." : `Securely Pay $${amount}`}
             </button>
+            <p className="text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
+                🔒 Secured by Stripe
+            </p>
         </form>
     );
 };
