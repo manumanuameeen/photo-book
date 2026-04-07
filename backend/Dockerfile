@@ -20,7 +20,10 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 WORKDIR /app
 COPY . .
+# Increase memory limit for the build process
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN npm run build
+
 
 # --- Stage 4: Production ---
 FROM node:20-alpine AS production
