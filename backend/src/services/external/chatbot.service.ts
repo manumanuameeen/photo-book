@@ -2,6 +2,21 @@ import { ChatHistoryModel } from "../../models/chatHistory.model";
 import { ShutterAgent } from "./shutter/shutter.agent";
 import { ChatbotPhase } from "./shutter/shutter.types";
 
+export interface ChatMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp?: Date;
+  structuredData?: any;
+}
+
+/**
+ * Cleanup function for inactive sessions if using in-memory stores.
+ * In this implementation, we use MongoDB, so this is a no-op.
+ */
+export const clearInactiveMemories = () => {
+  console.log("[ChatbotService] Memory cleanup is handled by DB persistence.");
+};
+
 /**
  * ============================================================================
  * CHATBOT SERVICE - DEBUG-ENABLED ORCHESTRATOR

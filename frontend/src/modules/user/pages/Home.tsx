@@ -31,6 +31,8 @@ export interface FeaturedPhotographer {
 
 export type HybridItem = FeaturedPhotographer | FeaturedEquipment;
 
+import { motion } from 'framer-motion';
+
 const HomePage = () => {
   const [mixedItems, setMixedItems] = useState<HybridItem[]>([]);
 
@@ -38,14 +40,13 @@ const HomePage = () => {
     const fetchEntities = async () => {
       try {
         const [equipmentRes, photographerRes] = await Promise.all([
-            rentalApi.getAllItems('', 1, 5), // limit to 5
-            userPhotographerApi.getPhotographers({ limit: 5 }) // limit to 5
+            rentalApi.getAllItems('', 1, 5),
+            userPhotographerApi.getPhotographers({ limit: 5 })
         ]);
 
         const equipments = (equipmentRes.data?.items || []).map(item => ({ ...item, type: 'equipment' as const }));
         const photographers = (photographerRes.photographers || []).map((p: FeaturedPhotographer) => ({ ...p, type: 'photographer' as const }));
 
-        // Interleave them: 1 eq, 1 photo, 1 eq, 1 photo...
         const combined: HybridItem[] = [];
         const maxLength = Math.max(equipments.length, photographers.length);
         for(let i=0; i<maxLength; i++) {
@@ -61,22 +62,55 @@ const HomePage = () => {
     fetchEntities();
   }, []);
 
+  // Animation Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: "easeOut", // Standardizing for type safety
+      },
+    },
+  };
+
   return (
     <div className="relative min-h-screen bg-[#020202] text-gray-200 selection:bg-white/20 selection:text-white">
       <MouseFollower />
-      
-      {/* Global Antigravity Ambient Lighting */}
       <AmbientFlares />
 
-      <div className="relative z-10 font-sans">
-        <HeroParallax />
+      <motion.div 
+        className="relative z-10 font-sans"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants}>
+          <HeroParallax />
+        </motion.div>
 
-        {/* 1. Interleaved Hybrid Lineup with Native Parallax */}
-        <FloatingHybridGallery items={mixedItems} />
+        <motion.div variants={itemVariants}>
+          <FloatingHybridGallery items={mixedItems} />
+        </motion.div>
 
-        {/* 2. Integrated Cinematic Experience */}
-        <Ecosystem />
-      </div>
+        <motion.div variants={itemVariants}>
+          <Ecosystem />
+        </motion.div>
+      </motion.div>
+    
+      <script src="https://api.anvevoice.app/functions/v1/voice-assistant-embed-js?embedId=f6f9fd77-4f3d-4b38-8ef4-ca1136340484&position=bottom-right&theme=light"></script>
     </div>
   );
 };

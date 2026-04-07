@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
             try {
                 const data = await tokenService.refreshAccessToken();
                 if (data?.data.user) {
-                    useAuthStore.getState().setUser(data.data.user as never, true);
+                    useAuthStore.getState().setUser(data.data.user as never, data.data.accessToken || useAuthStore.getState().accessToken || "", true);
                 }
                 failedQueue.forEach(prom => prom.resolve());
                 failedQueue.length = 0;

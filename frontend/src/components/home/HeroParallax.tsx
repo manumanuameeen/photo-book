@@ -1,8 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion';
-import { MagneticButton } from '../common/MagneticButton';
-import { useNavigate } from '@tanstack/react-router';
-import { ROUTES } from '../../constants/routes';
 
 export const HeroParallax = () => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -99,16 +96,6 @@ export const HeroParallax = () => {
             requestAnimationFrame(() => renderFrame(index));
         }
     });
-
-    const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const handleSearch = () => {
-        navigate({
-            to: ROUTES.USER.PHOTOGRAPHER,
-            search: { query: searchQuery }
-        });
-    };
 
     // Text Phase Opacities (Using smoothProgress instead of scrollYProgress to perfectly sync with images)
     const opacity1 = useTransform(smoothProgress, [0, 0.15, 0.25], [1, 1, 0]);

@@ -45,7 +45,7 @@ const EquipmentCard = ({ item, yOffset }: { item: IRentalItem, yOffset: any }) =
                 </div>
             </div>
             
-            <Link to={ROUTES.USER.RENTALS} search={{ category: item.category }} className="absolute inset-0 z-10"></Link>
+            <Link to={ROUTES.USER.RENTAL_MARKETPLACE} search={{ category: item.category }} className="absolute inset-0 z-10"></Link>
         </motion.div>
     );
 };
@@ -112,7 +112,7 @@ export const FloatingEquipment = ({ equipment }: FloatingEquipmentProps) => {
         
         {/* Call to action at the bottom */}
         <div className="max-w-7xl mx-auto mt-32 flex justify-center relative z-20 py-20 border-t border-white/5">
-            <Link to={ROUTES.USER.RENTALS}>
+            <Link to={ROUTES.USER.RENTAL_MARKETPLACE}>
                 <MagneticButton className="px-8 py-4 bg-white text-black font-mono text-xs tracking-[0.2em] rounded-full hover:bg-gray-200 transition-colors">
                     BROWSE INVENTORY
                 </MagneticButton>

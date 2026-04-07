@@ -69,7 +69,7 @@ export class ShutterAgent {
 
   private initializeTools() {
     const search_photographers = tool(
-      async ({ category, location, limit = 3 }) => {
+      async ({ category, location, limit = 3 }: { category?: string; location?: string; limit?: number }) => {
         try {
           const query: any = { status: "APPROVED", isBlock: false };
           if (category) {
@@ -120,7 +120,7 @@ export class ShutterAgent {
     );
 
     const get_packages = tool(
-      async ({ photographerId }) => {
+      async ({ photographerId }: { photographerId: string }) => {
         try {
           const packages = await BookingPackageModel.find({
             photographer: new mongoose.Types.ObjectId(photographerId),
@@ -153,7 +153,7 @@ export class ShutterAgent {
     );
 
     const get_availability = tool(
-      async ({ photographerId, days = 30 }) => {
+      async ({ photographerId, days = 30 }: { photographerId: string; days?: number }) => {
         try {
           const startDate = new Date();
           startDate.setHours(0, 0, 0, 0);
@@ -187,7 +187,17 @@ export class ShutterAgent {
     );
 
     const create_booking = tool(
-      async (args: any) => {
+      async (args: {
+        photographerId: string;
+        packageId: string;
+        eventDate: string;
+        startTime: string;
+        location: string;
+        eventType: string;
+        contactName: string;
+        contactEmail: string;
+        contactPhone: string;
+      }) => {
         try {
           const photographer = await PhotographerModel.findById(args.photographerId);
           if (!photographer) return JSON.stringify({ success: false, error: "Photographer not found" });

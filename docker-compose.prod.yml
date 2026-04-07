@@ -2,35 +2,45 @@ version: "3.9"
 
 services:
   backend:
-    image: ameenwork/photo-book-backend:latest
+    build:
+      context: ./backend
+      target: production
     container_name: photobook-backend-prod
     ports:
       - "5000:5000"
-    env_file:
-      - ./backend/.env
     environment:
       - NODE_ENV=production
-    depends_on:
-      - redis
+    env_file:
+      - ./backend/.env
+    # Resource limits for production stability
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
 
   redis:
     image: redis:alpine
-    container_name: photobook-redis
-    ports:
-      - "6379:6379"
+    container_name: photobook-redis-prod
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     restart: always
     volumes:
-      - redis_data:/data
+      - redis_prod_data:/data
+    networks:
+      - photobook-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  frontend:
-    image: ameenwork/photo-book-frontend:latest
-    container_name: photobook-frontend-prod
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
-    restart: always
+networks:
+  photobook-network:
+    driver: bridge
 
 volumes:
-  redis_data:
+  redis_prod_data:

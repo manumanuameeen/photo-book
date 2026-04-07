@@ -1,4 +1,28 @@
-import { PhotographerData, PackageData, AvailabilityData } from "../../../../frontend/src/components/common/ChatRenderers";
+// Defining interfaces locally to prevent cross-project dependency on frontend
+export interface PhotographerData {
+  _id: string;
+  name: string;
+  businessName?: string;
+  specialties: string[];
+  location: string;
+  rating: number;
+  reviews: number;
+  profileImage: string | null;
+}
+
+export interface PackageData {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  features: string[];
+  deliveryTime: string;
+}
+
+export interface AvailabilityData {
+  date: string;
+  slots: string[];
+}
 
 export type ChatbotPhase = 
   | "GREETING" 

@@ -1,34 +1,57 @@
 services:
   backend:
-    image: ameenwork/photo-book-backend:latest
-    container_name: photobook-backend-prod
+    build:
+      context: ./backend
+      target: production
+    container_name: photobook-backend
+    restart: always
     ports:
       - "5000:5000"
-    env_file:
-      - ./backend/.env
     environment:
+      - MONGO_URI=mongodb://mongodb:27017/photoBookDB
+      - REDIS_URL=redis://redis:6379
       - NODE_ENV=production
     depends_on:
-      - redis
-    restart: always
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - photobook-network
 
-  frontend:
-    image: ameenwork/photo-book-frontend:latest
-    container_name: photobook-frontend-prod
-    expose:
-      - "80"
-    depends_on:
-      - backend
+  mongodb:
+    image: mongo:7.0
+    container_name: photobook-mongodb
     restart: always
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - photobook-network
 
   redis:
     image: redis:alpine
     container_name: photobook-redis
-    ports:
-      - "6379:6379"
     restart: always
+    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - photobook-network
+
+networks:
+  photobook-network:
+    driver: bridge
 
 volumes:
+  mongodb_data:
   redis_data:

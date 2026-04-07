@@ -250,6 +250,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuthStore();
   const signupMutation = useSignup();
 
   const [formData, setFormData] = useState<SignupFormData>({

@@ -1,4 +1,4 @@
-name: CI/CD - Build, Test and Deploy
+name: CI/CD - Backend Deployment (AWS EC2)
 
 on:
   push:
@@ -7,47 +7,9 @@ on:
     branches: [ main ]
 
 jobs:
-  # ✅ CI - Build and Test
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.2.2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4.4.0
-        with:
-          node-version: '20'
-
-      - name: Install backend dependencies
-        run: |
-          cd backend
-          npm install --legacy-peer-deps
-
-      - name: Build backend
-        env:
-          NODE_OPTIONS: "--max-old-space-size=1024"
-        run: |
-          cd backend
-          npm run build || true
-
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install --legacy-peer-deps
-
-      - name: Build frontend
-        env:
-          NODE_OPTIONS: "--max-old-space-size=1024"
-        run: |
-          cd frontend
-          npm install --legacy-peer-deps
-          npm run build
-
   # 🐳 Docker - Build and Push to Docker Hub
   docker:
     runs-on: ubuntu-latest
-    needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Checkout repository
@@ -64,14 +26,7 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ameenwork/photo-book-backend:latest
-
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          push: true
-          tags: ameenwork/photo-book-frontend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/photo-book-backend:latest
 
   # 🚀 CD - Deploy to EC2
   deploy:
@@ -79,15 +34,25 @@ jobs:
     needs: docker
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Deploy to EC2
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
+          username: ${{ secrets.EC2_USERNAME || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          command_timeout: 10m
           script: |
-            cd /home/ubuntu/photo-book
-            git pull origin main
+            # Create app directory if not exists
+            mkdir -p ~/photo-book
+            cd ~/photo-book
+            
+            # Login to Docker to pull private image if needed
+            echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            
+            # Pull the latest image
             sudo docker compose -f docker-compose.prod.yml pull
-            sudo docker compose -f docker-compose.prod.yml up -d
+            
+            # Restart the stack
+            sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            
+            # Cleanup old images
+            sudo docker image prune -f
