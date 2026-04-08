@@ -39,7 +39,7 @@ class AuthService implements IAuthService {
   async getCurrentUser(): Promise<IAuthResponse | null> {
     try {
       const baseUrl = import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1");
-      const res = await fetch(`${baseUrl}/user/refresh-token`, {
+      const res = await fetch(`${baseUrl}/auth/refresh-token`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" }
