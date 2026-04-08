@@ -7,11 +7,12 @@ services:
     restart: always
     ports:
       - "5000:5000"
+    env_file: ./backend/.env
     environment:
       - MONGO_URI=mongodb://mongodb:27017/photoBookDB
       - REDIS_URL=redis://redis:6379
       - NODE_ENV=production
-    depends_on:
+    depends_on: 
       mongodb:
         condition: service_healthy
       redis:
