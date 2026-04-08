@@ -107,7 +107,7 @@ export class AuthService implements IAuthService {
 
   async resendOtp(data: ResendOtpDtoType) {
     const cached = await redisClient.get(`otp:${data.email}`);
-    if (!cached) throw new Error(Messages.USER_EXISTS);
+    if (!cached) throw new Error(Messages.SIGNUP_REQUEST_EXPIRED);
 
     const payload = JSON.parse(cached);
     const newOtp = this._otpService.generateOtp();
@@ -124,8 +124,11 @@ export class AuthService implements IAuthService {
 
   async login(data: LoginDtoType) {
     const user = await this._userRepo.findByEmail(data.email);
-    if (!user || !(await user.comparePassword(data.password)))
-      throw new Error(Messages.INVALID_CREDENTIALS);
+    if (!user) throw new Error(Messages.USER_ACCOUNT_NOT_FOUND);
+    
+    const isPasswordValid = await user.comparePassword(data.password);
+    if (!isPasswordValid) throw new Error(Messages.INVALID_CREDENTIALS);
+    
     if (user.isBlocked) throw new Error(Messages.USER_BLOCKED);
 
     try {
