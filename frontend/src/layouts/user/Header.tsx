@@ -9,7 +9,9 @@ import {
   Camera,
   ToolCase,
   MessageCircle,
-  HelpCircle
+  HelpCircle,
+  Menu,
+  X
 } from "lucide-react";
 import photoBookLogo from "../../assets/photoBook-icon.png"
 import { toast } from "sonner";
@@ -21,6 +23,7 @@ const Header: React.FC = () => {
   const { user, logout, role } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
   const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     toast.success("Logout successfully")
@@ -28,13 +31,18 @@ const Header: React.FC = () => {
     navigate({ to: ROUTES.AUTH.LOGIN });
   };
 
+  const handleNavClick = (to: string) => {
+    navigate({ to });
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <header className="shadow-sm py-4 px-6 md:px-12 border-b border-gray-100 transition-colors duration-300 bg-white">
+    <header className="shadow-sm py-4 px-4 md:px-12 border-b border-gray-100 transition-colors duration-300 bg-white sticky top-0 z-40">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
 
-        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate({ to: ROUTES.USER.HOME })}>
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => handleNavClick(ROUTES.USER.HOME)}>
           <img src={photoBookLogo} alt="PhotoBook" className="w-10 h-10" />
-          <span className="text-xl font-bold text-gray-900">PhotoBook</span>
+          <span className="text-lg md:text-xl font-bold text-gray-900">PhotoBook</span>
         </div>
 
         <nav className="hidden md:flex space-x-6 text-sm font-medium items-center text-gray-600">
@@ -42,8 +50,8 @@ const Header: React.FC = () => {
             role="button"
             tabIndex={0}
             className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none"
-            onClick={() => navigate({ to: ROUTES.USER.HOME })}
-            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.HOME })}
+            onClick={() => handleNavClick(ROUTES.USER.HOME)}
+            onKeyDown={(e) => e.key === 'Enter' && handleNavClick(ROUTES.USER.HOME)}
           >
             <Home size={16} />
             <span>Home</span>
@@ -52,8 +60,8 @@ const Header: React.FC = () => {
             role="button"
             tabIndex={0}
             className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none"
-            onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER })}
-            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.PHOTOGRAPHER })}
+            onClick={() => handleNavClick(ROUTES.USER.PHOTOGRAPHER)}
+            onKeyDown={(e) => e.key === 'Enter' && handleNavClick(ROUTES.USER.PHOTOGRAPHER)}
           >
             <Camera size={16} />
             <span>Photographers</span>
@@ -63,8 +71,8 @@ const Header: React.FC = () => {
             role="button"
             tabIndex={0}
             className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none"
-            onClick={() => navigate({ to: ROUTES.USER.RENTAL_MARKETPLACE })}
-            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.RENTAL_MARKETPLACE })}
+            onClick={() => handleNavClick(ROUTES.USER.RENTAL_MARKETPLACE)}
+            onKeyDown={(e) => e.key === 'Enter' && handleNavClick(ROUTES.USER.RENTAL_MARKETPLACE)}
           >
             <ToolCase size={16} />
             <span>Equipment</span>
@@ -74,8 +82,8 @@ const Header: React.FC = () => {
               role="button"
               tabIndex={0}
               className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none"
-              onClick={() => navigate({ to: '/chat' })}
-              onKeyDown={(e) => e.key === 'Enter' && navigate({ to: '/chat' })}
+              onClick={() => handleNavClick('/chat')}
+              onKeyDown={(e) => e.key === 'Enter' && handleNavClick('/chat')}
             >
               <MessageCircle size={16} />
               <span>Messages</span>
@@ -96,7 +104,7 @@ const Header: React.FC = () => {
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-50 text-gray-700"
                     onClick={() => {
-                      navigate({ to: ROUTES.USER.DASHBOARD });
+                      handleNavClick(ROUTES.USER.DASHBOARD);
                       setDashboardMenuOpen(false);
                     }}
                   >
@@ -105,7 +113,7 @@ const Header: React.FC = () => {
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-50 text-gray-700 font-semibold"
                     onClick={() => {
-                      navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD });
+                      handleNavClick(ROUTES.PHOTOGRAPHER.DASHBOARD);
                       setDashboardMenuOpen(false);
                     }}
                   >
@@ -115,7 +123,7 @@ const Header: React.FC = () => {
               )}
             </div>
           ) : role === "user" && (
-            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" onClick={() => navigate({ to: ROUTES.USER.DASHBOARD })}>
+            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors" onClick={() => handleNavClick(ROUTES.USER.DASHBOARD)}>
               <LayoutDashboard size={16} />
               <span>Dashboard</span>
             </div>
@@ -124,15 +132,16 @@ const Header: React.FC = () => {
             role="button"
             tabIndex={0}
             className="flex items-center space-x-1 cursor-pointer hover:text-gray-900 transition-colors focus:outline-none text-green-600 font-bold"
-            onClick={() => navigate({ to: ROUTES.USER.HOW_IT_WORKS })}
-            onKeyDown={(e) => e.key === 'Enter' && navigate({ to: ROUTES.USER.HOW_IT_WORKS })}
+            onClick={() => handleNavClick(ROUTES.USER.HOW_IT_WORKS)}
+            onKeyDown={(e) => e.key === 'Enter' && handleNavClick(ROUTES.USER.HOW_IT_WORKS)}
           >
             <HelpCircle size={16} />
             <span>Help</span>
           </div>
         </nav>
 
-        <div className="flex items-center space-x-4 relative">
+        {/* Right section: Notifications & Profile */}
+        <div className="flex items-center space-x-2 md:space-x-4 relative">
           {user && (
             <NotificationDropdown />
           )}
@@ -140,14 +149,14 @@ const Header: React.FC = () => {
           {!user ? (
             <>
               <button
-                onClick={() => navigate({ to: ROUTES.AUTH.LOGIN })}
-                className="px-4 py-2 text-sm font-semibold rounded transition duration-200 bg-gray-900 text-white hover:bg-gray-800"
+                onClick={() => handleNavClick(ROUTES.AUTH.LOGIN)}
+                className="hidden sm:block px-3 md:px-4 py-2 text-xs md:text-sm font-semibold rounded transition duration-200 bg-gray-900 text-white hover:bg-gray-800"
               >
                 Login
               </button>
               <button
-                onClick={() => navigate({ to: ROUTES.AUTH.SIGNUP })}
-                className="px-4 py-2 text-sm font-semibold rounded transition duration-200 border border-gray-300 text-gray-700 hover:bg-gray-50"
+                onClick={() => handleNavClick(ROUTES.AUTH.SIGNUP)}
+                className="hidden sm:block px-3 md:px-4 py-2 text-xs md:text-sm font-semibold rounded transition duration-200 border border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Sign Up
               </button>
@@ -157,16 +166,19 @@ const Header: React.FC = () => {
 
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center space-x-1 border border-gray-200 px-3 py-1 rounded-full hover:shadow bg-gray-50 text-gray-700"
+                className="flex items-center space-x-1 border border-gray-200 px-2 md:px-3 py-1 rounded-full hover:shadow bg-gray-50 text-gray-700"
               >
-                <User size={18} />
-                <span className="flex item-center text-sm">{user.name}</span>
+                <User size={16} />
+                <span className="hidden sm:flex text-xs md:text-sm">{user.name}</span>
               </button>
 
               {profileOpen && (
                 <div className="absolute right-0 mt-2 w-40 border rounded shadow-lg py-2 z-50 bg-white border-gray-200">
                   <button
-                    className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50" onClick={() => navigate({ to: ROUTES.USER.PROFILE })}
+                    className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50" onClick={() => {
+                      handleNavClick(ROUTES.USER.PROFILE);
+                      setProfileOpen(false);
+                    }}
                   >
                     <User size={16} className="mr-2" />
                     Profile
@@ -174,7 +186,7 @@ const Header: React.FC = () => {
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50"
                     onClick={() => {
-                      navigate({ to: ROUTES.USER.DASHBOARD });
+                      handleNavClick(ROUTES.USER.DASHBOARD);
                       setProfileOpen(false);
                     }}
                   >
@@ -184,7 +196,7 @@ const Header: React.FC = () => {
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50"
                     onClick={() => {
-                      navigate({ to: '/chat' });
+                      handleNavClick('/chat');
                       setProfileOpen(false);
                     }}
                   >
@@ -194,7 +206,7 @@ const Header: React.FC = () => {
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm hover:opacity-80 text-gray-700 hover:bg-gray-50"
                     onClick={() => {
-                      navigate({ to: ROUTES.USER.HOW_IT_WORKS });
+                      handleNavClick(ROUTES.USER.HOW_IT_WORKS);
                       setProfileOpen(false);
                     }}
                   >
@@ -212,8 +224,86 @@ const Header: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 hover:bg-gray-100 rounded transition"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden mt-4 pb-4 border-t border-gray-100">
+          <nav className="flex flex-col space-y-3 text-sm font-medium text-gray-600">
+            <button
+              onClick={() => handleNavClick(ROUTES.USER.HOME)}
+              className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded w-full text-left"
+            >
+              <Home size={18} />
+              <span>Home</span>
+            </button>
+            <button
+              onClick={() => handleNavClick(ROUTES.USER.PHOTOGRAPHER)}
+              className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded w-full text-left"
+            >
+              <Camera size={18} />
+              <span>Photographers</span>
+            </button>
+            <button
+              onClick={() => handleNavClick(ROUTES.USER.RENTAL_MARKETPLACE)}
+              className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded w-full text-left"
+            >
+              <ToolCase size={18} />
+              <span>Equipment</span>
+            </button>
+            {user && (
+              <button
+                onClick={() => handleNavClick('/chat')}
+                className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded w-full text-left"
+              >
+                <MessageCircle size={18} />
+                <span>Messages</span>
+              </button>
+            )}
+            {(role === "user" || role === "photographer") && (
+              <button
+                onClick={() => handleNavClick(ROUTES.USER.DASHBOARD)}
+                className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded w-full text-left"
+              >
+                <LayoutDashboard size={18} />
+                <span>Dashboard</span>
+              </button>
+            )}
+            <button
+              onClick={() => handleNavClick(ROUTES.USER.HOW_IT_WORKS)}
+              className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded w-full text-left text-green-600 font-bold"
+            >
+              <HelpCircle size={18} />
+              <span>Help</span>
+            </button>
+            {!user && (
+              <div className="flex space-x-2 pt-2 border-t border-gray-100">
+                <button
+                  onClick={() => handleNavClick(ROUTES.AUTH.LOGIN)}
+                  className="flex-1 px-3 py-2 text-xs font-semibold rounded transition bg-gray-900 text-white hover:bg-gray-800"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => handleNavClick(ROUTES.AUTH.SIGNUP)}
+                  className="flex-1 px-3 py-2 text-xs font-semibold rounded transition border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
