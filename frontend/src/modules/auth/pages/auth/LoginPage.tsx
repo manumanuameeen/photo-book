@@ -293,8 +293,10 @@ const LoginPage: React.FC = () => {
       return;
     }
 
+    console.log("🔐 [Login] Attempting login with email:", formData.email);
     loginMutation.mutate(formData, {
       onSuccess: (response) => {
+        console.log("✅ [Login] Login successful! User:", response.data.user);
         toast.success("Welcome back!", { id: "login-success" });
         const user = response.data.user
         setUser(user, response.data.accessToken, true);
@@ -306,7 +308,8 @@ const LoginPage: React.FC = () => {
         navigate({ to: redirectTo });
         setFormData({ email: "", password: "" });
       },
-      onError: () => {
+      onError: (error) => {
+        console.error("❌ [Login] Login failed:", error);
         // Redundant manual toast removed. apiClient interceptor handles this.
       },
     });
@@ -314,8 +317,10 @@ const LoginPage: React.FC = () => {
 
   const handleGoogleSuccess = (credentialResponse: { credential?: string }) => {
     if (credentialResponse.credential) {
+      console.log("🔐 [Google Login] Attempting Google authentication...");
       googleLoginMutation.mutate(credentialResponse.credential, {
         onSuccess: (response: IAuthResponse) => {
+          console.log("✅ [Google Login] Google authentication successful! User:", response.data.user);
           toast.success("Google Login successful!", { id: "google-success" });
           const user = response.data.user;
           setUser(user, response.data.accessToken, true);
@@ -325,7 +330,8 @@ const LoginPage: React.FC = () => {
 
           navigate({ to: redirectTo });
         },
-        onError: () => {
+        onError: (error) => {
+          console.error("❌ [Google Login] Google authentication failed:", error);
           // apiClient handles this
         }
       });

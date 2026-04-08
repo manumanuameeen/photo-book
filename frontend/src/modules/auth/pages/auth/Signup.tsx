@@ -335,8 +335,10 @@ const Signup: React.FC = () => {
       password: formData.password,
     };
 
+    console.log("📧 [Signup] Attempting signup with email:", signupData.email);
     signupMutation.mutate(signupData, {
       onSuccess: () => {
+        console.log("✅ [Signup] Signup successful! Email:", signupData.email);
         sessionStorage.setItem("pendingVerificationEmail", signupData.email);
         toast.success("Account created! Check your email for OTP.");
 
@@ -352,7 +354,8 @@ const Signup: React.FC = () => {
           navigate({ to: ROUTES.AUTH.VERIFY_OTP });
         }, 1000);
       },
-      onError: () => {
+      onError: (error) => {
+        console.error("❌ [Signup] Signup failed:", error);
         // apiClient interceptor handles the error toast
       },
     });
@@ -362,8 +365,10 @@ const Signup: React.FC = () => {
 
   const handleGoogleSuccess = (credentialResponse: { credential?: string }) => {
     if (credentialResponse.credential) {
+      console.log("🔐 [Google Signup] Attempting Google authentication...");
       googleLoginMutation.mutate(credentialResponse.credential, {
         onSuccess: (response: IAuthResponse) => {
+          console.log("✅ [Google Signup] Google authentication successful! User:", response.data.user);
           toast.success("Google Login successful!", { id: "google-success" });
           const user = response.data.user;
           setUser(user, response.data.accessToken, true);
@@ -374,7 +379,8 @@ const Signup: React.FC = () => {
 
           navigate({ to: redirectTo });
         },
-        onError: () => {
+        onError: (error) => {
+          console.error("❌ [Google Signup] Google authentication failed:", error);
           // apiClient handles this
         }
       });
