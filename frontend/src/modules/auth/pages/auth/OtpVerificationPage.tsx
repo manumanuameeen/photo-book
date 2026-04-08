@@ -34,6 +34,7 @@ const VerifyOtp: React.FC = () => {
       }, 2000);
       return () => clearTimeout(timeoutId);
     }
+    console.log("📧 [OTP Page] Session email found:", email);
   }, [email, navigate]);
 
   useEffect(() => {
@@ -57,11 +58,13 @@ const VerifyOtp: React.FC = () => {
     }
 
     setIsVerifying(true);
+    console.log("🔐 [OTP Verification] Submitting OTP:", { email, otp: fullOtp });
 
     verifyOtpMutation.mutate(
       { email, otp: fullOtp },
       {
         onSuccess: () => {
+          console.log("✅ [OTP Verification] OTP verified successfully!");
           toast.success("Account verified successfully! You can now login.", { id: "verify-success" });
           sessionStorage.removeItem("pendingVerificationEmail");
           clearUser(); // Ensure no partial state remains
@@ -69,7 +72,8 @@ const VerifyOtp: React.FC = () => {
             navigate({ to: ROUTES.AUTH.LOGIN });
           }, 1500);
         },
-        onError: () => {
+        onError: (error) => {
+          console.error("❌ [OTP Verification] Verification failed:", error);
           setIsVerifying(false);
           // apiClient handles the error toast
         },
@@ -80,13 +84,16 @@ const VerifyOtp: React.FC = () => {
   const handleResend = async () => {
     if (timer > 0 || !email) return;
 
+    console.log("📧 [OTP Resend] Resending OTP to:", email);
     resendOtpMutation.mutate(email, {
       onSuccess: (response) => {
+        console.log("✅ [OTP Resend] OTP resent successfully!", response);
         toast.success(response.message || "OTP resent successfully!", { id: "resend-success" });
         setOtp(new Array(OTP_LENGTH).fill(""));
         setTimer(OTP_TIMER_DURATION);
       },
-      onError: () => {
+      onError: (error) => {
+        console.error("❌ [OTP Resend] Failed to resend OTP:", error);
         // apiClient handles the error toast
       },
     });
@@ -157,8 +164,13 @@ const VerifyOtp: React.FC = () => {
                       const newOtp = [...otp];
                       newOtp[idx] = val.slice(-1);
                       setOtp(newOtp);
+                      const fullCode = newOtp.join("");
+                      console.log(`🔢 [OTP Input] Digit ${idx + 1} entered. Current OTP: ${fullCode.padEnd(OTP_LENGTH, '_')}`);
                       if (val && idx < OTP_LENGTH - 1) {
                         (e.target.nextElementSibling as HTMLInputElement)?.focus();
+                      }
+                      if (fullCode.length === OTP_LENGTH) {
+                        console.log("✨ [OTP Input] Full 6-digit OTP entered and ready for submission");
                       }
                     }}
                     onKeyDown={(e) => {
