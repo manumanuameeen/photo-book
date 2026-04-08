@@ -9,29 +9,30 @@ import { FloatingHybridGallery } from '../../../components/home/FloatingHybridGa
 import { Ecosystem } from '../../../components/home/Ecosystem';
 
 export interface FeaturedEquipment {
-    _id?: string;
-    id?: string;
-    name: string;
-    category: string;
-    pricePerDay: number;
-    images?: string[];
-    type?: 'equipment';
+  _id?: string;
+  id?: string;
+  name: string;
+  category: string;
+  pricePerDay: number;
+  images?: string[];
+  type?: 'equipment';
 }
 
 export interface FeaturedPhotographer {
-    _id?: string;
-    id?: string;
-    name?: string;
-    image?: string;
-    category?: string;
-    rating?: number;
-    reviews?: number;
-    type?: 'photographer';
+  _id?: string;
+  id?: string;
+  name?: string;
+  image?: string;
+  category?: string;
+  rating?: number;
+  reviews?: number;
+  type?: 'photographer';
 }
 
 export type HybridItem = FeaturedPhotographer | FeaturedEquipment;
 
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 
 const HomePage = () => {
   const [mixedItems, setMixedItems] = useState<HybridItem[]>([]);
@@ -40,8 +41,8 @@ const HomePage = () => {
     const fetchEntities = async () => {
       try {
         const [equipmentRes, photographerRes] = await Promise.all([
-            rentalApi.getAllItems('', 1, 5),
-            userPhotographerApi.getPhotographers({ limit: 5 })
+          rentalApi.getAllItems('', 1, 5),
+          userPhotographerApi.getPhotographers({ limit: 5 })
         ]);
 
         const equipments = (equipmentRes.data?.items || []).map(item => ({ ...item, type: 'equipment' as const }));
@@ -49,9 +50,9 @@ const HomePage = () => {
 
         const combined: HybridItem[] = [];
         const maxLength = Math.max(equipments.length, photographers.length);
-        for(let i=0; i<maxLength; i++) {
-            if (equipments[i]) combined.push(equipments[i]);
-            if (photographers[i]) combined.push(photographers[i]);
+        for (let i = 0; i < maxLength; i++) {
+          if (equipments[i]) combined.push(equipments[i]);
+          if (photographers[i]) combined.push(photographers[i]);
         }
 
         setMixedItems(combined);
@@ -63,7 +64,7 @@ const HomePage = () => {
   }, []);
 
   // Animation Variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -74,14 +75,14 @@ const HomePage = () => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 15 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         duration: 0.8,
-        ease: "easeOut", // Standardizing for type safety
+        ease: "easeOut" as const, // Standardizing for type safety
       },
     },
   };
@@ -91,7 +92,7 @@ const HomePage = () => {
       <MouseFollower />
       <AmbientFlares />
 
-      <motion.div 
+      <motion.div
         className="relative z-10 font-sans"
         variants={containerVariants}
         initial="hidden"
@@ -109,7 +110,7 @@ const HomePage = () => {
           <Ecosystem />
         </motion.div>
       </motion.div>
-    
+
       <script src="https://api.anvevoice.app/functions/v1/voice-assistant-embed-js?embedId=f6f9fd77-4f3d-4b38-8ef4-ca1136340484&position=bottom-right&theme=light"></script>
     </div>
   );

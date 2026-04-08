@@ -2,16 +2,14 @@ version: "3.9"
 
 services:
   backend:
-    build:
-      context: ./backend
-      target: production
+    image: ${DOCKER_USERNAME}/photo-book-backend:latest
     container_name: photobook-backend-prod
     ports:
       - "5000:5000"
     environment:
       - NODE_ENV=production
     env_file:
-      - ./backend/.env
+      - .env
     # Resource limits for production stability
     deploy:
       resources:

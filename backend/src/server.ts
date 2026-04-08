@@ -46,9 +46,13 @@ async function startServer() {
   app.use(morganLogger);
   app.use(cookieParser());
   app.use(express.urlencoded({ extended: true }));
+  const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(",") 
+    : ["http://localhost:5173"];
+
   app.use(
     cors({
-      origin: ["https://main.d27f9jvazqn4mr.amplifyapp.com", "http://localhost:5173"],
+      origin: allowedOrigins,
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
