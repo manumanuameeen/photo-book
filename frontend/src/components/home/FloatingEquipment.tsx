@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion';
 import { Link } from '@tanstack/react-router';
 import { ROUTES } from '../../constants/routes';
 import { MagneticButton } from '../common/MagneticButton';
@@ -9,7 +9,7 @@ interface FloatingEquipmentProps {
   equipment: IRentalItem[];
 }
 
-const EquipmentCard = ({ item, yOffset }: { item: IRentalItem, yOffset: any }) => {
+const EquipmentCard = ({ item, yOffset }: { item: IRentalItem, yOffset: MotionValue<number> }) => {
     // Take the absolute path from the backend
     const imageUrl = item.images && item.images.length > 0 ? item.images[0] : `https://ui-avatars.com/api/?name=${item.name.replace(' ', '+')}&size=400&background=111&color=fff`;
 

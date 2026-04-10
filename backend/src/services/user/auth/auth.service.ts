@@ -125,10 +125,10 @@ export class AuthService implements IAuthService {
   async login(data: LoginDtoType) {
     const user = await this._userRepo.findByEmail(data.email);
     if (!user) throw new Error(Messages.USER_ACCOUNT_NOT_FOUND);
-    
+
     const isPasswordValid = await user.comparePassword(data.password);
     if (!isPasswordValid) throw new Error(Messages.INVALID_CREDENTIALS);
-    
+
     if (user.isBlocked) throw new Error(Messages.USER_BLOCKED);
 
     try {

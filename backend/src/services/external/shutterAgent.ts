@@ -69,7 +69,15 @@ export class ShutterAgent {
 
   private initializeTools() {
     const search_photographers = tool(
-      async ({ category, location, limit = 3 }: { category?: string; location?: string; limit?: number }) => {
+      async ({
+        category,
+        location,
+        limit = 3,
+      }: {
+        category?: string;
+        location?: string;
+        limit?: number;
+      }) => {
         try {
           const query: any = { status: "APPROVED", isBlock: false };
           if (category) {
@@ -85,9 +93,7 @@ export class ShutterAgent {
             photographers.map(async (p: any) => {
               const reviews = await ReviewModel.find({ targetId: p._id });
               const avg =
-                reviews.length > 0
-                  ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
-                  : 0;
+                reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
               return {
                 _id: p._id,
@@ -200,7 +206,8 @@ export class ShutterAgent {
       }) => {
         try {
           const photographer = await PhotographerModel.findById(args.photographerId);
-          if (!photographer) return JSON.stringify({ success: false, error: "Photographer not found" });
+          if (!photographer)
+            return JSON.stringify({ success: false, error: "Photographer not found" });
 
           const pkg = await BookingPackageModel.findById(args.packageId);
           if (!pkg) return JSON.stringify({ success: false, error: "Package not found" });

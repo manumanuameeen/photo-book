@@ -48,13 +48,15 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
 
   // CORS Configuration
-  const allowedOrigins = process.env.ALLOWED_ORIGINS 
-    ? process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim())
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
     : ["http://localhost:5173", "http://localhost:3000"];
 
   const corsOptions = {
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-     
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -65,7 +67,7 @@ async function startServer() {
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["set-cookie"],
-    maxAge: 86400, 
+    maxAge: 86400,
   };
 
   app.use(cors(corsOptions));

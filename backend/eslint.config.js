@@ -5,12 +5,14 @@ import prettierPlugin from "eslint-plugin-prettier";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
+  {
+    ignores: ["dist/**", "node_modules/**", "build/**", ".env", "*.test.ts", "*.spec.ts", "test*.ts"],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettierConfig,
   {
-    files: ["**/*.ts"],
-    ignores: ["dist/**", "node_modules/**", "build/**", ".env"],
+    files: ["src/**/*.ts"],
     plugins: {
       prettier: prettierPlugin,
     },
@@ -26,7 +28,7 @@ export default defineConfig([
     rules: {
       semi: ["error", "always"],
       quotes: ["error", "double"],
-      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "prettier/prettier": "warn",
       "no-console": "off",

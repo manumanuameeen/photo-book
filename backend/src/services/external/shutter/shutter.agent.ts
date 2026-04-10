@@ -66,7 +66,7 @@ function extractContext(history: any[]): ConversationContext {
   console.log(`[ShutterAgent:extractContext] Scanning history (${history.length} messages)...`);
   const ctx: ConversationContext = {
     phase: "GREETING",
-    partialBookingData: {}
+    partialBookingData: {},
   };
 
   for (const msg of history) {
@@ -86,14 +86,15 @@ function extractContext(history: any[]): ConversationContext {
       const content = msg.content || "";
       const photoMatch = content.match(/photographer.*?ID:\s*([a-f0-9]{24})/i);
       if (photoMatch) {
-        ctx.photographerId = photoMatch[1]; ctx.phase = "COMPARING";
+        ctx.photographerId = photoMatch[1];
+        ctx.phase = "COMPARING";
         console.log("[ShutterAgent:extractContext] Photographer ID found:", photoMatch[1]);
       }
 
       const pkgMatch = content.match(/package.*?ID:\s*([a-f0-9]{24})/i);
       if (pkgMatch) {
-        ctx.packageId = pkgMatch[1]; ctx.phase = "BOOKING_INITIATED";
-
+        ctx.packageId = pkgMatch[1];
+        ctx.phase = "BOOKING_INITIATED";
       }
 
       const eventTypes = ["wedding", "portrait", "event", "corporate", "maternity", "newborn"];
@@ -138,7 +139,15 @@ export class ShutterAgent {
 
   private initializeTools() {
     const search_photographers = tool(
-      async ({ category, location, limit = 3 }: { category?: string; location?: string; limit?: number }) => {
+      async ({
+        category,
+        location,
+        limit = 3,
+      }: {
+        category?: string;
+        location?: string;
+        limit?: number;
+      }) => {
         console.log(`[ShutterAgent:Tool] search_photographers [${category}, ${location}]`);
         try {
           const query: any = { status: "APPROVED", isBlock: false };
@@ -156,7 +165,9 @@ export class ShutterAgent {
           }
           if (location) query["personalInfo.location"] = { $regex: location, $options: "i" };
 
-          const photographers = await PhotographerModel.find(query).limit(Math.min(limit, 5)).lean();
+          const photographers = await PhotographerModel.find(query)
+            .limit(Math.min(limit, 5))
+            .lean();
 
           if (photographers.length === 0) {
             return JSON.stringify({ success: false, message: "No photographers found." });
@@ -165,9 +176,10 @@ export class ShutterAgent {
           const enriched = await Promise.all(
             photographers.map(async (p: any) => {
               const reviews = await ReviewModel.find({ targetId: p._id });
-              const avg = reviews.length > 0
-                ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
-                : 0;
+              const avg =
+                reviews.length > 0
+                  ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+                  : 0;
 
               return {
                 _id: p._id,
@@ -181,10 +193,15 @@ export class ShutterAgent {
                 rating: Number(avg.toFixed(1)),
                 reviews: reviews.length,
               };
-            })
+            }),
           );
 
-          return JSON.stringify({ success: true, photographers: enriched, _event: "PHASE_CHANGE", _nextPhase: "BROWSING" });
+          return JSON.stringify({
+            success: true,
+            photographers: enriched,
+            _event: "PHASE_CHANGE",
+            _nextPhase: "BROWSING",
+          });
         } catch {
           return JSON.stringify({ success: false, message: "Search failed." });
         }
@@ -197,7 +214,7 @@ export class ShutterAgent {
           location: z.string().optional(),
           limit: z.number().optional().default(3),
         }) as any,
-      }
+      },
     );
 
     const get_photographer_packages = tool(
@@ -211,7 +228,9 @@ export class ShutterAgent {
             photographer: new mongoose.Types.ObjectId(photographerId),
             isActive: true,
             status: { $in: ["APPROVED", "ACTIVE"] },
-          }).limit(10).lean();
+          })
+            .limit(10)
+            .lean();
 
           if (packages.length === 0)
             return JSON.stringify({ success: false, message: "No packages found." });
@@ -238,12 +257,14 @@ export class ShutterAgent {
         name: "get_photographer_packages",
         description: "Get booking packages for a特定 photographer.",
         schema: z.object({ photographerId: z.string() }) as any,
-      }
+      },
     );
 
     const get_photographer_availability = tool(
       async ({ photographerId, days = 30 }: { photographerId: string; days?: number }) => {
-        console.log(`[ShutterAgent:Tool] get_photographer_availability [${photographerId}, ${days}]`);
+        console.log(
+          `[ShutterAgent:Tool] get_photographer_availability [${photographerId}, ${days}]`,
+        );
         try {
           const startDate = new Date();
           startDate.setHours(0, 0, 0, 0);
@@ -261,7 +282,9 @@ export class ShutterAgent {
           const formatted = availability.map((a: any) => ({
             date: a.date.toISOString().split("T")[0],
             isFullDay: a.isFullDayAvailable,
-            slots: a.slots?.filter((s: any) => s.status === "AVAILABLE").map((s: any) => s.startTime) || [],
+            slots:
+              a.slots?.filter((s: any) => s.status === "AVAILABLE").map((s: any) => s.startTime) ||
+              [],
           }));
 
           return JSON.stringify({ success: true, photographerId, availableSlots: formatted });
@@ -276,7 +299,7 @@ export class ShutterAgent {
           photographerId: z.string(),
           days: z.number().optional().default(30),
         }) as any,
-      }
+      },
     );
 
     const create_booking = tool(
@@ -295,7 +318,8 @@ export class ShutterAgent {
         console.log(`[ShutterAgent:Tool] create_booking [${args.photographerId}]`);
         try {
           const photographer = await PhotographerModel.findById(args.photographerId);
-          if (!photographer) return JSON.stringify({ success: false, message: "Photographer not found." });
+          if (!photographer)
+            return JSON.stringify({ success: false, message: "Photographer not found." });
 
           const pkg = await BookingPackageModel.findById(args.packageId);
           if (!pkg) return JSON.stringify({ success: false, message: "Package not found." });
@@ -324,7 +348,12 @@ export class ShutterAgent {
           await booking.save();
           console.log(`[ShutterAgent:Tool] Finalized Booking: ${booking.bookingId}`);
 
-          return JSON.stringify({ success: true, bookingId: booking.bookingId, _event: "PHASE_CHANGE", _nextPhase: "BOOKING_CONFIRMED" });
+          return JSON.stringify({
+            success: true,
+            bookingId: booking.bookingId,
+            _event: "PHASE_CHANGE",
+            _nextPhase: "BOOKING_CONFIRMED",
+          });
         } catch {
           return JSON.stringify({ success: false, message: "Booking creation failed." });
         }
@@ -344,10 +373,15 @@ export class ShutterAgent {
           contactPhone: z.string(),
           userId: z.string(),
         }) as any,
-      }
+      },
     );
 
-    return [search_photographers, get_photographer_packages, get_photographer_availability, create_booking];
+    return [
+      search_photographers,
+      get_photographer_packages,
+      get_photographer_availability,
+      create_booking,
+    ];
   }
 
   public async run(
@@ -357,14 +391,15 @@ export class ShutterAgent {
     userId: string,
   ): Promise<ChatbotResult> {
     console.log("[ShutterAgent:run] Starting JSON-Mode execution loop...");
-    
+
     const context = extractContext(chatHistory);
     const contextString = JSON.stringify(context, null, 2);
-    
+
     // Prepare System Message
-    const systemMsg = SYSTEM_PROMPT
-      .replace("{phase}", currentPhase)
-      .replace("{context}", contextString);
+    const systemMsg = SYSTEM_PROMPT.replace("{phase}", currentPhase).replace(
+      "{context}",
+      contextString,
+    );
 
     const messages: BaseMessage[] = [new SystemMessage(systemMsg)];
 
@@ -387,7 +422,7 @@ export class ShutterAgent {
     while (iterations < 5) {
       iterations++;
       console.log(`[ShutterAgent:run] Iteration ${iterations}...`);
-      
+
       const response = await this.model.invoke(messages);
       const content = response.content as string;
       messages.push(new AIMessage(content));
@@ -396,14 +431,14 @@ export class ShutterAgent {
 
       // Regex to find ```json (.*?) ```
       const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
-      
+
       if (jsonMatch) {
         try {
           // Clean the JSON string (remove potential double braces or stray text)
           let jsonStr = jsonMatch[1].trim();
           if (jsonStr.startsWith("{{")) jsonStr = jsonStr.substring(1);
           if (jsonStr.endsWith("}}")) jsonStr = jsonStr.substring(0, jsonStr.length - 1);
-          
+
           const call = JSON.parse(jsonStr);
           const toolName = call.action;
           const toolArgs = call.args;
@@ -424,7 +459,11 @@ export class ShutterAgent {
             const results = await (this.tools[1] as any).func(toolArgs);
             const res = JSON.parse(results);
             if (res.success) {
-              structuredData = { type: "package_list", photographerId: res.photographerId, data: res.packages };
+              structuredData = {
+                type: "package_list",
+                photographerId: res.photographerId,
+                data: res.packages,
+              };
               nextPhase = res._nextPhase || nextPhase;
             }
             toolResultStr = results;
@@ -432,7 +471,11 @@ export class ShutterAgent {
             const results = await (this.tools[2] as any).func(toolArgs);
             const res = JSON.parse(results);
             if (res.success) {
-              structuredData = { type: "availability_picker", photographerId: res.photographerId, data: { availableSlots: res.availableSlots, bookedDates: [] } };
+              structuredData = {
+                type: "availability_picker",
+                photographerId: res.photographerId,
+                data: { availableSlots: res.availableSlots, bookedDates: [] },
+              };
             }
             toolResultStr = results;
           } else if (toolName === "create_booking") {
@@ -447,10 +490,13 @@ export class ShutterAgent {
 
           messages.push(new HumanMessage(`JSON_TOOL_RESULT: ${toolResultStr}`));
           continue; // Loop again so AI can generate the final human-friendly response
-
         } catch (e) {
           console.error("[ShutterAgent:run] JSON Parsing or Tool Execution Error:", e);
-          messages.push(new HumanMessage(`Error: Invalid JSON format. Try \`\`\`json { "action": "tool", "args": {...} } \`\`\``));
+          messages.push(
+            new HumanMessage(
+              "Error: Invalid JSON format. Try ```json { \"action\": \"tool\", \"args\": {...} } ```",
+            ),
+          );
           continue;
         }
       }

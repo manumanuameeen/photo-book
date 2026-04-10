@@ -8,8 +8,8 @@ async function testImport() {
   console.log("Testing absolute import: 'models/photographer.model'...");
   try {
     if (!process.env.MONGO_URI) {
-        console.error("MONGO_URI is MISSING");
-        return;
+      console.error("MONGO_URI is MISSING");
+      return;
     }
     await mongoose.connect(process.env.MONGO_URI);
     const count = await PhotographerModel.countDocuments();

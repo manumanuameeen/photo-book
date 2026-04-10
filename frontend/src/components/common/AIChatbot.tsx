@@ -58,7 +58,7 @@ const AIChatbot: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<{ message: string; details?: any } | null>(null);
+  const [error, setError] = useState<{ message: string; details?: Record<string, unknown> } | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
   const [sessionId] = useState(() => `session_${Math.random().toString(36).substring(2, 11)}`);

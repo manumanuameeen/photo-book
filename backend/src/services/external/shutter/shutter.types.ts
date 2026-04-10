@@ -24,12 +24,12 @@ export interface AvailabilityData {
   slots: string[];
 }
 
-export type ChatbotPhase = 
-  | "GREETING" 
-  | "BROWSING" 
-  | "COMPARING" 
-  | "BOOKING_INITIATED" 
-  | "BOOKING_PENDING" 
+export type ChatbotPhase =
+  | "GREETING"
+  | "BROWSING"
+  | "COMPARING"
+  | "BOOKING_INITIATED"
+  | "BOOKING_PENDING"
   | "BOOKING_CONFIRMED";
 
 export interface ChatMessage {
@@ -38,7 +38,7 @@ export interface ChatMessage {
 }
 
 export interface ChatbotStructuredData {
-  type: 'photographer_list' | 'package_list' | 'booking_confirmation' | 'availability_picker';
+  type: "photographer_list" | "package_list" | "booking_confirmation" | "availability_picker";
   photographerId?: string;
   data?: any[] | any;
   bookingId?: string;

@@ -4,7 +4,7 @@ export interface IChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   structuredData?: {
-    type: 'photographer_list' | 'package_list' | 'booking_confirmation' | 'availability_picker';
+    type: "photographer_list" | "package_list" | "booking_confirmation" | "availability_picker";
     photographerId?: string;
     data?: any;
     bookingId?: string;

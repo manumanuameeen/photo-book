@@ -29,14 +29,14 @@ export const getChatbotResponse = async (
   sessionId: string = "default",
 ) => {
   console.log(`[ChatbotService] Starting request - userId: ${userId}, sessionId: ${sessionId}`);
-  
+
   try {
     // 1. Context Loading
-    console.log(`[ChatbotService:1] Loading chat history from DB...`);
+    console.log("[ChatbotService:1] Loading chat history from DB...");
     let chatHistory = await ChatHistoryModel.findOne({ userId, sessionId });
-    
+
     if (!chatHistory) {
-      console.log(`[ChatbotService:1.1] No history found. Creating new session.`);
+      console.log("[ChatbotService:1.1] No history found. Creating new session.");
       chatHistory = new ChatHistoryModel({
         userId,
         sessionId,
@@ -44,25 +44,27 @@ export const getChatbotResponse = async (
         metadata: { state: { phase: "GREETING" } },
       });
     } else {
-      console.log(`[ChatbotService:1.2] Loaded history with ${chatHistory.messages.length} messages.`);
+      console.log(
+        `[ChatbotService:1.2] Loaded history with ${chatHistory.messages.length} messages.`,
+      );
     }
 
     const currentPhase = (chatHistory.metadata?.state?.phase as ChatbotPhase) || "GREETING";
     console.log(`[ChatbotService:1.3] Current Phase: ${currentPhase}`);
 
     // 2. Agent Execution
-    console.log(`[ChatbotService:2] Initializing ShutterAgent...`);
+    console.log("[ChatbotService:2] Initializing ShutterAgent...");
     const agent = new ShutterAgent();
-    
+
     const lastUserMessage = messages[messages.length - 1].content;
     console.log(`[ChatbotService:2.1] User Input: "${lastUserMessage}"`);
-    
-    console.log(`[ChatbotService:2.2] Running ShutterAgent.run()...`);
+
+    console.log("[ChatbotService:2.2] Running ShutterAgent.run()...");
     const result = await agent.run(lastUserMessage, chatHistory.messages, currentPhase, userId);
     console.log(`[ChatbotService:2.3] Agent Success. Response length: ${result.message.length}`);
 
     // 3. Persistence
-    console.log(`[ChatbotService:3] Preserving interaction in DB...`);
+    console.log("[ChatbotService:3] Preserving interaction in DB...");
     chatHistory.messages.push({
       role: "user",
       content: lastUserMessage,
@@ -99,17 +101,17 @@ export const getChatbotResponse = async (
     };
   } catch (error: any) {
     console.error("[ChatbotService] CRITICAL FAILURE:", error);
-    
+
     // Log the error stack separately for visibility
     if (error.stack) {
-        console.error("[ChatbotService] Stack Trace:", error.stack);
+      console.error("[ChatbotService] Stack Trace:", error.stack);
     }
 
     return {
       success: false,
       message: "An internal error occurred while processing your request.",
       error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     };
   }
 };

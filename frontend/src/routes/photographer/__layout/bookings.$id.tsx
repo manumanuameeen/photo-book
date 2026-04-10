@@ -7,9 +7,11 @@ export const Route = createFileRoute('/photographer/__layout/bookings/$id')({
       source: (search.source as string) || undefined,
     }
   },
-  component: () => {
-    const { id } = Route.useParams();
-    return <BookingDetailsPage bookingId={id} />;
-  },
+  component: BookingDetailsRoute,
 });
+
+function BookingDetailsRoute() {
+  const { id } = Route.useParams();
+  return <BookingDetailsPage bookingId={id} />;
+}
 

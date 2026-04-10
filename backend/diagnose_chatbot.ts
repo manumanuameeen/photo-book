@@ -6,7 +6,7 @@ import { PhotographerModel } from "./src/models/photographer.model";
 
 async function diagnose() {
   console.log("--- CHATBOT DIAGNOSTICS ---");
-  
+
   // 1. Check ENV
   console.log("1. Checking Environment...");
   if (!process.env.GROQ_API_KEY) {
@@ -20,7 +20,7 @@ async function diagnose() {
   try {
     const model = new ChatGroq({
       apiKey: process.env.GROQ_API_KEY,
-      model: "llama-3.1-8b-instant"
+      model: "llama-3.1-8b-instant",
     });
     const res = await model.invoke("Hello, are you active?");
     console.log("✅ Groq Response:", res.content);
@@ -32,13 +32,13 @@ async function diagnose() {
   console.log("\n3. Testing Database Connectivity...");
   try {
     if (!process.env.MONGO_URI) {
-        console.error("❌ MONGO_URI is MISSING");
+      console.error("❌ MONGO_URI is MISSING");
     } else {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log("✅ MongoDB Connected.");
-        const count = await PhotographerModel.countDocuments();
-        console.log(`✅ Photographers in DB: ${count}`);
-        await mongoose.disconnect();
+      await mongoose.connect(process.env.MONGO_URI);
+      console.log("✅ MongoDB Connected.");
+      const count = await PhotographerModel.countDocuments();
+      console.log(`✅ Photographers in DB: ${count}`);
+      await mongoose.disconnect();
     }
   } catch (err: any) {
     console.error("❌ Database Error:", err.message);
