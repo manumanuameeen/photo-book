@@ -1,0 +1,56 @@
+﻿src/services/external/shutter/shutter.agent.ts(121,27): error TS2304: Cannot find name 'ChatOpenAI'.
+src/services/external/shutter/shutter.agent.ts(126,22): error TS2304: Cannot find name 'ChatOpenAI'.
+src/services/external/shutter/shutter.agent.ts(144,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '({ category, location, limit, }: { category?: string; location?: string; limit?: number; }) => Promise<string>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters '__0' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ category?: string | undefined; location?: string | undefined; limit?: number | undefined; }'.
+src/services/external/shutter/shutter.agent.ts(183,21): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/services/external/shutter/shutter.agent.ts(183,36): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: Document<unknown, {}, IReview, {}, {}> & IReview & Required<{ _id: ObjectId; }> & { __v: number; }, currentValue: Document<unknown, {}, IReview, {}, {}> & IReview & Required<...> & { ...; }, currentIndex: number, array: (Document<...> & ... 2 more ... & { ...; })[]) => Document<...> & ... 2 more ... & { ...; }, initialValue: Document<...> & ... 2 more ... & { ...; }): Document<...> & ... 2 more ... & { ...; }', gave the following error.
+    Argument of type '(sum: number, r: FlattenMaps<IReview>) => number' is not assignable to parameter of type '(previousValue: Document<unknown, {}, IReview, {}, {}> & IReview & Required<{ _id: ObjectId; }> & { __v: number; }, currentValue: Document<unknown, {}, IReview, {}, {}> & IReview & Required<...> & { ...; }, currentIndex: number, array: (Document<...> & ... 2 more ... & { ...; })[]) => Document<...> & ... 2 more ... ...'.
+      Types of parameters 'sum' and 'previousValue' are incompatible.
+        Type 'Document<unknown, {}, IReview, {}, {}> & IReview & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: Document<unknown, {}, IReview, {}, {}> & IReview & Required<{ _id: ObjectId; }> & { __v: number; }, currentIndex: number, array: (Document<...> & ... 2 more ... & { ...; })[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(sum: number, r: FlattenMaps<IReview>) => number' is not assignable to parameter of type '(previousValue: number, currentValue: Document<unknown, {}, IReview, {}, {}> & IReview & Required<{ _id: ObjectId; }> & { __v: number; }, currentIndex: number, array: (Document<...> & ... 2 more ... & { ...; })[]) => number'.
+      Types of parameters 'r' and 'currentValue' are incompatible.
+        Type 'Document<unknown, {}, IReview, {}, {}> & IReview & Required<{ _id: ObjectId; }> & { __v: number; }' is not assignable to type 'FlattenMaps<IReview>'.
+          Types of property '$locals' are incompatible.
+            Type 'Record<string, unknown>' is not assignable to type 'FlattenMaps<Record<string, unknown>>'.
+              'string' index signatures are incompatible.
+                Type 'unknown' is not assignable to type 'FlattenMaps<unknown>'.
+src/services/external/shutter/shutter.agent.ts(223,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '({ photographerId }: { photographerId: string; }) => Promise<string>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters '__0' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ photographerId: string; }'.
+src/services/external/shutter/shutter.agent.ts(266,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '({ photographerId, days }: { photographerId: string; days?: number; }) => Promise<string>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters '__0' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ photographerId: string; days?: number | undefined; }'.
+src/services/external/shutter/shutter.agent.ts(308,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(args: { photographerId: string; packageId: string; eventDate: string; startTime: string; location: string; eventType: string; contactName: string; contactEmail: string; contactPhone: string; userId: string; }) => Promise<...>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters 'args' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ photographerId: string; packageId: string; eventDate: string; startTime: string; location: string; eventType: string; contactName: string; contactEmail: string; contactPhone: string; userId: string; }'.
+src/services/external/shutterAgent.ts(76,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '({ category, location, limit, }: { category?: string; location?: string; limit?: number; }) => Promise<string>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters '__0' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ category?: string | undefined; location?: string | undefined; limit?: number | undefined; }'.
+src/services/external/shutterAgent.ts(133,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '({ photographerId }: { photographerId: string; }) => Promise<string>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters '__0' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ photographerId: string; }'.
+src/services/external/shutterAgent.ts(166,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '({ photographerId, days }: { photographerId: string; days?: number; }) => Promise<string>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters '__0' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ photographerId: string; days?: number | undefined; }'.
+src/services/external/shutterAgent.ts(200,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(args: { photographerId: string; packageId: string; eventDate: string; startTime: string; location: string; eventType: string; contactName: string; contactEmail: string; contactPhone: string; }) => Promise<...>' is not assignable to parameter of type 'RunnableFunc<unknown, string, ToolRunnableConfig>'.
+      Types of parameters 'args' and 'input' are incompatible.
+        Type 'unknown' is not assignable to type '{ photographerId: string; packageId: string; eventDate: string; startTime: string; location: string; eventType: string; contactName: string; contactEmail: string; contactPhone: string; }'.
