@@ -6,6 +6,8 @@ export interface IAvailabilitySlot {
   status: "AVAILABLE" | "BOOKED" | "UNAVAILABLE";
 }
 
+export type ISlot = IAvailabilitySlot;
+
 export interface IAvailability extends Document {
   photographer: mongoose.Types.ObjectId;
   date: Date;

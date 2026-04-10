@@ -61,7 +61,7 @@ export const getPhotographerRecommendations = async (
 
     for (const photographer of photographers) {
       const reviews = await ReviewModel.find({
-        targetId: new mongoose.Types.ObjectId(photographer._id as string),
+        targetId: photographer._id as mongoose.Types.ObjectId,
         type: "photographer",
       });
 
@@ -69,7 +69,7 @@ export const getPhotographerRecommendations = async (
         reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
 
       recommendations.push({
-        id: (photographer._id as string).toString(),
+        id: (photographer._id as any).toString(),
         name: photographer.personalInfo.name,
         specialty: photographer.professionalDetails.specialties.join(", "),
         experience: photographer.professionalDetails.yearsExperience,

@@ -6,7 +6,7 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp?: Date;
-  structuredData?: Record<string, unknown>; // Dynamic based on context
+  structuredData?: any; 
 }
 
 /**
@@ -24,7 +24,7 @@ export const clearInactiveMemories = () => {
  */
 
 export const getChatbotResponse = async (
-  messages: IChatMessage[],
+  messages: ChatMessage[],
   userId: string,
   sessionId: string = "default",
 ) => {
@@ -99,19 +99,19 @@ export const getChatbotResponse = async (
       structuredData: result.structuredData,
       conversationPhase: result.nextPhase,
     };
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("[ChatbotService] CRITICAL FAILURE:", error);
 
     // Log the error stack separately for visibility
-    if (error.stack) {
+    if (error && typeof error === 'object' && 'stack' in error) {
       console.error("[ChatbotService] Stack Trace:", error.stack);
     }
 
     return {
       success: false,
       message: "An internal error occurred while processing your request.",
-      error: error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      error: error && typeof error === 'object' && 'message' in error ? error.message : String(error),
+      stack: process.env.NODE_ENV === "development" && error && typeof error === 'object' && 'stack' in error ? error.stack : undefined,
     };
   }
 };

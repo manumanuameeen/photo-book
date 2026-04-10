@@ -70,15 +70,12 @@ export class ShutterAgent {
 
   private initializeTools() {
     const search_photographers = tool(
-      async ({
-        category,
-        location,
-        limit = 3,
-      }: {
-        category?: string;
-        location?: string;
-        limit?: number;
-      }) => {
+      async (input: any) => {
+        const {
+          category,
+          location,
+          limit = 3,
+        } = input;
         try {
           const query: FilterQuery<IPhotographer> = { status: "APPROVED", isBlock: false };
           if (category) {
@@ -92,7 +89,7 @@ export class ShutterAgent {
 
           // Mongoose .lean() returns plain objects, cast to interface for type checking
           const enriched = await Promise.all(
-            photographers.map(async (p: IPhotographer) => {
+            photographers.map(async (p: any) => {
               const reviews = await ReviewModel.find({ targetId: p._id });
               const avg =
                 reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
@@ -128,7 +125,8 @@ export class ShutterAgent {
     );
 
     const get_packages = tool(
-      async ({ photographerId }: { photographerId: string }) => {
+      async (input: any) => {
+        const { photographerId } = input;
         try {
           const packages = await BookingPackageModel.find({
             photographer: new mongoose.Types.ObjectId(photographerId),
@@ -161,7 +159,8 @@ export class ShutterAgent {
     );
 
     const get_availability = tool(
-      async ({ photographerId, days = 30 }: { photographerId: string; days?: number }) => {
+      async (input: any) => {
+        const { photographerId, days = 30 } = input;
         try {
           const startDate = new Date();
           startDate.setHours(0, 0, 0, 0);
@@ -173,9 +172,9 @@ export class ShutterAgent {
             date: { $gte: startDate, $lte: endDate },
           }).lean();
 
-          const formatted = availability.map((a) => ({
+          const formatted = availability.map((a: any) => ({
             date: a.date.toISOString().split("T")[0],
-            slots: a.slots.filter((s) => s.status === "AVAILABLE").map((s) => s.startTime),
+            slots: a.slots.filter((s: any) => s.status === "AVAILABLE").map((s: any) => s.startTime),
           }));
 
           return JSON.stringify({ success: true, photographerId, availableSlots: formatted });
@@ -195,17 +194,7 @@ export class ShutterAgent {
     );
 
     const create_booking = tool(
-      async (args: {
-        photographerId: string;
-        packageId: string;
-        eventDate: string;
-        startTime: string;
-        location: string;
-        eventType: string;
-        contactName: string;
-        contactEmail: string;
-        contactPhone: string;
-      }) => {
+      async (args: any) => {
         try {
           const photographer = await PhotographerModel.findById(args.photographerId);
           if (!photographer)

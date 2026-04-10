@@ -11,7 +11,7 @@ import { PhotographerModel, IPhotographer } from "../../../models/photographer.m
 import { BookingPackageModel, IBookingPackage } from "../../../models/bookingPackage.model";
 import { BookingModel } from "../../../models/booking.model";
 import { ReviewModel, IReview } from "../../../models/review.model";
-import { AvailabilityModel, IAvailability, ISlot } from "../../../models/availability.model";
+import { AvailabilityModel, IAvailability, IAvailabilitySlot } from "../../../models/availability.model";
 import { IChatMessage } from "../../../models/chatHistory.model";
 
 import { ChatbotPhase, ChatbotResult, ChatbotStructuredData } from "./shutter.types";
@@ -140,15 +140,12 @@ export class ShutterAgent {
 
   private initializeTools() {
     const search_photographers = tool(
-      async ({
-        category,
-        location,
-        limit = 3,
-      }: {
-        category?: string;
-        location?: string;
-        limit?: number;
-      }) => {
+      async (input: any) => {
+        const {
+          category,
+          location,
+          limit = 3,
+        } = input;
         console.log(`[ShutterAgent:Tool] search_photographers [${category}, ${location}]`);
         try {
           const query: FilterQuery<IPhotographer> = { status: "APPROVED", isBlock: false };
@@ -175,7 +172,7 @@ export class ShutterAgent {
           }
 
           const enriched = await Promise.all(
-            photographers.map(async (p: IPhotographer) => {
+            photographers.map(async (p: any) => {
               const reviews = await ReviewModel.find({ targetId: p._id });
                 const avg =
                   reviews.length > 0
@@ -219,7 +216,8 @@ export class ShutterAgent {
     );
 
     const get_photographer_packages = tool(
-      async ({ photographerId }: { photographerId: string }) => {
+      async (input: any) => {
+        const { photographerId } = input;
         console.log(`[ShutterAgent:Tool] get_photographer_packages [${photographerId}]`);
         try {
           if (!mongoose.Types.ObjectId.isValid(photographerId))
@@ -239,7 +237,7 @@ export class ShutterAgent {
           return JSON.stringify({
             success: true,
             photographerId,
-            packages: packages.map((pkg: IBookingPackage) => ({
+            packages: packages.map((pkg: any) => ({
               _id: pkg._id,
               name: pkg.name,
               description: pkg.description?.substring(0, 150) || "",
@@ -262,7 +260,8 @@ export class ShutterAgent {
     );
 
     const get_photographer_availability = tool(
-      async ({ photographerId, days = 30 }: { photographerId: string; days?: number }) => {
+      async (input: any) => {
+        const { photographerId, days = 30 } = input;
         console.log(
           `[ShutterAgent:Tool] get_photographer_availability [${photographerId}, ${days}]`,
         );
@@ -280,11 +279,11 @@ export class ShutterAgent {
           if (availability.length === 0)
             return JSON.stringify({ success: false, message: "No specific availability set." });
 
-          const formatted = availability.map((a: IAvailability) => ({
+          const formatted = availability.map((a: any) => ({
             date: a.date.toISOString().split("T")[0],
             isFullDay: a.isFullDayAvailable,
             slots:
-              a.slots?.filter((s: ISlot) => s.status === "AVAILABLE").map((s: ISlot) => s.startTime) ||
+              a.slots?.filter((s: any) => s.status === "AVAILABLE").map((s: any) => s.startTime) ||
               [],
           }));
 
@@ -304,18 +303,7 @@ export class ShutterAgent {
     );
 
     const create_booking = tool(
-      async (args: {
-        photographerId: string;
-        packageId: string;
-        eventDate: string;
-        startTime: string;
-        location: string;
-        eventType: string;
-        contactName: string;
-        contactEmail: string;
-        contactPhone: string;
-        userId: string;
-      }) => {
+      async (args: any) => {
         console.log(`[ShutterAgent:Tool] create_booking [${args.photographerId}]`);
         try {
           const photographer = await PhotographerModel.findById(args.photographerId);

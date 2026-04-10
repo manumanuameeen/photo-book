@@ -6,8 +6,10 @@ export interface IChatMessage {
   structuredData?: {
     type: "photographer_list" | "package_list" | "booking_confirmation" | "availability_picker";
     photographerId?: string;
-    data?: unknown; // Dynamic data based on type
+    packageId?: string;
+    data?: any;
     bookingId?: string;
+    [key: string]: any;
   };
   timestamp: Date;
 }

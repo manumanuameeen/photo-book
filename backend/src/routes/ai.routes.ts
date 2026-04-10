@@ -138,14 +138,14 @@ router.get("/chatbot/history", verifyAccessToken, async (req: Request, res: Resp
  */
 router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: Response) => {
   try {
-    const { messages, sessionId } = req.body as { messages: ChatMessage[]; sessionId?: string };
+    const { messages, sessionId } = req.body as { messages: any[]; sessionId?: string };
     const userId = (req as AuthRequest).userId;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ message: "Chat history is required" });
     }
 
-    const result = await getChatbotResponse(messages, userId, sessionId || "default");
+    const result = await getChatbotResponse(messages, userId as string, sessionId || "default");
 
     return res.status(200).json({
       success: result.success,
@@ -155,7 +155,7 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
       stack: (result as { stack?: string }).stack, // Include stack if returned by service
       error: (result as { error?: string }).error,
     });
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("[AI Chatbot Route] Error:", error);
 
     // Extract detailed error information

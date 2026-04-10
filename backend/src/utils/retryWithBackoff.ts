@@ -26,16 +26,14 @@ const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'shouldRetry'>> & { shouldRet
   initialDelayMs: 2000,
   maxDelayMs: 60000,
   backoffMultiplier: 2,
-  shouldRetry: (error: unknown) => {
+  shouldRetry: (error: any) => {
     // Rate limit errors - ALWAYS retry
-    if (error?.response?.status === 429) return true;
-    if (error?.response?.data?.error?.code === "rate_limit_exceeded") return true;
+    if (error && typeof error === 'object' && 'response' in error && error.response?.status === 429) return true;
+    if (error && typeof error === 'object' && 'response' in error && error.response?.data?.error?.code === "rate_limit_exceeded") return true;
 
     // Network/server errors - retry
-    if (error?.response?.status === 503) return true;
-    if (error?.response?.status === 504) return true;
-    if (error?.code === "ETIMEDOUT") return true;
-    if (error?.code === "ECONNREFUSED") return true;
+    if (error && typeof error === 'object' && 'response' in error && (error.response?.status === 503 || error.response?.status === 504)) return true;
+    if (error && typeof error === 'object' && 'code' in error && (error.code === "ETIMEDOUT" || error.code === "ECONNREFUSED")) return true;
 
     return false;
   },
