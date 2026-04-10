@@ -40,7 +40,7 @@ export interface ChatMessage {
 export interface ChatbotStructuredData {
   type: "photographer_list" | "package_list" | "booking_confirmation" | "availability_picker";
   photographerId?: string;
-  data?: any[] | any;
+  data?: unknown[] | Record<string, unknown>; // Dynamic payload
   bookingId?: string;
 }
 

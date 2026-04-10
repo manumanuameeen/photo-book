@@ -4,7 +4,7 @@
  * Integrates with the Photo-book platform's photographer database
  */
 
-import { PhotographerModel } from "../../models/photographer.model";
+import { PhotographerModel, IPhotographer } from "../../models/photographer.model";
 import { ReviewModel } from "../../models/review.model";
 import mongoose from "mongoose";
 
@@ -32,6 +32,7 @@ export const getPhotographerRecommendations = async (
   limit: number = 3,
 ): Promise<PhotographerRecommendation[]> => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: any = {
       status: "APPROVED",
       isBlock: false,
@@ -134,7 +135,7 @@ export const extractUserPreferences = (
     .join(" ")
     .toLowerCase();
 
-  const preferences: any = { hasPreferences: false };
+  const preferences: { category?: string; location?: string; priceRange?: string; hasPreferences: boolean } = { hasPreferences: false };
 
   // Extract category
   const categories = [

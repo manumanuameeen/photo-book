@@ -6,7 +6,7 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp?: Date;
-  structuredData?: any;
+  structuredData?: Record<string, unknown>; // Dynamic based on context
 }
 
 /**
@@ -24,7 +24,7 @@ export const clearInactiveMemories = () => {
  */
 
 export const getChatbotResponse = async (
-  messages: any[],
+  messages: IChatMessage[],
   userId: string,
   sessionId: string = "default",
 ) => {
@@ -99,7 +99,7 @@ export const getChatbotResponse = async (
       structuredData: result.structuredData,
       conversationPhase: result.nextPhase,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[ChatbotService] CRITICAL FAILURE:", error);
 
     // Log the error stack separately for visibility

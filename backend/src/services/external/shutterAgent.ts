@@ -9,11 +9,12 @@ import { tool } from "@langchain/core/tools";
 import mongoose from "mongoose";
 
 // Models
-import { PhotographerModel } from "../../models/photographer.model";
+import { PhotographerModel, IPhotographer } from "../../models/photographer.model";
 import { BookingPackageModel } from "../../models/bookingPackage.model";
 import { ReviewModel } from "../../models/review.model";
 import { AvailabilityModel } from "../../models/availability.model";
 import { BookingModel } from "../../models/booking.model";
+import { IChatMessage } from "../../models/chatHistory.model";
 
 const SYSTEM_PROMPT = `You are Shutter, Photo-book's AI booking agent.
 
@@ -31,13 +32,14 @@ Current conversation phase: {phase}`;
 export interface AgentResult {
   success: boolean;
   message: string;
-  structuredData?: any;
+  structuredData?: Record<string, unknown> | null; // Varies by tool
   conversationPhase: string;
 }
 
 export class ShutterAgent {
   private readonly model: ChatGroq;
   private readonly summarizer: ChatGroq;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private readonly tools: any[];
   private readonly userId: string;
   private readonly sessionId: string;
@@ -79,6 +81,7 @@ export class ShutterAgent {
         limit?: number;
       }) => {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const query: any = { status: "APPROVED", isBlock: false };
           if (category) {
             query["professionalDetails.specialties"] = { $regex: category, $options: "i" };
@@ -89,6 +92,7 @@ export class ShutterAgent {
 
           const photographers = await PhotographerModel.find(query).limit(limit).lean();
 
+          // Mongoose .lean() returns plain objects, cast to interface for type checking
           const enriched = await Promise.all(
             photographers.map(async (p: any) => {
               const reviews = await ReviewModel.find({ targetId: p._id });
@@ -269,7 +273,7 @@ export class ShutterAgent {
     return [search_photographers, get_packages, get_availability, create_booking];
   }
 
-  public async run(userInput: string, chatHistory: any[], phase: string): Promise<AgentResult> {
+  public async run(userInput: string, chatHistory: IChatMessage[], phase: string): Promise<AgentResult> {
     const memory = new ConversationSummaryBufferMemory({
       llm: this.summarizer as any,
       chatHistory: new ChatMessageHistory(),

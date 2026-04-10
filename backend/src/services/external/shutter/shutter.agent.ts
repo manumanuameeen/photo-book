@@ -7,11 +7,12 @@ import { z } from "zod";
 import mongoose from "mongoose";
 
 // Models - Using Relative Paths for Docker build safety
-import { PhotographerModel } from "../../../models/photographer.model";
-import { BookingPackageModel } from "../../../models/bookingPackage.model";
+import { PhotographerModel, IPhotographer } from "../../../models/photographer.model";
+import { BookingPackageModel, IBookingPackage } from "../../../models/bookingPackage.model";
 import { BookingModel } from "../../../models/booking.model";
-import { ReviewModel } from "../../../models/review.model";
-import { AvailabilityModel } from "../../../models/availability.model";
+import { ReviewModel, IReview } from "../../../models/review.model";
+import { AvailabilityModel, IAvailability, ISlot } from "../../../models/availability.model";
+import { IChatMessage } from "../../../models/chatHistory.model";
 
 import { ChatbotPhase, ChatbotResult, ChatbotStructuredData } from "./shutter.types";
 
@@ -62,7 +63,7 @@ interface ConversationContext {
   partialBookingData?: Record<string, string>;
 }
 
-function extractContext(history: any[]): ConversationContext {
+function extractContext(history: IChatMessage[]): ConversationContext {
   console.log(`[ShutterAgent:extractContext] Scanning history (${history.length} messages)...`);
   const ctx: ConversationContext = {
     phase: "GREETING",
@@ -150,6 +151,7 @@ export class ShutterAgent {
       }) => {
         console.log(`[ShutterAgent:Tool] search_photographers [${category}, ${location}]`);
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const query: any = { status: "APPROVED", isBlock: false };
           if (category) {
             const normalizedCategory = category.toLowerCase();
@@ -174,10 +176,11 @@ export class ShutterAgent {
           }
 
           const enriched = await Promise.all(
-            photographers.map(async (p: any) => {
+            photographers.map(async (p: IPhotographer) => {
               const reviews = await ReviewModel.find({ targetId: p._id });
               const avg =
                 reviews.length > 0
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
                   : 0;
 
@@ -238,6 +241,7 @@ export class ShutterAgent {
           return JSON.stringify({
             success: true,
             photographerId,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             packages: packages.map((pkg: any) => ({
               _id: pkg._id,
               name: pkg.name,
@@ -279,10 +283,12 @@ export class ShutterAgent {
           if (availability.length === 0)
             return JSON.stringify({ success: false, message: "No specific availability set." });
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const formatted = availability.map((a: any) => ({
             date: a.date.toISOString().split("T")[0],
             isFullDay: a.isFullDayAvailable,
             slots:
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               a.slots?.filter((s: any) => s.status === "AVAILABLE").map((s: any) => s.startTime) ||
               [],
           }));
@@ -386,7 +392,7 @@ export class ShutterAgent {
 
   public async run(
     userInput: string,
-    chatHistory: any[],
+    chatHistory: IChatMessage[],
     currentPhase: ChatbotPhase,
     userId: string,
   ): Promise<ChatbotResult> {

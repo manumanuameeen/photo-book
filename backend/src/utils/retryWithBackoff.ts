@@ -3,20 +3,26 @@
  * Handles Groq rate limits specifically
  */
 
+// Error interface for better type safety in error handling
+interface RetryableError extends Error {
+  response?: { status?: number; data?: { error?: { code?: string; message?: string } } };
+  code?: string;
+}
+
 export interface RetryOptions {
   maxRetries?: number;
   initialDelayMs?: number;
   maxDelayMs?: number;
   backoffMultiplier?: number;
-  shouldRetry?: (error: any) => boolean;
+  shouldRetry?: (error: RetryableError | Error | unknown) => boolean;
 }
 
-const DEFAULT_OPTIONS: Required<RetryOptions> = {
+const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'shouldRetry'>> & { shouldRetry: (error: unknown) => boolean } = {
   maxRetries: 3,
   initialDelayMs: 2000,
   maxDelayMs: 60000,
   backoffMultiplier: 2,
-  shouldRetry: (error: any) => {
+  shouldRetry: (error: unknown) => {
     // Rate limit errors - ALWAYS retry
     if (error?.response?.status === 429) return true;
     if (error?.response?.data?.error?.code === "rate_limit_exceeded") return true;
@@ -36,7 +42,7 @@ export async function retryWithBackoff<T>(
   options: RetryOptions = {},
 ): Promise<T> {
   const config = { ...DEFAULT_OPTIONS, ...options };
-  let lastError: any;
+  let lastError: unknown = null;
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     try {

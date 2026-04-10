@@ -155,13 +155,13 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
       stack: (result as any).stack, // Include stack if returned by service
       error: (result as any).error,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[AI Chatbot Route] Error:", error);
 
     // Extract detailed error information
     let statusCode = 500;
     let errorMessage = "Chatbot interaction failed";
-    let errorDetails: any = {};
+    let errorDetails: Record<string, unknown> = {};
 
     // Handle Groq rate limit errors (429)
     if (error?.response?.status === 429) {

@@ -6,7 +6,7 @@ export interface IChatMessage {
   structuredData?: {
     type: "photographer_list" | "package_list" | "booking_confirmation" | "availability_picker";
     photographerId?: string;
-    data?: any;
+    data?: unknown; // Dynamic data based on type
     bookingId?: string;
   };
   timestamp: Date;
@@ -37,7 +37,7 @@ export interface IChatHistory extends Document {
         contactPhone?: string;
       };
     };
-    [key: string]: any; // Allow other metadata
+    [key: string]: unknown; // Allow other metadata
   };
   lastMessageAt: Date;
   createdAt: Date;
