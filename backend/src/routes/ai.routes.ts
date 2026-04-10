@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from "express";
-import { verifyAccessToken } from "../middleware/authMiddleware";
+import { verifyAccessToken, AuthRequest } from "../middleware/authMiddleware";
 import { rankPhotosByQuery } from "../services/external/aiSearch.service";
 import { suggestAlbumName } from "../services/external/albumName.service";
 import { PortfolioSectionModel } from "../models/portfolioSection.model";
@@ -115,7 +115,7 @@ router.post(
 router.get("/chatbot/history", verifyAccessToken, async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.query as { sessionId?: string };
-    const userId = (req as any).userId;
+    const userId = (req as AuthRequest).userId;
 
     const chatHistory = await ChatHistoryModel.findOne({
       userId,
@@ -139,7 +139,7 @@ router.get("/chatbot/history", verifyAccessToken, async (req: Request, res: Resp
 router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: Response) => {
   try {
     const { messages, sessionId } = req.body as { messages: ChatMessage[]; sessionId?: string };
-    const userId = (req as any).userId;
+    const userId = (req as AuthRequest).userId;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ message: "Chat history is required" });
@@ -152,8 +152,8 @@ router.post(ROUTES.V1.AI.CHATBOT, verifyAccessToken, async (req: Request, res: R
       message: result.message,
       structuredData: result.structuredData,
       conversationPhase: result.conversationPhase,
-      stack: (result as any).stack, // Include stack if returned by service
-      error: (result as any).error,
+      stack: (result as { stack?: string }).stack, // Include stack if returned by service
+      error: (result as { error?: string }).error,
     });
   } catch (error: unknown) {
     console.error("[AI Chatbot Route] Error:", error);

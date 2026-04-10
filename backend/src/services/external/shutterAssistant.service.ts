@@ -6,7 +6,7 @@
 
 import { PhotographerModel, IPhotographer } from "../../models/photographer.model";
 import { ReviewModel } from "../../models/review.model";
-import mongoose from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 
 export interface PhotographerRecommendation {
   id: string;
@@ -32,8 +32,7 @@ export const getPhotographerRecommendations = async (
   limit: number = 3,
 ): Promise<PhotographerRecommendation[]> => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: any = {
+    const filter: FilterQuery<IPhotographer> = {
       status: "APPROVED",
       isBlock: false,
     };
@@ -62,7 +61,7 @@ export const getPhotographerRecommendations = async (
 
     for (const photographer of photographers) {
       const reviews = await ReviewModel.find({
-        targetId: new mongoose.Types.ObjectId(photographer._id as any),
+        targetId: new mongoose.Types.ObjectId(photographer._id as string),
         type: "photographer",
       });
 
@@ -70,7 +69,7 @@ export const getPhotographerRecommendations = async (
         reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
 
       recommendations.push({
-        id: (photographer._id as any).toString(),
+        id: (photographer._id as string).toString(),
         name: photographer.personalInfo.name,
         specialty: photographer.professionalDetails.specialties.join(", "),
         experience: photographer.professionalDetails.yearsExperience,

@@ -2,9 +2,9 @@ import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, AIMessage, SystemMessage, BaseMessage } from "@langchain/core/messages";
 import { BufferMemory } from "langchain/memory";
 import { ChatMessageHistory } from "langchain/stores/message/in_memory";
-import { tool } from "@langchain/core/tools";
+import { tool, StructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
-import mongoose from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 
 // Models - Using Relative Paths for Docker build safety
 import { PhotographerModel, IPhotographer } from "../../../models/photographer.model";
@@ -119,7 +119,7 @@ function extractContext(history: IChatMessage[]): ConversationContext {
  */
 export class ShutterAgent {
   private readonly model: ChatOpenAI;
-  private readonly tools: any[];
+  private readonly tools: StructuredTool[];
 
   constructor() {
     this.model = new ChatOpenAI({
@@ -151,8 +151,7 @@ export class ShutterAgent {
       }) => {
         console.log(`[ShutterAgent:Tool] search_photographers [${category}, ${location}]`);
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const query: any = { status: "APPROVED", isBlock: false };
+          const query: FilterQuery<IPhotographer> = { status: "APPROVED", isBlock: false };
           if (category) {
             const normalizedCategory = category.toLowerCase();
             const categoryMap: Record<string, string> = {
@@ -178,11 +177,10 @@ export class ShutterAgent {
           const enriched = await Promise.all(
             photographers.map(async (p: IPhotographer) => {
               const reviews = await ReviewModel.find({ targetId: p._id });
-              const avg =
-                reviews.length > 0
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
-                  : 0;
+                const avg =
+                  reviews.length > 0
+                    ? reviews.reduce((sum: number, r: IReview) => sum + r.rating, 0) / reviews.length
+                    : 0;
 
               return {
                 _id: p._id,
@@ -216,7 +214,7 @@ export class ShutterAgent {
           category: z.string().optional(),
           location: z.string().optional(),
           limit: z.number().optional().default(3),
-        }) as any,
+        }),
       },
     );
 
@@ -241,8 +239,7 @@ export class ShutterAgent {
           return JSON.stringify({
             success: true,
             photographerId,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            packages: packages.map((pkg: any) => ({
+            packages: packages.map((pkg: IBookingPackage) => ({
               _id: pkg._id,
               name: pkg.name,
               description: pkg.description?.substring(0, 150) || "",
@@ -260,7 +257,7 @@ export class ShutterAgent {
       {
         name: "get_photographer_packages",
         description: "Get booking packages for a特定 photographer.",
-        schema: z.object({ photographerId: z.string() }) as any,
+        schema: z.object({ photographerId: z.string() }),
       },
     );
 
@@ -283,13 +280,11 @@ export class ShutterAgent {
           if (availability.length === 0)
             return JSON.stringify({ success: false, message: "No specific availability set." });
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const formatted = availability.map((a: any) => ({
+          const formatted = availability.map((a: IAvailability) => ({
             date: a.date.toISOString().split("T")[0],
             isFullDay: a.isFullDayAvailable,
             slots:
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              a.slots?.filter((s: any) => s.status === "AVAILABLE").map((s: any) => s.startTime) ||
+              a.slots?.filter((s: ISlot) => s.status === "AVAILABLE").map((s: ISlot) => s.startTime) ||
               [],
           }));
 
@@ -304,7 +299,7 @@ export class ShutterAgent {
         schema: z.object({
           photographerId: z.string(),
           days: z.number().optional().default(30),
-        }) as any,
+        }),
       },
     );
 
@@ -378,7 +373,7 @@ export class ShutterAgent {
           contactEmail: z.string().email(),
           contactPhone: z.string(),
           userId: z.string(),
-        }) as any,
+        }),
       },
     );
 
@@ -454,7 +449,7 @@ export class ShutterAgent {
 
           // Manual Tool Dispatcher
           if (toolName === "search_photographers") {
-            const results = await (this.tools[0] as any).func(toolArgs);
+            const results = (await this.tools[0].invoke(toolArgs)) as string;
             const res = JSON.parse(results);
             if (res.success) {
               structuredData = { type: "photographer_list", data: res.photographers };
@@ -462,7 +457,7 @@ export class ShutterAgent {
             }
             toolResultStr = results;
           } else if (toolName === "get_photographer_packages") {
-            const results = await (this.tools[1] as any).func(toolArgs);
+            const results = (await this.tools[1].invoke(toolArgs)) as string;
             const res = JSON.parse(results);
             if (res.success) {
               structuredData = {
@@ -474,7 +469,7 @@ export class ShutterAgent {
             }
             toolResultStr = results;
           } else if (toolName === "get_photographer_availability") {
-            const results = await (this.tools[2] as any).func(toolArgs);
+            const results = (await this.tools[2].invoke(toolArgs)) as string;
             const res = JSON.parse(results);
             if (res.success) {
               structuredData = {
@@ -485,7 +480,7 @@ export class ShutterAgent {
             }
             toolResultStr = results;
           } else if (toolName === "create_booking") {
-            const results = await (this.tools[3] as any).func(toolArgs);
+            const results = (await this.tools[3].invoke(toolArgs)) as string;
             const res = JSON.parse(results);
             if (res.success) {
               structuredData = { type: "booking_confirmation", bookingId: res.bookingId };

@@ -5,7 +5,11 @@
 
 // Error interface for better type safety in error handling
 interface RetryableError extends Error {
-  response?: { status?: number; data?: { error?: { code?: string; message?: string } } };
+  response?: {
+    status?: number;
+    data?: { error?: { code?: string; message?: string } };
+    headers?: Record<string, string | string[] | undefined>;
+  };
   code?: string;
 }
 
@@ -50,7 +54,7 @@ export async function retryWithBackoff<T>(
     } catch (error) {
       lastError = error;
 
-      if (!config.shouldRetry(error) || attempt === config.maxRetries) {
+      if (!config.shouldRetry(error as RetryableError) || attempt === config.maxRetries) {
         throw error;
       }
 
@@ -60,19 +64,19 @@ export async function retryWithBackoff<T>(
       );
 
       // Extract retry-after from Groq's error message
-      const errorMessage = (error as any)?.response?.data?.error?.message || "";
+      const errorMessage = (error as RetryableError)?.response?.data?.error?.message || "";
       const retryMatch = errorMessage.match(/try again in ([\d.]+)s/);
       if (retryMatch) {
         delayMs = Math.ceil(parseFloat(retryMatch[1]) * 1000) + 500;
       }
 
-      const retryAfter = (error as any)?.response?.headers?.["retry-after"];
+      const retryAfter = (error as RetryableError)?.response?.headers?.["retry-after"];
       if (retryAfter) {
         delayMs = Math.max(delayMs, parseInt(retryAfter as string, 10) * 1000);
       }
 
       console.log(`[Retry] Attempt ${attempt + 1}/${config.maxRetries} failed.`);
-      console.log(`[Retry] Error: ${errorMessage || (error as any).message}`);
+      console.log(`[Retry] Error: ${errorMessage || (error as RetryableError).message}`);
       console.log(`[Retry] Waiting ${delayMs}ms before retry...`);
 
       await new Promise((resolve) => setTimeout(resolve, delayMs));

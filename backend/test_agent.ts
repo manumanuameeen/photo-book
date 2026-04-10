@@ -41,9 +41,9 @@ async function testAgent() {
     } else {
       console.warn("⚠️ Tool was not called or failed. Response:", res2.message);
     }
-  } catch (err: any) {
-    console.error("❌ Critical Test Failure:", err.message);
-    if (err.stack) console.error(err.stack);
+  } catch (err: unknown) {
+    console.error("Test CRASHED:", (err as Error).message);
+    if ((err as Error).stack) console.error((err as Error).stack);
   } finally {
     await mongoose.disconnect();
     console.log("\n--- TEST COMPLETE ---");

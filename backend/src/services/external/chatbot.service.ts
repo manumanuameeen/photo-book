@@ -1,4 +1,4 @@
-import { ChatHistoryModel } from "../../models/chatHistory.model";
+import { ChatHistoryModel, IChatMessage } from "../../models/chatHistory.model";
 import { ShutterAgent } from "./shutter/shutter.agent";
 import { ChatbotPhase } from "./shutter/shutter.types";
 
@@ -69,14 +69,14 @@ export const getChatbotResponse = async (
       role: "user",
       content: lastUserMessage,
       timestamp: new Date(),
-    } as any);
+    });
 
     chatHistory.messages.push({
       role: "assistant",
       content: result.message,
       structuredData: result.structuredData,
       timestamp: new Date(),
-    } as any);
+    });
 
     if (chatHistory.messages.length > 20) {
       chatHistory.messages = chatHistory.messages.slice(-20);

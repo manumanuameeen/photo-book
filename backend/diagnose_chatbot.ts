@@ -24,8 +24,8 @@ async function diagnose() {
     });
     const res = await model.invoke("Hello, are you active?");
     console.log("✅ Groq Response:", res.content);
-  } catch (err: any) {
-    console.error("❌ Groq Error:", err.message);
+  } catch (err: unknown) {
+    console.error("Agent failed:", (err as Error).message);
   }
 
   // 3. Test Database
@@ -40,8 +40,8 @@ async function diagnose() {
       console.log(`✅ Photographers in DB: ${count}`);
       await mongoose.disconnect();
     }
-  } catch (err: any) {
-    console.error("❌ Database Error:", err.message);
+  } catch (err: unknown) {
+    console.error("❌ Database Error:", (err as Error).message);
   }
 
   console.log("\n--- DIAGNOSTICS COMPLETE ---");

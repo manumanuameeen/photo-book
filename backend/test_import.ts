@@ -15,8 +15,8 @@ async function testImport() {
     const count = await PhotographerModel.countDocuments();
     console.log(`✅ Absolute Import Success! Photographers: ${count}`);
     await mongoose.disconnect();
-  } catch (err: any) {
-    console.error("❌ Absolute Import Failed:", err.message);
+  } catch (err: unknown) {
+    console.error("Import test FAILED:", (err as Error).message);
   }
 }
 
