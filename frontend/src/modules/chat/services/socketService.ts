@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || "https://photobook-api.ddns.net";
+const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || "https://photobook-backend.duckdns.org";
 
 class SocketService {
     private socket: Socket | null = null;
