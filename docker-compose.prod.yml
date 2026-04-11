@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    image: photo-book-backend:latest
+    image: manumanuameeen/photo-book-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
