@@ -161,6 +161,8 @@ export class RentalController implements IRentalController {
         pricePerDay: Number(req.body.pricePerDay),
         securityDeposit: Number(req.body.securityDeposit),
         minRentalPeriod: Number(req.body.minRentalPeriod),
+        maxRentalPeriod: req.body.maxRentalPeriod ? Number(req.body.maxRentalPeriod) : 5,
+        stock: req.body.stock ? Number(req.body.stock) : 1,
         ownerId: userId,
         images: imageUrls,
       };
@@ -433,6 +435,8 @@ export class RentalController implements IRentalController {
       if (req.body.pricePerDay) updateData.pricePerDay = Number(req.body.pricePerDay);
       if (req.body.securityDeposit) updateData.securityDeposit = Number(req.body.securityDeposit);
       if (req.body.minRentalPeriod) updateData.minRentalPeriod = Number(req.body.minRentalPeriod);
+      if (req.body.maxRentalPeriod) updateData.maxRentalPeriod = Number(req.body.maxRentalPeriod);
+      if (req.body.stock) updateData.stock = Number(req.body.stock);
 
       const updatedItem = await this._rentalService.updateRentalItem(id, updateData);
       ApiResponse.success(res, updatedItem, "Item updated successfully");

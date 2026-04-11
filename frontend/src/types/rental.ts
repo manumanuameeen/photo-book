@@ -7,6 +7,8 @@ export interface CreateRentalItemData {
     pricePerDay: number;
     securityDeposit: number;
     minRentalPeriod: number;
+    maxRentalPeriod: number;
+    stock: number;
     images: File[];
 }
 

@@ -20,6 +20,8 @@ export const rentalApi = {
         formData.append('pricePerDay', data.pricePerDay.toString());
         formData.append('securityDeposit', data.securityDeposit.toString());
         formData.append('minRentalPeriod', data.minRentalPeriod.toString());
+        formData.append('maxRentalPeriod', data.maxRentalPeriod.toString());
+        formData.append('stock', data.stock.toString());
 
         data.images.forEach((file) => {
             formData.append('images', file);
