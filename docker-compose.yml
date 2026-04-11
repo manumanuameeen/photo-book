@@ -1,5 +1,6 @@
 services:
   backend:
+    image: manumanuameeen/photo-book-backend:latest
     build:
       context: ./backend
       target: production
@@ -10,6 +11,12 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - NODE_ENV=production
+    # Resource limits for production stability
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     depends_on: 
       mongodb:
         condition: service_healthy
