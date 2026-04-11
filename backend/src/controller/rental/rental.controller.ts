@@ -167,7 +167,6 @@ export class RentalController implements IRentalController {
         minRentalPeriod: Number(req.body.minRentalPeriod),
         maxRentalPeriod: req.body.maxRentalPeriod ? Number(req.body.maxRentalPeriod) : 5,
         stock: req.body.stock ? Number(req.body.stock) : 1,
-        quantity: req.body.stock ? Number(req.body.stock) : 1,
         ownerId: userId,
         images: imageUrls,
       };
