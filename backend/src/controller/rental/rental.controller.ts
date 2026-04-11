@@ -156,13 +156,18 @@ export class RentalController implements IRentalController {
         imageUrls.push(...newUrls);
       }
 
+      const rawCondition = req.body.condition || "Good";
+      const normalizedCondition = rawCondition.charAt(0).toUpperCase() + rawCondition.slice(1).toLowerCase();
+
       const itemData: CreateRentalItemDTO = {
         ...(req.body as CreateRentalItemDTO),
+        condition: normalizedCondition as any,
         pricePerDay: Number(req.body.pricePerDay),
         securityDeposit: Number(req.body.securityDeposit),
         minRentalPeriod: Number(req.body.minRentalPeriod),
         maxRentalPeriod: req.body.maxRentalPeriod ? Number(req.body.maxRentalPeriod) : 5,
         stock: req.body.stock ? Number(req.body.stock) : 1,
+        quantity: req.body.stock ? Number(req.body.stock) : 1,
         ownerId: userId,
         images: imageUrls,
       };

@@ -6,6 +6,7 @@ import { HttpStatus } from "../constants/httpStatus";
 import { Messages } from "../constants/messages";
 
 export const handleError = (res: Response, error: unknown) => {
+  console.error("Backend Error Logged:", error);
   if (error instanceof z.ZodError) {
     const errorMessage = error.issues.map((issue) => issue.message).join(", ");
     return ApiResponse.error(res, errorMessage, HttpStatus.BAD_REQUEST);
