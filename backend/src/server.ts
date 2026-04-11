@@ -45,7 +45,8 @@ async function startServer() {
 
   app.use(morganLogger);
   app.use(cookieParser());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+  app.use(express.json({ limit: "20mb" }));
 
   // CORS Configuration
   const allowedOrigins = process.env.ALLOWED_ORIGINS
