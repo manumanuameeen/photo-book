@@ -1,6 +1,6 @@
 services:
   backend:
-    image: manumanuameeen/photo-book-backend:latest
+    image: ameenwork/photo-book-backend:latest 
     build:
       context: ./backend
       target: production
