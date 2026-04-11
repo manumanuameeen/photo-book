@@ -17,7 +17,6 @@ export const rentalApi = {
         formData.append('category', data.category);
         formData.append('condition', data.condition);
         formData.append('description', data.description);
-        formData.append('pickupLocation', data.pickupLocation);
         formData.append('pricePerDay', data.pricePerDay.toString());
         formData.append('securityDeposit', data.securityDeposit.toString());
         formData.append('minRentalPeriod', data.minRentalPeriod.toString());

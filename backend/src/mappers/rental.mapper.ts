@@ -12,7 +12,7 @@ export class RentalItemMapper implements IRentalItemMapper {
       pricePerDay: dto.pricePerDay,
       securityDeposit: dto.securityDeposit,
       minRentalPeriod: dto.minRentalPeriod,
-      pickupLocation: dto.location,
+
       images: dto.images || [],
       status: "AVAILABLE",
       ownerId: dto.ownerId ? new mongoose.Types.ObjectId(dto.ownerId) : undefined,
@@ -45,7 +45,7 @@ export class RentalItemMapper implements IRentalItemMapper {
     if (dto.pricePerDay !== undefined) updateData.pricePerDay = dto.pricePerDay;
     if (dto.securityDeposit !== undefined) updateData.securityDeposit = dto.securityDeposit;
     if (dto.minRentalPeriod !== undefined) updateData.minRentalPeriod = dto.minRentalPeriod;
-    if (dto.location !== undefined) updateData.pickupLocation = dto.location;
+
     if (dto.images !== undefined) updateData.images = dto.images;
     return updateData;
   }

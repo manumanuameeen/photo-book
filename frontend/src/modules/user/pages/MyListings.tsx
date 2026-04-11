@@ -3,7 +3,7 @@ import { ROUTES } from '../../../constants/routes';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rentalApi } from '../../../services/api/rentalApi';
 import type { IRentalItem } from '../../../types/rental';
-import { Package, MapPin, DollarSign, Clock, ChevronLeft, ChevronRight, Calendar, Plus, Filter, Edit2, RefreshCw } from 'lucide-react';
+import { Package, DollarSign, Clock, ChevronLeft, ChevronRight, Calendar, Plus, Filter, Edit2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import PageTransition from '../../../components/common/PageTransition';
@@ -135,9 +135,7 @@ export default function MyListings() {
                                 </div>
                                 <div className="text-xs text-gray-500 mb-2 px-2 py-0.5 bg-gray-100 w-fit rounded border border-gray-200">{item.category}</div>
 
-                                <div className="flex items-center text-gray-500 text-sm mb-3">
-                                    <MapPin size={14} className="mr-1" /> {item.pickupLocation}
-                                </div>
+
 
                                 <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 mb-4">
                                     <div className="flex items-center text-[#2E7D46] font-bold">

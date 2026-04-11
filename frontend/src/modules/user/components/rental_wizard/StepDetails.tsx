@@ -1,10 +1,9 @@
 import { useFormContext } from 'react-hook-form';
-import { AlertCircle, Camera, Tag, MapPin, AlignLeft, Info } from 'lucide-react';
-import LocationAutocomplete from '../../../../components/common/LocationAutocomplete';
+import { AlertCircle, Camera, Tag, AlignLeft, Info } from 'lucide-react';
 import type { RentItemFormData } from '../../../../types/rental';
 
 export function StepDetails() {
-    const { register, formState: { errors }, setValue, watch } = useFormContext<RentItemFormData>();
+    const { register, formState: { errors } } = useFormContext<RentItemFormData>();
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -87,21 +86,6 @@ export function StepDetails() {
                     </div>
                 </div>
 
-                <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">
-                        <MapPin size={16} className="text-gray-400" />
-                        Pickup Location <span className="text-red-500">*</span>
-                    </label>
-                    <LocationAutocomplete
-                        defaultValue={watch('pickupLocation')}
-                        onSelect={(address) => setValue('pickupLocation', address.address, { shouldValidate: true })}
-                        className="w-full"
-                    />
-
-                    <input type="hidden" {...register('pickupLocation')} />
-
-                    {errors.pickupLocation && <span className="text-red-500 text-xs mt-1.5 block font-medium">{errors.pickupLocation.message as string}</span>}
-                </div>
 
                 <div>
                     <label className="text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5">

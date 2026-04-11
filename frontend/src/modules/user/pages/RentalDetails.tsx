@@ -9,7 +9,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { rentalApi } from '../../../services/api/rentalApi';
 import { PaymentModal } from '../../../components/common/PaymentModal';
 import { ConfirmationModal } from '../../../components/common/ConfirmationModal';
-import { MapPin, Shield, Package, ChevronLeft, AlertCircle, MessageCircle, X, Send, Award, Star } from 'lucide-react';
+import { Shield, Package, ChevronLeft, AlertCircle, MessageCircle, X, Send, Award, Star } from 'lucide-react';
 import { ReportModal } from '../../../components/common/ReportModal';
 import { messageApi } from '../../../services/api/messageApi';
 import { toast } from 'sonner';
@@ -292,7 +292,6 @@ export default function RentalDetails() {
                             </div>
                             <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
                                 <ReviewStatsSummary targetId={id!} />
-                                <span className="flex items-center gap-1"><MapPin size={16} /> {item.pickupLocation}</span>
                                 <span className="bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider">{item.condition} Condition</span>
                                 <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider">{item.category}</span>
                             </div>

@@ -18,7 +18,7 @@ const rentItemSchema = z.object({
     category: z.string().min(1, "Category is required"),
     condition: z.string().min(1, "Condition is required"),
     description: z.string().min(20, "Description must be at least 20 characters"),
-    pickupLocation: z.string().min(5, "Pickup location is required"),
+
     pricePerDay: z.coerce.number().min(1, "Price must be greater than 0"),
     securityDeposit: z.coerce.number().min(0, "Deposit cannot be negative"),
     minRentalPeriod: z.coerce.number().default(1),
@@ -61,7 +61,7 @@ export default function RentItemWizard() {
     const nextStep = async () => {
 
         let fieldsToValidate: (keyof RentItemFormData)[] = [];
-        if (currentStep === 1) fieldsToValidate = ['name', 'category', 'condition', 'description', 'pickupLocation'];
+        if (currentStep === 1) fieldsToValidate = ['name', 'category', 'condition', 'description'];
 
         if (currentStep === 2) {
             if (selectedFiles.length < 4) {

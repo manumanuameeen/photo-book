@@ -2,9 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { rentalApi } from '../../../services/api/rentalApi';
 import type { IRentalItem } from '../../../types/rental';
-import { X, Upload, Loader2, MapPin } from 'lucide-react';
+import { X, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import LocationAutocomplete from "../../../components/common/LocationAutocomplete";
 
 interface EditRentalItemModalProps {
 
@@ -24,7 +23,7 @@ export default function EditRentalItemModal({ item, onClose }: EditRentalItemMod
     const [category, setCategory] = useState(item.category);
     const [pricePerDay, setPricePerDay] = useState(item.pricePerDay);
     const [securityDeposit, setSecurityDeposit] = useState(item.securityDeposit);
-    const [pickupLocation, setPickupLocation] = useState(item.pickupLocation);
+
 
     const [maxRentalPeriod, setMaxRentalPeriod] = useState(item.maxRentalPeriod || 5);
     const [stock, setStock] = useState(item.stock || 1);
@@ -94,7 +93,7 @@ export default function EditRentalItemModal({ item, onClose }: EditRentalItemMod
         formData.append('category', category);
         formData.append('pricePerDay', pricePerDay.toString());
         formData.append('securityDeposit', securityDeposit.toString());
-        formData.append('pickupLocation', pickupLocation);
+
         formData.append('maxRentalPeriod', maxRentalPeriod.toString());
         formData.append('stock', stock.toString());
         formData.append('termsAndConditions', termsAndConditions);
@@ -155,20 +154,7 @@ export default function EditRentalItemModal({ item, onClose }: EditRentalItemMod
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Location</label>
-                                <LocationAutocomplete
-                                    defaultValue={pickupLocation}
-                                    onSelect={(address) => setPickupLocation(address.address)}
-                                    className="mb-1"
-                                />
-                                {pickupLocation && (
-                                    <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
-                                        <MapPin size={12} />
-                                        <span>Selected: {pickupLocation}</span>
-                                    </div>
-                                )}
-                            </div>
+
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>

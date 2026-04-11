@@ -3,7 +3,7 @@ export interface CreateRentalItemData {
     category: string;
     condition: string;
     description: string;
-    pickupLocation: string;
+
     pricePerDay: number;
     securityDeposit: number;
     minRentalPeriod: number;
@@ -25,7 +25,7 @@ export interface IRentalItem {
     category: string;
     condition: string;
     description: string;
-    pickupLocation: string;
+
     pricePerDay: number;
     securityDeposit: number;
     minRentalPeriod: number;
@@ -139,7 +139,7 @@ export interface RentItemFormData {
     category: string;
     condition: string;
     description: string;
-    pickupLocation: string;
+
     pricePerDay: number;
     securityDeposit: number;
     minRentalPeriod: number;

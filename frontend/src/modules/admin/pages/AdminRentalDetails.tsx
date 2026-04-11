@@ -3,7 +3,7 @@ import { useParams, useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '../../../constants/routes';
 import { rentalApi } from '../../../services/api/rentalApi';
-import { MapPin, Package, ChevronLeft, Check, X, User, Ban } from 'lucide-react';
+import { Package, ChevronLeft, Check, X, User, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 import PageTransition from '../../../components/common/PageTransition';
 
@@ -101,7 +101,6 @@ export default function AdminRentalDetails() {
                         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">{item.name}</h1>
                             <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
-                                <span className="flex items-center gap-1"><MapPin size={16} /> {item.pickupLocation}</span>
                                 <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider">{item.category}</span>
                             </div>
 

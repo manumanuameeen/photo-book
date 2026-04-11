@@ -1,5 +1,5 @@
 import { useFormContext } from 'react-hook-form';
-import { CheckCircle, MapPin, Calendar, Shield, Tag, FileText } from 'lucide-react';
+import { CheckCircle, Calendar, Shield, Tag, FileText } from 'lucide-react';
 
 export function StepReview({ previewImage }: { previewImage?: string }) {
     const { getValues } = useFormContext();
@@ -42,14 +42,6 @@ export function StepReview({ previewImage }: { previewImage?: string }) {
                 </div>
 
                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                    <div className="space-y-1">
-                        <span className="text-gray-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                            <MapPin size={12} /> Location
-                        </span>
-                        <p className="font-medium text-gray-800 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            {data.pickupLocation}
-                        </p>
-                    </div>
                     <div className="space-y-1">
                         <span className="text-gray-500 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-2">
                             <Calendar size={12} /> Max Period

@@ -8,7 +8,7 @@ export interface IRentalItem extends Document {
   pricePerDay: number;
   securityDeposit: number;
   minRentalPeriod: number;
-  pickupLocation: string;
+  pickupLocation?: string;
   stock: number;
   quantity: number;
   images: string[];
@@ -46,7 +46,7 @@ const RentalItemSchema: Schema = new Schema(
     securityDeposit: { type: Number, default: 0 },
     minRentalPeriod: { type: Number, default: 1 },
     maxRentalPeriod: { type: Number, default: 5 },
-    pickupLocation: { type: String, required: true },
+    pickupLocation: { type: String, required: false },
     stock: { type: Number, required: true, default: 1 },
     quantity: { type: Number, required: true, default: 1 },
     images: [{ type: String }],

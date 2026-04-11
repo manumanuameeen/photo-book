@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { rentalApi } from '../../../services/api/rentalApi';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from '../../../constants/routes';
-import { Search, Filter, MapPin, Package, ChevronLeft, ChevronRight, Plus, MessageCircle,ChevronDown } from 'lucide-react';
+import { Search, Filter, Package, ChevronLeft, ChevronRight, Plus, MessageCircle,ChevronDown } from 'lucide-react';
 import { useAuthStore } from '../../../modules/auth/store/useAuthStore';
 import PageTransition from '../../../components/common/PageTransition';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -209,10 +209,7 @@ export default function RentalMarketplace() {
                                                     {item.name}
                                                 </h3>
 
-                                                <div className="flex items-center gap-2 text-gray-400 text-xs font-mono mb-6">
-                                                    <MapPin size={12} className="text-yellow-500" />
-                                                    <span className="truncate">{item.pickupLocation}</span>
-                                                </div>
+
 
                                                 <div className="mt-auto pt-4 border-t border-white/5 flex items-end justify-between">
                                                     <div>
