@@ -48,7 +48,7 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: "20mb" }));
   app.use(express.json({ limit: "20mb" }));
 
-  // CORS Configuration
+  // CORS Configurationrenta
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
     : ["http://localhost:5173", "http://localhost:3000"];
