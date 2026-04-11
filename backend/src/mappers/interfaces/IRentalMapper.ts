@@ -6,11 +6,12 @@ export interface IRentalItemResponseDto {
   name: string;
   description: string;
   category: string;
+  condition: string;
   pricePerDay: number;
   securityDeposit: number;
   minRentalPeriod: number;
-  location: string;
-  features: string[];
+  maxRentalPeriod?: number;
+  stock?: number;
   images: string[];
   status: string;
   ownerId: string;

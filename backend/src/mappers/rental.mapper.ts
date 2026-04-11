@@ -8,16 +8,16 @@ export class RentalItemMapper implements IRentalItemMapper {
       name: dto.name,
       description: dto.description,
       category: dto.category,
-      condition: "Good",
+      condition: dto.condition,
       pricePerDay: dto.pricePerDay,
       securityDeposit: dto.securityDeposit,
       minRentalPeriod: dto.minRentalPeriod,
-
+      maxRentalPeriod: dto.maxRentalPeriod,
+      stock: dto.stock || 1,
+      quantity: dto.stock || 1,
       images: dto.images || [],
       status: "AVAILABLE",
       ownerId: dto.ownerId ? new mongoose.Types.ObjectId(dto.ownerId) : undefined,
-      quantity: 1,
-      stock: 1,
     };
   }
   toResponse(item: IRentalItem): IRentalItemResponseDto {
@@ -26,11 +26,12 @@ export class RentalItemMapper implements IRentalItemMapper {
       name: item.name,
       description: item.description,
       category: item.category,
+      condition: item.condition,
       pricePerDay: item.pricePerDay,
       securityDeposit: item.securityDeposit,
       minRentalPeriod: item.minRentalPeriod,
-      location: item.pickupLocation,
-      features: [],
+      maxRentalPeriod: item.maxRentalPeriod,
+      stock: item.stock,
       images: item.images || [],
       status: item.status,
       ownerId: item.ownerId?.toString() || "",
@@ -42,9 +43,15 @@ export class RentalItemMapper implements IRentalItemMapper {
     if (dto.name !== undefined) updateData.name = dto.name;
     if (dto.description !== undefined) updateData.description = dto.description;
     if (dto.category !== undefined) updateData.category = dto.category;
+    if (dto.condition !== undefined) updateData.condition = dto.condition;
     if (dto.pricePerDay !== undefined) updateData.pricePerDay = dto.pricePerDay;
     if (dto.securityDeposit !== undefined) updateData.securityDeposit = dto.securityDeposit;
     if (dto.minRentalPeriod !== undefined) updateData.minRentalPeriod = dto.minRentalPeriod;
+    if (dto.maxRentalPeriod !== undefined) updateData.maxRentalPeriod = dto.maxRentalPeriod;
+    if (dto.stock !== undefined) {
+      updateData.stock = dto.stock;
+      updateData.quantity = dto.stock;
+    }
 
     if (dto.images !== undefined) updateData.images = dto.images;
     return updateData;
