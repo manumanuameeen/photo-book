@@ -8,9 +8,6 @@ import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
 import { Messages } from "../../constants/messages";
 import { handleError } from "../../utils/errorHandler";
-import { generateCaption } from "../../services/external/aiCaption.service";
-import { generateTags } from "../../services/external/aiTag.service";
-import { getImageEmbedding } from "../../services/external/aiSearch.service";
 
 export class PortfolioController implements IPortfolioController {
   private _service: IPortfolioService;
@@ -84,22 +81,10 @@ export class PortfolioController implements IPortfolioController {
         throw new AppError(Messages.MAX_IMAGES_EXCEEDED, HttpStatus.BAD_REQUEST);
       }
 
-      // AI Processing
-      let aiCaption = "";
-      let aiTags: string[] = [];
-      let aiEmbedding: number[] = [];
-
-      if (req.file?.buffer) {
-        const base64Image = req.file.buffer.toString("base64");
-        const [captionResult, tagResult, embeddingResult] = await Promise.allSettled([
-          generateCaption(base64Image),
-          generateTags(base64Image),
-          getImageEmbedding(base64Image),
-        ]);
-        if (captionResult.status === "fulfilled") aiCaption = captionResult.value.caption;
-        if (tagResult.status === "fulfilled") aiTags = tagResult.value.tags;
-        if (embeddingResult.status === "fulfilled") aiEmbedding = embeddingResult.value.embedding;
-      }
+      // AI Processing removed as per request
+      const aiCaption = "";
+      const aiTags: string[] = [];
+      const aiEmbedding: number[] = [];
 
       const result = await this._service.addImage(
         userId,
