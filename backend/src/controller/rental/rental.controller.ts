@@ -159,7 +159,8 @@ export class RentalController implements IRentalController {
       }
 
       const rawCondition = req.body.condition || "Good";
-      const normalizedCondition = rawCondition.charAt(0).toUpperCase() + rawCondition.slice(1).toLowerCase();
+      const normalizedCondition =
+        rawCondition.charAt(0).toUpperCase() + rawCondition.slice(1).toLowerCase();
 
       const itemData: CreateRentalItemDTO = {
         ...(req.body as CreateRentalItemDTO),

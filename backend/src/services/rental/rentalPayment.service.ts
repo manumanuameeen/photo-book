@@ -35,7 +35,10 @@ export class RentalPaymentService implements IRentalPaymentService {
     this._pdfService = pdfService;
   }
 
-  async createDepositPaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+  async createDepositPaymentIntent(
+    orderId: string,
+    providedFrontendUrl?: string,
+  ): Promise<{ url: string; sessionId: string }> {
     const order = await this._orderRepo.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
 
@@ -81,7 +84,10 @@ export class RentalPaymentService implements IRentalPaymentService {
     return updated!;
   }
 
-  async createBalancePaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+  async createBalancePaymentIntent(
+    orderId: string,
+    providedFrontendUrl?: string,
+  ): Promise<{ url: string; sessionId: string }> {
     const order = await this._orderRepo.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
 

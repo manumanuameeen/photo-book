@@ -37,7 +37,6 @@ export class RentalItemMapper implements IRentalItemMapper {
       ownerId: item.ownerId?.toString() || "",
       createdAt: item.createdAt || new Date(),
     };
-    
   }
   fromUpdateDto(dto: UpdateRentalItemDTO): Partial<IRentalItem> {
     const updateData: Partial<IRentalItem> = {};

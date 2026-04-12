@@ -601,11 +601,17 @@ export class RentalService implements IRentalService {
     return (await this._rentalRepository.updateOrder(orderId, { status: RentalStatus.REJECTED }))!;
   }
 
-  async createDepositPaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+  async createDepositPaymentIntent(
+    orderId: string,
+    frontendUrl?: string,
+  ): Promise<{ url: string; sessionId: string }> {
     return this._financeService.createDepositPaymentIntent(orderId, frontendUrl);
   }
 
-  async createBalancePaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+  async createBalancePaymentIntent(
+    orderId: string,
+    frontendUrl?: string,
+  ): Promise<{ url: string; sessionId: string }> {
     return this._financeService.createBalancePaymentIntent(orderId, frontendUrl);
   }
 

@@ -1,11 +1,11 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import { IAiService } from "../../../interfaces/services/IAiService";
 import { AppError } from "../../../utils/AppError";
 import { HttpStatus } from "../../../constants/httpStatus";
 
 export class AiService implements IAiService {
   private _genAI: GoogleGenerativeAI;
-  private _model: any;
+  private _model: GenerativeModel;
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -15,7 +15,7 @@ export class AiService implements IAiService {
       throw new Error("GEMINI_API_KEY is not defined in environment variables");
     }
     console.log(`🔑 AI Service: API Key found (ends with ...${apiKey.slice(-4)})`);
-    
+
     this._genAI = new GoogleGenerativeAI(apiKey);
     this._model = this._genAI.getGenerativeModel({
       model: "gemini-1.5-flash-001",
@@ -40,20 +40,19 @@ Guidelines:
 - Do not perform actual bookings or order processing (tell them to use the website's built-in features for that).`,
     });
     console.log("✅ AI Service: Model initialized (gemini-1.5-flash-001)");
-
-    // Async diagnostic (don't await in constructor)
-    this._genAI.listModels().then(models => {
-      console.log("📑 Available AI Models for this key:");
-      models.models?.forEach(m => console.log(` - ${m.name}`));
-    }).catch(e => console.error("⚠️ Failed to list models:", e.message));
   }
 
-  async getChatResponse(userMessage: string, history: { role: "user" | "model"; content: string }[] = []): Promise<string> {
+  async getChatResponse(
+    userMessage: string,
+    history: { role: "user" | "model"; content: string }[] = [],
+  ): Promise<string> {
     try {
-      console.log(`🤖 AI Request: "${userMessage.substring(0, 50)}..." | History items: ${history.length}`);
-      
+      console.log(
+        `🤖 AI Request: "${userMessage.substring(0, 50)}..." | History items: ${history.length}`,
+      );
+
       const chat = this._model.startChat({
-        history: history.map(h => ({
+        history: history.map((h) => ({
           role: h.role === "user" ? "user" : "model",
           parts: [{ text: h.content || "" }],
         })),
@@ -62,21 +61,23 @@ Guidelines:
       const result = await chat.sendMessage(userMessage);
       const response = await result.response;
       const text = response.text();
-      
+
       if (!text) {
         throw new Error("Gemini returned an empty response string.");
       }
-      
+
       return text;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ AI Service Execution Error:", error);
       
       let errorMessage = "AI Service Error";
-      if (error.message) errorMessage = error.message;
-      
-      // Check for common external AI errors
-      if (error.status === 429) errorMessage = "Rate limit exceeded (Too many requests)";
-      if (error.status === 401 || error.status === 403) errorMessage = "Invalid API Key or Permissions";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        // Check for common status codes if they are attached to the error object
+        const status = (error as any).status;
+        if (status === 429) errorMessage = "Rate limit exceeded (Too many requests)";
+        if (status === 401 || status === 403) errorMessage = "Invalid API Key or Permissions";
+      }
       
       throw new AppError(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     }

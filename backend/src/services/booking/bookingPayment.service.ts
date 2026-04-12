@@ -20,7 +20,10 @@ export class BookingPaymentService implements IBookingPaymentService {
     private readonly _emailService: IEmailService,
   ) {}
 
-  async createPaymentIntent(bookingId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+  async createPaymentIntent(
+    bookingId: string,
+    providedFrontendUrl?: string,
+  ): Promise<{ url: string; sessionId: string }> {
     const booking = await this._bookingRepository.findById(bookingId);
     if (!booking) throw new AppError("Booking not found", HttpStatus.NOT_FOUND);
 

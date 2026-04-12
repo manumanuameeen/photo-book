@@ -9,8 +9,6 @@ import { IBookingRepository } from "../../../interfaces/repositories/IBookingRep
 import { AppError } from "../../../utils/AppError";
 import { HttpStatus } from "../../../constants/httpStatus";
 
-
-
 type MaybePopulated<T> = T | mongoose.Types.ObjectId;
 
 interface RentalItemForPayment {

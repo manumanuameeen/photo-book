@@ -28,11 +28,14 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
     const activeCategories = await CategoryModel.find({
       isActive: true,
       suggestionStatus: "APPROVED",
-    }).select("name").lean();
+    })
+      .select("name")
+      .lean();
 
-    const categoriesList = activeCategories.length > 0
-      ? activeCategories.map((c) => c.name).join(", ")
-      : "Wedding, Portrait, Event, Product, Nikah Ceremony, Intimate Wedding, General";
+    const categoriesList =
+      activeCategories.length > 0
+        ? activeCategories.map((c) => c.name).join(", ")
+        : "Wedding, Portrait, Event, Product, Nikah Ceremony, Intimate Wedding, General";
 
     const photographerCount = await PhotographerModel.countDocuments({ status: "APPROVED" });
 
@@ -223,7 +226,7 @@ Always end responses with a clear next step or open question.`;
     const chain = prompt.pipe(model);
 
     // Use Promise.race to guarantee a timeout
-    const response = await Promise.race([
+    const response = (await Promise.race([
       chain.invoke(
         {
           input: lastMessage,
@@ -242,7 +245,7 @@ Always end responses with a clear next step or open question.`;
           reject(err);
         }, 85_000),
       ),
-    ]) as { content: string };
+    ])) as { content: string };
 
     clearTimeout(timeoutId);
     return {

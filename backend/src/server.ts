@@ -110,7 +110,6 @@ async function startServer() {
   app.use(ROUTES.V1.AI.BASE, aiRoutes);
   console.log("✅ Routes mounted.");
 
-
   // Initialize CronService
   try {
     CronService.init(container.bookingService);

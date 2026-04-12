@@ -162,7 +162,10 @@ export class RentalFinanceService implements IRentalFinanceService {
     return updated!;
   }
 
-  async createDepositPaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+  async createDepositPaymentIntent(
+    orderId: string,
+    providedFrontendUrl?: string,
+  ): Promise<{ url: string; sessionId: string }> {
     const order = await this._rentalRepository.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
 
@@ -187,7 +190,8 @@ export class RentalFinanceService implements IRentalFinanceService {
         const existingIntent = await this._stripeService.retrievePaymentIntent(order.paymentId);
         if (existingIntent.status === "succeeded") {
           await this.payRentalDeposit(orderId, order.paymentId);
-          const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
+          const frontendUrl =
+            providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
           return {
             url: `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id=${existingIntent.id}`,
             sessionId: existingIntent.id,
@@ -215,7 +219,10 @@ export class RentalFinanceService implements IRentalFinanceService {
     return { url: session.url!, sessionId: session.id };
   }
 
-  async createBalancePaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+  async createBalancePaymentIntent(
+    orderId: string,
+    providedFrontendUrl?: string,
+  ): Promise<{ url: string; sessionId: string }> {
     const order = await this._rentalRepository.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
     if (order.status !== "CONFIRMED" && order.status !== "ONGOING" && order.status !== "SHIPPED") {
