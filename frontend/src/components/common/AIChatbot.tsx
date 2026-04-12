@@ -44,11 +44,12 @@ const AIChatbot: React.FC = () => {
 
       const botResponse = response.data.data.response;
       setMessages((prev) => [...prev, { role: "model", content: botResponse }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
+      const errorMessage = error.response?.data?.message || "Sorry, I'm having a bit of trouble connecting right now. Please try again later!";
       setMessages((prev) => [
         ...prev,
-        { role: "model", content: "Sorry, I'm having a bit of trouble connecting right now. Please try again later!" },
+        { role: "model", content: errorMessage },
       ]);
     } finally {
       setIsLoading(false);
