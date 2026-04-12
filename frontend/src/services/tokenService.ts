@@ -42,8 +42,8 @@ class TokenService {
             .catch((error: AxiosError) => {
                 this.failureCount++;
                 sessionStorage.removeItem("auth-cache");
-                
-                // If too many failures, force logout
+
+
                 if (this.failureCount >= this.MAX_FAILURES) {
                     this.logout();
                 }
