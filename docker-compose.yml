@@ -37,6 +37,21 @@ services:
     depends_on:
       - backend
     networks:
+      - photobook-networ
+
+
+  mongodb:
+    image: mongo:latest
+    container_name: photobook-mongodb
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
       - photobook-network
 
   redis:
