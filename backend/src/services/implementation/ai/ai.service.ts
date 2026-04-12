@@ -18,7 +18,7 @@ export class AiService implements IAiService {
 
     this._genAI = new GoogleGenerativeAI(apiKey);
     this._model = this._genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-001",
+      model: "gemini-1.5-flash",
       systemInstruction: `You are the Photo-book Assistant. Your job is to help users understand our platform and provide basic knowledge about photography and videography.
 
 About Photo-book:
