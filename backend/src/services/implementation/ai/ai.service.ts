@@ -18,7 +18,7 @@ export class AiService implements IAiService {
 
     this._genAI = new GoogleGenerativeAI(apiKey);
     this._model = this._genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-2.0-flash",
       systemInstruction: `You are the Photo-book Assistant. Your job is to help users understand our platform and provide basic knowledge about photography and videography.
 
 About Photo-book:
@@ -39,7 +39,7 @@ Guidelines:
 - If a user asks something outside of photography or the website, politely redirect them.
 - Do not perform actual bookings or order processing (tell them to use the website's built-in features for that).`,
     });
-    console.log("✅ AI Service: Model initialized (gemini-1.5-flash-latest)");
+    console.log("✅ AI Service: Model initialized (gemini-2.0-flash)");
   }
 
   async getChatResponse(
@@ -86,7 +86,7 @@ Guidelines:
           errorMessage = "Invalid API Key or Permissions";
           statusCode = 401;
         } else if (status === 404) {
-          errorMessage = `Model Not Found (404). Please verify your Google AI API key has access to 'gemini-1.5-flash-latest'.`;
+          errorMessage = `Model Not Found (404). Please verify your Google AI API key has access to 'gemini-2.0-flash'.`;
           statusCode = 404;
         }
       }
