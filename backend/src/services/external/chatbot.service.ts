@@ -1,4 +1,4 @@
-import { ChatHistoryModel, IChatMessage } from "../../models/chatHistory.model";
+import { ChatHistoryModel } from "../../models/chatHistory.model";
 import { ShutterAgent } from "./shutter/shutter.agent";
 import { ChatbotPhase } from "./shutter/shutter.types";
 
@@ -6,7 +6,7 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp?: Date;
-  structuredData?: any; 
+  structuredData?: Record<string, unknown> | unknown[] | null;
 }
 
 /**
@@ -99,19 +99,26 @@ export const getChatbotResponse = async (
       structuredData: result.structuredData,
       conversationPhase: result.nextPhase,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[ChatbotService] CRITICAL FAILURE:", error);
 
     // Log the error stack separately for visibility
-    if (error && typeof error === 'object' && 'stack' in error) {
+    if (error && typeof error === "object" && "stack" in error) {
       console.error("[ChatbotService] Stack Trace:", error.stack);
     }
 
     return {
       success: false,
       message: "An internal error occurred while processing your request.",
-      error: error && typeof error === 'object' && 'message' in error ? error.message : String(error),
-      stack: process.env.NODE_ENV === "development" && error && typeof error === 'object' && 'stack' in error ? error.stack : undefined,
+      error:
+        error && typeof error === "object" && "message" in error ? error.message : String(error),
+      stack:
+        process.env.NODE_ENV === "development" &&
+          error &&
+          typeof error === "object" &&
+          "stack" in error
+          ? error.stack
+          : undefined,
     };
   }
 };

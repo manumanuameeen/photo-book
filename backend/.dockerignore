@@ -1,6 +1,5 @@
 node_modules
 dist
 logs
-.env
 .git
 *.log

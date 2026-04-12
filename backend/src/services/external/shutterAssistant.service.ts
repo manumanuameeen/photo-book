@@ -61,7 +61,7 @@ export const getPhotographerRecommendations = async (
 
     for (const photographer of photographers) {
       const reviews = await ReviewModel.find({
-        targetId: photographer._id as mongoose.Types.ObjectId,
+        targetId: new mongoose.Types.ObjectId(photographer._id as unknown as string),
         type: "photographer",
       });
 
@@ -69,7 +69,7 @@ export const getPhotographerRecommendations = async (
         reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
 
       recommendations.push({
-        id: (photographer._id as any).toString(),
+        id: String(photographer._id),
         name: photographer.personalInfo.name,
         specialty: photographer.professionalDetails.specialties.join(", "),
         experience: photographer.professionalDetails.yearsExperience,
@@ -101,7 +101,7 @@ export const formatPhotographerRecommendations = (
 
   let response = "Based on your needs, here are some excellent photographers:\n\n";
 
-  photographers.forEach((photographer, index) => {
+  photographers.forEach((photographer) => {
     response += `📸 **${photographer.name}** — ⭐ ${photographer.rating}/5.0 (${photographer.reviewCount} reviews)\n`;
     response += `• Specialty: ${photographer.specialty}\n`;
     response += `• Experience: ${photographer.experience} years\n`;
@@ -134,7 +134,12 @@ export const extractUserPreferences = (
     .join(" ")
     .toLowerCase();
 
-  const preferences: { category?: string; location?: string; priceRange?: string; hasPreferences: boolean } = { hasPreferences: false };
+  const preferences: {
+    category?: string;
+    location?: string;
+    priceRange?: string;
+    hasPreferences: boolean;
+  } = { hasPreferences: false };
 
   // Extract category
   const categories = [

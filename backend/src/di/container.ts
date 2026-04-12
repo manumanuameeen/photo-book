@@ -15,6 +15,7 @@ import { AuthController } from "../controller/user/auth.controller";
 import { AdminController } from "../controller/admin/adminUser.controller";
 import { UserController } from "../controller/user/user.controller";
 import { PhotographerController } from "../controller/user/photographer.controller";
+import { AiController } from "../controller/user/ai.controller";
 
 import { AdminPhotographerController } from "../controller/admin/adminPhotographer.controller";
 import { PackageRepository } from "../repositories/implementation/photographer/package.repository";
@@ -57,6 +58,8 @@ import { RentalPaymentService } from "../services/rental/rentalPayment.service";
 import { RentalAvailabilityService } from "../services/rental/rentalAvailability.service";
 import { RentalFinanceService } from "../services/rental/rentalFinance.service";
 import { RentalService } from "../services/implementation/rental/rental.service";
+import { IAiService } from "../interfaces/services/IAiService";
+import { AiService } from "../services/implementation/ai/ai.service";
 import { AdminRentalService } from "../services/rental/adminRental.service";
 import { AdminRentalController } from "../controller/admin/adminRental.controller";
 import { AdminDashboardService } from "../services/admin/adminDashboard.service";
@@ -142,6 +145,7 @@ class DIContainer {
   private _adminRentalService?: AdminRentalService;
   private _ruleService?: RuleService;
   private _helpTopicRequestService?: IHelpTopicRequestService;
+  private _aiService?: IAiService;
 
   private _authController?: AuthController;
   private _adminController?: AdminController;
@@ -175,6 +179,7 @@ class DIContainer {
   private _adminDashboardService?: AdminDashboardService;
   private _adminDashboardController?: AdminDashboardController;
   private _helpTopicRequestController?: IHelpTopicRequestController;
+  private _aiController?: AiController;
 
   get bookingQueueService(): BookingQueueService {
     this._bookingQueueService ??= new BookingQueueService();
@@ -641,6 +646,16 @@ class DIContainer {
       this.helpTopicRequestService,
     );
     return this._helpTopicRequestController;
+  }
+
+  get aiService(): IAiService {
+    this._aiService ??= new AiService();
+    return this._aiService;
+  }
+
+  get aiController(): AiController {
+    this._aiController ??= new AiController(this.aiService);
+    return this._aiController;
   }
 }
 
