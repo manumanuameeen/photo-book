@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Sparkles } from "lucide-react";
 import axios from "axios";
 
 interface Message {
