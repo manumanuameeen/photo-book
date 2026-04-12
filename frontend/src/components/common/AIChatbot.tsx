@@ -39,7 +39,7 @@ const AIChatbot: React.FC = () => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/ai/chat`, {
         message: userMessage,
-        history: messages.slice(1), // Exclude the first welcome message if it doesn't fit the roles perfectly
+        history: messages.slice(1), // Use existing messages before state update adds the new user message
       });
 
       const botResponse = response.data.data.response;

@@ -9,17 +9,21 @@ export class AiService implements IAiService {
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
+    console.log("🛠️ AI Service: Initializing...");
     if (!apiKey) {
+      console.error("❌ AI Service: GEMINI_API_KEY is missing!");
       throw new Error("GEMINI_API_KEY is not defined in environment variables");
     }
+    console.log(`🔑 AI Service: API Key found (ends with ...${apiKey.slice(-4)})`);
+    
     this._genAI = new GoogleGenerativeAI(apiKey);
     this._model = this._genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-flash-001",
       systemInstruction: `You are the Photo-book Assistant. Your job is to help users understand our platform and provide basic knowledge about photography and videography.
 
 About Photo-book:
 - It's a comprehensive platform for photographers and videographers to showcase portfolios.
-* Users can book professional photographers for events (wedding, product, etc.).
+- Users can book professional photographers for events (wedding, product, etc.).
 - There is a marketplace to rent cameras, lenses, and other photography gear.
 - We offer secure payments and a messaging system between clients and professionals.
 
@@ -35,23 +39,46 @@ Guidelines:
 - If a user asks something outside of photography or the website, politely redirect them.
 - Do not perform actual bookings or order processing (tell them to use the website's built-in features for that).`,
     });
+    console.log("✅ AI Service: Model initialized (gemini-1.5-flash-001)");
+
+    // Async diagnostic (don't await in constructor)
+    this._genAI.listModels().then(models => {
+      console.log("📑 Available AI Models for this key:");
+      models.models?.forEach(m => console.log(` - ${m.name}`));
+    }).catch(e => console.error("⚠️ Failed to list models:", e.message));
   }
 
   async getChatResponse(userMessage: string, history: { role: "user" | "model"; content: string }[] = []): Promise<string> {
     try {
+      console.log(`🤖 AI Request: "${userMessage.substring(0, 50)}..." | History items: ${history.length}`);
+      
       const chat = this._model.startChat({
         history: history.map(h => ({
           role: h.role === "user" ? "user" : "model",
-          parts: [{ text: h.content }],
+          parts: [{ text: h.content || "" }],
         })),
       });
 
       const result = await chat.sendMessage(userMessage);
       const response = await result.response;
-      return response.text();
+      const text = response.text();
+      
+      if (!text) {
+        throw new Error("Gemini returned an empty response string.");
+      }
+      
+      return text;
     } catch (error: any) {
-      console.error("AI Service Error:", error);
-      throw new AppError("Failed to get AI response", HttpStatus.INTERNAL_SERVER_ERROR);
+      console.error("❌ AI Service Execution Error:", error);
+      
+      let errorMessage = "AI Service Error";
+      if (error.message) errorMessage = error.message;
+      
+      // Check for common external AI errors
+      if (error.status === 429) errorMessage = "Rate limit exceeded (Too many requests)";
+      if (error.status === 401 || error.status === 403) errorMessage = "Invalid API Key or Permissions";
+      
+      throw new AppError(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
