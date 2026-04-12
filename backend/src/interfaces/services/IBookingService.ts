@@ -25,7 +25,7 @@ export interface IBookingService {
   ): Promise<{ bookings: IBooking[]; total: number }>;
   acceptBooking(id: string, message?: string): Promise<IBooking | null>;
   confirmPayment(id: string, paymentIntentId: string): Promise<IBooking | null>;
-  createBookingPaymentIntent(bookingId: string): Promise<{ url: string } | null>;
+  createBookingPaymentIntent(bookingId: string, frontendUrl?: string): Promise<{ url: string } | null>;
   rejectBooking(id: string, message?: string): Promise<IBooking | null>;
   cancelBooking(
     id: string,

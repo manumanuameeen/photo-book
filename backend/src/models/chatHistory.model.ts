@@ -7,9 +7,9 @@ export interface IChatMessage {
     type: "photographer_list" | "package_list" | "booking_confirmation" | "availability_picker";
     photographerId?: string;
     packageId?: string;
-    data?: any;
+    data?: unknown;
     bookingId?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   timestamp: Date;
 }

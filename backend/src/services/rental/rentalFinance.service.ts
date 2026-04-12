@@ -67,8 +67,9 @@ export class RentalFinanceService implements IRentalFinanceService {
     order: IRentalOrder,
     depositAmount: number,
     renterEmail: string,
+    providedFrontendUrl?: string,
   ): Promise<string> {
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${String(order._id)}&session_id={CHECKOUT_SESSION_ID}&paymentType=deposit`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -161,7 +162,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     return updated!;
   }
 
-  async createDepositPaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }> {
+  async createDepositPaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
     const order = await this._rentalRepository.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
 
@@ -186,7 +187,7 @@ export class RentalFinanceService implements IRentalFinanceService {
         const existingIntent = await this._stripeService.retrievePaymentIntent(order.paymentId);
         if (existingIntent.status === "succeeded") {
           await this.payRentalDeposit(orderId, order.paymentId);
-          const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+          const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
           return {
             url: `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id=${existingIntent.id}`,
             sessionId: existingIntent.id,
@@ -198,7 +199,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     }
 
     const amount = order.depositeRequired || Math.round(order.totalAmount * 0.25);
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=deposit`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -214,7 +215,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     return { url: session.url!, sessionId: session.id };
   }
 
-  async createBalancePaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }> {
+  async createBalancePaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
     const order = await this._rentalRepository.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
     if (order.status !== "CONFIRMED" && order.status !== "ONGOING" && order.status !== "SHIPPED") {
@@ -224,7 +225,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     const remaining = order.totalAmount - amountPaid;
     if (remaining <= 0) throw new AppError("Balance already paid", HttpStatus.BAD_REQUEST);
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=balance`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 

@@ -35,12 +35,12 @@ export class RentalPaymentService implements IRentalPaymentService {
     this._pdfService = pdfService;
   }
 
-  async createDepositPaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }> {
+  async createDepositPaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
     const order = await this._orderRepo.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
 
     const amount = order.depositeRequired || Math.round(order.totalAmount * 0.25);
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=deposit`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -81,14 +81,14 @@ export class RentalPaymentService implements IRentalPaymentService {
     return updated!;
   }
 
-  async createBalancePaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }> {
+  async createBalancePaymentIntent(orderId: string, providedFrontendUrl?: string): Promise<{ url: string; sessionId: string }> {
     const order = await this._orderRepo.getOrderById(orderId);
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
 
     const remaining = order.totalAmount - (order.amountPaid || 0);
     if (remaining <= 0) throw new AppError("Zero balance", HttpStatus.BAD_REQUEST);
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=balance`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 

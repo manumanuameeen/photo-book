@@ -107,6 +107,7 @@ export class RentalController implements IRentalController {
         paymentMethod,
       });
 
+      const frontendUrl = (req.headers.origin as string) || (req.headers.referer as string);
       const result = await this._rentalService.rentItem(
         userId,
         parsedItemIds as string[],
@@ -114,6 +115,7 @@ export class RentalController implements IRentalController {
         new Date(endDate),
         paymentIntentId,
         paymentMethod,
+        frontendUrl,
       );
 
       ApiResponse.success(res, result, Messages.ITEM_RENT_REQUEST_SUBMITTED);
@@ -353,7 +355,8 @@ export class RentalController implements IRentalController {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
 
-      const session = await this._rentalService.createDepositPaymentIntent(id);
+      const frontendUrl = (req.headers.origin as string) || (req.headers.referer as string);
+      const session = await this._rentalService.createDepositPaymentIntent(id, frontendUrl);
       ApiResponse.success(res, { url: session.url }, "Payment session created");
     } catch (error) {
       handleError(res, error);
@@ -366,7 +369,8 @@ export class RentalController implements IRentalController {
       const userId = req.user?.userId;
       if (!userId) throw new AppError(Messages.USER_NOT_AUTHENTICATED, HttpStatus.UNAUTHORIZED);
 
-      const session = await this._rentalService.createBalancePaymentIntent(id);
+      const frontendUrl = (req.headers.origin as string) || (req.headers.referer as string);
+      const session = await this._rentalService.createBalancePaymentIntent(id, frontendUrl);
       ApiResponse.success(res, session, "Balance payment intent created");
     } catch (error) {
       handleError(res, error);

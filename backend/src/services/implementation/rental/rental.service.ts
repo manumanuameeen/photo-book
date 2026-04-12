@@ -115,6 +115,7 @@ export class RentalService implements IRentalService {
     endDate: Date,
     paymentIntentId?: string,
     paymentMethod: "ONLINE" | "CASH" | "wallet" | "stripe" = "ONLINE",
+    frontendUrl?: string,
   ): Promise<{ order: IRentalOrder; clientSecret?: string }> {
     let totalAmount = 0;
 
@@ -161,6 +162,7 @@ export class RentalService implements IRentalService {
             pendingOrder,
             deposit,
             renterEmail,
+            frontendUrl,
           );
         } catch (err: unknown) {
           console.error("Stripe Retry Session Creation Failed:", err);
@@ -249,6 +251,7 @@ export class RentalService implements IRentalService {
           savedOrder,
           depositeRequired,
           renterEmail,
+          frontendUrl,
         );
       } catch (err: unknown) {
         console.error("Stripe Session Creation Failed:", err);
@@ -598,12 +601,12 @@ export class RentalService implements IRentalService {
     return (await this._rentalRepository.updateOrder(orderId, { status: RentalStatus.REJECTED }))!;
   }
 
-  async createDepositPaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }> {
-    return this._financeService.createDepositPaymentIntent(orderId);
+  async createDepositPaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+    return this._financeService.createDepositPaymentIntent(orderId, frontendUrl);
   }
 
-  async createBalancePaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }> {
-    return this._financeService.createBalancePaymentIntent(orderId);
+  async createBalancePaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }> {
+    return this._financeService.createBalancePaymentIntent(orderId, frontendUrl);
   }
 
   async payRentalBalance(orderId: string, paymentIntentId: string): Promise<IRentalOrder> {

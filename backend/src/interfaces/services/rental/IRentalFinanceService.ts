@@ -22,13 +22,14 @@ export interface IRentalFinanceService {
     order: IRentalOrder,
     depositAmount: number,
     renterEmail: string,
+    frontendUrl?: string,
   ): Promise<string>;
 
   confirmRentalPayment(orderId: string, paymentIntentId: string): Promise<IRentalOrder>;
 
-  createDepositPaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }>;
+  createDepositPaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }>;
 
-  createBalancePaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }>;
+  createBalancePaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }>;
 
   payRentalDeposit(orderId: string, paymentIntentId: string): Promise<IRentalOrder>;
 

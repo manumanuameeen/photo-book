@@ -238,8 +238,8 @@ export class BookingService implements IBookingService {
     return savedBooking;
   }
 
-  async createBookingPaymentIntent(bookingId: string): Promise<{ url: string } | null> {
-    return await this._bookingPaymentService.createPaymentIntent(bookingId);
+  async createBookingPaymentIntent(bookingId: string, frontendUrl?: string): Promise<{ url: string } | null> {
+    return await this._bookingPaymentService.createPaymentIntent(bookingId, frontendUrl);
   }
 
   async confirmPayment(id: string, paymentIntentId: string): Promise<IBooking | null> {
