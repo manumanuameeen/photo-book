@@ -71,12 +71,14 @@ Guidelines:
       console.error("❌ AI Service Execution Error:", error);
       
       let errorMessage = "AI Service Error";
-      let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+      let statusCode: number = HttpStatus.INTERNAL_SERVER_ERROR;
 
       if (error instanceof Error) {
         errorMessage = error.message;
-        // Check for common status codes if they are attached to the error object
-        const status = (error as any).status;
+        // Safely check for status code on the error object
+        const status = typeof error === 'object' && error !== null && 'status' in error 
+          ? (error as { status: number }).status 
+          : undefined;
         if (status === 429) {
           errorMessage = "Rate limit exceeded (Too many requests)";
           statusCode = 429;
