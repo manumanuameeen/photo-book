@@ -1,87 +1,57 @@
-import { IAiService, AiSearchResponse, SuggestAlbumNameResponse, ChatHistoryResponse } from "../../../interfaces/services/IAiService";
-import { PortfolioSectionModel } from "../../../models/portfolioSection.model";
-import { ChatHistoryModel } from "../../../models/chatHistory.model";
-import { rankPhotosByQuery } from "../../../services/external/aiSearch.service";
-import { suggestAlbumName as suggestAlbumNameExternal } from "../../../services/external/albumName.service";
-import { getChatbotResponse, ChatMessage } from "../../../services/external/chatbot.service";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { IAiService } from "../../../interfaces/services/IAiService";
+import { AppError } from "../../../utils/AppError";
+import { HttpStatus } from "../../../constants/httpStatus";
 
 export class AiService implements IAiService {
-  public async searchPhotos(query: string): Promise<AiSearchResponse> {
-    // Get all portfolio images with embeddings from all photographers
-    const portfolioSections = await PortfolioSectionModel.find({}, { images: 1 });
-    const photoEmbeddings: { photoId: string; embedding: number[]; url: string }[] = [];
+  private _genAI: GoogleGenerativeAI;
+  private _model: any;
 
-    portfolioSections.forEach((section) => {
-      section.images.forEach((image, index) => {
-        if (image.embedding && image.embedding.length > 0) {
-          photoEmbeddings.push({
-            photoId: `${section._id}_${index}`,
-            embedding: image.embedding,
-            url: image.url,
-          });
-        }
+  constructor() {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not defined in environment variables");
+    }
+    this._genAI = new GoogleGenerativeAI(apiKey);
+    this._model = this._genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: `You are the Photo-book Assistant. Your job is to help users understand our platform and provide basic knowledge about photography and videography.
+
+About Photo-book:
+- It's a comprehensive platform for photographers and videographers to showcase portfolios.
+* Users can book professional photographers for events (wedding, product, etc.).
+- There is a marketplace to rent cameras, lenses, and other photography gear.
+- We offer secure payments and a messaging system between clients and professionals.
+
+Photography & Videography Knowledge:
+- Explain concepts like Exposure Triangle (ISO, Aperture, Shutter Speed).
+- Provide tips on composition (Rule of Thirds, Leading Lines).
+- Advise on gear selection for beginners vs professionals.
+- Discuss lighting techniques (natural light vs studio light).
+
+Guidelines:
+- Be friendly, professional, and helpful.
+- Keep responses concise but informative.
+- If a user asks something outside of photography or the website, politely redirect them.
+- Do not perform actual bookings or order processing (tell them to use the website's built-in features for that).`,
+    });
+  }
+
+  async getChatResponse(userMessage: string, history: { role: "user" | "model"; content: string }[] = []): Promise<string> {
+    try {
+      const chat = this._model.startChat({
+        history: history.map(h => ({
+          role: h.role === "user" ? "user" : "model",
+          parts: [{ text: h.content }],
+        })),
       });
-    });
 
-    const results = await rankPhotosByQuery(query, photoEmbeddings);
-
-    // Map results to include photo URLs
-    const resultsWithUrls = results.map((result) => {
-      const photoData = photoEmbeddings.find((p) => p.photoId === result.photoId);
-      return {
-        ...result,
-        url: photoData?.url || "",
-      };
-    });
-
-    return {
-      success: true,
-      query,
-      results: resultsWithUrls,
-      count: resultsWithUrls.length,
-    };
-  }
-
-  public async suggestAlbumName(albumId: string): Promise<SuggestAlbumNameResponse> {
-    const section = await PortfolioSectionModel.findById(albumId).select("images.caption");
-    if (!section) {
-      throw new Error("Album not found");
+      const result = await chat.sendMessage(userMessage);
+      const response = await result.response;
+      return response.text();
+    } catch (error: any) {
+      console.error("AI Service Error:", error);
+      throw new AppError("Failed to get AI response", HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    const captions = section.images
-      .map((img: { caption?: string }) => img.caption)
-      .filter((caption): caption is string => Boolean(caption && caption.trim().length > 0));
-
-    if (captions.length === 0) {
-      throw new Error("No photo captions found in this album");
-    }
-
-    const result = await suggestAlbumNameExternal(captions);
-
-    return {
-      success: result.success,
-      albumId,
-      suggestedName: result.name,
-    };
-  }
-
-  public async getChatbotHistory(userId: string, sessionId: string = "default"): Promise<ChatHistoryResponse> {
-    const chatHistory = await ChatHistoryModel.findOne({
-      userId,
-      sessionId,
-    });
-
-    return {
-      success: true,
-      messages: chatHistory ? chatHistory.messages : [],
-    };
-  }
-
-  public async handleChatbotMessage(
-    messages: ChatMessage[],
-    userId: string,
-    sessionId: string = "default"
-  ): Promise<any> {
-    return await getChatbotResponse(messages, userId, sessionId);
   }
 }

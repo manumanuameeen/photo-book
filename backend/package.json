@@ -5,12 +5,12 @@
     "dev": "tsx src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-
     "lint": "eslint . --fix"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.975.0",
     "@aws-sdk/lib-storage": "^3.975.0",
+    "@google/generative-ai": "^0.24.1",
     "@langchain/core": "^0.3.39",
     "@langchain/groq": "^0.2.4",
     "@langchain/mongodb": "^0.1.1",

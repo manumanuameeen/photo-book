@@ -130,7 +130,8 @@ export class BookingController implements IBookingController {
   createBookingPaymentIntent = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const session = await this._bookingService.createBookingPaymentIntent(id);
+      const frontendUrl = (req.headers.origin as string) || (req.headers.referer as string);
+      const session = await this._bookingService.createBookingPaymentIntent(id, frontendUrl);
       ApiResponse.success(res, session, Messages.PAYMENT_INTENT_CREATED);
     } catch (error: unknown) {
       handleError(res, error);

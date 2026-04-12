@@ -38,6 +38,7 @@ export interface IRentalService {
     endDate: Date,
     paymentIntentId?: string,
     paymentMethod?: "ONLINE" | "CASH" | "wallet" | "stripe",
+    frontendUrl?: string,
   ): Promise<{ order: IRentalOrder; clientSecret?: string }>;
   confirmRentalPayment(orderId: string, paymentIntentId: string): Promise<IRentalOrder>;
   getUserRentalOrders(
@@ -72,9 +73,9 @@ export interface IRentalService {
   ): Promise<IRentalOrder>;
   getOrderDetails(orderId: string): Promise<IRentalOrder>;
 
-  createDepositPaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }>;
+  createDepositPaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }>;
   payRentalDeposit(orderId: string, paymentIntentId: string): Promise<IRentalOrder>;
-  createBalancePaymentIntent(orderId: string): Promise<{ url: string; sessionId: string }>;
+  createBalancePaymentIntent(orderId: string, frontendUrl?: string): Promise<{ url: string; sessionId: string }>;
   payRentalBalance(orderId: string, paymentIntentId: string): Promise<IRentalOrder>;
   completeRentalOrder(orderId: string): Promise<IRentalOrder>;
 
