@@ -107,36 +107,36 @@ const DashboardLayout: React.FC = () => {
     show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
 
-  // const handleExportCSV = () => {
-  //   if (!stats) return;
+  const handleExportCSV = () => {
+    if (!stats) return;
 
-  //   let csvContent = "data:text/csv;charset=utf-8,";
+    let csvContent = "data:text/csv;charset=utf-8,";
 
-  //   csvContent += "=== Metrics ===\n";
-  //   csvContent += "Title,Value,Trend\n";
-  //   stats.topMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
-  //   stats.smallMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
+    csvContent += "=== Metrics ===\n";
+    csvContent += "Title,Value,Trend\n";
+    stats.topMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
+    stats.smallMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
 
-  //   csvContent += "\n=== Top Photographers ===\n";
-  //   csvContent += "Name,Rating,Reviews,Bookings\n";
-  //   if (stats.topPhotographers) {
-  //     stats.topPhotographers.forEach(p => csvContent += `"${p.name}","${p.rating}","${p.reviews}","${p.bookings}"\n`);
-  //   }
+    csvContent += "\n=== Top Photographers ===\n";
+    csvContent += "Name,Rating,Reviews,Bookings\n";
+    if (stats.topPhotographers) {
+      stats.topPhotographers.forEach(p => csvContent += `"${p.name}","${p.rating}","${p.reviews}","${p.bookings}"\n`);
+    }
 
-  //   csvContent += "\n=== Top Rental Owners ===\n";
-  //   csvContent += "Name,Orders,Items,Revenue\n";
-  //   if (stats.topRentalOwners) {
-  //     stats.topRentalOwners.forEach(r => csvContent += `"${r.name}","${r.orders}","${r.items}","$${r.revenue}"\n`);
-  //   }
+    csvContent += "\n=== Top Rental Owners ===\n";
+    csvContent += "Name,Orders,Items,Revenue\n";
+    if (stats.topRentalOwners) {
+      stats.topRentalOwners.forEach(r => csvContent += `"${r.name}","${r.orders}","${r.items}","$${r.revenue}"\n`);
+    }
 
-  //   const encodedUri = encodeURI(csvContent);
-  //   const link = document.createElement("a");
-  //   link.setAttribute("href", encodedUri);
-  //   link.setAttribute("download", `Admin_Report_${new Date().toISOString().split('T')[0]}.csv`);
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Admin_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <motion.div
@@ -172,13 +172,13 @@ const DashboardLayout: React.FC = () => {
               className="text-sm px-3 py-1.5 focus:outline-none border-none bg-transparent"
             />
           </div>
-          {/* <button
+          <button
             onClick={handleExportCSV}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-sm"
           >
             <Download size={16} />
             Export Data
-          </button> */}
+          </button>
         </div>
       </div>
 
@@ -205,7 +205,7 @@ const DashboardLayout: React.FC = () => {
         </motion.div>
 
         <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {}
+          {/* {stats.topPhotographers && <TopPhotographersTable data={stats.topPhotographers} />} */}
           {stats.topRentalOwners && <TopRentalOwnersTable data={stats.topRentalOwners} />}
         </motion.div>
 

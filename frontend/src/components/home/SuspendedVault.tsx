@@ -143,7 +143,7 @@ export const SuspendedVault = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 w-full h-full flex flex-col items-center">
         
         <div className="text-center mb-40 relative">
-          <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">
+          <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">// SUSPENDED VAULT //</p>
           <h3 className="text-5xl md:text-7xl font-light text-white leading-tight">
             Professional Equipment
             <span className="block font-bold italic text-gray-400 mt-2">Marketplace</span>

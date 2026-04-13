@@ -18,11 +18,11 @@ const AdminWallet = () => {
         queryFn: walletApi.getWalletDetails,
     });
 
-    
-    
-    
-    
-    const statsLoading = false; 
+    // const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+    //     queryKey: ['admin-dashboard-stats'],
+    //     queryFn: walletApi.getDashboardStats,
+    // });
+    const statsLoading = false; // Not used currently
 
     const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
         queryKey: ['admin-wallet-transactions', page, typeFilter],
@@ -113,7 +113,57 @@ const AdminWallet = () => {
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-800">Admin Wallet & Escrow</h1>
 
-            {}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-full bg-blue-50 text-blue-600">
+                            <Wallet size={20} />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">Volume</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900">${dashboardStats?.volume?.toFixed(2) || '0.00'}</div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-full bg-green-50 text-green-600">
+                            <DollarSign size={20} />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">Revenue</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900">${dashboardStats?.revenue?.toFixed(2) || '0.00'}</div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-full bg-amber-50 text-amber-600">
+                            <Lock size={20} />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">Escrow</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900">${dashboardStats?.escrow?.toFixed(2) || '0.00'}</div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-full bg-purple-50 text-purple-600">
+                            <ArrowUpRight size={20} />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">Payouts</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900">${dashboardStats?.payouts?.toFixed(2) || '0.00'}</div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-full bg-indigo-50 text-indigo-600">
+                            <Clock size={20} />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-500 uppercase">Pending</span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-900">${wallet.pendingBalance?.toFixed(2) || '0.00'}</div>
+                </div>
+            </div> */}
 
             <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-10">

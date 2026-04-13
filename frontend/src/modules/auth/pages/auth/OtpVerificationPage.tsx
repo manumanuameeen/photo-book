@@ -67,7 +67,7 @@ const VerifyOtp: React.FC = () => {
           console.log("✅ [OTP Verification] OTP verified successfully!");
           toast.success("Account verified successfully! You can now login.", { id: "verify-success" });
           sessionStorage.removeItem("pendingVerificationEmail");
-          clearUser(); 
+          clearUser(); // Ensure no partial state remains
           setTimeout(() => {
             navigate({ to: ROUTES.AUTH.LOGIN });
           }, 1500);
@@ -75,7 +75,7 @@ const VerifyOtp: React.FC = () => {
         onError: (error) => {
           console.error("❌ [OTP Verification] Verification failed:", error);
           setIsVerifying(false);
-          
+          // apiClient handles the error toast
         },
       }
     );

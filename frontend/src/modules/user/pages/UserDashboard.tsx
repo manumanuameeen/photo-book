@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import type { IRentalOrder } from '../../../types/rental';
 import { useRentalDashboard } from '../../../hooks/useRentalDashboard';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-
+// import { DashboardOverview } from '../components/dashboard/DashboardOverview';
 import { UserBookingsTab } from '../components/dashboard/UserBookingsTab';
 import { UserRentalsTab } from '../components/dashboard/UserRentalsTab';
 import { UserRequestsTab } from '../components/dashboard/UserRequestsTab';

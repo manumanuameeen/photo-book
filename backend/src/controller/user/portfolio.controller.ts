@@ -81,7 +81,7 @@ export class PortfolioController implements IPortfolioController {
         throw new AppError(Messages.MAX_IMAGES_EXCEEDED, HttpStatus.BAD_REQUEST);
       }
 
-      
+      // AI Processing removed as per request
       const aiCaption = "";
       const aiTags: string[] = [];
       const aiEmbedding: number[] = [];

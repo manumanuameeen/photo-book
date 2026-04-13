@@ -74,7 +74,7 @@ const userSchema = new Schema<IUser>(
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password") || !this.password) return next();
-  
+  // Skip hashing if password is already a bcrypt hash (from pre-hashed signup flow)
   const isBcryptHash = /^\$2[ab]\$\d{2}\$/.test(this.password);
   if (isBcryptHash) return next();
   this.password = await bcrypt.hash(this.password, 10);

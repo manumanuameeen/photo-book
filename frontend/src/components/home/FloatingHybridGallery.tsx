@@ -92,9 +92,9 @@ export const FloatingHybridGallery = ({ items }: { items: HybridItem[] }) => {
       restDelta: 0.001
   });
 
-  
+  // Create 3 columns for alternating "up and down" parallax Apple-style flow
   const yOffsetLeft = useTransform(smoothProgress, [0, 1], [150, -350]);
-  const yOffsetMiddle = useTransform(smoothProgress, [0, 1], [-200, 200]); 
+  const yOffsetMiddle = useTransform(smoothProgress, [0, 1], [-200, 200]); // Moves opposite direction
   const yOffsetRight = useTransform(smoothProgress, [0, 1], [250, -450]);
 
   const columns = useMemo(() => {
@@ -110,7 +110,7 @@ export const FloatingHybridGallery = ({ items }: { items: HybridItem[] }) => {
         
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between mb-32 relative z-20">
             <div>
-                <p className="text-gray-400 font-mono text-xs tracking-[0.3em] mb-4 bg-white/5 border border-white/10 px-4 py-2 rounded-full inline-block backdrop-blur-sm">
+                <p className="text-gray-400 font-mono text-xs tracking-[0.3em] mb-4 bg-white/5 border border-white/10 px-4 py-2 rounded-full inline-block backdrop-blur-sm">// EXPLORE THE NETWORK //</p>
                 <h3 className="text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight drop-shadow-2xl max-w-xl">
                     Discover Top Tier
                     <span className="block font-bold italic text-white/50 mt-2">Talent & Gear</span>

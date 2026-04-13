@@ -1,5 +1,9 @@
+/**
+ * Enhanced retry utility with exponential backoff
+ * Handles Groq rate limits specifically
+ */
 
-
+// Error interface for better type safety in error handling
 interface RetryableError extends Error {
   response?: {
     status?: number;
@@ -25,7 +29,7 @@ const DEFAULT_OPTIONS: Required<Omit<RetryOptions, "shouldRetry">> & {
   maxDelayMs: 60000,
   backoffMultiplier: 2,
   shouldRetry: (error: any) => {
-    
+    // Rate limit errors - ALWAYS retry
     if (error && typeof error === "object" && "response" in error && error.response?.status === 429)
       return true;
     if (
@@ -36,7 +40,7 @@ const DEFAULT_OPTIONS: Required<Omit<RetryOptions, "shouldRetry">> & {
     )
       return true;
 
-    
+    // Network/server errors - retry
     if (
       error &&
       typeof error === "object" &&
@@ -78,7 +82,7 @@ export async function retryWithBackoff<T>(
         config.maxDelayMs,
       );
 
-      
+      // Extract retry-after from Groq's error message
       const errorMessage = (error as RetryableError)?.response?.data?.error?.message || "";
       const retryMatch = errorMessage.match(/try again in ([\d.]+)s/);
       if (retryMatch) {

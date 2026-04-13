@@ -10,7 +10,7 @@ export const Route = createFileRoute('/photographer/profile')({
     const { user, isAuthenticated, isVerified } = useAuthStore.getState();
     const isPhotographer = user?.role === 'photographer';
 
-    
+    // isAuthenticated now implies isVerified = true based on the store refactor
     if (!isAuthenticated || !isVerified) {
       toast.error("Please login to access profile", { id: "auth-required" });
       throw redirect({

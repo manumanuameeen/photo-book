@@ -9,7 +9,7 @@ import {
     MapPin,
     Package,
     User,
-    
+    // callender
     Calendar
 } from 'lucide-react';
 import { motion } from "framer-motion";
@@ -47,123 +47,123 @@ const PhotographerDashboard = () => {
     const navigate = useNavigate()
     const { data: stats, isLoading, error } = usePhotographerDashboard();
     const { acceptBooking, rejectBooking } = useBookingActions();
-    
+    // const [timeRange, setTimeRange] = useState<'6m' | '1y'>('6m');
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    // const chartOptions = {
+    //     responsive: true,
+    //     plugins: {
+    //         legend: {
+    //             display: false,
+    //         },
+    //         tooltip: {
+    //             backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    //             titleColor: '#1F2937',
+    //             bodyColor: '#4B5563',
+    //             borderColor: '#E5E7EB',
+    //             borderWidth: 1,
+    //             padding: 12,
+    //             boxPadding: 4,
+    //             usePointStyle: true,
+    //             callbacks: {
+    //                 label: function (context: TooltipItem<'line'>) {
+    //                     return `$${context.parsed.y} Revenue`;
+    //                 }
+    //             }
+    //         }
+    //     },
+    //     scales: {
+    //         x: {
+    //             grid: {
+    //                 display: false,
+    //             },
+    //             ticks: {
+    //                 font: {
+    //                     size: 11
+    //                 },
+    //                 color: '#9CA3AF'
+    //             }
+    //         },
+    //         y: {
+    //             border: {
+    //                 display: false
+    //             },
+    //             grid: {
+    //                 color: '#F3F4F6',
+    //             },
+    //             ticks: {
+    //                 callback: function (value: string | number) {
+    //                     return '$' + value;
+    //                 },
+    //                 font: {
+    //                     size: 11
+    //                 },
+    //                 color: '#9CA3AF',
+    //                 maxTicksLimit: 5
+    //             }
+    //         }
+    //     },
+    //     interaction: {
+    //         intersect: false,
+    //         mode: 'index' as const,
+    //     },
+    //     elements: {
+    //         line: {
+    //             tension: 0.4
+    //         },
+    //         point: {
+    //             radius: 0,
+    //             hoverRadius: 6,
+    //             backgroundColor: '#2E7D46',
+    //             borderWidth: 2,
+    //             borderColor: '#ffffff'
+    //         }
+    //     },
+    //     animation: {
+    //         duration: 2000,
+    //     }
+    // };
 
-    
-    
+    // const getFilteredChartData = () => {
+    //     if (!stats?.revenueTrend) return { labels: [], datasets: [] };
 
-    
-    
+    //     const data = [...stats.revenueTrend];
+    //     const slicedData = timeRange === '6m' ? data.slice(-6) : data;
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    //     return {
+    //         labels: slicedData.map(d => d.month),
+    //         datasets: [
+    //             {
+    //                 fill: true,
+    //                 label: 'Revenue',
+    //                 data: slicedData.map(d => d.amount),
+    //                 borderColor: '#2E7D46',
+    //                 backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D } }) => {
+    //                     const ctx = context.chart.ctx;
+    //                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    //                     gradient.addColorStop(0, 'rgba(46, 125, 70, 0.15)');
+    //                     gradient.addColorStop(1, 'rgba(46, 125, 70, 0.01)');
+    //                     return gradient;
+    //                 },
+    //                 tension: 0.4,
+    //                 pointBackgroundColor: '#2E7D46',
+    //                 pointBorderColor: '#fff',
+    //                 pointBorderWidth: 2,
+    //                 pointRadius: 4,
+    //                 pointHoverRadius: 6,
+    //             },
+    //         ],
+    //     };
+    // };
 
     const getPackagePopularityData = () => {
         if (!stats?.sessions.packagePopularity) return { labels: [], datasets: [] };
 
         const backgroundColors = [
-            'rgba(34, 197, 94, 0.8)', 
-            'rgba(59, 130, 246, 0.8)', 
-            'rgba(245, 158, 11, 0.8)', 
-            'rgba(168, 85, 247, 0.8)', 
-            'rgba(236, 72, 153, 0.8)'  
+            'rgba(34, 197, 94, 0.8)', // Green
+            'rgba(59, 130, 246, 0.8)', // Blue
+            'rgba(245, 158, 11, 0.8)', // Amber
+            'rgba(168, 85, 247, 0.8)', // Purple
+            'rgba(236, 72, 153, 0.8)'  // Pink
         ];
 
         return {
@@ -201,7 +201,10 @@ const PhotographerDashboard = () => {
                             <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
                         </div>
                         <div className="flex items-center gap-4">
-                            {}
+                            {/* <Link to={ROUTES.USER.WALLET} className="hidden sm:flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">
+                                <DollarSign size={16} />
+                                Wallet
+                            </Link> */}
                             <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center border border-green-200 text-green-800 font-bold text-sm">
                                 <User size={16} onClick={()=>navigate({to:ROUTES.USER.PROFILE})} />
                             </div>
@@ -355,7 +358,7 @@ const PhotographerDashboard = () => {
                             </motion.div>
                         )}
 
-                        {}
+                        {/* Upcoming Schedule */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}

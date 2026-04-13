@@ -47,7 +47,7 @@ const LocationAutocomplete = ({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [clearSuggestions]);
 
-    
+    // Update internal value if defaultValue changes externally
     useEffect(() => {
         if (defaultValue) {
             setValue(defaultValue, false);

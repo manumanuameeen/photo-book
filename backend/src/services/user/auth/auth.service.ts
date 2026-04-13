@@ -47,7 +47,7 @@ export class AuthService implements IAuthService {
     const existingUser = await this._userRepo.findByEmail(data.email);
     if (existingUser) throw new Error(Messages.USER_EXISTS);
 
-    
+    // Prevent duplicate signup spam — reject if OTP is already pending
     const pendingSignup = await redisClient.get(`otp:${data.email}`);
     if (pendingSignup) {
       throw new AppError(
@@ -61,7 +61,7 @@ export class AuthService implements IAuthService {
 
     const userData = AuthMapper.toUserFromSignup(data);
 
-    
+    // Hash password before storing in Redis to avoid plaintext exposure
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const safeUserData = { ...userData, password: hashedPassword };
 
@@ -75,7 +75,7 @@ export class AuthService implements IAuthService {
       await this._emailService.sendOtp(data.email, otp, data.name);
       return { message: Messages.OTP_SENT };
     } catch (error) {
-      
+      // Clean up Redis if email send fails
       await redisClient.del(`otp:${data.email}`);
       throw error;
     }
@@ -90,7 +90,7 @@ export class AuthService implements IAuthService {
     const isValid = this._otpService.isOtpValidate(payload.otp, data.otp, payload.expiry);
     if (!isValid) throw new Error(Messages.INVALID_OTP);
 
-    
+    // Password is already hashed from signup — model pre-save hook auto-detects bcrypt hashes
     const user = await this._userRepo.create(payload);
 
     try {
@@ -157,8 +157,8 @@ export class AuthService implements IAuthService {
       throw new AppError(Messages.USER_BLOCKED, HttpStatus.FORBIDDEN);
     }
 
-    
-    
+    // Graceful rotation: keep old token valid for 30 seconds
+    // This prevents race conditions with multiple tabs or network retries
     const GRACE_PERIOD_SECONDS = 30;
     await redisClient.expire(`rt:${refreshToken}`, GRACE_PERIOD_SECONDS);
 
@@ -167,13 +167,13 @@ export class AuthService implements IAuthService {
 
   async logout(refreshToken: string) {
     try {
-      
-      
+      // Just delete from Redis — no need for redundant blacklisting
+      // since Redis lookup will fail anyway after deletion
       await redisClient.del(`rt:${refreshToken}`);
       logger.info("User logged out successfully");
     } catch (error) {
       logger.error("logout error", { error });
-      
+      // Don't throw — logout should always succeed from the user's perspective
     }
   }
 
@@ -264,8 +264,8 @@ export class AuthService implements IAuthService {
 
       await this._emailService.sendWelcomeEmail(user.email, user.name);
     } else if (user.authProvider !== "google") {
-      
-      
+      // User registered with local email/password previously, but verified their Google account.
+      // We seamlessly allow the login rather than throwing an "already exists" error to act like a true Login.
       logger.info("Local user logging in via Google - allowing authentication merge.");
     }
 
@@ -286,7 +286,7 @@ export class AuthService implements IAuthService {
       role: user.role,
     });
 
-    
+    // Use ENV.REFRESH_TOKEN_MAX_AGE / 1000 for Redis (seconds)
     const expirySeconds = Math.floor(ENV.REFRESH_TOKEN_MAX_AGE / 1000);
 
     await redisClient.setEx(`rt:${refreshToken}`, expirySeconds, String(user._id));

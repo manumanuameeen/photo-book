@@ -165,7 +165,7 @@ export const AvailabilityPicker: React.FC<{
         Select Available Date & Time
       </h4>
       
-      {}
+      {/* Date Selector */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {data.availableSlots.map((slot, idx) => {
           const dateObj = new Date(slot.date);
@@ -192,7 +192,7 @@ export const AvailabilityPicker: React.FC<{
         })}
       </div>
 
-      {}
+      {/* Time Slots */}
       <div className="mt-3">
         <p className="text-[10px] text-gray-400 font-medium mb-2 uppercase tracking-wider">Available Slots</p>
         <div className="grid grid-cols-3 gap-2">

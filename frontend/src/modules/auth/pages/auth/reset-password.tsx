@@ -51,7 +51,7 @@ const ResetPassword: React.FC = () => {
           }, 2000);
         },
         onError: () => {
-          
+          // apiClient handles this
         },
       }
     );

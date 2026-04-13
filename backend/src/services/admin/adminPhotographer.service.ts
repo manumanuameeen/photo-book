@@ -73,7 +73,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
-    
+    // Set Redis block flag so auth middleware can check without DB hit
     await redisClient.set(`blocked:${photographer.userId.toString()}`, "true");
   }
 
@@ -82,7 +82,7 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
-    
+    // Remove Redis block flag
     await redisClient.del(`blocked:${photographer.userId.toString()}`);
   }
 

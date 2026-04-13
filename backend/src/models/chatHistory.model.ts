@@ -39,7 +39,7 @@ export interface IChatHistory extends Document {
         contactPhone?: string;
       };
     };
-    [key: string]: unknown; 
+    [key: string]: unknown; // Allow other metadata
   };
   lastMessageAt: Date;
   createdAt: Date;
@@ -88,12 +88,12 @@ const ChatHistorySchema: Schema = new Schema(
   },
   {
     timestamps: true,
-    
+    // Add index for efficient queries
     indexes: [{ userId: 1, sessionId: 1 }, { lastMessageAt: -1 }],
   },
 );
 
-
+// Compound unique index to prevent duplicate sessions
 ChatHistorySchema.index({ userId: 1, sessionId: 1 }, { unique: true });
 
 export const ChatHistoryModel: Model<IChatHistory> = mongoose.model<IChatHistory>(

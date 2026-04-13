@@ -48,7 +48,7 @@ export const EarningsChart: React.FC<EarningsChartProps> = ({ transactions }) =>
             }
         } else if (filter === 'monthly') {
 
-            
+            // for (let i = 5; i >= 0; i--) { }
 
             const months = new Map<string, number>();
             creditTxns.forEach(t => {

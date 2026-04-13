@@ -18,7 +18,7 @@ export default function App() {
     rehydrateUser();
   }, [rehydrateUser]);
 
-  
+  // Debug logging for user state
   useEffect(() => {
     console.log("👤 Current user state in App.tsx:", user);
   }, [user]);
@@ -73,7 +73,7 @@ export default function App() {
         <SmoothScroll>
           <Toaster richColors position="top-center" />
           <RouterProvider router={router} context={{ auth: useAuthStore.getState() }} />
-          {}
+          {/* Shutter AI Chatbot - Global Component */}
           <AIChatbot />
         </SmoothScroll>
       </QueryClientProvider>

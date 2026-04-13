@@ -36,8 +36,8 @@ export const verifyAccessToken = async (
 
     const decoded = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
 
-    
-    
+    // Check block status from Redis cache (set when admin blocks/unblocks a user)
+    // Works for all roles uniformly — no per-request DB query needed
     const isBlocked = await redisClient.get(`blocked:${decoded.userId}`);
     if (isBlocked === "true") {
       res.clearCookie("accessToken", { secure: true, sameSite: "none" });

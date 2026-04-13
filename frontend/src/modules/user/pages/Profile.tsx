@@ -92,9 +92,9 @@ const Profile = () => {
     navigate({ to: ROUTES.PHOTOGRAPHER.DASHBOARD });
   };
 
-  
-  
-  
+  // const handleWallet = () => {
+  //   navigate({ to: ROUTES.USER.WALLET });
+  // };
 
   const handleBookings = () => {
     navigate({ to: ROUTES.USER.BOOKINGS });
@@ -185,7 +185,13 @@ const Profile = () => {
                 Edit Profile
               </button>
 
-              {}
+              {/* <button
+                onClick={handleWallet}
+                className="flex items-center gap-2 bg-white text-gray-700 border border-gray-300 px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-gray-50 transition-colors"
+              >
+                <CreditCard size={16} />
+                My Wallet
+              </button> */}
             </div>
           </div>
         </div>
@@ -259,7 +265,22 @@ const Profile = () => {
                 {data.bio || "No bio information provided yet."}
               </p>
             </div>
-            {}
+            {/* 
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+              <h2 className="text-lg font-bold text-gray-700 mb-6">Account Status</h2>
+              <div className="space-y-5">
+                <InfoField
+                  label="Wallet Balance"
+                  value={`$${data.walletBalance || 0} `}
+                  icon={CreditCard}
+                />
+                <InfoField
+                  label="Account Type"
+                  value={data.role.toUpperCase()}
+                  icon={User}
+                />
+              </div>
+            </div> */}
 
           </div>
 

@@ -17,19 +17,19 @@ class TokenService {
     private readonly MAX_FAILURES = 3;
 
     async refreshAccessToken() {
-        
+        // Circuit breaker - stop trying if backend is dead
         if (this.failureCount >= this.MAX_FAILURES) {
             throw new Error('Auth service unavailable');
         }
 
-        
+        // Prevent concurrent refresh attempts
         if (this.refreshPromise) {
             return this.refreshPromise;
         }
 
         this.refreshPromise = rawClient.post<IAuthResponse>("/auth/refresh-token")
             .then((res: AxiosResponse<IAuthResponse>) => {
-                this.failureCount = 0; 
+                this.failureCount = 0; // Reset on success
                 if (res.data?.data?.user) {
                     const cache = {
                         user: res.data.data.user,

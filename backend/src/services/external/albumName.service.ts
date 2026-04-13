@@ -1,9 +1,18 @@
+/**
+ * Album Name Service
+ * Suggests creative album names using Claude AI based on photo captions
+ */
 
 export interface IAlbumNameResult {
   name: string;
   success: boolean;
 }
 
+/**
+ * Suggests a creative album name based on photo captions
+ * @param captions - Array of photo captions from the album
+ * @returns Suggested album name
+ */
 export async function suggestAlbumName(captions: string[]): Promise<IAlbumNameResult> {
   try {
     if (!captions || captions.length === 0) {
@@ -38,7 +47,7 @@ export async function suggestAlbumName(captions: string[]): Promise<IAlbumNameRe
       text?: string;
     }
     interface IAnthropicResponse {
-      content?: IAnthropicMessage[] ;
+      content?: IAnthropicMessage[] /* add other fields as needed */;
     }
 
     const data = (await response.json()) as IAnthropicResponse;
