@@ -50,33 +50,23 @@ const PhotographerSearch = () => {
 
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [location, setLocation] = useState('All Locations');
 
-    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const ITEMS_PER_PAGE = 8;
     const [totalItems, setTotalItems] = useState(0);
 
-    const fetchPhotographers = useCallback(async (forcedLocation?: { lat: number; lng: number } | null, page: number = 1) => {
+    const fetchPhotographers = useCallback(async (page: number = 1) => {
         try {
             setIsLoading(true);
             setError(null);
-
-            const locToUse = forcedLocation !== undefined ? forcedLocation : userLocation;
 
             const filters: PhotographerFilter = {
                 page,
                 limit: ITEMS_PER_PAGE
             };
-
-            if (locToUse) {
-                filters.lat = locToUse.lat;
-                filters.lng = locToUse.lng;
-            } else if (location !== 'All Locations') {
-                filters.location = location;
-            }
 
             const response = await userPhotographerApi.getPhotographers(filters);
             setPhotographers(response.photographers || []);
@@ -91,19 +81,16 @@ const PhotographerSearch = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [location, userLocation]);
+    }, []);
 
 
 
     useEffect(() => {
-        if (location !== 'All Locations') {
-            setUserLocation(null);
-        }
         setCurrentPage(1);
-    }, [location]);
+    }, []);
 
     useEffect(() => {
-        fetchPhotographers(undefined, 1);
+        fetchPhotographers(1);
     }, [fetchPhotographers]);
 
     const filteredPhotographers = photographers.filter(p => {
@@ -176,21 +163,7 @@ const PhotographerSearch = () => {
                             />
                         </div>
 
-                        <div className="hidden md:block w-px h-10 bg-white/10 mx-2"></div>
 
-                        <div className="w-full md:w-auto relative group bg-white/5 rounded-full px-5 py-3">
-                            <select
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                className="w-full appearance-none bg-transparent border-none text-gray-300 focus:outline-none focus:ring-0 cursor-pointer pr-8 [&>option]:text-gray-900 text-base"
-                            >
-                                <option value="All Locations">All Locations</option>
-                                <option value="Thiruvananthapuram">Thiruvananthapuram</option>
-                                <option value="Kochi">Kochi</option>
-                                <option value="Kozhikode">Kozhikode</option>
-                            </select>
-                            <ChevronDown className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-yellow-500 transition-colors" size={16} />
-                        </div>
 
                         <MagneticButton
                             className="w-full md:w-auto px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-green-950 font-bold rounded-full transition-all duration-300 shadow-lg shrink-0 mt-2 md:mt-0"
@@ -257,7 +230,7 @@ const PhotographerSearch = () => {
                         <Search className="mx-auto h-12 w-12 text-gray-500 mb-4" />
                         <h3 className="text-lg font-medium text-white">No Profiles Found</h3>
                         <p className="mt-2 text-sm text-gray-400">
-                            Try adjusting your search criteria or location.
+                            Try adjusting your search criteria.
                         </p>
                     </div>
                 ) : (
@@ -372,7 +345,7 @@ const PhotographerSearch = () => {
 
                         <div className="flex justify-center items-center gap-2 mb-20 font-mono">
                             <button
-                                onClick={() => fetchPhotographers(undefined, currentPage - 1)}
+                                onClick={() => fetchPhotographers(currentPage - 1)}
                                 disabled={currentPage === 1}
                                 className="p-2 border border-white/10 rounded-sm hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-white"
                             >
@@ -382,7 +355,7 @@ const PhotographerSearch = () => {
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <button
                                     key={page}
-                                    onClick={() => fetchPhotographers(undefined, page)}
+                                    onClick={() => fetchPhotographers(page)}
                                     className={`w-8 h-8 rounded-sm text-xs transition-colors ${currentPage === page
                                         ? 'bg-yellow-500 text-green-950 font-bold'
                                         : 'border border-white/10 hover:bg-white/5 text-gray-400'
@@ -393,7 +366,7 @@ const PhotographerSearch = () => {
                             ))}
 
                             <button
-                                onClick={() => fetchPhotographers(undefined, currentPage + 1)}
+                                onClick={() => fetchPhotographers(currentPage + 1)}
                                 disabled={currentPage === totalPages}
                                 className="p-2 border border-white/10 rounded-sm hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-white"
                             >

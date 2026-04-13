@@ -85,9 +85,6 @@ export interface IPhotographerRepository {
   getPublicPhotographers(filters: {
     category?: string;
     priceRange?: string;
-    location?: string;
-    lat?: number;
-    lng?: number;
     page: number;
     limit: number;
   }): Promise<IPaginatedPhotographerResponse>;

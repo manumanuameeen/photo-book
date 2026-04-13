@@ -25,7 +25,6 @@ export default function App() {
     const unsubscribe = router.subscribe('onResolved', () => {
       setPathname(router.state.location.pathname);
     });
-    // Also track initial state
     setPathname(router.state.location.pathname);
     return () => unsubscribe();
   }, []);

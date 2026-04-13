@@ -1,21 +1,20 @@
 
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import MetricCard from '../../../layouts/admin/MetricCard';
 import { adminDashboardApi } from '../../../services/api/adminDashboardApi';
 import { LineChart, DoughnutChart, PieChart, BarChart } from '../components/DashboardCharts';
 import { TopRentalOwnersTable } from '../components/TopPerformers';
-import { Loader2, AlertCircle, CheckCircle, Download } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
 const DashboardLayout: React.FC = () => {
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
+
 
   const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['admin-dashboard-stats', startDate, endDate],
-    queryFn: () => adminDashboardApi.getStats(startDate, endDate),
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: () => adminDashboardApi.getStats(),
     refetchInterval: 30000,
   });
 
@@ -107,36 +106,7 @@ const DashboardLayout: React.FC = () => {
     show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
 
-  const handleExportCSV = () => {
-    if (!stats) return;
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-
-    csvContent += "=== Metrics ===\n";
-    csvContent += "Title,Value,Trend\n";
-    stats.topMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
-    stats.smallMetrics.forEach(m => csvContent += `"${m.title}","${m.value}","${m.trend}"\n`);
-
-    csvContent += "\n=== Top Photographers ===\n";
-    csvContent += "Name,Rating,Reviews,Bookings\n";
-    if (stats.topPhotographers) {
-      stats.topPhotographers.forEach(p => csvContent += `"${p.name}","${p.rating}","${p.reviews}","${p.bookings}"\n`);
-    }
-
-    csvContent += "\n=== Top Rental Owners ===\n";
-    csvContent += "Name,Orders,Items,Revenue\n";
-    if (stats.topRentalOwners) {
-      stats.topRentalOwners.forEach(r => csvContent += `"${r.name}","${r.orders}","${r.items}","$${r.revenue}"\n`);
-    }
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Admin_Report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <motion.div
@@ -152,34 +122,7 @@ const DashboardLayout: React.FC = () => {
           <p className="text-gray-500 text-sm">Welcome back, here's what's happening today.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                if (endDate && e.target.value > endDate) setEndDate(e.target.value);
-              }}
-              className="text-sm px-3 py-1.5 focus:outline-none border-none bg-transparent"
-            />
-            <span className="text-gray-400 self-center px-2">to</span>
-            <input
-              type="date"
-              value={endDate}
-              min={startDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="text-sm px-3 py-1.5 focus:outline-none border-none bg-transparent"
-            />
-          </div>
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-sm"
-          >
-            <Download size={16} />
-            Export Data
-          </button>
-        </div>
+
       </div>
 
       <div id="admin-dashboard-content" className="space-y-8 p-1">
