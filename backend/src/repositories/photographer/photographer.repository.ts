@@ -414,4 +414,3 @@ export class PhotographerRepository
     return result[0] || null;
   }
 }
-

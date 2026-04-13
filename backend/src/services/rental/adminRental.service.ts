@@ -40,4 +40,3 @@ export class AdminRentalService implements IAdminRentalService {
     return await this._orderRepo.getAllOrders(page, limit, search, status);
   }
 }
-

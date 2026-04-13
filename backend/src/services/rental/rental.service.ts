@@ -862,4 +862,3 @@ export class RentalService implements IRentalService {
     return item;
   }
 }
-

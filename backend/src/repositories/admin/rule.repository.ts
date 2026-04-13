@@ -30,4 +30,3 @@ export class RuleRepository implements IRuleRepository {
     return !!result;
   }
 }
-

@@ -9,9 +9,9 @@ export class AiController {
 
   chat = async (req: Request, res: Response) => {
     try {
-      const { message, history } = req.body as { 
-        message: string; 
-        history?: { role: "user" | "model"; content: string }[] 
+      const { message, history } = req.body as {
+        message: string;
+        history?: { role: "user" | "model"; content: string }[];
       };
       if (!message) {
         return ApiResponse.error(res, "Message is required", 400);

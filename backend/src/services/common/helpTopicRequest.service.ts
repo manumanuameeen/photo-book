@@ -37,4 +37,3 @@ export class HelpTopicRequestService implements IHelpTopicRequestService {
     return request;
   }
 }
-

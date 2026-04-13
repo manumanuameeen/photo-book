@@ -51,4 +51,3 @@ export class ReportCategoryService implements IReportCategoryService {
     return await this._repository.delete(id);
   }
 }
-

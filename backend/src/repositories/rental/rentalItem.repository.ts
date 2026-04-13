@@ -57,4 +57,3 @@ export class RentalItemRepository
     return await this._model.findByIdAndUpdate(id, { status }, { new: true });
   }
 }
-

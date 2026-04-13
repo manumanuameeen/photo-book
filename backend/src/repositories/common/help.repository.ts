@@ -19,4 +19,3 @@ export class HelpRepository extends BaseRepository<IHelpContent> implements IHel
     return await this._model.findByIdAndUpdate(id, { order: newOrder }, { new: true });
   }
 }
-

@@ -27,4 +27,3 @@ export class ReportCategoryRepository implements IReportCategoryRepository {
     return result !== null;
   }
 }
-

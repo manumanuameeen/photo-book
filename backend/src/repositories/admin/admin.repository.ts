@@ -94,4 +94,3 @@ export class AdminRepository extends BaseRepository<IUser> implements IAdminRepo
     };
   }
 }
-

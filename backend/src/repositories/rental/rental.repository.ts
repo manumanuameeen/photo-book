@@ -275,4 +275,3 @@ export class RentalRepository extends BaseRepository<IRentalItem> implements IRe
     };
   }
 }
-

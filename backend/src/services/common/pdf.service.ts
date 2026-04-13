@@ -52,4 +52,3 @@ export class PdfService implements IPdfService {
     });
   }
 }
-

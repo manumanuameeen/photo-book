@@ -169,4 +169,3 @@ export class ReviewRepository extends BaseRepository<IReview> implements IReview
     return await this._model.findByIdAndUpdate(id, { $set: payload }, { new: true });
   }
 }
-

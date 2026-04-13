@@ -40,4 +40,3 @@ export class AdminServices implements IAdminService {
     return result;
   }
 }
-

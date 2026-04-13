@@ -356,5 +356,3 @@ export class RentalOrderService implements IRentalOrderService {
     return updated!;
   }
 }
-
-

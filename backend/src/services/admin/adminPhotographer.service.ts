@@ -276,4 +276,3 @@ export class AdminPhotographerService implements IAdminPhotographerService {
     };
   }
 }
-

@@ -312,4 +312,3 @@ export class ReportService implements IReportService {
     return await this._messageService.getMessagesByReportId(reportId);
   }
 }
-

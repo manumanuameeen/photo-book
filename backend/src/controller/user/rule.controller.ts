@@ -52,4 +52,3 @@ export class RuleController implements IRuleController {
     }
   };
 }
-

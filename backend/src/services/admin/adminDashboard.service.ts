@@ -273,24 +273,25 @@ export class AdminDashboardService implements IAdminDashboardService {
         ]),
       ]);
 
-    const [totalReports, resolvedReports, completedBookings, topRegionsRaw, recentReviewsRaw] = await Promise.all([
-      Report.countDocuments({ ...dateFilter }),
-      Report.countDocuments({ status: { $in: ["resolved", "dismissed"] }, ...dateFilter }),
-      BookingModel.countDocuments({
-        status: { $in: ["completed", "work_delivered", "work_ended"] },
-        ...dateFilter,
-      }),
-      BookingModel.aggregate([
-        { $match: { ...dateFilter } },
-        { $group: { _id: "$location", value: { $sum: 1 } } },
-        { $sort: { value: -1 } },
-        { $limit: 4 },
-      ]),
-      ReviewModel.find({ ...dateFilter })
-        .populate("reviewerId", "name")
-        .sort({ createdAt: -1 })
-        .limit(5),
-    ]);
+    const [totalReports, resolvedReports, completedBookings, topRegionsRaw, recentReviewsRaw] =
+      await Promise.all([
+        Report.countDocuments({ ...dateFilter }),
+        Report.countDocuments({ status: { $in: ["resolved", "dismissed"] }, ...dateFilter }),
+        BookingModel.countDocuments({
+          status: { $in: ["completed", "work_delivered", "work_ended"] },
+          ...dateFilter,
+        }),
+        BookingModel.aggregate([
+          { $match: { ...dateFilter } },
+          { $group: { _id: "$location", value: { $sum: 1 } } },
+          { $sort: { value: -1 } },
+          { $limit: 4 },
+        ]),
+        ReviewModel.find({ ...dateFilter })
+          .populate("reviewerId", "name")
+          .sort({ createdAt: -1 })
+          .limit(5),
+      ]);
 
     const disputeHealth =
       totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 100;
@@ -412,8 +413,11 @@ export class AdminDashboardService implements IAdminDashboardService {
           let targetName = "Unknown";
 
           if (r.type === "photographer") {
-            const photog = await PhotographerModel.findById(r.targetId).select("personalInfo.name businessInfo.businessName");
-            targetName = photog?.personalInfo?.name || photog?.businessInfo?.businessName || "Photographer";
+            const photog = await PhotographerModel.findById(r.targetId).select(
+              "personalInfo.name businessInfo.businessName",
+            );
+            targetName =
+              photog?.personalInfo?.name || photog?.businessInfo?.businessName || "Photographer";
           } else {
             const rental = await RentalItemModel.findById(r.targetId).select("name");
             targetName = rental?.name || "Rental Gear";
@@ -453,4 +457,3 @@ export class AdminDashboardService implements IAdminDashboardService {
     return `${sign}${growth.toFixed(1)}% from last month`;
   }
 }
-

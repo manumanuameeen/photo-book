@@ -131,4 +131,3 @@ export class StripeService implements IStripeService {
     return stringified;
   }
 }
-

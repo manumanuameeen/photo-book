@@ -51,4 +51,3 @@ export class HelpService implements IHelpService {
     return updated;
   }
 }
-

@@ -323,4 +323,3 @@ export class BookingPaymentService implements IBookingPaymentService {
     await this._paymentService.releaseFunds(bookingId, "booking", userId);
   }
 }
-

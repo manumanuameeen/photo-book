@@ -27,5 +27,3 @@ export class RuleService implements IRuleService {
     return await this._ruleRepository.delete(id);
   }
 }
-
-

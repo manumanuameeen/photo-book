@@ -400,4 +400,3 @@ export class PaymentService implements IPaymentService {
     return ownerShares;
   }
 }
-

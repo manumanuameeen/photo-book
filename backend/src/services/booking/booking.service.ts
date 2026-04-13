@@ -694,4 +694,3 @@ export class BookingService implements IBookingService {
     return booking;
   }
 }
-

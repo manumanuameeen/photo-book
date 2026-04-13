@@ -138,5 +138,3 @@ export class RentalPaymentService implements IRentalPaymentService {
     return (await this._orderRepo.updateOrder(orderId, { status: RentalStatus.COMPLETED }))!;
   }
 }
-
-

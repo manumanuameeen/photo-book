@@ -32,4 +32,3 @@ export class ReportRepository implements IReportRepository {
     return await Report.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 }
-
