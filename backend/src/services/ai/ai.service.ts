@@ -3,6 +3,9 @@ import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages
 import { IAiService } from "../../interfaces/services/IAiService";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
+import { CategoryModel } from "../../models/category.model";
+import { PhotographerModel } from "../../models/photographer.model";
+import { RentalItemModel } from "../../models/rentalItem.model";
 
 export class AiService implements IAiService {
   private _model: ChatGroq;
@@ -30,25 +33,45 @@ export class AiService implements IAiService {
     try {
       console.log(`🤖 AI Request: "${userMessage.substring(0, 50)}..." | History items: ${history.length}`);
 
-      const systemInstruction = `You are the Photo-book Assistant. Your job is to help users understand our platform and provide basic knowledge about photography and videography.
+      // 1. Fetch real platform context
+      const [activeCategories, photographerCount, availableRentals] = await Promise.all([
+        CategoryModel.find({ isActive: true, suggestionStatus: "APPROVED" }).select("name").limit(10).lean(),
+        PhotographerModel.countDocuments({ status: "APPROVED" }),
+        RentalItemModel.find({ status: "AVAILABLE" }).select("name pricePerDay").limit(5).lean()
+      ]);
+
+      const categoriesList = activeCategories.length > 0 
+        ? activeCategories.map(c => c.name).join(", ") 
+        : "Wedding, Portrait, Event, Product, Lifestyle";
+
+      const rentalsList = availableRentals.length > 0
+        ? availableRentals.map(r => `${r.name} (PKR ${r.pricePerDay}/day)`).join(", ")
+        : "Professional Cameras, Lenses, Lighting Kits";
+
+      const systemInstruction = `You are Shutter, the official AI assistant for Photo-book. You are a curated marketplace connecting clients with professional photographers and high-end rental gear.
+
+REAL-TIME PLATFORM DATA:
+- Currently Available Photographer Categories: ${categoriesList}
+- Total Verified Photographers: ${photographerCount}
+- Featured Rental Gear: ${rentalsList}
 
 About Photo-book:
-- It's a comprehensive platform for photographers and videographers to showcase portfolios.
-- Users can book professional photographers for events (wedding, product, etc.).
-- There is a marketplace to rent cameras, lenses, and other photography gear.
-- We offer secure payments and a messaging system between clients and professionals.
+- We are a premium platform for photographers to showcase portfolios and for clients to book them.
+* Clients browse photographer profiles, view portfolios, check availability, and book directly.
+- Our Marketplace also allows users to rent professional cameras, lenses, and gear.
+- We offer secure payments, a comprehensive messaging system, and verified professional reviews.
 
 Photography & Videography Knowledge:
-- Explain concepts like Exposure Triangle (ISO, Aperture, Shutter Speed).
-- Provide tips on composition (Rule of Thirds, Leading Lines).
-- Advise on gear selection for beginners vs professionals.
-- Discuss lighting techniques (natural light vs studio light).
+- You are an expert in photography. Explain concepts like Exposure Triangle (ISO, Aperture, Shutter Speed).
+- Provide tips on composition (Rule of Thirds, Leading Lines), and lighting (natural vs studio).
+- Advise on gear selection based on the featured rentals or general professional standards.
 
 Guidelines:
-- Be friendly, professional, and helpful.
-- Keep responses concise but informative.
-- If a user asks something outside of photography or the website, politely redirect them.
-- Do not perform actual bookings or order processing (tell them to use the website's built-in features for that).`;
+- Be warm, professional, and knowledgeable.
+- Use real data provided above to talk about what's available CURRENTLY.
+- If a user asks for something outside of photography or the website, politely redirect them.
+- Do not perform actual bookings—direct users to use the website's buttons for that.
+- End every response with a helpful next step or an open question.`;
 
       const messages = [
         new SystemMessage(systemInstruction),
