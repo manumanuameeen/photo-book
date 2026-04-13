@@ -92,7 +92,7 @@ const AdminSidebar: React.FC = () => {
         </div>
       </div>
 
-      <nav className=" mt-6 px-3">
+      <nav className="flex-1 overflow-y-auto mt-6 px-3 scrollbar-hide">
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.id}>
