@@ -12,16 +12,6 @@ import { FilterQuery } from "mongoose";
 import { IPhotographer } from "../../models/photographer.model";
 import { IRentalItem } from "../../models/rentalItem.model";
 
-interface SearchPhotographersArgs {
-  query?: string;
-  category?: string;
-  location?: string;
-}
-
-interface SearchRentalsArgs {
-  category?: string;
-  query?: string;
-}
 
 export class AiService implements IAiService {
   private _model: ChatGroq;
@@ -40,15 +30,18 @@ export class AiService implements IAiService {
     });
 
     // Define search tools
+    const searchPhotographersSchema = z.object({
+      query: z.string().optional().describe("Search keyword for name or business"),
+      category: z.string().optional().describe("Photography specialty (Wedding, Portrait, etc.)"),
+      location: z.string().optional().describe("City or region")
+    });
+
     const searchPhotographers = new DynamicStructuredTool({
       name: "search_photographers",
       description: "Search for professional photographers on the platform.",
-      schema: z.object({
-        query: z.string().optional().describe("Search keyword for name or business"),
-        category: z.string().optional().describe("Photography specialty (Wedding, Portrait, etc.)"),
-        location: z.string().optional().describe("City or region")
-      }),
-      func: async ({ query, category, location }: SearchPhotographersArgs) => {
+      schema: searchPhotographersSchema,
+      func: async (input: z.infer<typeof searchPhotographersSchema>): Promise<string> => {
+        const { query, category, location } = input;
         const filter: FilterQuery<IPhotographer> = { status: "APPROVED" };
         if (category) filter["professionalDetails.specialties"] = { $regex: category, $options: "i" };
         if (location) filter["personalInfo.location"] = { $regex: location, $options: "i" };
@@ -70,14 +63,17 @@ export class AiService implements IAiService {
       }
     });
 
+    const listRentalsSchema = z.object({
+      category: z.string().optional().describe("Gear category (Camera, Lens, etc.)"),
+      query: z.string().optional().describe("Search keyword for item name")
+    });
+
     const listRentals = new DynamicStructuredTool({
       name: "search_rentals",
       description: "Search for photography gear available for rent.",
-      schema: z.object({
-        category: z.string().optional().describe("Gear category (Camera, Lens, etc.)"),
-        query: z.string().optional().describe("Search keyword for item name")
-      }),
-      func: async ({ category, query }: SearchRentalsArgs) => {
+      schema: listRentalsSchema,
+      func: async (input: z.infer<typeof listRentalsSchema>): Promise<string> => {
+        const { category, query } = input;
         const filter: FilterQuery<IRentalItem> = { status: "AVAILABLE" };
         if (category) filter.category = { $regex: category, $options: "i" };
         if (query) filter.name = { $regex: query, $options: "i" };
