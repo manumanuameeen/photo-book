@@ -1,5 +1,5 @@
 import { ChatGroq } from "@langchain/groq";
-import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
+import { SystemMessage, HumanMessage, AIMessage, BaseMessage, ToolMessage } from "@langchain/core/messages";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 import { IAiService } from "../../interfaces/services/IAiService";
@@ -8,10 +8,24 @@ import { HttpStatus } from "../../constants/httpStatus";
 import { CategoryModel } from "../../models/category.model";
 import { PhotographerModel } from "../../models/photographer.model";
 import { RentalItemModel } from "../../models/rentalItem.model";
+import { FilterQuery } from "mongoose";
+import { IPhotographer } from "../../models/photographer.model";
+import { IRentalItem } from "../../models/rentalItem.model";
+
+interface SearchPhotographersArgs {
+  query?: string;
+  category?: string;
+  location?: string;
+}
+
+interface SearchRentalsArgs {
+  category?: string;
+  query?: string;
+}
 
 export class AiService implements IAiService {
   private _model: ChatGroq;
-  private _tools: any[];
+  private _tools: DynamicStructuredTool[];
 
   constructor() {
     const apiKey = process.env.GROQ_API_KEY;
@@ -34,8 +48,8 @@ export class AiService implements IAiService {
         category: z.string().optional().describe("Photography specialty (Wedding, Portrait, etc.)"),
         location: z.string().optional().describe("City or region")
       }),
-      func: (async ({ query, category, location }: any) => {
-        const filter: any = { status: "APPROVED" };
+      func: async ({ query, category, location }: SearchPhotographersArgs) => {
+        const filter: FilterQuery<IPhotographer> = { status: "APPROVED" };
         if (category) filter["professionalDetails.specialties"] = { $regex: category, $options: "i" };
         if (location) filter["personalInfo.location"] = { $regex: location, $options: "i" };
         if (query) {
@@ -53,7 +67,7 @@ export class AiService implements IAiService {
           specialties: p.professionalDetails.specialties,
           experience: p.professionalDetails.yearsExperience
         })));
-      })
+      }
     });
 
     const listRentals = new DynamicStructuredTool({
@@ -63,8 +77,8 @@ export class AiService implements IAiService {
         category: z.string().optional().describe("Gear category (Camera, Lens, etc.)"),
         query: z.string().optional().describe("Search keyword for item name")
       }),
-      func: (async ({ category, query }: any) => {
-        const filter: any = { status: "AVAILABLE" };
+      func: async ({ category, query }: SearchRentalsArgs) => {
+        const filter: FilterQuery<IRentalItem> = { status: "AVAILABLE" };
         if (category) filter.category = { $regex: category, $options: "i" };
         if (query) filter.name = { $regex: query, $options: "i" };
         
@@ -75,11 +89,11 @@ export class AiService implements IAiService {
           category: r.category,
           condition: r.condition
         })));
-      })
+      }
     });
 
     this._tools = [searchPhotographers, listRentals];
-    this._model = this._model.bindTools(this._tools) as any;
+    this._model = this._model.bindTools(this._tools) as ChatGroq;
   }
 
   async getChatResponse(
@@ -111,7 +125,7 @@ CAPABILITIES:
 
 TONE: Professional, knowledgeable, and inviting. End responses with a next step.`;
 
-      let messages: any[] = [
+      const messages: BaseMessage[] = [
         new SystemMessage(systemInstruction),
         ...history.map((h) => 
           h.role === "user" 
@@ -132,11 +146,10 @@ TONE: Professional, knowledgeable, and inviting. End responses with a next step.
           const selectedTool = this._tools.find(t => t.name === toolCall.name);
           if (selectedTool) {
             const toolResponse = await selectedTool.invoke(toolCall.args);
-            messages.push({
-              role: "tool",
+            messages.push(new ToolMessage({
               content: toolResponse,
-              tool_call_id: toolCall.id
-            } as any);
+              tool_call_id: toolCall.id ?? ""
+            }));
           }
         }
         
@@ -154,7 +167,7 @@ TONE: Professional, knowledgeable, and inviting. End responses with a next step.
 
       if (error instanceof Error) {
         errorMessage = error.message;
-        const status = (error as any).status || (error as any).response?.status;
+        const status = (error as { status?: number; response?: { status?: number } }).status || (error as { response?: { status?: number } }).response?.status;
         if (status === 429) {
           errorMessage = "Rate limit exceeded on Groq. Please try again in a few seconds.";
           statusCode = 429;
