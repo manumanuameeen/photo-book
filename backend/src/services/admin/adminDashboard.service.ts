@@ -3,6 +3,7 @@ import { User } from "../../models/user.model";
 import { PhotographerModel } from "../../models/photographer.model";
 import { BookingModel } from "../../models/booking.model";
 import { RentalOrderModel } from "../../models/rentalOrder.model";
+import { RentalItemModel } from "../../models/rentalItem.model";
 import { WalletModel } from "../../models/wallet.model";
 import { ReviewModel } from "../../models/review.model";
 import { Report } from "../../models/report.model";
@@ -272,7 +273,7 @@ export class AdminDashboardService implements IAdminDashboardService {
         ]),
       ]);
 
-    const [totalReports, resolvedReports, completedBookings, topRegionsRaw] = await Promise.all([
+    const [totalReports, resolvedReports, completedBookings, topRegionsRaw, recentReviewsRaw] = await Promise.all([
       Report.countDocuments({ ...dateFilter }),
       Report.countDocuments({ status: { $in: ["resolved", "dismissed"] }, ...dateFilter }),
       BookingModel.countDocuments({
@@ -285,6 +286,10 @@ export class AdminDashboardService implements IAdminDashboardService {
         { $sort: { value: -1 } },
         { $limit: 4 },
       ]),
+      ReviewModel.find({ ...dateFilter })
+        .populate("reviewerId", "name")
+        .sort({ createdAt: -1 })
+        .limit(5),
     ]);
 
     const disputeHealth =
@@ -401,6 +406,29 @@ export class AdminDashboardService implements IAdminDashboardService {
       topRentalOwners: topRentalOwnersRaw,
       topRegions,
       pendingReportsCount: pendingReports,
+      recentReviews: await Promise.all(
+        recentReviewsRaw.map(async (r) => {
+          const reviewer = r.reviewerId as unknown as { name: string };
+          let targetName = "Unknown";
+
+          if (r.type === "photographer") {
+            const photog = await PhotographerModel.findById(r.targetId).select("personalInfo.name businessInfo.businessName");
+            targetName = photog?.personalInfo?.name || photog?.businessInfo?.businessName || "Photographer";
+          } else {
+            const rental = await RentalItemModel.findById(r.targetId).select("name");
+            targetName = rental?.name || "Rental Gear";
+          }
+
+          return {
+            id: String(r._id),
+            reviewerName: reviewer?.name || "Anonymous",
+            targetName,
+            rating: r.rating,
+            comment: r.comment,
+            createdAt: r.createdAt,
+          };
+        }),
+      ),
     };
   }
 

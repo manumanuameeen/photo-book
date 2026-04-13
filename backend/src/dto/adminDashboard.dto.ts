@@ -92,6 +92,16 @@ export const AdminDashboardStatsSchema = z.object({
     }),
   ),
   pendingReportsCount: z.number().optional(),
+  recentReviews: z.array(
+    z.object({
+      id: z.string(),
+      reviewerName: z.string(),
+      targetName: z.string(),
+      rating: z.number(),
+      comment: z.string(),
+      createdAt: z.date(),
+    }),
+  ),
 });
 
 export type AdminDashboardStatsDto = z.infer<typeof AdminDashboardStatsSchema>;
