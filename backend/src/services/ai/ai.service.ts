@@ -119,6 +119,10 @@ CAPABILITIES:
 - Explain photography concepts like Exposure Triangle, Composition, and Lighting.
 - Direct users to use the website's buttons for actual bookings.
 
+CRITICAL INSTRUCTION FOR TOOL CALLING:
+- If you need to use a tool (e.g., search_photographers), YOU MUST ONLY use the native JSON tool call format. 
+- DO NOT output any conversational text, explanations, or XML tags (like <function>) before or after the tool call. Call the tool immediately and silently.
+
 TONE: Professional, knowledgeable, and inviting. End responses with a next step.`;
 
       const messages: BaseMessage[] = [
@@ -163,13 +167,17 @@ TONE: Professional, knowledgeable, and inviting. End responses with a next step.
 
       if (error instanceof Error) {
         errorMessage = error.message;
-        const status = (error as { status?: number; response?: { status?: number } }).status || (error as { response?: { status?: number } }).response?.status;
+        const status = (error as any).status || (error as any).response?.status;
+        
         if (status === 429) {
           errorMessage = "Rate limit exceeded on Groq. Please try again in a few seconds.";
           statusCode = 429;
         } else if (status === 401 || status === 403) {
           errorMessage = "Invalid Groq API Key";
           statusCode = 401;
+        } else if (status === 400) {
+          errorMessage = "I encountered an issue gathering that information. Could you please rephrase your request?";
+          statusCode = 400;
         }
       }
       throw new AppError(errorMessage, statusCode);
