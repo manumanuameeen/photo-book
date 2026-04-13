@@ -24,7 +24,7 @@ export class AdminServices implements IAdminService {
 
   async blockUser(userId: string): Promise<IUserResponse | null> {
     const result = await this._adminRepository.blockUser(userId);
-    // Set Redis block flag so auth middleware can check without DB hit
+    
     if (result) {
       await redisClient.set(`blocked:${userId}`, "true");
     }
@@ -33,7 +33,7 @@ export class AdminServices implements IAdminService {
 
   async unblockUser(userId: string): Promise<IUserResponse | null> {
     const result = await this._adminRepository.unblockUser(userId);
-    // Remove Redis block flag
+    
     if (result) {
       await redisClient.del(`blocked:${userId}`);
     }

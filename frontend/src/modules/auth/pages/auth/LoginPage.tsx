@@ -22,7 +22,7 @@ const GreenPanel: React.FC = () => (
     className="flex-1 text-white p-8 flex flex-col justify-between rounded-l-xl md:rounded-t-xl lg:rounded-l-xl lg:rounded-t-none relative overflow-hidden"
     style={{ backgroundColor: "#006039" }}
   >
-    {/* Floating Cameras */}
+    {}
     <motion.div
       initial={{ y: 0, rotate: 0, opacity: 0.2 }}
       animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }}
@@ -332,7 +332,7 @@ const LoginPage: React.FC = () => {
         },
         onError: (error) => {
           console.error("❌ [Google Login] Google authentication failed:", error);
-          // apiClient handles this
+          
         }
       });
     }

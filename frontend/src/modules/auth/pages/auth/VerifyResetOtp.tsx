@@ -57,7 +57,7 @@ const VerifyResetOtp: React.FC = () => {
         },
         onError: () => {
           setIsVerifying(false);
-          // apiClient handles the error toast
+          
         },
       }
     );

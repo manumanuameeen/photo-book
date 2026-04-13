@@ -127,7 +127,7 @@ export class AuthController implements IAuthController {
         accessToken: result.accessToken,
       });
     } catch (error: unknown) {
-      // Only clear cookies if it's an authentication/authorization error
+      
       if (
         error instanceof AppError &&
         (error.statusCode === HttpStatus.UNAUTHORIZED || error.statusCode === HttpStatus.FORBIDDEN)

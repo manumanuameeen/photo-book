@@ -63,7 +63,7 @@ const HomePage = () => {
     fetchEntities();
   }, []);
 
-  // Animation Variants
+  
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -82,7 +82,7 @@ const HomePage = () => {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: "easeOut" as const, // Standardizing for type safety
+        ease: "easeOut" as const, 
       },
     },
   };

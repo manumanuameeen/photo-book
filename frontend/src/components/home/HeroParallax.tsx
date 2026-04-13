@@ -5,7 +5,7 @@ export const HeroParallax = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
-    // Hold preloaded image objects in memory to prevent DOM thrashing
+    
     const imagesRef = useRef<HTMLImageElement[]>([]);
     const [imagesLoaded, setImagesLoaded] = useState(false);
 
@@ -14,14 +14,14 @@ export const HeroParallax = () => {
         offset: ["start start", "end end"]
     });
 
-    // Apply spring physics to smoothen the scroll scrubbing natively
+    
     const smoothProgress = useSpring(scrollYProgress, {
         stiffness: 80,
         damping: 25,
         restDelta: 0.001
     });
 
-    // Map the smoothed progress to our 180 frames (0-indexed array)
+    
     const frameIndex = useTransform(smoothProgress, [0, 1], [0, 179]);
 
     const renderFrame = (index: number) => {
@@ -31,10 +31,10 @@ export const HeroParallax = () => {
             const img = imagesRef.current[index];
             const canvas = canvasRef.current;
             
-            // Clear previous painted frame
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Mimic object-cover for canvas
+            
             const canvasRatio = canvas.width / canvas.height;
             const imgRatio = img.width / img.height;
             let drawWidth = canvas.width;
@@ -50,13 +50,13 @@ export const HeroParallax = () => {
                 offsetX = (canvas.width - drawWidth) / 2;
             }
 
-            // Apply cinematic brightness filter directly via canvas
+            
             ctx.filter = 'brightness(85%) contrast(105%)';
             ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         }
     };
 
-    // Preload all 107 frames into memory as image objects
+    
     useEffect(() => {
         const loadImages = async () => {
             const loadedImages: HTMLImageElement[] = [];
@@ -67,7 +67,7 @@ export const HeroParallax = () => {
             }
             imagesRef.current = loadedImages;
             
-            // Render first frame immediately once it loads to prevent blank screen
+            
             loadedImages[0].onload = () => {
                 setImagesLoaded(true);
             };
@@ -75,7 +75,7 @@ export const HeroParallax = () => {
         loadImages();
     }, []);
 
-    // Canvas Resize Observer
+    
     useEffect(() => {
         const handleResize = () => {
             if (canvasRef.current && imagesLoaded) {
@@ -84,12 +84,12 @@ export const HeroParallax = () => {
                 renderFrame(Math.max(0, Math.min(179, Math.floor(frameIndex.get()))));
             }
         };
-        handleResize(); // Initial setup
+        handleResize(); 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, [imagesLoaded]);
 
-    // Imperatively paint to Canvas to bypass React entirely for 60-120fps video playback
+    
     useMotionValueEvent(frameIndex, "change", (latest) => {
         if (imagesLoaded) {
             const index = Math.max(0, Math.min(179, Math.floor(latest)));
@@ -97,7 +97,7 @@ export const HeroParallax = () => {
         }
     });
 
-    // Text Phase Opacities (Using smoothProgress instead of scrollYProgress to perfectly sync with images)
+    
     const opacity1 = useTransform(smoothProgress, [0, 0.15, 0.25], [1, 1, 0]);
     const y1 = useTransform(smoothProgress, [0, 0.15, 0.25], [0, 0, -50]);
 
@@ -114,7 +114,7 @@ export const HeroParallax = () => {
         <div ref={containerRef} className="relative h-[400vh] bg-[#020202]">
             <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
                 
-                {/* Hardware Accelerated Canvas Sequence Background */}
+                {}
                 <div className="absolute inset-0 w-full h-full bg-[#020202]">
                     <canvas 
                         ref={canvasRef}
@@ -127,15 +127,15 @@ export const HeroParallax = () => {
                             <span className="text-white/50 text-xs font-mono uppercase tracking-[0.2em]">INITIALIZING ASSETS</span>
                         </div>
                     )}
-                    {/* Gradient Overlays for "Antigravity" integration */}
+                    {}
                     <div className="absolute inset-0 bg-gradient-to-b from-[#020202]/20 via-transparent to-[#020202] pointer-events-none"></div>
                     <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
                 </div>
 
-                {/* Content Layers */}
+                {}
                 <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-4 sm:px-8">
                     
-                    {/* Phase 1: Intro (Top Left / Center Left) */}
+                    {}
                     <motion.div style={{ opacity: opacity1, y: y1 }} className="absolute top-[25%] md:top-[30%] left-6 md:left-12 flex flex-col items-start text-left w-full sm:w-[600px]">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase mb-6 shadow-2xl">
                             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
@@ -149,9 +149,9 @@ export const HeroParallax = () => {
                         </p>
                     </motion.div>
 
-                    {/* Phase 2: Talents (Top Right) */}
+                    {}
                     <motion.div style={{ opacity: opacity2, y: y2, pointerEvents: 'none' }} className="absolute top-[20%] right-6 md:right-12 flex flex-col items-end text-right w-full sm:w-[500px]">
-                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-2 bg-black/30 px-2 py-1 rounded">// FEATURE NO. 1 //</p>
+                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-2 bg-black/30 px-2 py-1 rounded">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight drop-shadow-xl">
                             Photographer <br />
                             <span className="font-bold italic text-white/90">Listings</span>
@@ -161,9 +161,9 @@ export const HeroParallax = () => {
                         </p>
                     </motion.div>
 
-                    {/* Phase 3: Gear (Bottom Left) */}
+                    {}
                     <motion.div style={{ opacity: opacity3, y: y3, pointerEvents: 'none' }} className="absolute bottom-[20%] left-6 md:left-12 flex flex-col items-start text-left w-full sm:w-[500px]">
-                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-2 bg-black/30 px-2 py-1 rounded">// FEATURE NO. 2 //</p>
+                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-2 bg-black/30 px-2 py-1 rounded">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight drop-shadow-xl">
                             Equipment <br />
                             <span className="font-bold italic text-white/90">Marketplace</span>
@@ -173,9 +173,9 @@ export const HeroParallax = () => {
                         </p>
                     </motion.div>
 
-                    {/* Phase 4: Action (Bottom Center) */}
+                    {}
                     <motion.div style={{ opacity: opacity4, y: y4 }} className="absolute bottom-[10%] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center w-full sm:w-[600px] text-center px-4">
-                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-4 bg-black/30 px-4 py-1.5 rounded-full">// THE EXPERIENCE //</p>
+                        <p className="text-gray-200 font-mono text-[10px] sm:text-xs tracking-[0.3em] mb-4 bg-black/30 px-4 py-1.5 rounded-full">
                         <h2 className="text-3xl md:text-5xl font-light text-white mb-6 drop-shadow-xl leading-tight">
                             Built For <span className="font-bold italic text-gray-200">Creators</span>
                         </h2>

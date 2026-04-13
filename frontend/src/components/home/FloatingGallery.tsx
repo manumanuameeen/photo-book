@@ -86,7 +86,7 @@ const TiltCard = ({
         isAnotherHovered ? 'blur-md opacity-40 scale-95' : 'opacity-100'
       }`}
     >
-      {/* Glassmorphism Background */}
+      {}
       <div className="absolute inset-0 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl pointer-events-none" style={{ transform: "translateZ(0px)" }}></div>
       
       <div className="relative z-10 w-full flex flex-col items-center" style={{ transform: "translateZ(50px)" }}>
@@ -131,13 +131,13 @@ const TiltCard = ({
 export const FloatingGallery = ({ photographers }: FloatingGalleryProps) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  // Staggering factors for the continuous drift
+  
   const driftOffsets = [0, 2, 4, 1, 3, 5, 2];
 
   return (
     <section className="relative py-32 px-4 bg-transparent perspective-[2000px]">
       <div className="max-w-7xl mx-auto flex flex-col items-center mb-24 relative z-20">
-        <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">// ELITE DISCOVERY //</p>
+        <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">
         <h3 className="text-5xl md:text-7xl font-light text-white text-center leading-tight">
           <ScrambleText text="Discover World-Class" className="block" />
           <span className="font-bold italic text-gray-400 block mt-2">

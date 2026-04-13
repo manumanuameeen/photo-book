@@ -47,7 +47,7 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: "20mb" }));
   app.use(express.json({ limit: "20mb" }));
 
-  // CORS Configurationrenta
+  
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
     : ["http://localhost:5173", "http://localhost:3000"];
@@ -73,7 +73,7 @@ async function startServer() {
   app.use(cors(corsOptions));
   app.use(express.json());
 
-  // Connect to MongoDB
+  
   console.log("⏳ Connecting to MongoDB...");
   try {
     await connectDB();
@@ -82,7 +82,7 @@ async function startServer() {
     console.error("❌ Critical DB Connection Error:", e);
   }
 
-  // Mount Routes
+  
   console.log("➡️ Mounting Routes...");
   app.get("/", (req, res) => {
     res.send("Backend server is running successfully!");
@@ -110,7 +110,7 @@ async function startServer() {
   app.use(ROUTES.V1.AI.BASE, aiRoutes);
   console.log("✅ Routes mounted.");
 
-  // Initialize CronService
+  
   try {
     CronService.init(container.bookingService);
     console.log("✅ CronService initialized.");
@@ -120,7 +120,7 @@ async function startServer() {
 
   app.use(errorHandler);
 
-  // Start HTTP + Socket server
+  
   const httpServer = createServer(app);
   SocketService.getInstance().init(httpServer);
 

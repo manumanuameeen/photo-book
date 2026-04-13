@@ -32,7 +32,7 @@ export const useUserActions = () => {
             queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
         },
         onError: () => {
-            // apiClient handles the error toast
+            
         }
     });
 
@@ -45,7 +45,7 @@ export const useUserActions = () => {
             queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
         },
         onError: () => {
-            // apiClient handles the error toast
+            
         }
     });
 
@@ -57,7 +57,7 @@ export const useUserActions = () => {
             queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
         },
         onError: () => {
-            // apiClient handles the error toast
+            
         }
     });
 
@@ -69,7 +69,7 @@ export const useUserActions = () => {
             queryClient.invalidateQueries({ queryKey: ['user-bookings'] });
         },
         onError: () => {
-            // apiClient handles the error toast
+            
         }
     });
 

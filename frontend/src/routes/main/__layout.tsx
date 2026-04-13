@@ -22,8 +22,8 @@ export const Route = createFileRoute("/main/__layout")({
       ROUTES.USER.RENTAL_MARKETPLACE,
       ROUTES.USER.HOW_IT_WORKS,
       ROUTES.USER.RULES,
-      "/main/photographer/", // Include details
-      "/main/rentals/",     // Include details
+      "/main/photographer/", 
+      "/main/rentals/",     
     ];
 
     const isPublic = publicPaths.some(path =>
@@ -46,7 +46,7 @@ export const Route = createFileRoute("/main/__layout")({
       }
     }
 
-    // Check store if not in cache (e.g. session started)
+    
     if (!isAuthenticated) {
       const { user: storeUser, isAuthenticated: isStoreAuth } = useAuthStore.getState();
       if (isStoreAuth && storeUser) {

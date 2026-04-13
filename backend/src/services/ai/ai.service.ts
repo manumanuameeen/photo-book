@@ -29,7 +29,7 @@ export class AiService implements IAiService {
       temperature: 0.7,
     });
 
-    // Define search tools
+    
     const searchPhotographersSchema = z.object({
       query: z.string().optional().describe("Search keyword for name or business"),
       category: z.string().optional().describe("Photography specialty (Wedding, Portrait, etc.)"),
@@ -97,7 +97,7 @@ export class AiService implements IAiService {
     history: { role: "user" | "model"; content: string }[] = [],
   ): Promise<string> {
     try {
-      // Fetch platform summary for the system prompt
+      
       const [activeCategories, photographerCount] = await Promise.all([
         CategoryModel.find({ isActive: true, suggestionStatus: "APPROVED" }).select("name").limit(10).lean(),
         PhotographerModel.countDocuments({ status: "APPROVED" }),
@@ -131,10 +131,10 @@ TONE: Professional, knowledgeable, and inviting. End responses with a next step.
         new HumanMessage(userMessage),
       ];
 
-      // Execute with tool support
+      
       let response = await this._model.invoke(messages);
       
-      // If the LLM wants to call tools
+      
       while (response.tool_calls && response.tool_calls.length > 0) {
         messages.push(response);
         

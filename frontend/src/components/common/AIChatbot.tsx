@@ -39,7 +39,7 @@ const AIChatbot: React.FC = () => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/ai/chat`, {
         message: userMessage,
-        history: messages.slice(1), // Use existing messages before state update adds the new user message
+        history: messages.slice(1), 
       });
 
       const botResponse = response.data.data.response;
@@ -58,7 +58,7 @@ const AIChatbot: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999]">
-      {/* Floating Action Button */}
+      {}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -68,7 +68,7 @@ const AIChatbot: React.FC = () => {
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </motion.button>
 
-      {/* Chat Window */}
+      {}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -78,7 +78,7 @@ const AIChatbot: React.FC = () => {
             transition={{ duration: 0.2 }}
             className="absolute bottom-20 right-0 flex h-[500px] w-[380px] flex-col overflow-hidden rounded-2xl border border-white/20 bg-white/90 shadow-2xl backdrop-blur-xl sm:w-[420px]"
           >
-            {/* Header */}
+            {}
             <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-4 text-white">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
@@ -95,7 +95,7 @@ const AIChatbot: React.FC = () => {
               <Sparkles className="h-5 w-5 text-indigo-200" />
             </div>
 
-            {/* Messages */}
+            {}
             <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-200">
               {messages.map((msg, index) => (
                 <div
@@ -137,7 +137,7 @@ const AIChatbot: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
+            {}
             <div className="border-t border-gray-100 bg-white p-4">
               <div className="relative flex items-center">
                 <input

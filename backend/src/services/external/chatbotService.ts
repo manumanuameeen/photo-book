@@ -3,28 +3,18 @@ import { ChatGroq } from "@langchain/groq";
 import { CategoryModel } from "../../models/category.model";
 import { PhotographerModel } from "../../models/photographer.model";
 
-/**
- * Chatbot Service (LangChain + Google Gemini)
- * Uses LangChain with Google Gemini 1.5 Flash for FREE AI responses.
- * Implements "Shutter" - the Photo-book AI booking assistant
- */
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
 }
 
-/**
- * Processes a chat request using LangChain with Groq
- * @param messages - Array of previous messages for context
- * @returns AI's response message
- */
 export const getChatbotResponse = async (messages: ChatMessage[]) => {
-  // Abort if Groq takes longer than 85 seconds (Groq is usually < 2s)
+  
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 85_000);
 
   try {
-    // 0. Fetch real platform context
+    
     const activeCategories = await CategoryModel.find({
       isActive: true,
       suggestionStatus: "APPROVED",
@@ -39,7 +29,7 @@ export const getChatbotResponse = async (messages: ChatMessage[]) => {
 
     const photographerCount = await PhotographerModel.countDocuments({ status: "APPROVED" });
 
-    // Define Shutter's persona with real platform data
+    
     const shutterPersona = `=== SHUTTER: PHOTO-BOOK BOOKING ASSISTANT ===
 
 ## IDENTITY
@@ -197,7 +187,7 @@ Always end responses with a clear next step or open question.`;
       };
     }
 
-    // 1. Initialize the Groq model
+    
     console.log("[Chatbot Service] Initializing with Groq LLaMA 3...");
     const model = new ChatGroq({
       model: "llama-3.3-70b-versatile",
@@ -206,14 +196,14 @@ Always end responses with a clear next step or open question.`;
       maxTokens: 1000,
     });
 
-    // 2. Create the prompt template with a placeholder for history
+    
     const prompt = ChatPromptTemplate.fromMessages([
       ["system", shutterPersona],
       new MessagesPlaceholder("history"),
       ["human", "{input}"],
     ]);
 
-    // 3. Setup conversation history from recent messages (limit to last 10)
+    
     const recentHistory = messages.slice(0, -1).slice(-10);
     const history = recentHistory.map((m) => {
       if (m.role === "user") return ["human", m.content];
@@ -222,10 +212,10 @@ Always end responses with a clear next step or open question.`;
 
     const lastMessage = messages[messages.length - 1].content;
 
-    // 4. Create and run the chain
+    
     const chain = prompt.pipe(model);
 
-    // Use Promise.race to guarantee a timeout
+    
     const response = (await Promise.race([
       chain.invoke(
         {

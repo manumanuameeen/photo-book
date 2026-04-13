@@ -41,7 +41,7 @@ export class UserMapper {
 
   static toAuthResponse(user: IUser): AuthResponseDto["user"] {
     return {
-      _id: user.id || user._id, // Support both formats for frontend compatibility
+      _id: user.id || user._id, 
       id: user.id,
       name: user.name,
       email: user.email,

@@ -8,7 +8,7 @@ import { ROUTES } from "../constants/routes";
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;
-    skipToast?: boolean; // Option to skip automatic error toasting
+    skipToast?: boolean; 
 }
 
 const apiClient = axios.create({
@@ -21,7 +21,7 @@ const failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?:
 
 apiClient.interceptors.request.use(
     async (config) => {
-        // Auth state is managed via Zustand and persistence
+        
         return config;
     },
     (error) => Promise.reject(error)
@@ -63,7 +63,7 @@ apiClient.interceptors.response.use(
                 useAuthStore.getState().clearUser();
                 sessionStorage.removeItem("auth-cache");
 
-                // Only show session expired if we're not on an auth route and were previously logged in
+                
                 if (!isAuthRoute && wasAuthenticated && !original.skipToast) {
                     toast.error("Session expired. Please login again.", { id: "session-expired" });
                 }
@@ -77,7 +77,7 @@ apiClient.interceptors.response.use(
             }
         }
 
-        // Handle blocked users
+        
         if (status === 403) {
             const message = (error.response?.data as { message?: string })?.message || "Access denied.";
             if (!original.skipToast) {
@@ -91,7 +91,7 @@ apiClient.interceptors.response.use(
             }
         }
 
-        // Global error toasting
+        
         if (error.response?.data && status !== 401 && !original.skipToast) {
             const message = (error.response.data as { message?: string })?.message;
             if (message) {

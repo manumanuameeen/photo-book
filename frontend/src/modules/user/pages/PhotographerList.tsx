@@ -139,12 +139,12 @@ const PhotographerSearch = () => {
 
     return (
         <div className="min-h-screen bg-green-950 font-sans text-gray-200">
-            {/* Cinematic Background Elements */}
+            {}
             <div className="fixed inset-0 pointer-events-none opacity-20 mix-blend-overlay z-0" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.8\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E')" }}></div>
 
             <div className="relative pt-24 pb-12 px-4 text-center overflow-hidden z-10">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-                    <p className="text-yellow-500 font-mono text-xs tracking-[0.3em] mb-4">// EXPERTISE //</p>
+                    <p className="text-yellow-500 font-mono text-xs tracking-[0.3em] mb-4">
                     <h1 className="text-5xl md:text-7xl font-light text-white mb-6">
                         Find Your <br />
                         <span className="font-bold italic text-yellow-400">Photographer</span>
@@ -157,7 +157,7 @@ const PhotographerSearch = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
 
-                {/* Glassmorphism Search & Filters */}
+                {}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

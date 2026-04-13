@@ -102,11 +102,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
             replyTo: replyTo || undefined
         };
 
-        // Add temp message directly to active chat (don't use receiveMessage - it's for incoming messages only)
+        
         set((state) => {
             const activeChatMessages = [...state.activeChatMessages, tempMessage];
             
-            // Update or create conversation
+            
             const conversations = [...state.conversations];
             const index = conversations.findIndex(c => getIds(c.partner?._id) === selectedUser._id);
             
@@ -165,16 +165,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
             let newActiveMessages = state.activeChatMessages;
             if (isChattingWithSender) {
-                // Avoid duplicates: check if message already exists by ID
+                
                 const existingIndex = state.activeChatMessages.findIndex(m => m._id === message._id);
                 
                 if (existingIndex !== -1) {
-                    // Update existing message if needed (e.g., status or content updates)
+                    
                     newActiveMessages = state.activeChatMessages.map(m => 
                         m._id === message._id ? { ...m, ...message, status: 'sent' as const } : m
                     );
                 } else if (isSender) {
-                    // If it's my message, check if a temporary version exists that hasn't been replaced
+                    
                     const tempIndex = state.activeChatMessages.findIndex(m => 
                         m._id.startsWith('temp_') && 
                         m.content === message.content &&
@@ -182,15 +182,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
                     );
 
                     if (tempIndex !== -1) {
-                        // Found a matching temp message, replace it!
+                        
                         newActiveMessages = [...state.activeChatMessages];
                         newActiveMessages[tempIndex] = { ...message, status: 'sent' as const };
                     } else {
-                        // Message from another device or temp already gone/mismatched - add it
+                        
                         newActiveMessages = [...state.activeChatMessages, message];
                     }
                 } else {
-                    // Message from partner - append it
+                    
                     newActiveMessages = [...state.activeChatMessages, message];
                 }
             } else if (!isSender) {
@@ -225,7 +225,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
                 const [conv] = conversations.splice(index, 1);
                 conversations.unshift(conv);
             } else {
-                // Correctly identify the partner object
+                
                 let partnerObj: UserCompact;
 
                 if (message.type === 'SYSTEM') {
@@ -234,14 +234,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
                     // If I'm the sender, use the selectedUser (receiver) - we always know who we're sending to
                     partnerObj = state.selectedUser;
                 } else {
-                    // For received messages or other cases, extract from message
+                    
                     const potentialPartner = isSender ? message.receiverId : message.senderId;
 
                     if (typeof potentialPartner === 'object' && potentialPartner !== null && '_id' in potentialPartner) {
-                        // Partner is already an object with _id - use it directly
+                        
                         partnerObj = potentialPartner as UserCompact;
                     } else {
-                        // Fallback: create minimal object from available data
+                        
                         const partnerData = typeof potentialPartner === 'object' && potentialPartner !== null ? (potentialPartner as Partial<UserCompact>) : {};
                         partnerObj = { 
                             _id: partnerId, 
@@ -433,7 +433,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const { receiveMessage, setTyping, updateMessage } = get();
         const { accessToken } = useAuthStore.getState();
         
-        // Remove existing listeners if any
+        
         socketService.off("message_updated");
         socketService.off("new_message");
         socketService.off("message_read");

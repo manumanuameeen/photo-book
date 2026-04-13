@@ -20,7 +20,7 @@ export const verifyUserNotBlocked = async (
       return;
     }
 
-    // Use Redis cache instead of DB query — consistent with auth middleware
+    
     const isBlocked = await redisClient.get(`blocked:${req.userId}`);
 
     if (isBlocked === "true") {

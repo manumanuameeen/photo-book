@@ -35,7 +35,7 @@ const AdminReviewManagement: React.FC = () => {
             toast.success('Review deleted successfully');
         },
         onError: () => {
-            // apiClient handles this
+            
         }
     });
 
@@ -210,7 +210,7 @@ const AdminReviewManagement: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Pagination */}
+                    {}
                     {data && data.total > 10 && (
                         <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                             <p className="text-sm text-gray-500">

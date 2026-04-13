@@ -83,7 +83,7 @@ export const DashboardOverview = ({
             animate="visible"
             className="space-y-8"
         >
-            {/* Stats Cards */}
+            {}
             <div>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-bold text-gray-900">Overview</h2>
@@ -127,9 +127,9 @@ export const DashboardOverview = ({
                 </div>
             </div>
 
-            {/* Recent Activity */}
+            {}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Recent Bookings */}
+                {}
                 <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-bold text-gray-900">Recent Bookings</h3>
@@ -172,7 +172,7 @@ export const DashboardOverview = ({
                     )}
                 </motion.div>
 
-                {/* Rental Requests */}
+                {}
                 <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-bold text-gray-900">Rental Requests</h3>
@@ -210,7 +210,7 @@ export const DashboardOverview = ({
                 </motion.div>
             </div>
 
-            {/* Wallet Summary */}
+            {}
             {walletData && (
                 <motion.div variants={itemVariants} className="bg-linear-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100">
                     <div className="flex justify-between items-start">

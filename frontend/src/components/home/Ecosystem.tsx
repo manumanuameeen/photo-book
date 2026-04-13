@@ -20,14 +20,14 @@ export const Ecosystem = () => {
   return (
     <section ref={containerRef} className="relative py-40 min-h-screen bg-gradient-to-b from-transparent to-[#050505] overflow-hidden flex items-center">
       
-      {/* Background Gradient shift */}
+      {}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/10 via-transparent to-purple-900/10 opacity-50 z-0"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 w-full grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
         
-        {/* Text Content */}
+        {}
         <div>
-          <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">// SEAMLESS INTEGRATION //</p>
+          <p className="text-gray-500 font-mono text-xs tracking-[0.3em] mb-4">
           <h3 className="text-5xl md:text-7xl font-light text-white leading-tight mb-8">
             The Complete
             <span className="block font-bold italic text-gray-400 mt-2">Ecosystem</span>
@@ -37,10 +37,10 @@ export const Ecosystem = () => {
           </p>
         </div>
 
-        {/* Visual Experience */}
+        {}
         <div className="relative h-[600px] flex items-center justify-center perspective-[1000px]">
           
-          {/* Shutter AI Pulsing Orb */}
+          {}
           <motion.div
             animate={{
               scale: [1, 1.05, 1],
@@ -54,12 +54,12 @@ export const Ecosystem = () => {
             }}
             className="absolute top-[10%] right-[10%] z-20 w-32 h-32 md:w-40 md:h-40 rounded-full will-change-[transform,opacity]"
           >
-            {/* Core */}
+            {}
             <div className="absolute inset-0 bg-white/20 backdrop-blur-xl rounded-full border border-white/30 shadow-[0_0_100px_rgba(255,255,255,0.2)] mix-blend-screen flex justify-center items-center">
               <div className="w-16 h-16 rounded-full bg-white/5 blur-md"></div>
               <i className="fas fa-camera-retro text-white/50 text-3xl absolute z-10"></i>
             </div>
-            {/* Glow */}
+            {}
             <motion.div 
               animate={{
                 scale: [1, 1.2, 1],
@@ -74,7 +74,7 @@ export const Ecosystem = () => {
             ></motion.div>
           </motion.div>
 
-          {/* Chat Interface Stack */}
+          {}
           <div className="w-full max-w-sm flex flex-col space-y-4 pt-32">
             {messages.map((msg, idx) => (
               <motion.div

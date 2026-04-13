@@ -17,10 +17,6 @@ interface ErrorCardProps {
   isRetrying?: boolean;
 }
 
-/**
- * Error Card Component
- * Displays detailed error information with helpful suggestions
- */
 export const ErrorCard: React.FC<ErrorCardProps> = ({
   title,
   message,
@@ -88,14 +84,14 @@ export const ErrorCard: React.FC<ErrorCardProps> = ({
 
   return (
     <div className="w-full bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4 shadow-sm">
-      {/* Header */}
+      {}
       <div className="flex items-start gap-3">
         <div className="mt-0.5">{getErrorIcon()}</div>
         <div className="flex-1">
           <h4 className="font-semibold text-red-900">{title}</h4>
           <p className="text-sm text-red-800 mt-1">{message}</p>
 
-          {/* Error details */}
+          {}
           {error && (
             <div className="mt-2 text-xs text-red-700 bg-white/50 rounded p-2 font-mono">
               <p>
@@ -114,12 +110,12 @@ export const ErrorCard: React.FC<ErrorCardProps> = ({
             </div>
           )}
 
-          {/* Suggestion */}
+          {}
           {getErrorSuggestion()}
         </div>
       </div>
 
-      {/* Retry button */}
+      {}
       {onRetry && (
         <button
           onClick={onRetry}
