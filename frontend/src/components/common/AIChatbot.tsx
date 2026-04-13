@@ -157,7 +157,7 @@ const AIChatbot: React.FC = () => {
                 </button>
               </div>
               <p className="mt-2 text-center text-[10px] text-gray-400">
-                Powered by Shutter AI • Advice is for informational purposes only
+                Powered by Groq AI • Advice is for informational purposes only
               </p>
             </div>
           </motion.div>
