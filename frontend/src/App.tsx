@@ -4,21 +4,32 @@ import { Toaster, toast } from "sonner";
 import { router } from "./router";
 import { queryClient } from "./lib/queryClient"
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "./modules/auth/store/useAuthStore";
 import { socketService } from "./modules/chat/services/socketService";
 import AIChatbot from "./components/common/AIChatbot";
 import { SmoothScroll } from "./components/common/SmoothScroll";
 import { ScrollProgressBar } from "./components/common/ScrollProgressBar";
 
+
+
 export default function App() {
   const { rehydrateUser, user } = useAuthStore();
+  const [pathname, setPathname] = useState(window.location.pathname);
 
   useEffect(() => {
     rehydrateUser();
   }, [rehydrateUser]);
 
-  // Debug logging for user state
+  useEffect(() => {
+    const unsubscribe = router.subscribe('onResolved', () => {
+      setPathname(router.state.location.pathname);
+    });
+    // Also track initial state
+    setPathname(router.state.location.pathname);
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     console.log("👤 Current user state in App.tsx:", user);
   }, [user]);
@@ -33,7 +44,7 @@ export default function App() {
       }
       const handleNewMessage = (data: unknown) => {
         const messageData = data as NewMessageData;
-        if (!window.location.href.includes('/chat')) {
+        if (!globalThis.location.href.includes('/chat')) {
           let senderName = 'Someone';
           let senderIdValue = '';
 
@@ -51,7 +62,7 @@ export default function App() {
             duration: 4000,
             action: {
               label: 'View',
-              onClick: () => window.location.href = `/chat?userId=${senderIdValue}`
+              onClick: () => globalThis.location.href = `/chat?userId=${senderIdValue}`
             }
           });
         }
@@ -66,16 +77,25 @@ export default function App() {
     }
   }, [user]);
 
+  const isAdminPath = pathname.startsWith("/admin");
+
+  const appContent = (
+    <>
+      <Toaster richColors position="top-center" />
+      <RouterProvider router={router} context={{ auth: useAuthStore.getState() }} />
+      {!isAdminPath && <AIChatbot />}
+    </>
+  );
+
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
       <QueryClientProvider client={queryClient}>
         <ScrollProgressBar />
-        <SmoothScroll>
-          <Toaster richColors position="top-center" />
-          <RouterProvider router={router} context={{ auth: useAuthStore.getState() }} />
-          {/* Shutter AI Chatbot - Global Component */}
-          <AIChatbot />
-        </SmoothScroll>
+        {isAdminPath ? (
+          <div className="h-screen w-full">{appContent}</div>
+        ) : (
+          <SmoothScroll>{appContent}</SmoothScroll>
+        )}
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

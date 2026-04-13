@@ -31,7 +31,7 @@ export class AiService implements IAiService {
     this._model = new ChatGroq({
       apiKey: apiKey,
       model: "llama-3.3-70b-versatile",
-      temperature: 0.7,
+      temperature: 0,
     });
 
     // Define search tools
@@ -130,6 +130,8 @@ PLATFORM SUMMARY:
 
 CAPABILITIES:
 - You have tools to search for photographers and rentals. Use them whenever a user asks for specific recommendations or availability.
+- When using a tool, do not mention the tool name or that you are using a tool. Just provide the final answer based on the tool results.
+- NEVER output raw tool-calling tags like <function> or XML-style tags. The tool calling is handled automatically by the system.
 - Explain photography concepts like Exposure Triangle, Composition, and Lighting.
 - Direct users to use the website's buttons for actual bookings.
 
