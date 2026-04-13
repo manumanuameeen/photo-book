@@ -7,10 +7,10 @@ import {
 } from "../../models/rentalOrder.model";
 import { IPopulatedUser } from "../../models/booking.model";
 import mongoose from "mongoose";
-import { StripeService } from "../implementation/booking/stripe.service";
+import { StripeService } from "../booking/stripe.service";
 import { IWalletService } from "../../interfaces/services/IWalletService";
 import { IPaymentService } from "../../interfaces/services/IPaymentService";
-import { PdfService } from "../implementation/common/pdf.service";
+import { PdfService } from "../common/pdf.service";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
 import { IEmailService } from "../../interfaces/services/IEmailService";
@@ -69,7 +69,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     renterEmail: string,
     providedFrontendUrl?: string,
   ): Promise<string> {
-    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http:/localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${String(order._id)}&session_id={CHECKOUT_SESSION_ID}&paymentType=deposit`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -191,7 +191,7 @@ export class RentalFinanceService implements IRentalFinanceService {
         if (existingIntent.status === "succeeded") {
           await this.payRentalDeposit(orderId, order.paymentId);
           const frontendUrl =
-            providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
+            providedFrontendUrl || process.env.FRONTEND_URL || "http:/localhost:5173";
           return {
             url: `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id=${existingIntent.id}`,
             sessionId: existingIntent.id,
@@ -203,7 +203,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     }
 
     const amount = order.depositeRequired || Math.round(order.totalAmount * 0.25);
-    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http:/localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=deposit`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -232,7 +232,7 @@ export class RentalFinanceService implements IRentalFinanceService {
     const remaining = order.totalAmount - amountPaid;
     if (remaining <= 0) throw new AppError("Balance already paid", HttpStatus.BAD_REQUEST);
 
-    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http:/localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=balance`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -799,3 +799,5 @@ export class RentalFinanceService implements IRentalFinanceService {
     return id;
   }
 }
+
+

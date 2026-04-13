@@ -4,7 +4,7 @@ import { IPopulatedUser } from "../../models/booking.model";
 import { IRentalOrderRepository } from "../../interfaces/repositories/rental/IRentalOrderRepository";
 import { IPaymentService } from "../../interfaces/services/IPaymentService";
 import { IWalletService } from "../../interfaces/services/IWalletService";
-import { StripeService } from "../implementation/booking/stripe.service";
+import { StripeService } from "../booking/stripe.service";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
 import { IEmailService } from "../../interfaces/services/IEmailService";
@@ -43,7 +43,7 @@ export class RentalPaymentService implements IRentalPaymentService {
     if (!order) throw new AppError("Order not found", HttpStatus.NOT_FOUND);
 
     const amount = order.depositeRequired || Math.round(order.totalAmount * 0.25);
-    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http:/localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=deposit`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -94,7 +94,7 @@ export class RentalPaymentService implements IRentalPaymentService {
     const remaining = order.totalAmount - (order.amountPaid || 0);
     if (remaining <= 0) throw new AppError("Zero balance", HttpStatus.BAD_REQUEST);
 
-    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = providedFrontendUrl || process.env.FRONTEND_URL || "http:/localhost:5173";
     const successUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=success&orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}&paymentType=balance`;
     const cancelUrl = `${frontendUrl}/main/dashboard?tab=rentals&payment=cancel`;
 
@@ -138,3 +138,5 @@ export class RentalPaymentService implements IRentalPaymentService {
     return (await this._orderRepo.updateOrder(orderId, { status: RentalStatus.COMPLETED }))!;
   }
 }
+
+

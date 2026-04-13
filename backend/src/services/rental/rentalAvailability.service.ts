@@ -169,3 +169,4 @@ export class RentalAvailabilityService implements IRentalAvailabilityService {
     return updated!;
   }
 }
+

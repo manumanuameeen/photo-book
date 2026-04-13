@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ApiResponse } from "../../utils/response";
 import { HttpStatus } from "../../constants/httpStatus";
 import { Messages } from "../../constants/messages";
-import { StripeService } from "../../services/implementation/booking/stripe.service";
+import { StripeService } from "../../services/booking/stripe.service";
 import { handleError } from "../../utils/errorHandler";
 import { IWalletService } from "../../interfaces/services/IWalletService";
 import { IPaymentController } from "../../interfaces/controllers/IPaymentController";
@@ -46,3 +46,4 @@ export class PaymentController implements IPaymentController {
     }
   };
 }
+

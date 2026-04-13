@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { IRuleService } from "../../services/implementation/admin/rule.service";
+import { IRuleService } from "../../services/admin/rule.service";
 import { Messages } from "../../constants/messages";
 import { HttpStatus } from "../../constants/httpStatus";
 import { ApiResponse } from "../../utils/response";
@@ -52,3 +52,4 @@ export class RuleController implements IRuleController {
     }
   };
 }
+

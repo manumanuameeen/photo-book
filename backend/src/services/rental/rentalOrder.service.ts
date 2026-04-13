@@ -13,7 +13,7 @@ import { IUserRepository } from "../../interfaces/repositories/IUserRepository";
 import { IRentalItemService } from "../../interfaces/services/rental/IRentalItemService";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
-import { StripeService } from "../implementation/booking/stripe.service";
+import { StripeService } from "../booking/stripe.service";
 import mongoose from "mongoose";
 
 export class RentalOrderService implements IRentalOrderService {
@@ -356,3 +356,5 @@ export class RentalOrderService implements IRentalOrderService {
     return updated!;
   }
 }
+
+

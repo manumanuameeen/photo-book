@@ -3,7 +3,7 @@ import {
   ICategoryQuery,
   ICategoryPagination,
 } from "../../interfaces/services/ICategoryService";
-import { CategoryRepository } from "../../repositories/implementation/common/category.repository";
+import { CategoryRepository } from "../../repositories/common/category.repository";
 import { ICategory, CategoryType } from "../../models/category.model";
 import { AppError } from "../../utils/AppError";
 import { HttpStatus } from "../../constants/httpStatus";
@@ -128,3 +128,5 @@ export class CategoryService implements ICategoryService {
     return false;
   }
 }
+
+

@@ -247,3 +247,4 @@ export class RentalItemService implements IRentalItemService {
     return updated;
   }
 }
+

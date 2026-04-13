@@ -425,3 +425,4 @@ export class AdminDashboardService implements IAdminDashboardService {
     return `${sign}${growth.toFixed(1)}% from last month`;
   }
 }
+
