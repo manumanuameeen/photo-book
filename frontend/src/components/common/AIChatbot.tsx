@@ -39,14 +39,19 @@ const AIChatbot: React.FC = () => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/ai/chat`, {
         message: userMessage,
-        history: messages.slice(1), // Use existing messages before state update adds the new user message
+        history: messages.slice(1),
       });
 
       const botResponse = response.data.data.response;
       setMessages((prev) => [...prev, { role: "model", content: botResponse }]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Chat error:", error);
-      const errorMessage = error.response?.data?.message || "Sorry, I'm having a bit of trouble connecting right now. Please try again later!";
+      
+      let errorMessage = "Sorry, I'm having a bit of trouble connecting right now. Please try again later!";
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       setMessages((prev) => [
         ...prev,
         { role: "model", content: errorMessage },
