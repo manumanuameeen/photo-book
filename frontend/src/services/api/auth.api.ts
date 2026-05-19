@@ -1,6 +1,7 @@
 import { authRepository } from "@/modules/auth/repositories/implementation/authRepository";
 import type { ISignupRequest, IAuthResponse, ILoginRequest, IVerifyOtpRequest, IForgetPassword, IVerifyResetOtp, IResetPassword } from "@/modules/auth/types/auth.types";
 import type { IAuthService } from "@/interfaces/services/IAuthService";
+import { API_BASE_URL } from "@/config/api";
 
 class AuthService implements IAuthService {
 
@@ -38,8 +39,7 @@ class AuthService implements IAuthService {
 
   async getCurrentUser(): Promise<IAuthResponse | null> {
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1");
-      const res = await fetch(`${baseUrl}/auth/refresh-token`, {
+      const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" }

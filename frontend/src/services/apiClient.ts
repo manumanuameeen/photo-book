@@ -5,6 +5,7 @@ import { router } from "../router";
 import { toast } from "sonner";
 import { useAuthStore } from "../modules/auth/store/useAuthStore";
 import { ROUTES } from "../constants/routes";
+import { API_BASE_URL } from "../config/api";
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;
@@ -12,7 +13,7 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1"),
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 

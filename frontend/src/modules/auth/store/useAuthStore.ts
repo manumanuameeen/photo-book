@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { IUser } from "../types/user.types";
+import { API_BASE_URL } from "../../../config/api";
 
 interface AuthState {
   user: Partial<IUser> | null;
@@ -84,7 +85,7 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           console.log("🚪 Logout initiated");
-          await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/logout`, {
+          await fetch(`${API_BASE_URL}/auth/logout`, {
             method: "POST",
             credentials: "include",
           });
@@ -122,7 +123,7 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1")}/auth/refresh`, {
+          const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
             method: "POST",
             credentials: "include",
           });
