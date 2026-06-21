@@ -3,7 +3,7 @@ import type { IOtpService } from "./IOtpservice";
 
 export class OtpService implements IOtpService {
   private readonly _OTP_LENGTH = 6;
-  private readonly _OTP_EXPIRY_TIME = 2;
+  private readonly _OTP_EXPIRY_TIME = 5;
 
   generateOtp(): string {
     return randomInt(100000, 999999).toString();

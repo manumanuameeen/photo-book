@@ -21,7 +21,7 @@
     "bcrypt": "^6.0.0",
     "bullmq": "^5.66.4",
     "class-validator": "^0.14.3",
-    "cloudinary": "^2.8.0",
+    "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "crypt": "^0.0.2",

@@ -11,6 +11,8 @@ import { ROUTES } from "../../../../constants/routes";
 import { GoogleLogin } from "@react-oauth/google";
 import type { IAuthResponse } from "../../types/auth.types";
 
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+
 interface SignupFormData {
   name: string;
   email: string;
@@ -138,6 +140,7 @@ interface FormPanelProps {
   loading: boolean;
   navigate: ReturnType<typeof useNavigate>;
   handleGoogleSuccess: (credentialResponse: { credential?: string }) => void;
+  googleClientId?: string;
 }
 
 const FormPanel: React.FC<FormPanelProps> = ({
@@ -150,6 +153,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
   loading,
   navigate,
   handleGoogleSuccess,
+  googleClientId,
 }) => (
   <div className="flex-1 bg-white p-6 sm:p-8 rounded-r-xl md:rounded-b-xl lg:rounded-r-xl lg:rounded-b-none">
     <div className="flex items-center mb-4">
@@ -171,14 +175,20 @@ const FormPanel: React.FC<FormPanelProps> = ({
       </div>
     </div>
     
-    <div className="mb-6 flex justify-center">
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={() => {
-          toast.error("Google Login Failed", { id: "google-failed" });
-        }}
-      />
-    </div>
+    {googleClientId ? (
+      <div className="mb-6 flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => {
+            toast.error("Google signup failed. Please try again.", { id: "google-failed" });
+          }}
+        />
+      </div>
+    ) : (
+      <p className="mb-6 text-center text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-md p-2">
+        Google signup is not configured.
+      </p>
+    )}
 
     <form onSubmit={handleSubmit} className="space-y-3">
       <InputField
@@ -304,8 +314,9 @@ const Signup: React.FC = () => {
 
     if (!data.password) {
       validationErrors.password = "Password is required.";
-    } else if (data.password.length < 8) {
-      validationErrors.password = "Password must be at least 8 characters.";
+    } else if (!strongPasswordRegex.test(data.password)) {
+      validationErrors.password =
+        "Use 8+ characters with uppercase, lowercase, number, and symbol.";
     }
 
     if (!data.confirmPassword) {
@@ -401,6 +412,7 @@ const Signup: React.FC = () => {
           loading={signupMutation.isPending}
           navigate={navigate}
           handleGoogleSuccess={handleGoogleSuccess}
+          googleClientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
         />
       </div>
     </div>

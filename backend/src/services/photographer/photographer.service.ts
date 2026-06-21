@@ -47,6 +47,7 @@ import { HttpStatus } from "../../constants/httpStatus";
 import { IMessageService } from "../../interfaces/services/IMessageService";
 import { ReviewModel, IReview } from "../../models/review.model";
 import { IPhotographer } from "../../models/photographer.model";
+import redisClient from "../../config/redis";
 
 interface IReviewer {
   _id: mongoose.Types.ObjectId;
@@ -301,12 +302,42 @@ export class PhotographerService implements IPhotographerService {
     page: number;
     limit: number;
   }): Promise<IPaginatedPhotographerResponse> {
-    return await this._repository.getPublicPhotographers(filters);
+    const cacheKey = `photographers:list:${JSON.stringify(filters)}`;
+
+    try {
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        return JSON.parse(cachedData);
+      }
+    } catch (err) {
+      console.error("Redis get error:", err);
+    }
+
+    const result = await this._repository.getPublicPhotographers(filters);
+
+    try {
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(result));
+    } catch (err) {
+      console.error("Redis set error:", err);
+    }
+
+    return result;
   }
 
   async getPhotographerById(
     id: string,
   ): Promise<IPublicPhotographer & { reviews: IPublicReview[] }> {
+    const cacheKey = `photographer:detail:${id}`;
+
+    try {
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        return JSON.parse(cachedData);
+      }
+    } catch (err) {
+      console.error("Redis get error:", err);
+    }
+
     const photographer = await this._repository.getPublicPhotographerById(id);
     if (!photographer) {
       throw new AppError(Messages.PHOTOGRAPHER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -320,7 +351,7 @@ export class PhotographerService implements IPhotographerService {
     const averageRating =
       totalReviews > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / totalReviews : 0;
 
-    return {
+    const result = {
       ...photographer,
       reviews: reviews.map((r) => ({
         id: String(r._id),
@@ -333,6 +364,14 @@ export class PhotographerService implements IPhotographerService {
       rating: Number.parseFloat(averageRating.toFixed(1)),
       reviewsCount: totalReviews,
     };
+
+    try {
+      await redisClient.setEx(cacheKey, 7200, JSON.stringify(result));
+    } catch (err) {
+      console.error("Redis set error:", err);
+    }
+
+    return result;
   }
 
   async addReview(
@@ -356,6 +395,16 @@ export class PhotographerService implements IPhotographerService {
       rating: review.rating,
       comment: review.comment,
     });
+
+    // Invalidate cache
+    try {
+      await redisClient.del(`photographer:detail:${photographerId}`);
+      // Also clear list as rating/review count might have changed
+      const keys = await redisClient.keys("photographers:list:*");
+      if (keys.length > 0) await redisClient.del(keys);
+    } catch (err) {
+      console.error("Redis cache invalidation error:", err);
+    }
 
     return newReview;
   }
@@ -440,6 +489,15 @@ export class PhotographerService implements IPhotographerService {
     const updated = await this._repository.update(photographer.id, updateData);
     if (!updated) {
       throw new AppError("Failed to update profile", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // Invalidate cache
+    try {
+      await redisClient.del(`photographer:detail:${photographer.id}`);
+      const keys = await redisClient.keys("photographers:list:*");
+      if (keys.length > 0) await redisClient.del(keys);
+    } catch (err) {
+      console.error("Redis cache invalidation error:", err);
     }
 
     return PhotographerMapper.toResponse(updated);

@@ -65,7 +65,7 @@ const UserDashboard = () => {
     const { data: bookingResponse, isLoading: bookingsLoading, refetch: refetchBookings } = useQuery({
         queryKey: ['user-bookings', bookingsPage, bookingsSearch, bookingsStatus],
         queryFn: () => bookingApi.getUserBookings(bookingsPage, 10, bookingsSearch, bookingsStatus),
-        refetchInterval: 5000
+        enabled: activeTab === 'overview' || activeTab === 'bookings',
     });
 
     const bookings = bookingResponse?.bookings || [];
@@ -74,7 +74,7 @@ const UserDashboard = () => {
     const { data: rentalOrdersResponse, isLoading: rentalsLoading, refetch: refetchRentals } = useQuery({
         queryKey: ['user-rental-orders', rentalsPage, rentalsSearch, rentalsStatus],
         queryFn: () => rentalApi.getUserOrders(rentalsPage, 8, rentalsSearch, rentalsStatus),
-        refetchInterval: 5000
+        enabled: activeTab === 'rentals',
     });
     const rentalOrders = rentalOrdersResponse?.data?.items || [];
     const rentalOrdersTotalPages = rentalOrdersResponse?.data?.totalPages || 1;
@@ -82,13 +82,13 @@ const UserDashboard = () => {
     const { data: requestsResponse, isLoading: requestsLoading, refetch: refetchRequests } = useQuery({
         queryKey: ['owner-rental-requests', requestsPage, requestsSearch, requestsStatus],
         queryFn: () => rentalApi.getOwnerOrders(requestsPage, 8, requestsSearch, requestsStatus),
-        refetchInterval: 5000
+        enabled: activeTab === 'overview' || activeTab === 'requests',
     });
 
     const { data: messagesData, isLoading: messagesLoading } = useQuery({
         queryKey: ['user-messages', notificationsPage],
         queryFn: () => messageApi.getMessages(notificationsPage, 5),
-        refetchInterval: 10000
+        enabled: activeTab === 'notifications',
     });
 
     const messages = messagesData?.messages || [];

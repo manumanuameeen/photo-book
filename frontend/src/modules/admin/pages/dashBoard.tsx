@@ -15,7 +15,7 @@ const DashboardLayout: React.FC = () => {
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: () => adminDashboardApi.getStats(),
-    refetchInterval: 30000,
+    staleTime: 1000 * 60 * 5,
   });
 
   if (isLoading) {

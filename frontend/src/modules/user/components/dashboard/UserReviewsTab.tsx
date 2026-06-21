@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, Edit2, Trash2, MessageSquare, ChevronLeft, ChevronRight, RefreshCw, Loader2, User, Package, ShoppingBag, Pencil, Inbox, Send } from "lucide-react";
 import { reviewApi } from "../../../../services/api/reviewApi";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import type { Review, ReviewUpdatePayload } from "../../../../types/review";
 import { getErrorMessage } from "../../../../utils/errorhandler";
+import { formatLocalDate } from "../../../../utils/dateFormat";
 
 interface UserReviewsTabProps {
     onRefresh?: () => void;
@@ -251,7 +251,7 @@ export const UserReviewsTab = ({ onRefresh }: UserReviewsTabProps) => {
                                                     {activeTab === 'given' ? review.targetName : (review.reviewerId?.name || "Anonymous")}
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <p className="text-[10px] text-gray-400">{format(new Date(review.createdAt), 'MMM dd, yyyy')}</p>
+                                                    <p className="text-[10px] text-gray-400">{formatLocalDate(review.createdAt, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                                                     {review.edited && (
                                                         <span className="flex items-center gap-0.5 text-[10px] text-gray-400 italic">
                                                             <Pencil size={8} />

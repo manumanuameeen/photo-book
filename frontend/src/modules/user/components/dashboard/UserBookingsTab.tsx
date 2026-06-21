@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Calendar, Eye, ChevronLeft, ChevronRight, Search, RefreshCw, User, Clock } from "lucide-react";
 import type { BookingDetails } from "../../../../services/api/bookingApi";
 import { BookingDetailsModal } from "./BookingDetailsModal";
+import { formatLocalDate } from "../../../../utils/dateFormat";
 
 interface UserBookingsTabProps {
     bookings: BookingDetails[];
@@ -125,9 +126,9 @@ export const UserBookingsTab = ({ bookings, isLoading, page, totalPages, onPageC
                             <div className="flex flex-col md:flex-row gap-4 items-center">
                                 
                                 <div className="flex-shrink-0 w-full md:w-auto flex md:flex-col items-center justify-center gap-2 md:gap-0 p-3 bg-gray-50 rounded-lg border border-gray-100 min-w-[4rem]">
-                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{new Date(booking.eventDate).toLocaleDateString('en-US', { month: 'short' })}</span>
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{formatLocalDate(booking.eventDate, { month: 'short' })}</span>
                                     <span className="text-xl font-bold text-gray-900">{new Date(booking.eventDate).getDate()}</span>
-                                    <span className="text-[10px] font-medium text-gray-400">{new Date(booking.eventDate).toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                                    <span className="text-[10px] font-medium text-gray-400">{formatLocalDate(booking.eventDate, { weekday: 'short' })}</span>
                                 </div>
 
                                 <div className="flex-1 w-full min-w-0 grid grid-cols-1 lg:grid-cols-2 gap-4">

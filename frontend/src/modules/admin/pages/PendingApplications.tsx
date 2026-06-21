@@ -5,6 +5,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import AdminDataTable, { type Column } from '../../../components/tables/admin/admin.Table';
 import { useApplicationManagement } from '../hooks/useApplicationManagement';
 import type { Photographer } from '../types/photographer.types';
+import { formatLocalDate } from '../../../utils/dateFormat';
 
 interface ApplicationTableData {
     id: string;
@@ -50,7 +51,7 @@ const PendingApplications: React.FC = () => {
         id: app.id,
         name: app.personalInfo.name,
         email: app.personalInfo.email,
-        date: new Date(app.createdAt).toLocaleDateString('en-US', {
+        date: formatLocalDate(app.createdAt, {
             year: 'numeric',
             month: 'short',
             day: 'numeric'

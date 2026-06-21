@@ -5,6 +5,7 @@ import { router } from "../router";
 import { toast } from "sonner";
 import { useAuthStore } from "../modules/auth/store/useAuthStore";
 import { ROUTES } from "../constants/routes";
+import { API_BASE_URL } from "../config/api";
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;
@@ -12,7 +13,7 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/v1" : "/api/v1"),
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 
@@ -31,7 +32,7 @@ apiClient.interceptors.response.use(
     (res) => res,
     async (error: AxiosError) => {
         const status = error.response?.status;
-        const original = error.config as CustomAxiosRequestConfig | undefined;
+        const original = error.config as CustomAxiosRequestConfig;
         const currentPath = window.location.pathname;
         const isAuthRoute = currentPath.includes('/auth');
 
@@ -64,7 +65,7 @@ apiClient.interceptors.response.use(
                 sessionStorage.removeItem("auth-cache");
 
                 // Only show session expired if we're not on an auth route and were previously logged in
-                if (!isAuthRoute && wasAuthenticated && !original?.skipToast) {
+                if (!isAuthRoute && wasAuthenticated && !original.skipToast) {
                     toast.error("Session expired. Please login again.", { id: "session-expired" });
                 }
 
@@ -80,7 +81,7 @@ apiClient.interceptors.response.use(
         // Handle blocked users
         if (status === 403) {
             const message = (error.response?.data as { message?: string })?.message || "Access denied.";
-            if (!original?.skipToast) {
+            if (!original.skipToast) {
                 toast.error(message, { id: message });
             }
 
@@ -92,12 +93,12 @@ apiClient.interceptors.response.use(
         }
 
         // Global error toasting
-        if (error.response?.data && status !== 401 && !original?.skipToast) {
-            const message = (error.response.data as { message?: string })?.message || "Something went wrong. Please try again.";
+        if (error.response?.data && status !== 401 && !original.skipToast) {
+            const message = (error.response.data as { message?: string })?.message;
             if (message) {
                 toast.error(message, { id: message });
             }
-        } else if (!error.response && !original?.skipToast) {
+        } else if (!error.response && !original.skipToast) {
             toast.error("Network error. Please check your connection.", { id: "network-error" });
         }
 

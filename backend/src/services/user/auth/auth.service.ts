@@ -68,7 +68,7 @@ export class AuthService implements IAuthService {
     try {
       await redisClient.setEx(
         `otp:${data.email}`,
-        Number.parseInt(process.env.OTP_EXPIRY_SECONDS || "120", 10),
+        this._getOtpTtlSeconds(),
         JSON.stringify({ ...safeUserData, otp, expiry }),
       );
 
@@ -111,11 +111,12 @@ export class AuthService implements IAuthService {
 
     const payload = JSON.parse(cached);
     const newOtp = this._otpService.generateOtp();
+    const expiry = this._otpService.getOtpExpire();
 
     await redisClient.setEx(
       `otp:${data.email}`,
-      Number(process.env.OTP_EXPIRY_SECONDS || 120),
-      JSON.stringify({ ...payload, otp: newOtp }),
+      this._getOtpTtlSeconds(),
+      JSON.stringify({ ...payload, otp: newOtp, expiry }),
     );
     await this._emailService.sendOtp(data.email, newOtp, payload.name);
 
@@ -292,5 +293,10 @@ export class AuthService implements IAuthService {
     await redisClient.setEx(`rt:${refreshToken}`, expirySeconds, String(user._id));
 
     return { accessToken, refreshToken, user };
+  }
+
+  private _getOtpTtlSeconds(): number {
+    const configuredTtl = Number.parseInt(process.env.OTP_EXPIRY_SECONDS || "300", 10);
+    return Math.max(Number.isFinite(configuredTtl) ? configuredTtl : 300, 300);
   }
 }

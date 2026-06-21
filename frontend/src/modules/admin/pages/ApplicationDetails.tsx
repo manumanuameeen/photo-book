@@ -4,6 +4,7 @@ import { BaseButton } from '../../../components/BaseButton';
 import { ArrowLeft, MapPin, Globe, Instagram, Phone, Mail, Award, CheckCircle, XCircle, Send, Loader2, X } from 'lucide-react';
 import { ROUTES } from "../../../constants/routes";
 import { useApplicationManagement } from '../hooks/useApplicationManagement';
+import { formatLocalDate } from '../../../utils/dateFormat';
 
 const ApplicationDetails: React.FC = () => {
     const { id } = useParams({ from: '/admin/__layout/applications/$id' });
@@ -81,7 +82,7 @@ const ApplicationDetails: React.FC = () => {
                     <div>
                         <h1 className="text-xl font-bold text-gray-900">{application.personalInfo.name}</h1>
                         <p className="text-gray-500 text-sm">
-                            Applied on {new Date(application.createdAt).toLocaleDateString('en-US', {
+                            Applied on {formatLocalDate(application.createdAt, {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric'

@@ -39,7 +39,6 @@ const BookingDetailsPage = ({ bookingId }: BookingDetailsPageProps) => {
         queryKey: ['booking', bookingId],
         queryFn: () => bookingApi.getBookingDetails(bookingId),
         enabled: !!bookingId && bookingId !== 'undefined',
-        refetchInterval: 5000
     });
 
     const handleBack = () => {

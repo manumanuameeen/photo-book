@@ -164,7 +164,7 @@ export class RentalController implements IRentalController {
 
       const itemData: CreateRentalItemDTO = {
         ...(req.body as CreateRentalItemDTO),
-        condition: normalizedCondition as any,
+        condition: normalizedCondition,
         pricePerDay: Number(req.body.pricePerDay),
         securityDeposit: Number(req.body.securityDeposit),
         minRentalPeriod: Number(req.body.minRentalPeriod),

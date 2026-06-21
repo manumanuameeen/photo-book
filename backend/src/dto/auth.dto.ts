@@ -2,14 +2,19 @@ import { z } from "zod";
 import { Messages } from "../constants/messages";
 
 export const SignupDto = z.object({
-  name: z.string().min(2).trim(),
-  email: z.string().email().toLowerCase(),
-  password: z.string().min(8),
-  phone: z.string().regex(/^\d{10}$/),
+  name: z.string().trim().min(2, "Enter your full name."),
+  email: z.string().trim().email("Enter a valid email address.").toLowerCase(),
+  password: z
+    .string()
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
+      "Use 8+ characters with uppercase, lowercase, number, and symbol.",
+    ),
+  phone: z.string().trim().regex(/^\d{10}$/, "Enter a valid 10-digit phone number."),
 });
 
 export const LoginDto = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email("Enter a valid email address.").toLowerCase(),
   password: z.string(),
 });
 
@@ -23,12 +28,12 @@ export const UpdateReviewDto = z
   });
 
 export const VerifyOtpDto = z.object({
-  email: z.string().email(),
-  otp: z.string().length(6),
+  email: z.string().trim().email("Enter a valid email address.").toLowerCase(),
+  otp: z.string().length(6, "Enter the 6-digit OTP."),
 });
 
 export const ResendOtpDto = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email("Enter a valid email address.").toLowerCase(),
 });
 
 export const RefreshTokenDto = z.object({
@@ -47,8 +52,13 @@ export const VerifyResetOtpDto = z.object({
 export const ResetPasswordDto = z
   .object({
     email: z.string().email().toLowerCase(),
-    newPassword: z.string().min(8),
-    confirmPassword: z.string().min(8),
+    newPassword: z
+      .string()
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
+        "Use 8+ characters with uppercase, lowercase, number, and symbol.",
+      ),
+    confirmPassword: z.string().min(1, "Confirm your password."),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: Messages.PASSWORDS_DONT_MATCH,

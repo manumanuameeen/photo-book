@@ -17,7 +17,7 @@ const NotificationDropdown = () => {
         queryKey: ['messages'],
         queryFn: () => messageApi.getMessages(1, 10),
         staleTime: 30000,
-        refetchInterval: 60000
+        enabled: isOpen,
     });
 
     const messages = messagesData?.messages || [];

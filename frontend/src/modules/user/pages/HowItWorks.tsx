@@ -46,9 +46,15 @@ export default function HowItWorks() {
 
     const handleRequestSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const topic = requestTopic.trim();
+        const description = requestDesc.trim();
+        if (!topic || !description) {
+            toast.error("Please enter a topic and description.");
+            return;
+        }
         setIsSubmitting(true);
         try {
-            await helpRequestApi.submitRequest({ topic: requestTopic, description: requestDesc });
+            await helpRequestApi.submitRequest({ topic, description });
             toast.success("Thank you! Your suggestion has been sent to our team.");
             setIsRequestModalOpen(false);
             setRequestTopic("");
@@ -284,8 +290,11 @@ export default function HowItWorks() {
             <footer className="py-24 px-4 bg-slate-50 text-center">
                 <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-8">Ready to capture memories?</h2>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <button className="px-8 py-4 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
-                        Browse Photographers <ArrowRight size={20} onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER })} />
+                    <button
+                        onClick={() => navigate({ to: ROUTES.USER.PHOTOGRAPHER })}
+                        className="px-8 py-4 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                    >
+                        Browse Photographers <ArrowRight size={20} />
 
                     </button>
 

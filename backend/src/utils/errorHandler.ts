@@ -8,7 +8,10 @@ import { Messages } from "../constants/messages";
 export const handleError = (res: Response, error: unknown) => {
   console.error("Backend Error Logged:", error);
   if (error instanceof z.ZodError) {
-    const errorMessage = error.issues.map((issue) => issue.message).join(", ");
+    const errorMessage = error.issues
+      .map((issue) => issue.message)
+      .filter(Boolean)
+      .join(" ");
     return ApiResponse.error(res, errorMessage, HttpStatus.BAD_REQUEST);
   }
 
@@ -17,7 +20,10 @@ export const handleError = (res: Response, error: unknown) => {
   }
 
   if (error instanceof Error) {
-    let status: HttpStatus = HttpStatus.BAD_REQUEST;
+    let status: HttpStatus =
+      typeof (error as Error & { statusCode?: unknown }).statusCode === "number"
+        ? ((error as Error & { statusCode: number }).statusCode as HttpStatus)
+        : HttpStatus.BAD_REQUEST;
     if (error.message.toLowerCase().includes("blocked")) {
       status = HttpStatus.FORBIDDEN;
     } else if (error.message.toLowerCase().includes("exists")) {

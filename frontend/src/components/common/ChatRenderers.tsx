@@ -1,5 +1,6 @@
 import React from 'react';
 import { Camera, MapPin, Check, ExternalLink } from 'lucide-react';
+import { formatLocalDate } from '../../utils/dateFormat';
 
 export interface PhotographerData {
   _id: string;
@@ -168,7 +169,6 @@ export const AvailabilityPicker: React.FC<{
       {/* Date Selector */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {data.availableSlots.map((slot, idx) => {
-          const dateObj = new Date(slot.date);
           const isSelected = selectedDate === slot.date;
           return (
             <button
@@ -181,11 +181,11 @@ export const AvailabilityPicker: React.FC<{
               }`}
             >
               <span className="text-[8px] uppercase font-bold opacity-80">
-                {dateObj.toLocaleDateString('en-US', { weekday: 'short' })}
+                {formatLocalDate(slot.date, { weekday: 'short' })}
               </span>
-              <span className="text-sm font-bold">{dateObj.getDate()}</span>
+              <span className="text-sm font-bold">{new Date(slot.date).getDate()}</span>
               <span className="text-[8px] opacity-80">
-                {dateObj.toLocaleDateString('en-US', { month: 'short' })}
+                {formatLocalDate(slot.date, { month: 'short' })}
               </span>
             </button>
           );

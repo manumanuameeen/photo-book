@@ -8,7 +8,7 @@ import { useVerifyOtp, useResendOtp } from "../../hooks/useAuth";
 import { ROUTES } from "../../../../constants/routes";
 
 const OTP_LENGTH = 6;
-const OTP_TIMER_DURATION = 30;
+const OTP_TIMER_DURATION = 60;
 
 const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
@@ -129,7 +129,7 @@ const VerifyOtp: React.FC = () => {
               <span className="italic font-bold text-amber-300 font-serif">Email OTP</span>
             </h2>
             <p className="text-sm leading-relaxed max-w-xs opacity-90">
-              We've sent a secure code to your inbox. Enter it below to unlock your account.
+              We've sent a secure code to your inbox. It expires in 5 minutes.
             </p>
           </div>
           <div className="relative z-10 opacity-30">
