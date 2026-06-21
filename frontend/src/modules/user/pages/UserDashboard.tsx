@@ -41,7 +41,7 @@ const UserDashboard = () => {
         }
     }, [activeTab]);
 
-    const { stats, isLoading: statsLoading, period, setPeriod } = useRentalDashboard();
+    const { stats, isLoading: statsLoading, period, setPeriod } = useRentalDashboard(activeTab === 'overview');
     const { user } = useAuthStore();
     const { confirmEndWork, confirmDelivery } = useUserActions();
 
@@ -65,7 +65,7 @@ const UserDashboard = () => {
     const { data: bookingResponse, isLoading: bookingsLoading, refetch: refetchBookings } = useQuery({
         queryKey: ['user-bookings', bookingsPage, bookingsSearch, bookingsStatus],
         queryFn: () => bookingApi.getUserBookings(bookingsPage, 10, bookingsSearch, bookingsStatus),
-        enabled: activeTab === 'overview' || activeTab === 'bookings',
+        enabled: activeTab === 'bookings',
     });
 
     const bookings = bookingResponse?.bookings || [];
@@ -82,7 +82,7 @@ const UserDashboard = () => {
     const { data: requestsResponse, isLoading: requestsLoading, refetch: refetchRequests } = useQuery({
         queryKey: ['owner-rental-requests', requestsPage, requestsSearch, requestsStatus],
         queryFn: () => rentalApi.getOwnerOrders(requestsPage, 8, requestsSearch, requestsStatus),
-        enabled: activeTab === 'overview' || activeTab === 'requests',
+        enabled: activeTab === 'requests',
     });
 
     const { data: messagesData, isLoading: messagesLoading } = useQuery({

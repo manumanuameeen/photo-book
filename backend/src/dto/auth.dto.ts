@@ -10,7 +10,12 @@ export const SignupDto = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
       "Use 8+ characters with uppercase, lowercase, number, and symbol.",
     ),
-  phone: z.string().trim().regex(/^\d{10}$/, "Enter a valid 10-digit phone number."),
+  phone: z
+    .string()
+    .trim()
+    .min(1, "Phone number is required.")
+    .refine((value) => /^\d+$/.test(value), "Phone number can only contain digits.")
+    .refine((value) => value.length === 10, "Phone number must be exactly 10 digits."),
 });
 
 export const LoginDto = z.object({

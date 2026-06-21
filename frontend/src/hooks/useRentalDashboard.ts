@@ -1,35 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { rentalApi } from '../services/api/rentalApi';
-import type { IRentalDashboardStats } from '../types/rental';
 import { toast } from 'sonner';
 
-export function useRentalDashboard() {
-    const [stats, setStats] = useState<IRentalDashboardStats | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export function useRentalDashboard(enabled = true) {
     const [period, setPeriod] = useState<string>("1y");
 
-    const fetchStats = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
+    const statsQuery = useQuery({
+        queryKey: ['rental-dashboard-stats', period],
+        queryFn: async () => {
             const response = await rentalApi.getDashboardStats(period);
-            if (response.success) {
-                setStats(response.data);
-            }
-        } catch (err: unknown) {
-            console.error("Failed to fetch rental dashboard stats", err);
-            const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to load dashboard statistics";
-            setError(msg);
-            toast.error(msg);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [period]);
+            return response.data;
+        },
+        enabled,
+        staleTime: 1000 * 60 * 5,
+    });
 
     useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
+      if (!statsQuery.error) return;
 
-    return { stats, isLoading, error, period, setPeriod, refetch: fetchStats };
+        const err = statsQuery.error;
+        if (err instanceof Error) {
+            console.error("Failed to fetch rental dashboard stats", err);
+            const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message || "Failed to load dashboard statistics";
+            toast.error(msg);
+        }
+    }, [statsQuery.error]);
+
+    return {
+        stats: statsQuery.data ?? null,
+        isLoading: statsQuery.isLoading,
+        error: statsQuery.error,
+        period,
+        setPeriod,
+        refetch: statsQuery.refetch,
+    };
 }

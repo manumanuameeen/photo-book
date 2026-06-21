@@ -292,7 +292,7 @@ const Signup: React.FC = () => {
   const validateForm = (data: SignupFormData): ValidationErrors => {
     const validationErrors: ValidationErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\d{10,15}$/;
+    const phoneRegex = /^\d{10}$/;
 
     if (!data.name || data.name.trim() === "") {
       validationErrors.name = "Full name is required.";
@@ -309,7 +309,7 @@ const Signup: React.FC = () => {
     if (!data.phone || data.phone.trim() === "") {
       validationErrors.phone = "Phone number is required.";
     } else if (!phoneRegex.test(data.phone)) {
-      validationErrors.phone = "Phone must be 10-15 digits.";
+      validationErrors.phone = "Phone number must be exactly 10 digits.";
     }
 
     if (!data.password) {

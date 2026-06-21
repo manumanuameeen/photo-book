@@ -4,7 +4,9 @@ export const UpdateProfileDto = z.object({
   name: z.string().min(2).trim().optional(),
   phone: z
     .string()
-    .regex(/^\d{10}$/)
+    .trim()
+    .refine((value) => /^\d+$/.test(value), "Phone number can only contain digits.")
+    .refine((value) => value.length === 10, "Phone number must be exactly 10 digits.")
     .optional(),
   bio: z.string().optional(),
   location: z.string().optional(),
