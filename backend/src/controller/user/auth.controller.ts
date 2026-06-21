@@ -187,8 +187,9 @@ export class AuthController implements IAuthController {
 
     const cookieOptions = {
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? ("none" as const) : ("lax" as const),
+     secure: false,
+sameSite: "lax" as const,
+
     };
 
     res.cookie("accessToken", access, {
