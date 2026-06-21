@@ -20,7 +20,7 @@ export const socketAuthMiddleware = (socket: AuthSocket, next: (err?: Error) => 
 
     if (!token && socket.handshake.headers.cookie) {
       const cookies = parse(socket.handshake.headers.cookie);
-      token = cookies.accessToken;
+    token = cookies.accessToken || cookies.refreshToken;
     }
 
     if (!token) {

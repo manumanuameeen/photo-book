@@ -64,7 +64,7 @@ export function useResetPassword() {
 export function useGoogleLogin() {
   return useMutation<IAuthResponse, Error, string>({
     mutationFn: (token) => {
-      console.log("google token in useAUth hook", token)
+      
       return authService.googleLogin(token)
     },
   });
