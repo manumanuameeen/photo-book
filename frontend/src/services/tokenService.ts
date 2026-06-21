@@ -4,9 +4,10 @@ import { router } from "../router";
 import { ROUTES } from "../constants/routes";
 import { authService } from "./api/auth.api";
 import type { IAuthResponse } from "../modules/auth/types/auth.types";
+import { API_BASE_URL } from "../config/api";
 
 const rawClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 

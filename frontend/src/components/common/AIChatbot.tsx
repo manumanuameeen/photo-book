@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Bot, User, Sparkles } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 
 interface Message {
   role: "user" | "model";
@@ -37,7 +38,7 @@ const AIChatbot: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/ai/chat`, {
+      const response = await axios.post(`${API_BASE_URL}/ai/chat`, {
         message: userMessage,
         history: messages.slice(1),
       });

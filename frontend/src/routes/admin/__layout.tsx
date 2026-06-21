@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import AdminHeader from '../../layouts/admin/AdminHeader.tsx'
 import AdminSidebar from '../../layouts/admin/AdminSideBar.tsx'
 import { ROUTES } from "../../constants/routes.ts";
+import { API_BASE_URL } from "../../config/api.ts";
 
 interface CacheData {
   user: {
@@ -32,7 +33,7 @@ export const Route = createFileRoute('/admin/__layout')({
     try {
       console.log("🔄 Attempting token refresh...");
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh-token`, {
+      const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
         method: "POST",
         credentials: "include",
         headers: {

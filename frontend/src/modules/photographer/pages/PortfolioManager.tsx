@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useNavigate } from '@tanstack/react-router';
 import { ROUTES } from '../../../constants/routes';
 import { getErrorMessage } from '../../../utils/errorhandler';
+import { API_BASE_URL } from '../../../config/api';
 
 const SectionCard = ({ section, onDelete, onSelect }: { section: IPortfolioSection, onDelete: (id: string) => void, onSelect: (section: IPortfolioSection) => void }) => {
     return (
@@ -124,7 +125,7 @@ const PortfolioManager = () => {
         if (!selectedSection) return;
         const toastId = toast.loading("✨ Suggesting album name...");
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/ai/album/${selectedSection._id}/suggest-name`, {
+            const response = await fetch(`${API_BASE_URL}/ai/album/${selectedSection._id}/suggest-name`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });

@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import Header from "../../layouts/user/Header";
 import Footer from "../../layouts/user/Footer";
 import { ROUTES } from "../../constants/routes";
+import { API_BASE_URL } from "../../config/api";
 
 interface CacheData {
   user: {
@@ -57,7 +58,7 @@ export const Route = createFileRoute("/main/__layout")({
 
     if (!isAuthenticated) {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh-token`, {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
